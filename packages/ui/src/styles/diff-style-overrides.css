@@ -888,9 +888,8 @@ diffs-container {
    Pierre/Diffs Design Overrides - Match Old @git-diff-view/react Design
    ============================================================================= */
 
-/* Font: Use IBM Plex Mono to match old design */
 diffs-container {
-  --diffs-font-family: "IBM Plex Mono", "SF Mono", Monaco, Consolas, monospace;
+  --diffs-font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --diffs-font-size: 12px;
   --diffs-line-height: 18px;
 }
