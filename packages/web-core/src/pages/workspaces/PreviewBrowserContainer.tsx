@@ -827,7 +827,7 @@ export function PreviewBrowserContainer({
 
     iframe.contentWindow.postMessage(
       {
-        source: 'vibe-kanban',
+        source: 'cdesktop',
         command: visible ? 'show-eruda' : 'hide-eruda',
       },
       '*'

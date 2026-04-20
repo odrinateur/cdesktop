@@ -1,28 +1,33 @@
 import { useQuery } from '@tanstack/react-query';
 
-async function fetchGitHubStars(): Promise<number | null> {
-  try {
-    const res = await fetch(
-      'https://api.github.com/repos/BloopAI/vibe-kanban',
-      { cache: 'no-store' }
-    );
-
-    if (!res.ok) {
-      console.warn(`GitHub API error: ${res.status}`);
-      return null;
-    }
-
-    const data = await res.json();
-    if (typeof data?.stargazers_count === 'number') {
-      return data.stargazers_count;
-    }
-
-    return null;
-  } catch (error) {
-    console.warn('Failed to fetch GitHub stars:', error);
-    return null;
-  }
+// TODO: restore real fetch once the cdesktop-ai/cdesktop GitHub repo is published.
+async function fetchGitHubStars(): Promise<number> {
+  return 0;
 }
+
+// async function fetchGitHubStars(): Promise<number | null> {
+//   try {
+//     const res = await fetch(
+//       'https://api.github.com/repos/cdesktop-ai/cdesktop',
+//       { cache: 'no-store' }
+//     );
+//
+//     if (!res.ok) {
+//       console.warn(`GitHub API error: ${res.status}`);
+//       return null;
+//     }
+//
+//     const data = await res.json();
+//     if (typeof data?.stargazers_count === 'number') {
+//       return data.stargazers_count;
+//     }
+//
+//     return null;
+//   } catch (error) {
+//     console.warn('Failed to fetch GitHub stars:', error);
+//     return null;
+//   }
+// }
 
 export function useGitHubStars() {
   return useQuery({

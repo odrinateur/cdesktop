@@ -1,0 +1,22 @@
+cdesktop
+Copyright 2026 cdesktop contributors
+
+This product is licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+-------------------------------------------------------------------------------
+
+This product is a derivative work of:
+
+    vibe-kanban
+    Copyright BloopAI
+    https://github.com/BloopAI/vibe-kanban
+    Licensed under the Apache License, Version 2.0
+
+The original vibe-kanban source, including its React/TypeScript frontend,
+Rust backend, Tauri integration, and SQLite schema, is incorporated here
+in modified form. Modifications are published under the same Apache 2.0
+license.

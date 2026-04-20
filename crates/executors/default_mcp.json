@@ -1,9 +1,9 @@
 {
-  "vibe_kanban": {
+  "cdesktop": {
     "command": "npx",
     "args": [
       "-y",
-      "vibe-kanban@latest",
+      "cdesktop@latest",
       "--mcp"
     ]
   },
@@ -45,10 +45,10 @@
     ]
   },
   "meta": {
-    "vibe_kanban": {
-      "name": "Vibe Kanban",
-      "description": "Create, update and delete Vibe Kanban tasks",
-      "url": "https://www.vibekanban.com/docs/integrations/vibe-kanban-mcp-server",
+    "cdesktop": {
+      "name": "cdesktop",
+      "description": "Create, update and delete cdesktop sessions",
+      "url": "https://cdesktop.ai",
       "icon": "favicon-vk-light.svg"
     },
     "context7": {
