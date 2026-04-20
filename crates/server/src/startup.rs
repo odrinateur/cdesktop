@@ -230,7 +230,7 @@ async fn migrate_legacy_attachment_directories(
     for base_path in collect_attachment_migration_paths(deployment).await? {
         stats.merge(migrate_legacy_directory(
             &base_path.join(".vibe-images"),
-            &base_path.join(utils::path::VIBE_ATTACHMENTS_DIR),
+            &base_path.join(utils::path::CDESKTOP_ATTACHMENTS_DIR),
             true,
         ));
     }
@@ -445,7 +445,7 @@ mod tests {
     fn removes_legacy_duplicates_when_destination_exists() {
         let temp_dir = TempDir::new().unwrap();
         let src = temp_dir.path().join(".vibe-images");
-        let dst = temp_dir.path().join(".vibe-attachments");
+        let dst = temp_dir.path().join(".cdesktop-attachments");
         fs::create_dir_all(&src).unwrap();
         fs::create_dir_all(&dst).unwrap();
         fs::write(src.join("asset.png"), b"old").unwrap();
@@ -462,7 +462,7 @@ mod tests {
     fn ensures_gitignore_for_workspace_attachment_dir() {
         let temp_dir = TempDir::new().unwrap();
         let src = temp_dir.path().join(".vibe-images");
-        let dst = temp_dir.path().join(".vibe-attachments");
+        let dst = temp_dir.path().join(".cdesktop-attachments");
         fs::create_dir_all(&src).unwrap();
         fs::write(src.join("file.pdf"), b"attachment").unwrap();
 

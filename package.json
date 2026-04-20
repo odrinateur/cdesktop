@@ -1,9 +1,9 @@
 {
-  "name": "vibe-kanban",
+  "name": "cdesktop",
   "version": "0.1.43",
   "private": true,
   "bin": {
-    "vibe-kanban": "npx-cli/bin/cli.js"
+    "cdesktop": "npx-cli/bin/cli.js"
   },
   "files": [
     "npx-cli/bin/cli.js",
