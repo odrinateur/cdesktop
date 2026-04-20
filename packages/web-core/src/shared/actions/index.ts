@@ -69,6 +69,7 @@ import { CreatePRDialog } from '@/shared/dialogs/command-bar/CreatePRDialog';
 import { getIdeName } from '@/shared/lib/ideName';
 import { EditorSelectionDialog } from '@/shared/dialogs/command-bar/EditorSelectionDialog';
 import { StartReviewDialog } from '@/shared/dialogs/command-bar/StartReviewDialog';
+import { SHOW_REVIEW_FEATURE } from '@/shared/lib/cdesktopFlags';
 import posthog from 'posthog-js';
 import { WorkspacesGuideDialog } from '@/shared/dialogs/shared/WorkspacesGuideDialog';
 import { SettingsDialog } from '@/shared/dialogs/settings/SettingsDialog';
@@ -344,7 +345,7 @@ export const Actions = {
     label: 'Start Review',
     icon: HighlighterIcon,
     requiresTarget: ActionTargetType.WORKSPACE,
-    isVisible: (ctx) => ctx.hasWorkspace,
+    isVisible: (ctx) => SHOW_REVIEW_FEATURE && ctx.hasWorkspace,
     getTooltip: () => 'Review changes with agent',
     execute: async (_ctx, workspaceId) => {
       await StartReviewDialog.show({

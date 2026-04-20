@@ -160,20 +160,22 @@ export function CreateChatBox<TExecutor extends string = string>({
       headerLeft={
         <>
           {agentIcon}
-          <ToolbarDropdown label={executorLabel} disabled={isDisabled}>
-            <DropdownMenuLabel>
-              {t('tasks:conversation.executors')}
-            </DropdownMenuLabel>
-            {executor.options.map((exec) => (
-              <DropdownMenuItem
-                key={exec}
-                icon={executor.selected === exec ? CheckIcon : undefined}
-                onClick={() => executor.onChange(exec)}
-              >
-                {formatExecutorLabel(exec)}
-              </DropdownMenuItem>
-            ))}
-          </ToolbarDropdown>
+          {executor.options.length > 1 && (
+            <ToolbarDropdown label={executorLabel} disabled={isDisabled}>
+              <DropdownMenuLabel>
+                {t('tasks:conversation.executors')}
+              </DropdownMenuLabel>
+              {executor.options.map((exec) => (
+                <DropdownMenuItem
+                  key={exec}
+                  icon={executor.selected === exec ? CheckIcon : undefined}
+                  onClick={() => executor.onChange(exec)}
+                >
+                  {formatExecutorLabel(exec)}
+                </DropdownMenuItem>
+              ))}
+            </ToolbarDropdown>
+          )}
           {saveAsDefault?.visible && (
             <label className="flex items-center gap-1.5 text-sm text-low cursor-pointer ml-2">
               <Checkbox

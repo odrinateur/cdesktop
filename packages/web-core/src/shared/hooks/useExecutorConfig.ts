@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { BaseCodingAgent } from 'shared/types';
 import type {
-  BaseCodingAgent,
   ExecutorConfig,
   ExecutorProfile,
   ExecutorProfileId,
 } from 'shared/types';
 import { getVariantOptions } from '@/shared/lib/executor';
 import { usePresetOptions } from '@/shared/hooks/usePresetOptions';
+import { SHOW_AGENT_PICKER } from '@/shared/lib/cdesktopFlags';
 
 function getProfileKey(
   executor: BaseCodingAgent | null,
@@ -35,18 +36,25 @@ function useEffectiveExecutor(
   configExecutorProfile: ExecutorProfileId | null | undefined
 ) {
   const options = useMemo(
-    () => Object.keys(profiles ?? {}) as BaseCodingAgent[],
+    () =>
+      SHOW_AGENT_PICKER
+        ? (Object.keys(profiles ?? {}) as BaseCodingAgent[])
+        : [BaseCodingAgent.CLAUDE_CODE],
     [profiles]
   );
 
   const effective = useMemo(
-    () =>
-      userSelections.executor ??
-      scratchConfig?.executor ??
-      lastUsedConfig?.executor ??
-      configExecutorProfile?.executor ??
-      options[0] ??
-      null,
+    () => {
+      if (!SHOW_AGENT_PICKER) return BaseCodingAgent.CLAUDE_CODE;
+      return (
+        userSelections.executor ??
+        scratchConfig?.executor ??
+        lastUsedConfig?.executor ??
+        configExecutorProfile?.executor ??
+        options[0] ??
+        null
+      );
+    },
     [
       userSelections.executor,
       scratchConfig,
