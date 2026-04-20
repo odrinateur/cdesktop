@@ -678,26 +678,28 @@ export function SessionChatBox<TExecutor extends string = string>({
           {isNewSessionMode && executor && (
             <>
               {renderAgentIcon?.(agent, 'size-icon-xl')}
-              <ToolbarDropdown
-                label={
-                  executor.selected
-                    ? formatExecutorLabel(executor.selected)
-                    : emptyExecutorLabel
-                }
-              >
-                <DropdownMenuLabel>
-                  {t('conversation.executors')}
-                </DropdownMenuLabel>
-                {executor.options.map((exec) => (
-                  <DropdownMenuItem
-                    key={exec}
-                    icon={executor.selected === exec ? CheckIcon : undefined}
-                    onClick={() => executor.onChange(exec)}
-                  >
-                    {formatExecutorLabel(exec)}
-                  </DropdownMenuItem>
-                ))}
-              </ToolbarDropdown>
+              {executor.options.length > 1 && (
+                <ToolbarDropdown
+                  label={
+                    executor.selected
+                      ? formatExecutorLabel(executor.selected)
+                      : emptyExecutorLabel
+                  }
+                >
+                  <DropdownMenuLabel>
+                    {t('conversation.executors')}
+                  </DropdownMenuLabel>
+                  {executor.options.map((exec) => (
+                    <DropdownMenuItem
+                      key={exec}
+                      icon={executor.selected === exec ? CheckIcon : undefined}
+                      onClick={() => executor.onChange(exec)}
+                    >
+                      {formatExecutorLabel(exec)}
+                    </DropdownMenuItem>
+                  ))}
+                </ToolbarDropdown>
+              )}
             </>
           )}
           {/* Existing session mode: show in-progress todo when running, otherwise file stats */}
