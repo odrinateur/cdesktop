@@ -56,6 +56,10 @@ import { WorkspacesSidebarReopenTag } from '@vibe/ui/components/WorkspacesSideba
 import { useRemoteCloudHostsAppBarModel } from '@/shared/hooks/useRemoteCloudHosts';
 import { CloudShutdownExportBanner } from '@/shared/components/CloudShutdownExportBanner';
 
+// cdesktop v1: cloud AppBar rail (org list, hosts, stars, user popover, bell) is hidden.
+// Flip to true to restore. See plans/openspec-changes.md change #2 (hide-cloud-appbar).
+const SHOW_CLOUD_APPBAR = false;
+
 export function SharedAppLayout() {
   const appNavigation = useAppNavigation();
   const currentDestination = useCurrentAppDestination();
@@ -304,7 +308,8 @@ export function SharedAppLayout() {
           isMobile
             ? 'flex fixed inset-0 pb-[env(safe-area-inset-bottom)]'
             : cn(
-                'grid grid-cols-[auto_1fr] h-screen',
+                'grid h-screen',
+                SHOW_CLOUD_APPBAR ? 'grid-cols-[auto_1fr]' : 'grid-cols-1',
                 showCloudShutdownBanner
                   ? 'grid-rows-[auto_auto_1fr]'
                   : 'grid-rows-[auto_1fr]'
@@ -314,60 +319,62 @@ export function SharedAppLayout() {
         {!isMobile && (
           <>
             {showCloudShutdownBanner && (
-              <div className="col-span-2">
+              <div className={SHOW_CLOUD_APPBAR ? 'col-span-2' : 'col-span-1'}>
                 <CloudShutdownExportBanner onClick={handleExportClick} />
               </div>
             )}
-            {/* Desktop corner spacer. */}
-            <div
-              data-tauri-drag-region
-              className="bg-secondary"
-              style={isTauriMac() ? { minWidth: 56 } : undefined}
-            />
+            {SHOW_CLOUD_APPBAR && (
+              <div
+                data-tauri-drag-region
+                className="bg-secondary"
+                style={isTauriMac() ? { minWidth: 56 } : undefined}
+              />
+            )}
             {/* Desktop navbar. */}
             <NavbarContainer
               onOrgSelect={setSelectedOrgId}
               onOpenDrawer={() => setIsDrawerOpen(true)}
             />
-            {/* Desktop AppBar sidebar. */}
-            <AppBar
-              projects={orderedProjects}
-              hosts={remoteCloudHosts}
-              activeHostId={activeHostId}
-              onCreateProject={handleCreateProject}
-              onExportClick={handleExportClick}
-              onWorkspacesClick={handleWorkspacesClick}
-              onHostClick={handleHostClick}
-              onPairHostClick={handlePairHostClick}
-              onProjectClick={handleProjectClick}
-              onProjectsDragEnd={handleProjectsDragEnd}
-              isSavingProjectOrder={isSavingProjectOrder}
-              isWorkspacesActive={isWorkspacesActive}
-              isExportActive={isExportActive}
-              activeProjectId={activeProjectId}
-              isSignedIn={isSignedIn}
-              isLoadingProjects={isLoading}
-              onSignIn={handleSignIn}
-              onHoverStart={() => setIsAppBarHovered(true)}
-              onHoverEnd={() => setIsAppBarHovered(false)}
-              notificationBell={
-                isSignedIn ? <AppBarNotificationBellContainer /> : undefined
-              }
-              userPopover={
-                <AppBarUserPopoverContainer
-                  organizations={organizations}
-                  selectedOrgId={selectedOrgId ?? ''}
-                  onOrgSelect={setSelectedOrgId}
-                />
-              }
-              starCount={starCount}
-              onlineCount={onlineCount}
-              appVersion={appVersion}
-              updateVersion={updateVersion}
-              onUpdateClick={restartForUpdate ?? undefined}
-              githubIconPath={siGithub.path}
-              discordIconPath={siDiscord.path}
-            />
+            {SHOW_CLOUD_APPBAR && (
+              <AppBar
+                projects={orderedProjects}
+                hosts={remoteCloudHosts}
+                activeHostId={activeHostId}
+                onCreateProject={handleCreateProject}
+                onExportClick={handleExportClick}
+                onWorkspacesClick={handleWorkspacesClick}
+                onHostClick={handleHostClick}
+                onPairHostClick={handlePairHostClick}
+                onProjectClick={handleProjectClick}
+                onProjectsDragEnd={handleProjectsDragEnd}
+                isSavingProjectOrder={isSavingProjectOrder}
+                isWorkspacesActive={isWorkspacesActive}
+                isExportActive={isExportActive}
+                activeProjectId={activeProjectId}
+                isSignedIn={isSignedIn}
+                isLoadingProjects={isLoading}
+                onSignIn={handleSignIn}
+                onHoverStart={() => setIsAppBarHovered(true)}
+                onHoverEnd={() => setIsAppBarHovered(false)}
+                notificationBell={
+                  isSignedIn ? <AppBarNotificationBellContainer /> : undefined
+                }
+                userPopover={
+                  <AppBarUserPopoverContainer
+                    organizations={organizations}
+                    selectedOrgId={selectedOrgId ?? ''}
+                    onOrgSelect={setSelectedOrgId}
+                  />
+                }
+                starCount={starCount}
+                onlineCount={onlineCount}
+                appVersion={appVersion}
+                updateVersion={updateVersion}
+                onUpdateClick={restartForUpdate ?? undefined}
+                githubIconPath={siGithub.path}
+                discordIconPath={siDiscord.path}
+              />
+            )}
             {/* Desktop content. */}
             <div className="relative min-h-0 overflow-hidden">
               {isWorkspaceSidebarPreviewEnabled && (
