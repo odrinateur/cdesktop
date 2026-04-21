@@ -473,8 +473,8 @@
     "statusKilled": "进程已被终止"
   },
   "createWorkspaceFromPr": {
-    "title": "从 PR 创建工作区",
-    "description": "选择一个打开的拉取请求来创建工作区。将使用 PR 标题自动创建任务。",
+    "title": "从 PR 创建会话",
+    "description": "选择一个打开的拉取请求来创建会话。将使用 PR 标题自动创建任务。",
     "repositoryLabel": "仓库",
     "remoteLabel": "远程仓库",
     "pullRequestLabel": "拉取请求",
@@ -486,7 +486,7 @@
     "noPullRequestsFound": "未找到打开的拉取请求",
     "runSetupScript": "运行设置脚本",
     "creating": "创建中...",
-    "createWorkspace": "创建工作区",
+    "createWorkspace": "创建会话",
     "selectRepository": "选择仓库",
     "selectRemote": "选择远程仓库",
     "selectPullRequest": "选择拉取请求",
@@ -499,7 +499,7 @@
       "unsupportedProvider": "不支持的 Git 提供商",
       "failedToLoadPrs": "加载拉取请求失败",
       "prNotFound": "未找到拉取请求",
-      "failedToCreateWorkspace": "创建工作区失败"
+      "failedToCreateWorkspace": "创建会话失败"
     }
   },
   "shareDialog": {

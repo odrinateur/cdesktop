@@ -108,19 +108,19 @@
     "label": "标签"
   },
   "workspaces": {
-    "title": "工作区",
+    "title": "会话",
     "searchPlaceholder": "搜索...",
     "active": "活跃",
     "archived": "已归档",
     "loading": "加载中...",
-    "notFound": "未找到工作区",
-    "selectToStart": "选择一个工作区开始",
+    "notFound": "未找到会话",
+    "selectToStart": "选择一个会话开始",
     "draft": "草稿",
     "viewArchive": "查看归档",
     "backToActive": "返回活跃",
-    "noArchived": "没有已归档的工作区",
-    "noWorkspaces": "没有工作区",
-    "newWorkspace": "新工作区",
+    "noArchived": "没有已归档的会话",
+    "noWorkspaces": "没有会话",
+    "newWorkspace": "新会话",
     "needsAttention": "需要注意",
     "idle": "空闲",
     "running": "运行中",
@@ -129,30 +129,30 @@
     "archive": "归档",
     "more": "更多操作",
     "rename": {
-      "title": "重命名工作区",
-      "description": "输入此工作区的新名称。",
+      "title": "重命名会话",
+      "description": "输入此会话的新名称。",
       "nameLabel": "名称",
-      "placeholder": "输入工作区名称",
+      "placeholder": "输入会话名称",
       "action": "重命名",
       "renaming": "正在重命名..."
     },
     "unlinkFromIssue": "从问题取消关联",
-    "deleteWorkspace": "删除工作区",
+    "deleteWorkspace": "删除会话",
     "unlink": "取消关联",
     "delete": "删除",
-    "unlinkConfirmMessage": "确定要将此工作区与问题取消关联吗？工作区仍将存在，但不再与此问题关联。",
-    "deleteConfirmMessage": "确定要删除此工作区吗？这将取消与问题的关联并删除本地工作区。此操作无法撤销。",
-    "unlinkError": "取消关联工作区失败",
-    "deleteError": "删除工作区失败",
+    "unlinkConfirmMessage": "确定要将此会话与问题取消关联吗？会话仍将存在，但不再与此问题关联。",
+    "deleteConfirmMessage": "确定要删除此会话吗？这将取消与问题的关联并删除本地会话。此操作无法撤销。",
+    "unlinkError": "取消关联会话失败",
+    "deleteError": "删除会话失败",
     "filesChanged": "{{count}} 个文件",
     "deleteDialog": {
-      "title": "删除工作区",
-      "description": "确定要删除此工作区吗？此操作无法撤销。",
+      "title": "删除会话",
+      "description": "确定要删除此会话吗？此操作无法撤销。",
       "deleteBranchLabel": "删除分支",
       "cannotDeleteOpenPr": "PR 开启时无法删除分支",
       "unlinkFromIssueLabel": "同时取消与议题的关联"
     },
-    "linkError": "Failed to link workspace"
+    "linkError": "Failed to link 会话"
   },
   "fileTree": {
     "searchPlaceholder": "搜索文件...",
@@ -179,8 +179,8 @@
     "notes": "笔记"
   },
   "notes": {
-    "placeholder": "添加关于此工作区的笔记...",
-    "selectWorkspace": "选择一个工作区以查看笔记"
+    "placeholder": "添加关于此会话的笔记...",
+    "selectWorkspace": "选择一个会话以查看笔记"
   },
   "actions": {
     "copyPath": "复制路径",
@@ -216,27 +216,27 @@
   "workspacesGuide": {
     "welcome": {
       "title": "欢迎",
-      "content": "欢迎使用 Workspaces，这是 Vibe Kanban 的全新设计界面。我们正在向部分用户推出以获取早期反馈。您可以随时通过导航栏中的反馈图标分享您的想法。"
+      "content": "欢迎使用 会话，这是 Vibe Kanban 的全新设计界面。我们正在向部分用户推出以获取早期反馈。您可以随时通过导航栏中的反馈图标分享您的想法。"
     },
     "commandBar": {
       "title": "命令栏",
-      "content": "命令栏是您的导航中心。使用 CMD+K 打开它，可以搜索和访问工作区中的所有可用操作。"
+      "content": "命令栏是您的导航中心。使用 CMD+K 打开它，可以搜索和访问会话中的所有可用操作。"
     },
     "contextBar": {
       "title": "上下文栏",
       "content": "上下文栏让您可以快速切换不同面板。将它拖动到最适合您的位置。"
     },
     "sidebar": {
-      "title": "工作区侧边栏",
-      "content": "一目了然地查看所有工作区的状态。通知会突出显示需要关注的工作区。归档已合并的工作区以保持侧边栏整洁。"
+      "title": "会话侧边栏",
+      "content": "一目了然地查看所有会话的状态。通知会突出显示需要关注的会话。归档已合并的会话以保持侧边栏整洁。"
     },
     "multiRepo": {
       "title": "多仓库支持",
-      "content": "将多个仓库添加到单个工作区。在处理一个仓库时可以引用另一个仓库的代码，或者同时在多个仓库中实现更改。"
+      "content": "将多个仓库添加到单个会话。在处理一个仓库时可以引用另一个仓库的代码，或者同时在多个仓库中实现更改。"
     },
     "sessions": {
       "title": "多会话",
-      "content": "在单个工作区内创建多个代理对话会话，包括与不同代理的会话。这可以帮助您绕过对话限制，或在单独的线程中启动审查代理。"
+      "content": "在单个会话内创建多个代理对话会话，包括与不同代理的会话。这可以帮助您绕过对话限制，或在单独的线程中启动审查代理。"
     },
     "preview": {
       "title": "预览更改",
@@ -244,11 +244,11 @@
     },
     "diffs": {
       "title": "差异和评论",
-      "content": "重新设计的差异面板包含更改的文件树。直接在差异上评论以向代理提供反馈，当您的工作区链接到 PR 时还可以查看 GitHub 评论。"
+      "content": "重新设计的差异面板包含更改的文件树。直接在差异上评论以向代理提供反馈，当您的会话链接到 PR 时还可以查看 GitHub 评论。"
     },
     "classicUi": {
       "title": "返回经典界面",
-      "content": "点击导航栏左侧的退出图标可返回经典看板。要完全禁用新界面，请在设置中的「测试版功能」下更新「启用 Workspaces 测试版」选项。"
+      "content": "点击导航栏左侧的退出图标可返回经典看板。要完全禁用新界面，请在设置中的「测试版功能」下更新「启用 会话 测试版」选项。"
     }
   },
   "logs": {
@@ -271,7 +271,7 @@
   },
   "shortcuts": {
     "title": "键盘快捷键",
-    "inWorkspace": "(在工作区中)",
+    "inWorkspace": "(在会话中)",
     "sequentialHint": "组合快捷键：先按第一个键，然后在500毫秒内按第二个键。",
     "configurableHint": "可在 设置 → 常规 → 消息输入 中配置",
     "groups": {
@@ -279,7 +279,7 @@
       "navigation": "导航",
       "modifiers": "修饰键",
       "goTo": "前往 (G ...)",
-      "workspace": "工作区 (W ...)",
+      "workspace": "会话 (W ...)",
       "view": "视图 (V ...)",
       "issues": "问题 (I ...)",
       "git": "Git (X ...)",
@@ -301,12 +301,12 @@
       "formatInlineCode": "Format inline code",
       "sendMessage": "发送消息",
       "settings": "前往设置",
-      "new-workspace": "前往新工作区",
-      "duplicate-workspace": "复制工作区",
-      "rename-workspace": "重命名工作区",
-      "pin-workspace": "置顶/取消置顶工作区",
-      "archive-workspace": "归档工作区",
-      "delete-workspace": "删除工作区",
+      "new-workspace": "前往新会话",
+      "duplicate-workspace": "复制会话",
+      "rename-workspace": "重命名会话",
+      "pin-workspace": "置顶/取消置顶会话",
+      "archive-workspace": "归档会话",
+      "delete-workspace": "删除会话",
       "toggle-changes-mode": "切换更改面板",
       "toggle-logs-mode": "切换日志面板",
       "toggle-preview-mode": "切换预览面板",
@@ -319,7 +319,7 @@
       "make-sub-issue-of": "设为子问题",
       "add-sub-issue": "添加子问题",
       "remove-parent-issue": "移除父级",
-      "link-workspace": "关联工作区",
+      "link-workspace": "关联会话",
       "duplicate-issue": "复制问题",
       "delete-issue": "删除问题",
       "git-create-pr": "创建 Pull Request",
@@ -372,8 +372,8 @@
     "copyLink": "复制链接",
     "issueTitlePlaceholder": "问题标题...",
     "issueDescriptionPlaceholder": "输入任务描述...",
-    "createDraftWorkspaceImmediately": "立即创建草稿工作区",
-    "createDraftWorkspaceDescription": "创建议题后，打开预填了议题详情的工作区创建表单",
+    "createDraftWorkspaceImmediately": "立即创建草稿会话",
+    "createDraftWorkspaceDescription": "创建议题后，打开预填了议题详情的会话创建表单",
     "createIssue": "创建任务",
     "newIssue": "新问题",
     "previewCodeBlock": "[代码块]",
@@ -413,22 +413,22 @@
     "tags": "Tags",
     "sortBy": "Sort",
     "workspaceSidebar": {
-      "sortDialogTitle": "Sort workspaces",
-      "sortDialogDescription": "Choose how workspaces are ordered in the sidebar.",
+      "sortDialogTitle": "Sort 会话",
+      "sortDialogDescription": "Choose how 会话 are ordered in the sidebar.",
       "sortByLabel": "Sort by",
       "sortOrderLabel": "Sort order",
       "sortUpdatedAt": "Updated at",
       "sortCreatedAt": "Created at",
-      "filterDialogTitle": "Filter workspaces",
-      "filterDialogDescription": "Narrow down workspaces by project and PR state.",
+      "filterDialogTitle": "Filter 会话",
+      "filterDialogDescription": "Narrow down 会话 by project and PR state.",
       "projectFilterLabel": "Project",
       "prFilterLabel": "PR",
       "prFilterAll": "All",
       "prFilterHasPr": "Has PR",
       "prFilterNoPr": "No PR",
       "noProject": "No project",
-      "sortButtonTitle": "Sort workspaces",
-      "filterButtonTitle": "Filter workspaces"
+      "sortButtonTitle": "Sort 会话",
+      "filterButtonTitle": "Filter 会话"
     },
     "sortAscending": "Ascending",
     "sortDescending": "Descending",
@@ -436,15 +436,15 @@
     "self": "Me",
     "priority": "Priority",
     "subIssuesFilterLabel": "Sub-issues",
-    "workspacesFilterLabel": "Workspaces",
+    "workspacesFilterLabel": "会话",
     "selectAssignees": "Select assignees...",
     "relationships": "Relationships",
     "noRelationships": "No relationships",
     "openProjectsGuide": "Projects guide",
     "editProjectSettings": "Edit project settings",
-    "linkWorkspace": "Link workspace...",
-    "createNewWorkspace": "Create new workspace",
-    "workspaces": "Workspaces",
+    "linkWorkspace": "Link 会话...",
+    "createNewWorkspace": "Create new 会话",
+    "workspaces": "会话",
     "showingWorkspaces": "Showing {{count}} of {{total}}",
     "changeColor": "Change color",
     "editName": "Edit name",
@@ -471,8 +471,8 @@
         "content": "Each issue represents a feature or problem to solve. Issues have statuses, priorities, assignees, tags, relationships, comments, sub-issues and more."
       },
       "workspaces": {
-        "title": "Workspaces",
-        "content": "To start working on an issue, create a workspace. A single issue can have multiple workspaces. Issues describe the work to be done, workspaces are where the work happens."
+        "title": "会话",
+        "content": "To start working on an issue, create a 会话. A single issue can have multiple 会话. Issues describe the work to be done, 会话 are where the work happens."
       },
       "organizations": {
         "title": "Invite your team",

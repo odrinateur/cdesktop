@@ -122,19 +122,19 @@
     "label": "Label"
   },
   "workspaces": {
-    "title": "Workspaces",
+    "title": "Sessions",
     "searchPlaceholder": "Search...",
     "active": "Active",
     "archived": "Archived",
     "loading": "Loading...",
-    "notFound": "Workspace not found",
-    "selectToStart": "Select a workspace to get started",
+    "notFound": "Session not found",
+    "selectToStart": "Select a session to get started",
     "draft": "Draft",
     "viewArchive": "View Archive",
     "backToActive": "Back to Active",
-    "noArchived": "No archived workspaces",
-    "noWorkspaces": "No workspaces",
-    "newWorkspace": "New workspace",
+    "noArchived": "No archived sessions",
+    "noWorkspaces": "No sessions",
+    "newWorkspace": "New session",
     "needsAttention": "Needs Attention",
     "idle": "Idle",
     "running": "Running",
@@ -143,26 +143,26 @@
     "archive": "Archive",
     "more": "More actions",
     "rename": {
-      "title": "Rename Workspace",
-      "description": "Enter a new name for this workspace.",
+      "title": "Rename Session",
+      "description": "Enter a new name for this session.",
       "nameLabel": "Name",
-      "placeholder": "Enter workspace name",
+      "placeholder": "Enter session name",
       "action": "Rename",
       "renaming": "Renaming..."
     },
     "unlinkFromIssue": "Unlink from issue",
-    "deleteWorkspace": "Delete workspace",
+    "deleteWorkspace": "Delete session",
     "unlink": "Unlink",
     "delete": "Delete",
-    "unlinkConfirmMessage": "Are you sure you want to unlink this workspace from the issue? The workspace will still exist but will no longer be associated with this issue.",
-    "deleteConfirmMessage": "Are you sure you want to delete this workspace? This will unlink it from the issue and delete the local workspace. This action cannot be undone.",
-    "unlinkError": "Failed to unlink workspace",
-    "deleteError": "Failed to delete workspace",
-    "linkError": "Failed to link workspace",
+    "unlinkConfirmMessage": "Are you sure you want to unlink this session from the issue? The session will still exist but will no longer be associated with this issue.",
+    "deleteConfirmMessage": "Are you sure you want to delete this session? This will unlink it from the issue and delete the local session. This action cannot be undone.",
+    "unlinkError": "Failed to unlink session",
+    "deleteError": "Failed to delete session",
+    "linkError": "Failed to link session",
     "filesChanged": "{{count}} files",
     "deleteDialog": {
-      "title": "Delete Workspace",
-      "description": "Are you sure you want to delete this workspace? This action cannot be undone.",
+      "title": "Delete Session",
+      "description": "Are you sure you want to delete this session? This action cannot be undone.",
       "deleteBranchLabel": "Delete branch",
       "cannotDeleteOpenPr": "Cannot delete branch while PR is open",
       "unlinkFromIssueLabel": "Also unlink from issue"
@@ -193,8 +193,8 @@
     "notes": "Notes"
   },
   "notes": {
-    "placeholder": "Add notes about this workspace...",
-    "selectWorkspace": "Select a workspace to view notes"
+    "placeholder": "Add notes about this session...",
+    "selectWorkspace": "Select a session to view notes"
   },
   "actions": {
     "copyPath": "Copy path",
@@ -230,27 +230,27 @@
   "workspacesGuide": {
     "welcome": {
       "title": "Welcome",
-      "content": "Welcome to the Workspaces page. One view of the workspaces across all of your projects, and the fastest way to review work from your agents. Share feedback anytime via the navbar icon."
+      "content": "Welcome to the Sessions page. One view of the sessions across all of your projects, and the fastest way to review work from your agents. Share feedback anytime via the navbar icon."
     },
     "commandBar": {
       "title": "Command Bar",
-      "content": "The command bar is your central hub for navigation. Open it with CMD+K to search and access every action available in a workspace."
+      "content": "The command bar is your central hub for navigation. Open it with CMD+K to search and access every action available in a session."
     },
     "contextBar": {
       "title": "Context Bar",
       "content": "The context bar lets you switch between panes quickly. Drag it wherever works best for you."
     },
     "sidebar": {
-      "title": "Workspace Sidebar",
-      "content": "See the status of all your workspaces at a glance. Notifications highlight which ones need attention. Archive merged workspaces to keep your sidebar clean."
+      "title": "Session Sidebar",
+      "content": "See the status of all your sessions at a glance. Notifications highlight which ones need attention. Archive merged sessions to keep your sidebar clean."
     },
     "multiRepo": {
       "title": "Multi-Repo Support",
-      "content": "Add multiple repos to a single workspace. Reference code from one repo while working in another, or implement changes across several repos at once."
+      "content": "Add multiple repos to a single session. Reference code from one repo while working in another, or implement changes across several repos at once."
     },
     "sessions": {
       "title": "Multiple Sessions",
-      "content": "Create multiple agent conversation sessions within a single workspace, including sessions with different agents. This helps you work around conversation limits or spin up review agents in separate threads."
+      "content": "Create multiple agent conversation sessions within a single session, including sessions with different agents. This helps you work around conversation limits or spin up review agents in separate threads."
     },
     "preview": {
       "title": "Preview Changes",
@@ -258,11 +258,11 @@
     },
     "diffs": {
       "title": "Diffs and Comments",
-      "content": "The redesigned diffs panel includes a file tree of your changes. Comment directly on diffs to give feedback to the agent, and view GitHub comments when your workspace is linked to a PR."
+      "content": "The redesigned diffs panel includes a file tree of your changes. Comment directly on diffs to give feedback to the agent, and view GitHub comments when your session is linked to a PR."
     },
     "classicUi": {
       "title": "Return to Classic UI",
-      "content": "Click the exit icon on the left side of the navbar to return to the classic kanban board. To disable the new UI entirely, update the \"Enable Workspaces Beta\" option under \"Beta Features\" in settings."
+      "content": "Click the exit icon on the left side of the navbar to return to the classic kanban board. To disable the new UI entirely, update the \"Enable Sessions Beta\" option under \"Beta Features\" in settings."
     }
   },
   "logs": {
@@ -285,7 +285,7 @@
   },
   "shortcuts": {
     "title": "Keyboard Shortcuts",
-    "inWorkspace": "(in workspace)",
+    "inWorkspace": "(in session)",
     "sequentialHint": "Sequential shortcuts: Press the first key, then the second within 500ms.",
     "configurableHint": "Configurable in Settings → General → Message Input",
     "groups": {
@@ -293,7 +293,7 @@
       "navigation": "Navigation",
       "modifiers": "Modifiers",
       "goTo": "Go To (G ...)",
-      "workspace": "Workspace (W ...)",
+      "workspace": "Session (W ...)",
       "view": "View (V ...)",
       "issues": "Issues (I ...)",
       "git": "Git (X ...)",
@@ -315,12 +315,12 @@
       "formatInlineCode": "Format inline code",
       "sendMessage": "Send message",
       "settings": "Go to Settings",
-      "new-workspace": "Go to New Workspace",
-      "duplicate-workspace": "Duplicate workspace",
-      "rename-workspace": "Rename workspace",
-      "pin-workspace": "Pin/Unpin workspace",
-      "archive-workspace": "Archive workspace",
-      "delete-workspace": "Delete workspace",
+      "new-workspace": "Go to New Session",
+      "duplicate-workspace": "Duplicate session",
+      "rename-workspace": "Rename session",
+      "pin-workspace": "Pin/Unpin session",
+      "archive-workspace": "Archive session",
+      "delete-workspace": "Delete session",
       "toggle-changes-mode": "Toggle Changes panel",
       "toggle-logs-mode": "Toggle Logs panel",
       "toggle-preview-mode": "Toggle Preview panel",
@@ -333,7 +333,7 @@
       "make-sub-issue-of": "Make Sub-issue of",
       "add-sub-issue": "Add Sub-issue",
       "remove-parent-issue": "Remove Parent",
-      "link-workspace": "Link Workspace",
+      "link-workspace": "Link Session",
       "duplicate-issue": "Duplicate Issue",
       "delete-issue": "Delete Issue",
       "git-create-pr": "Create Pull Request",
@@ -386,8 +386,8 @@
     "copyLink": "Copy link",
     "issueTitlePlaceholder": "Issue Title...",
     "issueDescriptionPlaceholder": "Enter task description here...",
-    "createDraftWorkspaceImmediately": "Create draft workspace immediately",
-    "createDraftWorkspaceDescription": "After creating the issue, open the workspace creation form pre-filled with the issue details",
+    "createDraftWorkspaceImmediately": "Create draft session immediately",
+    "createDraftWorkspaceDescription": "After creating the issue, open the session creation form pre-filled with the issue details",
     "createIssue": "Create Issue",
     "newIssue": "New Issue",
     "previewCodeBlock": "[Code block]",
@@ -427,22 +427,22 @@
     "tags": "Tags",
     "sortBy": "Sort",
     "workspaceSidebar": {
-      "sortDialogTitle": "Sort workspaces",
-      "sortDialogDescription": "Choose how workspaces are ordered in the sidebar.",
+      "sortDialogTitle": "Sort sessions",
+      "sortDialogDescription": "Choose how sessions are ordered in the sidebar.",
       "sortByLabel": "Sort by",
       "sortOrderLabel": "Sort order",
       "sortUpdatedAt": "Updated at",
       "sortCreatedAt": "Created at",
-      "filterDialogTitle": "Filter workspaces",
-      "filterDialogDescription": "Narrow down workspaces by project and PR state.",
+      "filterDialogTitle": "Filter sessions",
+      "filterDialogDescription": "Narrow down sessions by project and PR state.",
       "projectFilterLabel": "Project",
       "prFilterLabel": "PR",
       "prFilterAll": "All",
       "prFilterHasPr": "Has PR",
       "prFilterNoPr": "No PR",
       "noProject": "No project",
-      "sortButtonTitle": "Sort workspaces",
-      "filterButtonTitle": "Filter workspaces"
+      "sortButtonTitle": "Sort sessions",
+      "filterButtonTitle": "Filter sessions"
     },
     "sortAscending": "Ascending",
     "sortDescending": "Descending",
@@ -450,15 +450,15 @@
     "self": "Me",
     "priority": "Priority",
     "subIssuesFilterLabel": "Sub-issues",
-    "workspacesFilterLabel": "Workspaces",
+    "workspacesFilterLabel": "Sessions",
     "selectAssignees": "Select assignees...",
     "relationships": "Relationships",
     "noRelationships": "No relationships",
     "openProjectsGuide": "Projects guide",
     "editProjectSettings": "Edit project settings",
-    "linkWorkspace": "Link workspace...",
-    "createNewWorkspace": "Create new workspace",
-    "workspaces": "Workspaces",
+    "linkWorkspace": "Link session...",
+    "createNewWorkspace": "Create new session",
+    "workspaces": "Sessions",
     "showingWorkspaces": "Showing {{count}} of {{total}}",
     "changeColor": "Change color",
     "editName": "Edit name",
@@ -485,8 +485,8 @@
         "content": "Each issue represents a feature or problem to solve. Issues have statuses, priorities, assignees, tags, relationships, comments, sub-issues and more."
       },
       "workspaces": {
-        "title": "Workspaces",
-        "content": "To start working on an issue, create a workspace. A single issue can have multiple workspaces. Issues describe the work to be done, workspaces are where the work happens."
+        "title": "Sessions",
+        "content": "To start working on an issue, create a session. A single issue can have multiple sessions. Issues describe the work to be done, sessions are where the work happens."
       },
       "organizations": {
         "title": "Invite your team",

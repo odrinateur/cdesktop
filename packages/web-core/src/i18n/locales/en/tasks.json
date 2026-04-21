@@ -19,7 +19,7 @@
     },
     "dialog": {
       "title": "Rebase Task Attempt",
-      "description": "Choose a new base branch to rebase this workspace onto.",
+      "description": "Choose a new base branch to rebase this session onto.",
       "upstreamLabel": "Upstream Branch",
       "upstreamPlaceholder": "Select an upstream branch",
       "targetLabel": "Target Branch",
@@ -31,7 +31,7 @@
     "changeTarget": {
       "dialog": {
         "title": "Change target branch",
-        "description": "Choose a new target branch for the workspace.",
+        "description": "Choose a new target branch for the session.",
         "placeholder": "Select a target branch",
         "action": "Change Branch",
         "inProgress": "Changing..."
@@ -349,7 +349,7 @@
   },
   "createPrDialog": {
     "title": "Create Pull Request",
-    "description": "Create a pull request for this workspace.",
+    "description": "Create a pull request for this session.",
     "titleLabel": "Title",
     "titlePlaceholder": "Enter PR title",
     "descriptionLabel": "Description (optional)",
@@ -480,8 +480,8 @@
     }
   },
   "createWorkspaceFromPr": {
-    "title": "Create Workspace from PR",
-    "description": "Select an open pull request to create a workspace from. A task will be created automatically using the PR title.",
+    "title": "Create Session from PR",
+    "description": "Select an open pull request to create a session from. A task will be created automatically using the PR title.",
     "repositoryLabel": "Repository",
     "remoteLabel": "Remote",
     "pullRequestLabel": "Pull Request",
@@ -493,7 +493,7 @@
     "noPullRequestsFound": "No open pull requests found",
     "runSetupScript": "Run setup script",
     "creating": "Creating...",
-    "createWorkspace": "Create Workspace",
+    "createWorkspace": "Create Session",
     "selectRepository": "Select a repository",
     "selectRemote": "Select a remote",
     "selectPullRequest": "Select a pull request",
@@ -506,7 +506,7 @@
       "unsupportedProvider": "Git provider not supported",
       "failedToLoadPrs": "Failed to load pull requests",
       "prNotFound": "Pull request not found",
-      "failedToCreateWorkspace": "Failed to create workspace"
+      "failedToCreateWorkspace": "Failed to create session"
     }
   },
   "linkPrToIssue": {

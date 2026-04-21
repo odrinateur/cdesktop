@@ -473,8 +473,8 @@
     "statusKilled": "程序已被終止"
   },
   "createWorkspaceFromPr": {
-    "title": "從 PR 建立工作區",
-    "description": "選擇一個開啟的拉取請求來建立工作區。將使用 PR 標題自動建立任務。",
+    "title": "從 PR 建立工作階段",
+    "description": "選擇一個開啟的拉取請求來建立工作階段。將使用 PR 標題自動建立任務。",
     "repositoryLabel": "儲存庫",
     "remoteLabel": "遠端儲存庫",
     "pullRequestLabel": "拉取請求",
@@ -486,7 +486,7 @@
     "noPullRequestsFound": "找不到開啟的拉取請求",
     "runSetupScript": "執行設定腳本",
     "creating": "建立中...",
-    "createWorkspace": "建立工作區",
+    "createWorkspace": "建立工作階段",
     "selectRepository": "選擇儲存庫",
     "selectRemote": "選擇遠端儲存庫",
     "selectPullRequest": "選擇拉取請求",
@@ -499,7 +499,7 @@
       "unsupportedProvider": "不支援的 Git 提供者",
       "failedToLoadPrs": "載入拉取請求失敗",
       "prNotFound": "找不到拉取請求",
-      "failedToCreateWorkspace": "建立工作區失敗"
+      "failedToCreateWorkspace": "建立工作階段失敗"
     }
   },
   "shareDialog": {

@@ -159,12 +159,12 @@
           }
         },
         "workspaceDir": {
-          "label": "工作區目錄",
+          "label": "工作階段目錄",
           "placeholder": "~/",
-          "helper": "工作區將在此路徑內的 .vibe-kanban-workspaces 子目錄中建立。留空以使用系統預設值。變更需要重新啟動應用程式。",
+          "helper": "工作階段將在此路徑內的 .cdesktop-workspaces 子目錄中建立。留空以使用系統預設值。變更需要重新啟動應用程式。",
           "browse": "瀏覽",
-          "dialogTitle": "選擇工作區目錄",
-          "dialogDescription": "選擇一個目錄。工作區將在其中的 .vibe-kanban-workspaces 子目錄中建立。"
+          "dialogTitle": "選擇工作階段目錄",
+          "dialogDescription": "選擇一個目錄。工作階段將在其中的 .cdesktop-workspaces 子目錄中建立。"
         }
       },
       "pullRequests": {
@@ -288,8 +288,8 @@
         "title": "Beta 功能",
         "description": "在正式發布前試用實驗性功能。",
         "workspaces": {
-          "label": "啟用工作區 Beta",
-          "helper": "查看任務嘗試時使用新的工作區介面。任務將首先在任務檢視中開啟，嘗試將在新的工作區檢視中開啟。"
+          "label": "啟用工作階段 Beta",
+          "helper": "查看任務嘗試時使用新的工作階段介面。任務將首先在任務檢視中開啟，嘗試將在新的工作階段檢視中開啟。"
         }
       }
     },
@@ -429,7 +429,7 @@
     },
     "repos": {
       "title": "儲存庫設定",
-      "description": "設定此儲存庫在工作區中使用時執行的腳本。",
+      "description": "設定此儲存庫在工作階段中使用時執行的腳本。",
       "loading": "載入儲存庫中...",
       "loadError": "載入儲存庫失敗。",
       "addRepo": {
@@ -458,12 +458,12 @@
         "defaultWorkingDir": {
           "label": "預設工作目錄",
           "placeholder": "例如：packages/frontend",
-          "helper": "單儲存庫工作區中程式碼代理執行的子目錄。在建立工作區時設定。留空則使用儲存庫根目錄。"
+          "helper": "單儲存庫工作階段中程式碼代理執行的子目錄。在建立工作階段時設定。留空則使用儲存庫根目錄。"
         },
         "defaultTargetBranch": {
           "label": "預設目標分支",
           "placeholder": "選擇分支",
-          "helper": "新工作區的預設基礎分支。工作樹從此分支建立，PR 將以此分支為目標。",
+          "helper": "新工作階段的預設基礎分支。工作樹從此分支建立，PR 將以此分支為目標。",
           "search": "搜尋分支",
           "noBranches": "找不到分支",
           "loading": "正在載入分支...",
@@ -472,7 +472,7 @@
       },
       "scripts": {
         "title": "腳本與設定",
-        "description": "設定此儲存庫的設定腳本、清理腳本與要複製的檔案。這些腳本在儲存庫用於任何工作區時執行。",
+        "description": "設定此儲存庫的設定腳本、清理腳本與要複製的檔案。這些腳本在儲存庫用於任何工作階段時執行。",
         "setup": {
           "label": "設定腳本",
           "helper": "此腳本在工作樹內執行，於建立後、編碼代理啟動前執行。用於安裝相依套件或準備環境等設定工作。",
@@ -485,7 +485,7 @@
         },
         "archive": {
           "label": "歸檔腳本",
-          "helper": "當工作區被歸檔時，此腳本在工作樹內執行。用於清理工作，如停止服務、釋放資源或儲存狀態。"
+          "helper": "當工作階段被歸檔時，此腳本在工作樹內執行。用於清理工作，如停止服務、釋放資源或儲存狀態。"
         },
         "copyFiles": {
           "label": "複製檔案",
@@ -499,7 +499,7 @@
       },
       "linkedProjects": {
         "title": "關聯專案",
-        "description": "在預設工作區設定中使用此儲存庫的專案。",
+        "description": "在預設工作階段設定中使用此儲存庫的專案。",
         "loading": "正在檢查專案…",
         "none": "沒有關聯的專案"
       },
@@ -580,7 +580,7 @@
         },
         "defaultRepos": {
           "label": "Default Repositories",
-          "description": "Repositories that are automatically added when creating workspaces from this project's issues.",
+          "description": "Repositories that are automatically added when creating 工作階段 from this project's issues.",
           "empty": "No default repositories configured",
           "addButton": "Add",
           "addNew": "Add new repository...",

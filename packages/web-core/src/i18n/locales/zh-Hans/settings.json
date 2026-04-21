@@ -159,12 +159,12 @@
           }
         },
         "workspaceDir": {
-          "label": "工作区目录",
+          "label": "会话目录",
           "placeholder": "~/",
-          "helper": "工作区将在此路径内的 .vibe-kanban-workspaces 子目录中创建。留空以使用系统默认值。更改需要重启应用程序。",
+          "helper": "会话将在此路径内的 .cdesktop-workspaces 子目录中创建。留空以使用系统默认值。更改需要重启应用程序。",
           "browse": "浏览",
-          "dialogTitle": "选择工作区目录",
-          "dialogDescription": "选择一个目录。工作区将在其中的 .vibe-kanban-workspaces 子目录中创建。"
+          "dialogTitle": "选择会话目录",
+          "dialogDescription": "选择一个目录。会话将在其中的 .cdesktop-workspaces 子目录中创建。"
         }
       },
       "pullRequests": {
@@ -288,8 +288,8 @@
         "title": "Beta 功能",
         "description": "在正式发布前试用实验性功能。",
         "workspaces": {
-          "label": "启用工作区 Beta",
-          "helper": "查看任务尝试时使用新的工作区界面。任务将首先在任务视图中打开，尝试将在新的工作区视图中打开。"
+          "label": "启用会话 Beta",
+          "helper": "查看任务尝试时使用新的会话界面。任务将首先在任务视图中打开，尝试将在新的会话视图中打开。"
         }
       }
     },
@@ -429,7 +429,7 @@
     },
     "repos": {
       "title": "仓库配置",
-      "description": "配置此仓库在工作区中使用时运行的脚本。",
+      "description": "配置此仓库在会话中使用时运行的脚本。",
       "loading": "加载仓库中...",
       "loadError": "加载仓库失败。",
       "addRepo": {
@@ -458,12 +458,12 @@
         "defaultWorkingDir": {
           "label": "默认工作目录",
           "placeholder": "例如：packages/frontend",
-          "helper": "单仓库工作区中编码代理运行的子目录。在创建工作区时设置。留空则使用仓库根目录。"
+          "helper": "单仓库会话中编码代理运行的子目录。在创建会话时设置。留空则使用仓库根目录。"
         },
         "defaultTargetBranch": {
           "label": "默认目标分支",
           "placeholder": "选择分支",
-          "helper": "新工作区的默认基础分支。工作树从此分支创建，PR 将以此分支为目标。",
+          "helper": "新会话的默认基础分支。工作树从此分支创建，PR 将以此分支为目标。",
           "search": "搜索分支",
           "noBranches": "未找到分支",
           "loading": "正在加载分支...",
@@ -472,7 +472,7 @@
       },
       "scripts": {
         "title": "脚本和配置",
-        "description": "配置此仓库的设置脚本、清理脚本和要复制的文件。这些脚本在仓库用于任何工作区时都会运行。",
+        "description": "配置此仓库的设置脚本、清理脚本和要复制的文件。这些脚本在仓库用于任何会话时都会运行。",
         "setup": {
           "label": "设置脚本",
           "helper": "此脚本从工作树内部运行，在创建后、编码代理启动前执行。用于设置任务，如安装依赖项或准备环境。",
@@ -485,7 +485,7 @@
         },
         "archive": {
           "label": "归档脚本",
-          "helper": "当工作区被归档时，此脚本从工作树内部运行。用于清理任务，如停止服务、释放资源或保存状态。"
+          "helper": "当会话被归档时，此脚本从工作树内部运行。用于清理任务，如停止服务、释放资源或保存状态。"
         },
         "copyFiles": {
           "label": "复制文件",
@@ -499,7 +499,7 @@
       },
       "linkedProjects": {
         "title": "关联项目",
-        "description": "在默认工作区配置中使用此仓库的项目。",
+        "description": "在默认会话配置中使用此仓库的项目。",
         "loading": "正在检查项目…",
         "none": "没有关联的项目"
       },
@@ -580,7 +580,7 @@
         },
         "defaultRepos": {
           "label": "Default Repositories",
-          "description": "Repositories that are automatically added when creating workspaces from this project's issues.",
+          "description": "Repositories that are automatically added when creating 会话 from this project's issues.",
           "empty": "No default repositories configured",
           "addButton": "Add",
           "addNew": "Add new repository...",

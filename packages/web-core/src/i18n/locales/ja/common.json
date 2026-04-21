@@ -108,19 +108,19 @@
     "label": "ラベル"
   },
   "workspaces": {
-    "title": "ワークスペース",
+    "title": "セッション",
     "searchPlaceholder": "検索...",
     "active": "アクティブ",
     "archived": "アーカイブ済み",
     "loading": "読み込み中...",
-    "notFound": "ワークスペースが見つかりません",
-    "selectToStart": "ワークスペースを選択して開始",
+    "notFound": "セッションが見つかりません",
+    "selectToStart": "セッションを選択して開始",
     "draft": "下書き",
     "viewArchive": "アーカイブを表示",
     "backToActive": "アクティブに戻る",
-    "noArchived": "アーカイブされたワークスペースはありません",
-    "noWorkspaces": "ワークスペースがありません",
-    "newWorkspace": "新しいワークスペース",
+    "noArchived": "アーカイブされたセッションはありません",
+    "noWorkspaces": "セッションがありません",
+    "newWorkspace": "新しいセッション",
     "needsAttention": "対応が必要",
     "idle": "待機中",
     "running": "実行中",
@@ -129,30 +129,30 @@
     "archive": "アーカイブ",
     "more": "その他の操作",
     "rename": {
-      "title": "ワークスペースの名前を変更",
-      "description": "このワークスペースの新しい名前を入力してください。",
+      "title": "セッションの名前を変更",
+      "description": "このセッションの新しい名前を入力してください。",
       "nameLabel": "名前",
-      "placeholder": "ワークスペース名を入力",
+      "placeholder": "セッション名を入力",
       "action": "名前を変更",
       "renaming": "名前を変更中..."
     },
     "unlinkFromIssue": "課題からリンク解除",
-    "deleteWorkspace": "ワークスペースを削除",
+    "deleteWorkspace": "セッションを削除",
     "unlink": "リンク解除",
     "delete": "削除",
-    "unlinkConfirmMessage": "このワークスペースを課題からリンク解除してもよろしいですか？ワークスペースは引き続き存在しますが、この課題との関連付けは解除されます。",
-    "deleteConfirmMessage": "このワークスペースを削除してもよろしいですか？これにより課題からのリンクが解除され、ローカルワークスペースが削除されます。この操作は元に戻せません。",
-    "unlinkError": "ワークスペースのリンク解除に失敗しました",
-    "deleteError": "ワークスペースの削除に失敗しました",
+    "unlinkConfirmMessage": "このセッションを課題からリンク解除してもよろしいですか？セッションは引き続き存在しますが、この課題との関連付けは解除されます。",
+    "deleteConfirmMessage": "このセッションを削除してもよろしいですか？これにより課題からのリンクが解除され、ローカルセッションが削除されます。この操作は元に戻せません。",
+    "unlinkError": "セッションのリンク解除に失敗しました",
+    "deleteError": "セッションの削除に失敗しました",
     "filesChanged": "{{count}}ファイル",
     "deleteDialog": {
-      "title": "ワークスペースを削除",
-      "description": "このワークスペースを削除してもよろしいですか？この操作は元に戻せません。",
+      "title": "セッションを削除",
+      "description": "このセッションを削除してもよろしいですか？この操作は元に戻せません。",
       "deleteBranchLabel": "ブランチを削除",
       "cannotDeleteOpenPr": "PRがオープン中はブランチを削除できません",
       "unlinkFromIssueLabel": "イシューからもリンク解除する"
     },
-    "linkError": "Failed to link workspace"
+    "linkError": "Failed to link セッション"
   },
   "fileTree": {
     "searchPlaceholder": "ファイルを検索...",
@@ -179,8 +179,8 @@
     "notes": "メモ"
   },
   "notes": {
-    "placeholder": "このワークスペースについてメモを追加...",
-    "selectWorkspace": "メモを表示するにはワークスペースを選択してください"
+    "placeholder": "このセッションについてメモを追加...",
+    "selectWorkspace": "メモを表示するにはセッションを選択してください"
   },
   "actions": {
     "copyPath": "パスをコピー",
@@ -216,27 +216,27 @@
   "workspacesGuide": {
     "welcome": {
       "title": "ようこそ",
-      "content": "Vibe Kanbanの新しいUIであるWorkspacesへようこそ。早期フィードバックのために一部のユーザーに先行公開しています。ナビバーのフィードバックアイコンからいつでもご意見をお聞かせください。"
+      "content": "Vibe Kanbanの新しいUIであるセッションへようこそ。早期フィードバックのために一部のユーザーに先行公開しています。ナビバーのフィードバックアイコンからいつでもご意見をお聞かせください。"
     },
     "commandBar": {
       "title": "コマンドバー",
-      "content": "コマンドバーはナビゲーションの中心となるハブです。CMD+Kで開いて、ワークスペースで利用可能なすべてのアクションを検索・アクセスできます。"
+      "content": "コマンドバーはナビゲーションの中心となるハブです。CMD+Kで開いて、セッションで利用可能なすべてのアクションを検索・アクセスできます。"
     },
     "contextBar": {
       "title": "コンテキストバー",
       "content": "コンテキストバーでペイン間をすばやく切り替えられます。使いやすい場所にドラッグして配置できます。"
     },
     "sidebar": {
-      "title": "ワークスペースサイドバー",
-      "content": "すべてのワークスペースの状態を一目で確認できます。通知により注意が必要なワークスペースがハイライトされます。マージ済みのワークスペースをアーカイブしてサイドバーを整理しましょう。"
+      "title": "セッションサイドバー",
+      "content": "すべてのセッションの状態を一目で確認できます。通知により注意が必要なセッションがハイライトされます。マージ済みのセッションをアーカイブしてサイドバーを整理しましょう。"
     },
     "multiRepo": {
       "title": "マルチリポジトリ対応",
-      "content": "1つのワークスペースに複数のリポジトリを追加できます。別のリポジトリで作業しながら他のリポジトリのコードを参照したり、複数のリポジトリにまたがる変更を同時に実装できます。"
+      "content": "1つのセッションに複数のリポジトリを追加できます。別のリポジトリで作業しながら他のリポジトリのコードを参照したり、複数のリポジトリにまたがる変更を同時に実装できます。"
     },
     "sessions": {
       "title": "複数セッション",
-      "content": "1つのワークスペース内で複数のエージェント会話セッションを作成できます（異なるエージェントとのセッションも含む）。これにより会話の制限を回避したり、別スレッドでレビューエージェントを起動できます。"
+      "content": "1つのセッション内で複数のエージェント会話セッションを作成できます（異なるエージェントとのセッションも含む）。これにより会話の制限を回避したり、別スレッドでレビューエージェントを起動できます。"
     },
     "preview": {
       "title": "変更のプレビュー",
@@ -244,11 +244,11 @@
     },
     "diffs": {
       "title": "差分とコメント",
-      "content": "再設計された差分パネルには変更のファイルツリーが含まれています。差分に直接コメントしてエージェントにフィードバックを送ったり、ワークスペースがPRにリンクされている場合はGitHubコメントを表示できます。"
+      "content": "再設計された差分パネルには変更のファイルツリーが含まれています。差分に直接コメントしてエージェントにフィードバックを送ったり、セッションがPRにリンクされている場合はGitHubコメントを表示できます。"
     },
     "classicUi": {
       "title": "クラシックUIに戻る",
-      "content": "ナビバー左側の終了アイコンをクリックすると、クラシックカンバンボードに戻ります。新しいUIを完全に無効にするには、設定の「ベータ機能」にある「Workspacesベータを有効にする」オプションを更新してください。"
+      "content": "ナビバー左側の終了アイコンをクリックすると、クラシックカンバンボードに戻ります。新しいUIを完全に無効にするには、設定の「ベータ機能」にある「セッションベータを有効にする」オプションを更新してください。"
     }
   },
   "logs": {
@@ -271,7 +271,7 @@
   },
   "shortcuts": {
     "title": "キーボードショートカット",
-    "inWorkspace": "(ワークスペース内)",
+    "inWorkspace": "(セッション内)",
     "sequentialHint": "シーケンシャルショートカット：最初のキーを押し、500ms以内に2番目のキーを押してください。",
     "configurableHint": "設定 → 一般 → メッセージ入力で設定可能",
     "groups": {
@@ -279,7 +279,7 @@
       "navigation": "ナビゲーション",
       "modifiers": "修飾キー",
       "goTo": "移動 (G ...)",
-      "workspace": "ワークスペース (W ...)",
+      "workspace": "セッション (W ...)",
       "view": "表示 (V ...)",
       "issues": "課題 (I ...)",
       "git": "Git (X ...)",
@@ -301,12 +301,12 @@
       "formatInlineCode": "Format inline code",
       "sendMessage": "メッセージを送信",
       "settings": "設定に移動",
-      "new-workspace": "新しいワークスペースに移動",
-      "duplicate-workspace": "ワークスペースを複製",
-      "rename-workspace": "ワークスペースの名前を変更",
-      "pin-workspace": "ワークスペースをピン留め/解除",
-      "archive-workspace": "ワークスペースをアーカイブ",
-      "delete-workspace": "ワークスペースを削除",
+      "new-workspace": "新しいセッションに移動",
+      "duplicate-workspace": "セッションを複製",
+      "rename-workspace": "セッションの名前を変更",
+      "pin-workspace": "セッションをピン留め/解除",
+      "archive-workspace": "セッションをアーカイブ",
+      "delete-workspace": "セッションを削除",
       "toggle-changes-mode": "変更パネルの切り替え",
       "toggle-logs-mode": "ログパネルの切り替え",
       "toggle-preview-mode": "プレビューパネルの切り替え",
@@ -319,7 +319,7 @@
       "make-sub-issue-of": "サブ課題にする",
       "add-sub-issue": "サブ課題を追加",
       "remove-parent-issue": "親課題を解除",
-      "link-workspace": "ワークスペースをリンク",
+      "link-workspace": "セッションをリンク",
       "duplicate-issue": "課題を複製",
       "delete-issue": "課題を削除",
       "git-create-pr": "Pull Requestを作成",
@@ -372,8 +372,8 @@
     "copyLink": "リンクをコピー",
     "issueTitlePlaceholder": "課題タイトル...",
     "issueDescriptionPlaceholder": "タスクの説明を入力してください...",
-    "createDraftWorkspaceImmediately": "下書きワークスペースをすぐに作成",
-    "createDraftWorkspaceDescription": "課題を作成した後、課題の詳細が入力されたワークスペース作成フォームを開きます",
+    "createDraftWorkspaceImmediately": "下書きセッションをすぐに作成",
+    "createDraftWorkspaceDescription": "課題を作成した後、課題の詳細が入力されたセッション作成フォームを開きます",
     "createIssue": "タスクを作成",
     "newIssue": "新しい課題",
     "previewCodeBlock": "[コードブロック]",
@@ -413,22 +413,22 @@
     "tags": "Tags",
     "sortBy": "Sort",
     "workspaceSidebar": {
-      "sortDialogTitle": "Sort workspaces",
-      "sortDialogDescription": "Choose how workspaces are ordered in the sidebar.",
+      "sortDialogTitle": "Sort セッション",
+      "sortDialogDescription": "Choose how セッション are ordered in the sidebar.",
       "sortByLabel": "Sort by",
       "sortOrderLabel": "Sort order",
       "sortUpdatedAt": "Updated at",
       "sortCreatedAt": "Created at",
-      "filterDialogTitle": "Filter workspaces",
-      "filterDialogDescription": "Narrow down workspaces by project and PR state.",
+      "filterDialogTitle": "Filter セッション",
+      "filterDialogDescription": "Narrow down セッション by project and PR state.",
       "projectFilterLabel": "Project",
       "prFilterLabel": "PR",
       "prFilterAll": "All",
       "prFilterHasPr": "Has PR",
       "prFilterNoPr": "No PR",
       "noProject": "No project",
-      "sortButtonTitle": "Sort workspaces",
-      "filterButtonTitle": "Filter workspaces"
+      "sortButtonTitle": "Sort セッション",
+      "filterButtonTitle": "Filter セッション"
     },
     "sortAscending": "Ascending",
     "sortDescending": "Descending",
@@ -436,15 +436,15 @@
     "self": "Me",
     "priority": "Priority",
     "subIssuesFilterLabel": "Sub-issues",
-    "workspacesFilterLabel": "Workspaces",
+    "workspacesFilterLabel": "セッション",
     "selectAssignees": "Select assignees...",
     "relationships": "Relationships",
     "noRelationships": "No relationships",
     "openProjectsGuide": "Projects guide",
     "editProjectSettings": "Edit project settings",
-    "linkWorkspace": "Link workspace...",
-    "createNewWorkspace": "Create new workspace",
-    "workspaces": "Workspaces",
+    "linkWorkspace": "Link セッション...",
+    "createNewWorkspace": "Create new セッション",
+    "workspaces": "セッション",
     "showingWorkspaces": "Showing {{count}} of {{total}}",
     "changeColor": "Change color",
     "editName": "Edit name",
@@ -471,8 +471,8 @@
         "content": "Each issue represents a feature or problem to solve. Issues have statuses, priorities, assignees, tags, relationships, comments, sub-issues and more."
       },
       "workspaces": {
-        "title": "Workspaces",
-        "content": "To start working on an issue, create a workspace. A single issue can have multiple workspaces. Issues describe the work to be done, workspaces are where the work happens."
+        "title": "セッション",
+        "content": "To start working on an issue, create a セッション. A single issue can have multiple セッション. Issues describe the work to be done, セッション are where the work happens."
       },
       "organizations": {
         "title": "Invite your team",
