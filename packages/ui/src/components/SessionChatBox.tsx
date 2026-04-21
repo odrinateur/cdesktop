@@ -193,6 +193,12 @@ interface SessionChatBoxProps<TExecutor extends string = string> {
   tokenUsageInfo?: ContextUsageInfo | null;
   supportsContextUsage?: boolean;
   dropzone?: DropzoneProps;
+  /**
+   * Show the inner-session switcher (previous sessions list, New/Rename
+   * Session). cdesktop v1 passes false to hide it (hide-inner-sessions).
+   * Defaults to true for upstream vibe-kanban parity.
+   */
+  showSessionSwitcher?: boolean;
 }
 
 function defaultExecutorLabel(executor: string) {
@@ -255,6 +261,7 @@ export function SessionChatBox<TExecutor extends string = string>({
   tokenUsageInfo,
   supportsContextUsage,
   dropzone,
+  showSessionSwitcher = true,
 }: SessionChatBoxProps<TExecutor>) {
   const { t } = useTranslation('tasks');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -712,7 +719,7 @@ export function SessionChatBox<TExecutor extends string = string>({
                 </span>
               ) : (
                 <>
-                  {stats?.hasConflicts && (
+                  {stats?.hasConflicts && stats?.onResolveConflicts && (
                     <button
                       type="button"
                       className="flex items-center gap-1 text-warning text-sm min-w-0 cursor-pointer hover:underline"
@@ -815,72 +822,74 @@ export function SessionChatBox<TExecutor extends string = string>({
           {supportsContextUsage && (
             <ContextUsageGauge tokenUsageInfo={tokenUsageInfo} />
           )}
-          <ToolbarDropdown
-            label={sessionLabel}
-            disabled={isInFeedbackMode || isInEditMode || isInApprovalMode}
-            className="min-w-0 max-w-[120px]"
-          >
-            {/* New Session option */}
-            <DropdownMenuItem
-              icon={isNewSessionMode ? CheckIcon : PlusIcon}
-              onClick={() => onNewSession?.()}
+          {showSessionSwitcher && (
+            <ToolbarDropdown
+              label={sessionLabel}
+              disabled={isInFeedbackMode || isInEditMode || isInApprovalMode}
+              className="min-w-0 max-w-[120px]"
             >
-              {t('conversation.sessions.newSession')}
-            </DropdownMenuItem>
-            {sessions.length > 0 && <DropdownMenuSeparator />}
-            {sessions.length > 0 ? (
-              <>
-                <DropdownMenuLabel>
-                  {t('conversation.sessions.label')}
-                </DropdownMenuLabel>
-                {sessions.map((s, index) => (
-                  <DropdownMenuItem
-                    key={s.id}
-                    icon={
-                      !isNewSessionMode && s.id === selectedSessionId
-                        ? CheckIcon
-                        : undefined
-                    }
-                    onClick={() => onSelectSession(s.id)}
-                  >
-                    <span className="flex items-center gap-1.5 max-w-[200px]">
-                      {renderAgentIcon?.(
-                        s.executor ?? null,
-                        'size-icon shrink-0'
-                      )}
-                      <span className="truncate">
-                        {s.name
-                          ? s.name
-                          : index === 0
-                            ? t('conversation.sessions.latest')
-                            : formatSessionDate(s.created_at)}
-                      </span>
-                    </span>
-                  </DropdownMenuItem>
-                ))}
-              </>
-            ) : (
-              <DropdownMenuItem disabled>
-                {t('conversation.sessions.noPreviousSessions')}
+              {/* New Session option */}
+              <DropdownMenuItem
+                icon={isNewSessionMode ? CheckIcon : PlusIcon}
+                onClick={() => onNewSession?.()}
+              >
+                {t('conversation.sessions.newSession')}
               </DropdownMenuItem>
-            )}
-            {onRenameSession && selectedSessionId && !isNewSessionMode && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  icon={PencilSimpleIcon}
-                  onClick={() =>
-                    onRenameSession(
-                      selectedSessionId,
-                      selectedSessionObj?.name ?? ''
-                    )
-                  }
-                >
-                  {t('conversation.sessions.rename')}
+              {sessions.length > 0 && <DropdownMenuSeparator />}
+              {sessions.length > 0 ? (
+                <>
+                  <DropdownMenuLabel>
+                    {t('conversation.sessions.label')}
+                  </DropdownMenuLabel>
+                  {sessions.map((s, index) => (
+                    <DropdownMenuItem
+                      key={s.id}
+                      icon={
+                        !isNewSessionMode && s.id === selectedSessionId
+                          ? CheckIcon
+                          : undefined
+                      }
+                      onClick={() => onSelectSession(s.id)}
+                    >
+                      <span className="flex items-center gap-1.5 max-w-[200px]">
+                        {renderAgentIcon?.(
+                          s.executor ?? null,
+                          'size-icon shrink-0'
+                        )}
+                        <span className="truncate">
+                          {s.name
+                            ? s.name
+                            : index === 0
+                              ? t('conversation.sessions.latest')
+                              : formatSessionDate(s.created_at)}
+                        </span>
+                      </span>
+                    </DropdownMenuItem>
+                  ))}
+                </>
+              ) : (
+                <DropdownMenuItem disabled>
+                  {t('conversation.sessions.noPreviousSessions')}
                 </DropdownMenuItem>
-              </>
-            )}
-          </ToolbarDropdown>
+              )}
+              {onRenameSession && selectedSessionId && !isNewSessionMode && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    icon={PencilSimpleIcon}
+                    onClick={() =>
+                      onRenameSession(
+                        selectedSessionId,
+                        selectedSessionObj?.name ?? ''
+                      )
+                    }
+                  >
+                    {t('conversation.sessions.rename')}
+                  </DropdownMenuItem>
+                </>
+              )}
+            </ToolbarDropdown>
+          )}
         </>
       }
       footerLeft={

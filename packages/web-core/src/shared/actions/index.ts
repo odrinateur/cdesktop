@@ -69,7 +69,10 @@ import { CreatePRDialog } from '@/shared/dialogs/command-bar/CreatePRDialog';
 import { getIdeName } from '@/shared/lib/ideName';
 import { EditorSelectionDialog } from '@/shared/dialogs/command-bar/EditorSelectionDialog';
 import { StartReviewDialog } from '@/shared/dialogs/command-bar/StartReviewDialog';
-import { SHOW_REVIEW_FEATURE } from '@/shared/lib/cdesktopFlags';
+import {
+  SHOW_RESOLVE_CONFLICTS,
+  SHOW_REVIEW_FEATURE,
+} from '@/shared/lib/cdesktopFlags';
 import posthog from 'posthog-js';
 import { WorkspacesGuideDialog } from '@/shared/dialogs/shared/WorkspacesGuideDialog';
 import { SettingsDialog } from '@/shared/dialogs/settings/SettingsDialog';
@@ -957,6 +960,11 @@ export const Actions = {
         (repoStatus?.conflicted_files?.length ?? 0) > 0;
 
       if (hasConflicts && repoStatus) {
+        // v1 (hide-inner-sessions): skip the agent-driven dialog. Users see
+        // the conflict state in the Git/Diff pane and resolve via `git` in
+        // the Terminal pane or their shell.
+        if (!SHOW_RESOLVE_CONFLICTS) return;
+
         // Skip showing the dialog if a process is already running
         // (e.g. an AI session is already resolving these conflicts)
         const isRunning = ctx.activeWorkspaces.find(

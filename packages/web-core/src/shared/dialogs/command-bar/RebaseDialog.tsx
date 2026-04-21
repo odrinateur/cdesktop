@@ -28,6 +28,7 @@ import { useWorkspaceContext } from '@/shared/hooks/useWorkspaceContext';
 import { useWorkspaces } from '@/shared/hooks/useWorkspaces';
 import { workspacesApi, type Result } from '@/shared/lib/api';
 import { ResolveConflictsDialog } from '@/shared/dialogs/tasks/ResolveConflictsDialog';
+import { SHOW_RESOLVE_CONFLICTS } from '@/shared/lib/cdesktopFlags';
 import { RebaseInProgressDialog } from '@vibe/ui/components/RebaseInProgressDialog';
 
 export interface RebaseDialogProps {
@@ -121,15 +122,20 @@ function RebaseDialogContent({
       if (activeWorkspaceId !== workspaceId || isWorkspaceRunning) return;
 
       if (hasConflictedFiles) {
-        // Rebase in progress WITH conflicts -> show resolve conflicts dialog
-        ResolveConflictsDialog.show({
-          workspaceId: workspaceId,
-          conflictOp: repoStatus.conflict_op ?? 'rebase',
-          sourceBranch: workspace?.branch ?? null,
-          targetBranch: repoStatus.target_branch_name,
-          conflictedFiles: repoStatus.conflicted_files ?? [],
-          repoName: repoStatus.repo_name,
-        });
+        // Rebase in progress WITH conflicts -> show resolve conflicts dialog.
+        // v1 (hide-inner-sessions): skip when the agent-driven flow is hidden.
+        // User resolves via git in the Terminal pane; conflict state is
+        // already visible in the Git/Diff pane.
+        if (SHOW_RESOLVE_CONFLICTS) {
+          ResolveConflictsDialog.show({
+            workspaceId: workspaceId,
+            conflictOp: repoStatus.conflict_op ?? 'rebase',
+            sourceBranch: workspace?.branch ?? null,
+            targetBranch: repoStatus.target_branch_name,
+            conflictedFiles: repoStatus.conflicted_files ?? [],
+            repoName: repoStatus.repo_name,
+          });
+        }
       } else {
         // Rebase in progress WITHOUT conflicts -> show simpler dialog
         RebaseInProgressDialog.show({
@@ -186,10 +192,10 @@ function RebaseDialogContent({
         resultErr && !resultErr.success ? resultErr.error : undefined;
 
       if (errorData?.type === 'merge_conflicts') {
-        // Hide this dialog and show the resolve conflicts dialog
-        // Only show if the user is still viewing this workspace
+        // Hide this dialog and show the resolve conflicts dialog.
+        // v1 (hide-inner-sessions): skip the agent-driven flow when hidden.
         modal.hide();
-        if (activeWorkspaceId === workspaceId) {
+        if (SHOW_RESOLVE_CONFLICTS && activeWorkspaceId === workspaceId) {
           await ResolveConflictsDialog.show({
             workspaceId: workspaceId,
             conflictOp: errorData.op,
