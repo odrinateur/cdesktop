@@ -24,6 +24,10 @@ import { useActions } from '@/shared/hooks/useActions';
 import { useTodos } from '../model/hooks/useTodos';
 import { getLatestConfigFromProcesses } from '@/shared/lib/executor';
 import { useExecutorConfig } from '@/shared/hooks/useExecutorConfig';
+import {
+  SHOW_INNER_SESSION_SWITCHER,
+  SHOW_RESOLVE_CONFLICTS,
+} from '@/shared/lib/cdesktopFlags';
 import { useSessionMessageEditor } from '../model/hooks/useSessionMessageEditor';
 import { useSessionQueueInteraction } from '../model/hooks/useSessionQueueInteraction';
 import { useSessionSend } from '../model/hooks/useSessionSend';
@@ -347,6 +351,11 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
   );
 
   const handleResolveConflicts = useCallback(() => {
+    // v1 (hide-inner-sessions): also defensive — the button that calls this
+    // is hidden via `stats.onResolveConflicts: undefined` below when the
+    // flag is off, but guard here too so no programmatic caller slips
+    // through.
+    if (!SHOW_RESOLVE_CONFLICTS) return;
     if (!workspaceId || !repoWithConflicts) return;
     ResolveConflictsDialog.show({
       workspaceId,
@@ -954,6 +963,7 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
     return (
       <SessionChatBox<BaseCodingAgent>
         status="idle"
+        showSessionSwitcher={SHOW_INNER_SESSION_SWITCHER}
         renderEditor={renderEditor}
         repoIds={repoIds}
         tokenUsageInfo={tokenUsageInfo}
@@ -1001,6 +1011,7 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
   return (
     <SessionChatBox<BaseCodingAgent>
       status={status}
+      showSessionSwitcher={SHOW_INNER_SESSION_SWITCHER}
       onViewCode={disableViewCode ? undefined : handleViewCode}
       onOpenWorkspace={
         showOpenWorkspaceButton && workspaceId ? handleOpenWorkspace : undefined
@@ -1056,7 +1067,9 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
         linesRemoved,
         hasConflicts,
         conflictedFilesCount,
-        onResolveConflicts: handleResolveConflicts,
+        onResolveConflicts: SHOW_RESOLVE_CONFLICTS
+          ? handleResolveConflicts
+          : undefined,
       }}
       error={sendError}
       agent={effectiveExecutor}

@@ -7,6 +7,7 @@ import {
   GuideDialogShell,
   type GuideDialogTopic,
 } from '@vibe/ui/components/GuideDialogShell';
+import { SHOW_INNER_SESSION_SWITCHER } from '@/shared/lib/cdesktopFlags';
 
 const TOPIC_IDS = [
   'welcome',
@@ -18,6 +19,10 @@ const TOPIC_IDS = [
   'preview',
   'diffs',
 ] as const;
+
+const HIDDEN_TOPIC_IDS: ReadonlySet<(typeof TOPIC_IDS)[number]> = new Set(
+  SHOW_INNER_SESSION_SWITCHER ? [] : (['sessions'] as const)
+);
 
 const TOPIC_IMAGES: Record<(typeof TOPIC_IDS)[number], string> = {
   welcome: '/guide-images/welcome.png',
@@ -33,7 +38,9 @@ const TOPIC_IMAGES: Record<(typeof TOPIC_IDS)[number], string> = {
 const WorkspacesGuideDialogImpl = create<NoProps>(() => {
   const modal = useModal();
   const { t } = useTranslation('common');
-  const topics: GuideDialogTopic[] = TOPIC_IDS.map((topicId) => ({
+  const topics: GuideDialogTopic[] = TOPIC_IDS.filter(
+    (topicId) => !HIDDEN_TOPIC_IDS.has(topicId)
+  ).map((topicId) => ({
     id: topicId,
     title: t(`workspacesGuide.${topicId}.title`),
     content: t(`workspacesGuide.${topicId}.content`),
