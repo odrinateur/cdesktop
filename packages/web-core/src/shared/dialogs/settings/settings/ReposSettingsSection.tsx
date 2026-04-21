@@ -663,17 +663,10 @@ export function ReposSettingsSection({
               disabled={!draft.setup_script.trim()}
             />
 
-            <SettingsField
-              label={t('settings.repos.scripts.cleanup.label')}
-              description={t('settings.repos.scripts.cleanup.helper')}
-            >
-              <SettingsTextarea
-                value={draft.cleanup_script}
-                onChange={(value) => updateDraft({ cleanup_script: value })}
-                placeholder={placeholders.cleanup}
-                monospace
-              />
-            </SettingsField>
+            {/* Cleanup script is hidden in v1: the auto-chain is removed,
+                so surfacing the config would mislead users. Manual
+                POST /workspaces/{id}/cleanup still works for anyone who
+                persists a script through another path. */}
 
             <SettingsField
               label={t('settings.repos.scripts.archive.label')}

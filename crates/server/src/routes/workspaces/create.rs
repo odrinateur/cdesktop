@@ -23,6 +23,7 @@ use crate::{
 pub(crate) async fn create_workspace_record(
     deployment: &DeploymentImpl,
     name: Option<String>,
+    use_worktree: bool,
 ) -> Result<Workspace, ApiError> {
     let workspace_id = Uuid::new_v4();
     let branch_label = name
@@ -39,6 +40,7 @@ pub(crate) async fn create_workspace_record(
         &CreateWorkspace {
             branch: git_branch_name,
             name: name.filter(|workspace_name| !workspace_name.is_empty()),
+            use_worktree,
         },
         workspace_id,
     )
@@ -51,7 +53,8 @@ pub async fn create_workspace(
     State(deployment): State<DeploymentImpl>,
     Json(payload): Json<CreateWorkspaceApiRequest>,
 ) -> Result<ResponseJson<ApiResponse<Workspace>>, ApiError> {
-    let workspace = create_workspace_record(&deployment, payload.name).await?;
+    let use_worktree = payload.use_worktree.unwrap_or(true);
+    let workspace = create_workspace_record(&deployment, payload.name, use_worktree).await?;
 
     deployment
         .track_if_analytics_allowed(
@@ -220,7 +223,9 @@ pub async fn create_and_start_workspace(
         executor_config,
         prompt,
         attachment_ids,
+        use_worktree,
     } = payload;
+    let use_worktree = use_worktree.unwrap_or(true);
 
     let mut workspace_prompt = normalize_prompt(&prompt).ok_or_else(|| {
         ApiError::BadRequest(
@@ -236,7 +241,7 @@ pub async fn create_and_start_workspace(
 
     let mut managed_workspace = deployment
         .workspace_manager()
-        .load_managed_workspace(create_workspace_record(&deployment, name).await?)
+        .load_managed_workspace(create_workspace_record(&deployment, name, use_worktree).await?)
         .await?;
 
     for repo in &repos {
@@ -244,6 +249,22 @@ pub async fn create_and_start_workspace(
             .add_repository(repo, deployment.git())
             .await
             .map_err(ApiError::from)?;
+    }
+
+    // Worktree-disabled mode: the synthesized `<prefix>/<id>` branch name
+    // doesn't match what's checked out in the user's repo. Record the real
+    // current HEAD so diff bases and UI labels line up.
+    if !use_worktree
+        && let Some(first_repo) = managed_workspace.repos.first()
+        && let Ok(current_branch) = deployment.git().get_current_branch(&first_repo.repo.path)
+    {
+        db::models::workspace::Workspace::update_branch_name(
+            &deployment.db().pool,
+            managed_workspace.workspace.id,
+            &current_branch,
+        )
+        .await?;
+        managed_workspace.workspace.branch = current_branch;
     }
 
     if let Some(ids) = &attachment_ids {

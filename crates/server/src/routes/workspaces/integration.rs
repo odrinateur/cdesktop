@@ -63,6 +63,12 @@ pub async fn run_agent_setup(
     State(deployment): State<DeploymentImpl>,
     Json(payload): Json<RunAgentSetupRequest>,
 ) -> Result<ResponseJson<ApiResponse<RunAgentSetupResponse>>, ApiError> {
+    // Worktree-disabled workspaces intentionally skip setup scripts; respond
+    // with a no-op success rather than spawning a process.
+    if !workspace.use_worktree {
+        return Ok(ResponseJson(ApiResponse::success(RunAgentSetupResponse {})));
+    }
+
     let executor_profile_id = payload.executor_profile_id;
     let config = ExecutorConfigs::get_cached();
     let coding_agent = config.get_coding_agent_or_default(&executor_profile_id);
@@ -186,6 +192,14 @@ pub async fn gh_cli_setup_handler(
     ResponseJson<ApiResponse<db::models::execution_process::ExecutionProcess, GhCliSetupError>>,
     ApiError,
 > {
+    // Worktree-disabled workspaces skip setup scripts; report as unsupported
+    // rather than spawning a process.
+    if !workspace.use_worktree {
+        return Ok(ResponseJson(ApiResponse::error_with_data(
+            GhCliSetupError::SetupHelperNotSupported,
+        )));
+    }
+
     match super::gh_cli_setup::run_gh_cli_setup(&deployment, &workspace).await {
         Ok(execution_process) => {
             deployment

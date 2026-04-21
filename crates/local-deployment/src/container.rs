@@ -239,6 +239,11 @@ impl LocalContainerService {
     }
 
     async fn cleanup_workspace(&self, workspace: &Workspace) {
+        // Worktree-disabled workspaces own no managed filesystem resources;
+        // nothing to clean up, and we must not touch the user's real repo.
+        if !workspace.use_worktree {
+            return;
+        }
         let Some(container_ref) = &workspace.container_ref else {
             return;
         };
@@ -324,9 +329,10 @@ impl LocalContainerService {
     /// and failure should not block process finalization.
     async fn update_after_head_commits(&self, exec_id: Uuid) {
         if let Ok(ctx) = ExecutionProcess::load_context(&self.db.pool, exec_id).await {
-            let workspace_root = self.workspace_to_current_dir(&ctx.workspace);
             for repo in &ctx.repos {
-                let repo_path = workspace_root.join(&repo.name);
+                let Some(repo_path) = ctx.workspace.execution_dir(repo) else {
+                    continue;
+                };
                 if let Ok(head) = self.git().get_head_info(&repo_path) {
                     let _ = ExecutionProcessRepoState::update_after_head_commit(
                         &self.db.pool,
@@ -418,12 +424,13 @@ impl LocalContainerService {
         Ok(repos_with_changes)
     }
 
+    // Kept for possible post-v1 revival; no current call sites now that the
+    // auto-commit chain has been removed.
+    #[allow(dead_code)]
     async fn has_commits_from_execution(
         &self,
         ctx: &ExecutionContext,
     ) -> Result<bool, ContainerError> {
-        let workspace_root = self.workspace_to_current_dir(&ctx.workspace);
-
         let repo_states = ExecutionProcessRepoState::find_by_execution_process_id(
             &self.db.pool,
             ctx.execution_process.id,
@@ -431,7 +438,9 @@ impl LocalContainerService {
         .await?;
 
         for repo in &ctx.repos {
-            let repo_path = workspace_root.join(&repo.name);
+            let Some(repo_path) = ctx.workspace.execution_dir(repo) else {
+                continue;
+            };
             let current_head = self.git().get_head_info(&repo_path).ok().map(|h| h.oid);
 
             let before_head = repo_states
@@ -565,51 +574,15 @@ impl LocalContainerService {
                     ExecutionProcessStatus::Running
                 );
 
-                let mut already_finalized = false;
-
                 if success || cleanup_done {
-                    // Commit changes (if any) and get feedback about whether changes were made
-                    let changes_committed = match container.try_commit_changes(&ctx).await {
-                        Ok(committed) => committed,
-                        Err(e) => {
-                            tracing::error!("Failed to commit changes after execution: {}", e);
-                            // Treat commit failures as if changes were made to be safe
-                            true
-                        }
-                    };
-
-                    let should_start_next = if matches!(
-                        ctx.execution_process.run_reason,
-                        ExecutionProcessRunReason::CodingAgent
-                    ) {
-                        // Check if agent made commits OR if we just committed uncommitted changes
-                        changes_committed
-                            || container
-                                .has_commits_from_execution(&ctx)
-                                .await
-                                .unwrap_or(false)
-                    } else {
-                        true
-                    };
-
-                    if should_start_next {
-                        // If the process exited successfully, start the next action
-                        if let Err(e) = container.try_start_next_action(&ctx).await {
-                            tracing::error!("Failed to start next action after completion: {}", e);
-                        }
-                    } else {
-                        tracing::info!(
-                            "Skipping cleanup script for workspace {} - no changes made by coding agent",
-                            ctx.workspace.id
-                        );
-
-                        // Manually finalize task since we're bypassing normal execution flow
-                        container.finalize_task(&ctx).await;
-                        already_finalized = true;
+                    // No app-level auto-commit and no auto-chained cleanup: just
+                    // start whatever next_action the chain already has, if any.
+                    if let Err(e) = container.try_start_next_action(&ctx).await {
+                        tracing::error!("Failed to start next action after completion: {}", e);
                     }
                 }
 
-                if !already_finalized && container.should_finalize(&ctx) {
+                if container.should_finalize(&ctx) {
                     let has_chained_follow_up = ctx
                         .execution_process
                         .executor_action()
@@ -1079,10 +1052,6 @@ impl LocalContainerService {
         let latest_session_info =
             CodingAgentTurn::find_latest_session_info(&self.db.pool, ctx.session.id).await?;
 
-        let repos =
-            WorkspaceRepo::find_repos_for_workspace(&self.db.pool, ctx.workspace.id).await?;
-        let cleanup_action = self.cleanup_actions_for_repos(&repos);
-
         let working_dir = ctx
             .session
             .agent_working_dir
@@ -1106,7 +1075,7 @@ impl LocalContainerService {
             })
         };
 
-        let action = ExecutorAction::new(action_type, cleanup_action.map(Box::new));
+        let action = ExecutorAction::new(action_type, None);
 
         self.start_execution(
             &ctx.workspace,
@@ -1194,11 +1163,27 @@ impl ContainerService for LocalContainerService {
         self.config.read().await.git_branch_prefix.clone()
     }
 
-    fn workspace_to_current_dir(&self, workspace: &Workspace) -> PathBuf {
-        PathBuf::from(workspace.container_ref.clone().unwrap_or_default())
+    async fn workspace_to_current_dir(&self, workspace: &Workspace) -> PathBuf {
+        if workspace.use_worktree {
+            return PathBuf::from(workspace.container_ref.clone().unwrap_or_default());
+        }
+        // Worktree-disabled: use the first attached repo's real path (v1 is
+        // single-repo-per-session; multi-repo OFF is a known limitation).
+        WorkspaceRepo::find_repos_for_workspace(&self.db.pool, workspace.id)
+            .await
+            .ok()
+            .and_then(|repos| repos.into_iter().next())
+            .map(|repo| repo.path)
+            .unwrap_or_default()
     }
 
     async fn create(&self, workspace: &Workspace) -> Result<ContainerRef, ContainerError> {
+        // Worktree-disabled workspaces don't materialize a container; leave
+        // `container_ref = NULL` in DB and return an empty ref.
+        if !workspace.use_worktree {
+            return Ok(String::new());
+        }
+
         let label = workspace.name.as_deref().unwrap_or("workspace");
         let workspace_dir_name =
             LocalContainerService::dir_name_from_workspace(&workspace.id, label);
@@ -1245,6 +1230,13 @@ impl ContainerService for LocalContainerService {
         workspace: &Workspace,
     ) -> Result<ContainerRef, ContainerError> {
         self.touch(workspace).await?;
+
+        // Worktree-disabled workspaces have no container to materialize; the
+        // execution location is each attached `Repo.path` directly.
+        if !workspace.use_worktree {
+            return Ok(String::new());
+        }
+
         let (repositories, workspace_inputs) = self.workspace_repo_inputs(workspace.id).await?;
 
         let workspace_dir = if let Some(container_ref) = &workspace.container_ref {
@@ -1264,7 +1256,7 @@ impl ContainerService for LocalContainerService {
         .await
         .map_err(Self::map_workspace_manager_error)?;
 
-        if workspace.container_ref.is_none() {
+        if workspace.container_ref.is_none() && workspace.use_worktree {
             Workspace::update_container_ref(
                 &self.db.pool,
                 workspace.id,
@@ -1319,14 +1311,25 @@ impl ContainerService for LocalContainerService {
         execution_process: &ExecutionProcess,
         executor_action: &ExecutorAction,
     ) -> Result<(), ContainerError> {
-        // Get the worktree path
-        let container_ref = workspace
-            .container_ref
-            .as_ref()
-            .ok_or(ContainerError::Other(anyhow!(
-                "Container ref not found for workspace"
+        let repos = WorkspaceRepo::find_repos_for_workspace(&self.db.pool, workspace.id).await?;
+
+        // Resolve the executor's working directory:
+        // - Worktree mode: the managed container root (repos live in subdirs).
+        // - Direct mode: the first attached repo's real on-disk path.
+        let current_dir = if workspace.use_worktree {
+            let container_ref = workspace
+                .container_ref
+                .as_ref()
+                .ok_or(ContainerError::Other(anyhow!(
+                    "Container ref not found for workspace"
+                )))?;
+            PathBuf::from(container_ref)
+        } else {
+            let repo = repos.first().ok_or(ContainerError::Other(anyhow!(
+                "Worktree-disabled workspace has no attached repo"
             )))?;
-        let current_dir = PathBuf::from(container_ref);
+            repo.path.clone()
+        };
 
         let approvals_service: Arc<dyn ExecutorApprovalService> =
             match executor_action.base_executor() {
@@ -1345,7 +1348,6 @@ impl ContainerService for LocalContainerService {
                 _ => Arc::new(NoopExecutorApprovalService {}),
             };
 
-        let repos = WorkspaceRepo::find_repos_for_workspace(&self.db.pool, workspace.id).await?;
         let repo_names: Vec<String> = repos.iter().map(|r| r.name.clone()).collect();
         let repo_context = RepoContext::new(current_dir.clone(), repo_names);
 
@@ -1494,11 +1496,18 @@ impl ContainerService for LocalContainerService {
 
         let mut streams = Vec::new();
 
-        let container_ref = self.ensure_container_exists(workspace).await?;
-        let workspace_root = PathBuf::from(container_ref);
+        // In worktree mode, materialize the container first so worktree paths
+        // exist; in direct mode, this is a no-op.
+        self.ensure_container_exists(workspace).await?;
 
         for repo in repositories {
-            let worktree_path = workspace_root.join(&repo.name);
+            let Some(worktree_path) = workspace.execution_dir(&repo) else {
+                tracing::warn!(
+                    "Skipping diff stream for repo {}: execution dir unresolved",
+                    repo.name
+                );
+                continue;
+            };
             let branch = &workspace.branch;
 
             let Some(target_branch) = target_branches.get(&repo.id) else {

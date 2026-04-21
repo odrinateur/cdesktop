@@ -22,6 +22,12 @@ pub async fn run_cursor_setup(
     deployment: &crate::DeploymentImpl,
     workspace: &Workspace,
 ) -> Result<ExecutionProcess, ApiError> {
+    if !workspace.use_worktree {
+        return Err(ApiError::Workspace(WorkspaceError::ValidationError(
+            "Setup scripts are not available in worktree-disabled mode".to_string(),
+        )));
+    }
+
     let latest_process = ExecutionProcess::find_latest_by_workspace_and_run_reason(
         &deployment.db().pool,
         workspace.id,

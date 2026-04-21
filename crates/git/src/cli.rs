@@ -163,6 +163,24 @@ impl GitCli {
         Ok(!out.is_empty())
     }
 
+    /// Run `git checkout <branch>` (or `git checkout -b <branch>` when
+    /// `create_new` is set). Surfaces git's error verbatim on failure — no
+    /// dirty-tree pre-check, no auto-stash.
+    pub fn checkout_branch(
+        &self,
+        repo_path: &Path,
+        branch: &str,
+        create_new: bool,
+    ) -> Result<(), GitCliError> {
+        let mut args: Vec<OsString> = vec!["checkout".into()];
+        if create_new {
+            args.push("-b".into());
+        }
+        args.push(OsString::from(branch));
+        self.git(repo_path, args)?;
+        Ok(())
+    }
+
     /// Diff status vs a base branch using a temporary index (always includes untracked).
     /// Path filter limits the reported paths.
     pub fn diff_status(

@@ -1003,6 +1003,21 @@ impl GitService {
         Ok(())
     }
 
+    /// Run `git checkout <branch>` (or `git checkout -b <branch>` when
+    /// `create_new` is set). No dirty-tree pre-check; surfaces git's error
+    /// verbatim.
+    pub fn checkout_branch(
+        &self,
+        repo_path: &Path,
+        branch: &str,
+        create_new: bool,
+    ) -> Result<(), GitServiceError> {
+        let git = GitCli::new();
+        git.checkout_branch(repo_path, branch, create_new)
+            .map_err(|e| GitServiceError::InvalidRepository(e.to_string()))?;
+        Ok(())
+    }
+
     pub fn delete_branch(
         &self,
         repo_path: &Path,

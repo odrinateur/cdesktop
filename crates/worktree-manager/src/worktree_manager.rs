@@ -20,6 +20,10 @@ static WORKTREE_CREATION_LOCKS: LazyLock<Mutex<HashMap<String, Arc<tokio::sync::
 pub struct WorktreeCleanup {
     pub worktree_path: PathBuf,
     pub git_repo_path: Option<PathBuf>,
+    /// Defense-in-depth: any paths listed here are protected — if
+    /// `worktree_path == p` or `worktree_path.starts_with(p)` for any `p`,
+    /// cleanup refuses and returns an error rather than deleting.
+    pub protect_paths: Vec<PathBuf>,
 }
 
 impl WorktreeCleanup {
@@ -27,7 +31,13 @@ impl WorktreeCleanup {
         Self {
             worktree_path,
             git_repo_path,
+            protect_paths: Vec::new(),
         }
+    }
+
+    pub fn with_protect_paths(mut self, protect_paths: Vec<PathBuf>) -> Self {
+        self.protect_paths = protect_paths;
+        self
     }
 }
 
@@ -403,6 +413,20 @@ impl WorktreeManager {
     /// If git_repo_path is None, attempts to infer it from the worktree itself
     pub async fn cleanup_worktree(worktree: &WorktreeCleanup) -> Result<(), WorktreeError> {
         let path_str = worktree.worktree_path.to_string_lossy().to_string();
+
+        // Defense-in-depth: never delete a directory that equals or contains
+        // an attached repo path. The flag-primary teardown gate at each call
+        // site should already prevent this; this is the belt-and-suspenders.
+        for protected in &worktree.protect_paths {
+            if worktree.worktree_path == *protected || worktree.worktree_path.starts_with(protected)
+            {
+                return Err(WorktreeError::InvalidPath(format!(
+                    "refused to clean up worktree at {}: target equals or contains protected repo path {}",
+                    worktree.worktree_path.display(),
+                    protected.display()
+                )));
+            }
+        }
 
         // Get the same lock to ensure we don't interfere with creation
         let lock = {

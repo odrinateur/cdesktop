@@ -208,12 +208,13 @@ pub async fn create_pr(
         workspace_repo.target_branch.clone()
     };
 
-    let container_ref = deployment
+    deployment
         .container()
         .ensure_container_exists(&workspace)
         .await?;
-    let workspace_path = PathBuf::from(&container_ref);
-    let worktree_path = workspace_path.join(&repo.name);
+    let worktree_path = workspace
+        .execution_dir(&repo)
+        .ok_or_else(|| ApiError::BadRequest("execution dir unresolved".to_string()))?;
 
     let git = deployment.git();
     let push_remote = git.resolve_remote_for_branch(&repo_path, &workspace.branch)?;
@@ -504,8 +505,10 @@ pub async fn attach_existing_pr(
             });
         }
 
-        // If PR is merged, archive workspace
-        if matches!(pr_info.status, MergeStatus::Merged) {
+        // If PR is merged, archive workspace. Worktree-disabled workspaces
+        // leave lifecycle to the user — no auto-archive filesystem teardown
+        // against the real repo.
+        if matches!(pr_info.status, MergeStatus::Merged) && workspace.use_worktree {
             let open_pr_count = PullRequest::count_open_for_workspace(pool, workspace.id).await?;
 
             if open_pr_count == 0 {
@@ -719,6 +722,7 @@ pub async fn create_workspace_from_pr(
         &CreateWorkspace {
             branch: target_branch_ref.clone(),
             name: Some(payload.pr_title.clone()),
+            use_worktree: true,
         },
         workspace_id,
     )
@@ -788,7 +792,7 @@ pub async fn create_workspace_from_pr(
     )
     .await?;
 
-    if payload.run_setup {
+    if payload.run_setup && workspace.use_worktree {
         let repos = WorkspaceRepo::find_repos_for_workspace(pool, workspace.id).await?;
         if let Some(setup_action) = deployment.container().setup_actions_for_repos(&repos) {
             let session = Session::create(

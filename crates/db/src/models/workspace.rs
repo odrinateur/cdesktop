@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use chrono::{DateTime, Utc};
 use executors::actions::{ExecutorAction, ExecutorActionType};
 use serde::{Deserialize, Serialize};
@@ -11,6 +13,7 @@ const WORKSPACE_NAME_MAX_LEN: usize = 60;
 
 use super::{
     execution_process::ExecutorActionField,
+    repo::Repo,
     session::Session,
     workspace_repo::{RepoWithTargetBranch, WorkspaceRepo},
 };
@@ -51,6 +54,7 @@ pub struct Workspace {
     pub pinned: bool,
     pub name: Option<String>,
     pub worktree_deleted: bool,
+    pub use_worktree: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -85,9 +89,25 @@ pub struct WorkspaceContext {
 pub struct CreateWorkspace {
     pub branch: String,
     pub name: Option<String>,
+    pub use_worktree: bool,
 }
 
 impl Workspace {
+    /// Where this workspace's attached `repo` lives on disk.
+    ///
+    /// In worktree mode, this is `<container_ref>/<repo.name>`. Returns `None`
+    /// in worktree mode when the workspace has not yet been backfilled (lazy
+    /// `start_container`). In direct mode (`use_worktree = false`), this is
+    /// always `repo.path`.
+    pub fn execution_dir(&self, repo: &Repo) -> Option<PathBuf> {
+        if self.use_worktree {
+            let container_ref = self.container_ref.as_deref()?;
+            Some(PathBuf::from(container_ref).join(&repo.name))
+        } else {
+            Some(repo.path.clone())
+        }
+    }
+
     /// Fetch all workspaces. Newest first.
     pub async fn fetch_all(pool: &SqlitePool) -> Result<Vec<Self>, WorkspaceError> {
         let workspaces = sqlx::query_as!(
@@ -102,7 +122,8 @@ impl Workspace {
                           archived AS "archived!: bool",
                           pinned AS "pinned!: bool",
                           name,
-                          worktree_deleted AS "worktree_deleted!: bool"
+                          worktree_deleted AS "worktree_deleted!: bool",
+                          use_worktree AS "use_worktree!: bool"
                    FROM workspaces
                    ORDER BY created_at DESC"#
         )
@@ -204,7 +225,8 @@ impl Workspace {
                        archived          AS "archived!: bool",
                        pinned            AS "pinned!: bool",
                        name,
-                       worktree_deleted  AS "worktree_deleted!: bool"
+                       worktree_deleted  AS "worktree_deleted!: bool",
+                       use_worktree      AS "use_worktree!: bool"
                FROM    workspaces
                WHERE   id = $1"#,
             id
@@ -226,7 +248,8 @@ impl Workspace {
                        archived          AS "archived!: bool",
                        pinned            AS "pinned!: bool",
                        name,
-                       worktree_deleted  AS "worktree_deleted!: bool"
+                       worktree_deleted  AS "worktree_deleted!: bool",
+                       use_worktree      AS "use_worktree!: bool"
                FROM    workspaces
                WHERE   rowid = $1"#,
             rowid
@@ -269,7 +292,8 @@ impl Workspace {
                 w.archived as "archived!: bool",
                 w.pinned as "pinned!: bool",
                 w.name,
-                w.worktree_deleted as "worktree_deleted!: bool"
+                w.worktree_deleted as "worktree_deleted!: bool",
+                w.use_worktree as "use_worktree!: bool"
             FROM workspaces w
             LEFT JOIN sessions s ON w.id = s.workspace_id
             LEFT JOIN execution_processes ep ON s.id = ep.session_id AND ep.completed_at IS NOT NULL
@@ -315,15 +339,16 @@ impl Workspace {
     ) -> Result<Self, WorkspaceError> {
         Ok(sqlx::query_as!(
             Workspace,
-            r#"INSERT INTO workspaces (id, task_id, container_ref, branch, setup_completed_at, name)
-               VALUES ($1, $2, $3, $4, $5, $6)
-               RETURNING id as "id!: Uuid", task_id as "task_id: Uuid", container_ref, branch, setup_completed_at as "setup_completed_at: DateTime<Utc>", created_at as "created_at!: DateTime<Utc>", updated_at as "updated_at!: DateTime<Utc>", archived as "archived!: bool", pinned as "pinned!: bool", name, worktree_deleted as "worktree_deleted!: bool""#,
+            r#"INSERT INTO workspaces (id, task_id, container_ref, branch, setup_completed_at, name, use_worktree)
+               VALUES ($1, $2, $3, $4, $5, $6, $7)
+               RETURNING id as "id!: Uuid", task_id as "task_id: Uuid", container_ref, branch, setup_completed_at as "setup_completed_at: DateTime<Utc>", created_at as "created_at!: DateTime<Utc>", updated_at as "updated_at!: DateTime<Utc>", archived as "archived!: bool", pinned as "pinned!: bool", name, worktree_deleted as "worktree_deleted!: bool", use_worktree as "use_worktree!: bool""#,
             id,
             Option::<Uuid>::None,
             Option::<String>::None,
             data.branch,
             Option::<DateTime<Utc>>::None,
-            data.name
+            data.name,
+            data.use_worktree
         )
         .fetch_one(pool)
         .await?)
@@ -514,6 +539,7 @@ impl Workspace {
                 w.pinned AS "pinned!: bool",
                 w.name,
                 w.worktree_deleted AS "worktree_deleted!: bool",
+                w.use_worktree AS "use_worktree!: bool",
 
                 CASE WHEN EXISTS (
                     SELECT 1
@@ -556,6 +582,7 @@ impl Workspace {
                     pinned: rec.pinned,
                     name: rec.name,
                     worktree_deleted: rec.worktree_deleted,
+                    use_worktree: rec.use_worktree,
                 },
                 is_running: rec.is_running != 0,
                 is_errored: rec.is_errored != 0,
@@ -608,6 +635,7 @@ impl Workspace {
                 w.pinned AS "pinned!: bool",
                 w.name,
                 w.worktree_deleted AS "worktree_deleted!: bool",
+                w.use_worktree AS "use_worktree!: bool",
 
                 CASE WHEN EXISTS (
                     SELECT 1
@@ -653,6 +681,7 @@ impl Workspace {
                 pinned: rec.pinned,
                 name: rec.name,
                 worktree_deleted: rec.worktree_deleted,
+                use_worktree: rec.use_worktree,
             },
             is_running: rec.is_running != 0,
             is_errored: rec.is_errored != 0,

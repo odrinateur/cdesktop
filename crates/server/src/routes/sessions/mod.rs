@@ -112,6 +112,14 @@ pub struct CreateFollowUpAttempt {
     pub retry_process_id: Option<Uuid>,
     pub force_when_dirty: Option<bool>,
     pub perform_git_reset: Option<bool>,
+    /// Optional branch to check out in worktree-disabled mode before spawning.
+    #[serde(default)]
+    #[ts(optional)]
+    pub branch: Option<String>,
+    /// When `true` with `branch`, runs `git checkout -b <branch>` (create new branch).
+    #[serde(default)]
+    #[ts(optional)]
+    pub create_new_branch: Option<bool>,
 }
 
 #[derive(Debug, Deserialize, TS)]
@@ -129,13 +137,43 @@ pub async fn follow_up(
     let pool = &deployment.db().pool;
 
     // Load workspace from session
-    let workspace = Workspace::find_by_id(pool, session.workspace_id)
+    let mut workspace = Workspace::find_by_id(pool, session.workspace_id)
         .await?
         .ok_or(ApiError::Workspace(WorkspaceError::ValidationError(
             "Workspace not found".to_string(),
         )))?;
 
     tracing::info!("{:?}", workspace);
+
+    // Worktree-disabled mode: optionally checkout a branch in the real repo,
+    // then record the resulting HEAD into workspace.branch. User is trusted
+    // with their own working tree — no dirty-tree pre-check.
+    if !workspace.use_worktree {
+        let repos = WorkspaceRepo::find_repos_for_workspace(pool, workspace.id).await?;
+        if let Some(repo) = repos.first() {
+            let git = deployment.git();
+            if let Some(branch) = payload.branch.as_deref() {
+                let create_new = payload.create_new_branch.unwrap_or(false);
+                // Skip the checkout when the requested branch already matches
+                // the current HEAD and we're not creating a new branch —
+                // matches the "dirty tree, selected branch == HEAD" scenario.
+                let current = git.get_current_branch(&repo.path).ok();
+                let already_on_branch = !create_new && current.as_deref() == Some(branch);
+                if !already_on_branch {
+                    git.checkout_branch(&repo.path, branch, create_new)
+                        .map_err(|e| {
+                            ApiError::Workspace(WorkspaceError::ValidationError(e.to_string()))
+                        })?;
+                }
+            }
+            if let Ok(current_branch) = git.get_current_branch(&repo.path)
+                && current_branch != workspace.branch
+            {
+                Workspace::update_branch_name(pool, workspace.id, &current_branch).await?;
+                workspace.branch = current_branch;
+            }
+        }
+    }
 
     deployment
         .container()
@@ -179,9 +217,6 @@ pub async fn follow_up(
 
     let prompt = payload.prompt;
 
-    let repos = WorkspaceRepo::find_repos_for_workspace(pool, workspace.id).await?;
-    let cleanup_action = deployment.container().cleanup_actions_for_repos(&repos);
-
     let working_dir = session
         .agent_working_dir
         .as_ref()
@@ -207,7 +242,7 @@ pub async fn follow_up(
         )
     };
 
-    let action = ExecutorAction::new(action_type, cleanup_action.map(Box::new));
+    let action = ExecutorAction::new(action_type, None);
 
     let execution_process = deployment
         .container()
@@ -265,6 +300,14 @@ pub async fn run_setup_script(
         .ok_or(ApiError::Workspace(WorkspaceError::ValidationError(
             "Workspace not found".to_string(),
         )))?;
+
+    // Worktree-disabled workspaces run in the user's real repo, which already
+    // has its environment set up. Skip setup-script execution entirely.
+    if !workspace.use_worktree {
+        return Ok(ResponseJson(ApiResponse::error_with_data(
+            RunScriptError::NoScriptConfigured,
+        )));
+    }
 
     if ExecutionProcess::has_running_non_dev_server_processes_for_workspace(pool, workspace.id)
         .await?

@@ -314,7 +314,23 @@ async fn resolve_session_base_path(
         .container()
         .ensure_container_exists(workspace)
         .await?;
-    let workspace_path = std::path::PathBuf::from(container_ref);
+    let workspace_path = if workspace.use_worktree {
+        std::path::PathBuf::from(container_ref)
+    } else {
+        let repos = db::models::workspace_repo::WorkspaceRepo::find_repos_for_workspace(
+            &deployment.db().pool,
+            workspace.id,
+        )
+        .await
+        .unwrap_or_default();
+        repos
+            .first()
+            .ok_or_else(|| {
+                ApiError::BadRequest("Worktree-disabled workspace has no attached repo".to_string())
+            })?
+            .path
+            .clone()
+    };
     let base_path = match session.agent_working_dir.as_deref() {
         Some(dir) if !dir.is_empty() => workspace_path.join(dir),
         _ => workspace_path,
