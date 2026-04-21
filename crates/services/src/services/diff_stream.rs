@@ -45,7 +45,9 @@ pub async fn compute_diff_stats(
     git: &GitService,
     workspace: &Workspace,
 ) -> Option<DiffStats> {
-    let container_ref = workspace.container_ref.as_ref()?;
+    // Per-reader decision (OFF mode): fall through to read against `Repo.path`.
+    // A diff against the checked-out branch's working tree is meaningful for the
+    // user's real repo, so the diff stats pane works identically in both modes.
 
     let workspace_repos =
         WorkspaceRepo::find_repos_with_target_branch_for_workspace(pool, workspace.id)
@@ -55,7 +57,9 @@ pub async fn compute_diff_stats(
     let mut stats = DiffStats::default();
 
     for repo_with_branch in workspace_repos {
-        let worktree_path = PathBuf::from(container_ref).join(&repo_with_branch.repo.name);
+        let Some(worktree_path) = workspace.execution_dir(&repo_with_branch.repo) else {
+            continue;
+        };
         let repo_path = repo_with_branch.repo.path.clone();
 
         let base_commit_result = tokio::task::spawn_blocking({

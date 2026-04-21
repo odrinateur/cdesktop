@@ -424,24 +424,42 @@ impl WorkspaceManager {
         Ok(())
     }
 
-    /// Clean up all worktrees in a workspace
+    /// Clean up all worktrees in a workspace. Attaches each repo's real
+    /// on-disk path as a protect-path so the underlying cleanup refuses to
+    /// delete a directory that equals or contains any attached repo.
     pub async fn cleanup_workspace(
         workspace_dir: &Path,
         repos: &[Repo],
     ) -> Result<(), WorkspaceError> {
         info!("Cleaning up workspace at {}", workspace_dir.display());
 
+        let protect_paths: Vec<PathBuf> = repos.iter().map(|repo| repo.path.clone()).collect();
+
         let cleanup_data: Vec<WorktreeCleanup> = repos
             .iter()
             .map(|repo| {
                 let worktree_path = workspace_dir.join(&repo.name);
                 WorktreeCleanup::new(worktree_path, Some(repo.path.clone()))
+                    .with_protect_paths(protect_paths.clone())
             })
             .collect();
 
         WorktreeManager::batch_cleanup_worktrees(&cleanup_data).await?;
 
-        // Remove the workspace directory itself
+        // Refuse to remove the workspace directory itself if it equals or
+        // contains any attached repo path (defense-in-depth).
+        for protected in &protect_paths {
+            if workspace_dir == *protected || workspace_dir.starts_with(protected) {
+                return Err(WorkspaceError::Worktree(WorktreeError::InvalidPath(
+                    format!(
+                        "refused to remove workspace dir at {}: equals or contains protected repo path {}",
+                        workspace_dir.display(),
+                        protected.display()
+                    ),
+                )));
+            }
+        }
+
         if workspace_dir.exists()
             && let Err(e) = tokio::fs::remove_dir_all(workspace_dir).await
         {

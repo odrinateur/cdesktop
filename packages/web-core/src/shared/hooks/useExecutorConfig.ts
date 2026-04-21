@@ -43,26 +43,23 @@ function useEffectiveExecutor(
     [profiles]
   );
 
-  const effective = useMemo(
-    () => {
-      if (!SHOW_AGENT_PICKER) return BaseCodingAgent.CLAUDE_CODE;
-      return (
-        userSelections.executor ??
-        scratchConfig?.executor ??
-        lastUsedConfig?.executor ??
-        configExecutorProfile?.executor ??
-        options[0] ??
-        null
-      );
-    },
-    [
-      userSelections.executor,
-      scratchConfig,
-      lastUsedConfig,
-      configExecutorProfile,
-      options,
-    ]
-  );
+  const effective = useMemo(() => {
+    if (!SHOW_AGENT_PICKER) return BaseCodingAgent.CLAUDE_CODE;
+    return (
+      userSelections.executor ??
+      scratchConfig?.executor ??
+      lastUsedConfig?.executor ??
+      configExecutorProfile?.executor ??
+      options[0] ??
+      null
+    );
+  }, [
+    userSelections.executor,
+    scratchConfig,
+    lastUsedConfig,
+    configExecutorProfile,
+    options,
+  ]);
 
   return { effective, options };
 }

@@ -32,6 +32,14 @@ pub async fn run_gh_cli_setup(
     deployment: &crate::DeploymentImpl,
     workspace: &Workspace,
 ) -> Result<ExecutionProcess, ApiError> {
+    if !workspace.use_worktree {
+        return Err(ApiError::Workspace(
+            db::models::workspace::WorkspaceError::ValidationError(
+                "Setup scripts are not available in worktree-disabled mode".to_string(),
+            ),
+        ));
+    }
+
     let executor_action = get_gh_cli_setup_helper_action().await?;
 
     deployment

@@ -102,12 +102,20 @@ pub async fn start_dev_server(
 
     let mut execution_processes = Vec::new();
     for repo in repos_with_dev_script {
+        // In worktree mode, the process cwd is the container root and the
+        // dev-server script runs in the per-repo subdir. In direct mode the
+        // cwd is already the repo root, so no subdir offset is needed.
+        let working_dir = if workspace.use_worktree {
+            Some(repo.name.clone())
+        } else {
+            None
+        };
         let executor_action = ExecutorAction::new(
             ExecutorActionType::ScriptRequest(ScriptRequest {
                 script: repo.dev_server_script.clone().unwrap(),
                 language: ScriptRequestLanguage::Bash,
                 context: ScriptContext::DevServer,
-                working_dir: Some(repo.name.clone()),
+                working_dir,
             }),
             None,
         );
@@ -160,6 +168,15 @@ pub async fn run_cleanup_script(
     State(deployment): State<DeploymentImpl>,
 ) -> Result<ResponseJson<ApiResponse<ExecutionProcess, RunScriptError>>, ApiError> {
     let pool = &deployment.db().pool;
+
+    // Cleanup scripts assume a managed worktree; in direct mode the script's
+    // `working_dir: Some(repo.name)` would resolve to `repo.path/<repo.name>`
+    // (nonexistent). Refuse cleanly rather than running against a broken cwd.
+    if !workspace.use_worktree {
+        return Ok(ResponseJson(ApiResponse::error_with_data(
+            RunScriptError::NoScriptConfigured,
+        )));
+    }
 
     if ExecutionProcess::has_running_non_dev_server_processes_for_workspace(pool, workspace.id)
         .await?

@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use axum::{Extension, Json, extract::State, response::Json as ResponseJson};
 use db::models::{
     coding_agent_turn::CodingAgentTurn,
@@ -61,7 +59,7 @@ pub async fn start_review(
         )));
     }
 
-    let container_ref = deployment
+    deployment
         .container()
         .ensure_container_exists(&workspace)
         .await?;
@@ -73,11 +71,12 @@ pub async fn start_review(
     let context: Option<Vec<ExecutorRepoReviewContext>> = if payload.use_all_workspace_commits {
         let repos =
             WorkspaceRepo::find_repos_with_target_branch_for_workspace(pool, workspace.id).await?;
-        let workspace_path = PathBuf::from(container_ref.as_str());
 
         let mut contexts = Vec::new();
         for repo in repos {
-            let worktree_path = workspace_path.join(&repo.repo.name);
+            let Some(worktree_path) = workspace.execution_dir(&repo.repo) else {
+                continue;
+            };
             if let Ok(base_commit) = deployment.git().get_fork_point(
                 &worktree_path,
                 &repo.target_branch,

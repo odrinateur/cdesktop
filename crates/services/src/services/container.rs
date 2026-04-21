@@ -96,7 +96,7 @@ pub trait ContainerService {
 
     async fn touch(&self, workspace: &Workspace) -> Result<(), ContainerError>;
 
-    fn workspace_to_current_dir(&self, workspace: &Workspace) -> PathBuf;
+    async fn workspace_to_current_dir(&self, workspace: &Workspace) -> PathBuf;
 
     async fn discover_executor_options(
         &self,
@@ -122,25 +122,36 @@ pub trait ContainerService {
                 .await?
                 .ok_or(SqlxError::RowNotFound)?;
 
-            let container_ref = match workspace.container_ref.as_deref() {
-                Some(container_ref) if !container_ref.is_empty() => container_ref,
-                _ => &self.ensure_container_exists(&workspace).await?,
+            let repos =
+                WorkspaceRepo::find_repos_for_workspace(&self.db().pool, session.workspace_id)
+                    .await
+                    .unwrap_or_default();
+
+            let workspace_path = if workspace.use_worktree {
+                let container_ref = match workspace.container_ref.as_deref() {
+                    Some(container_ref) if !container_ref.is_empty() => container_ref.to_string(),
+                    _ => self.ensure_container_exists(&workspace).await?,
+                };
+
+                if container_ref.is_empty() {
+                    return Err(ContainerError::Other(anyhow!("Workspace path is empty")));
+                }
+
+                PathBuf::from(container_ref)
+            } else {
+                let repo = repos.first().ok_or_else(|| {
+                    ContainerError::Other(anyhow!(
+                        "Worktree-disabled workspace has no attached repo"
+                    ))
+                })?;
+                repo.path.clone()
             };
 
-            if container_ref.is_empty() {
-                return Err(ContainerError::Other(anyhow!("Workspace path is empty")));
-            }
-
-            let workspace_path = PathBuf::from(container_ref);
             let workdir = match session.agent_working_dir.as_deref() {
                 Some(dir) if !dir.is_empty() => Some(workspace_path.join(dir)),
                 _ => Some(workspace_path),
             };
 
-            let repos =
-                WorkspaceRepo::find_repos_for_workspace(&self.db().pool, session.workspace_id)
-                    .await
-                    .unwrap_or_default();
             let repo_path = if repos.len() == 1 {
                 Some(repos[0].path.clone())
             } else {
@@ -295,12 +306,11 @@ pub trait ContainerService {
                 continue;
             }
             // Capture after-head commit OID per repository
-            if let Ok(ctx) = ExecutionProcess::load_context(&self.db().pool, process.id).await
-                && let Some(ref container_ref) = ctx.workspace.container_ref
-            {
-                let workspace_root = PathBuf::from(container_ref);
+            if let Ok(ctx) = ExecutionProcess::load_context(&self.db().pool, process.id).await {
                 for repo in &ctx.repos {
-                    let repo_path = workspace_root.join(&repo.name);
+                    let Some(repo_path) = ctx.workspace.execution_dir(repo) else {
+                        continue;
+                    };
                     if let Ok(head) = self.git().get_head_info(&repo_path)
                         && let Err(err) = ExecutionProcessRepoState::update_after_head_commit(
                             &self.db().pool,
@@ -484,6 +494,11 @@ pub trait ContainerService {
         let workspace = Workspace::find_by_id(pool, workspace_id)
             .await?
             .ok_or(ContainerError::Other(anyhow!("Workspace not found")))?;
+        // Worktree-disabled workspaces leave lifecycle to the user — no
+        // archive-script execution against the real repo.
+        if !workspace.use_worktree {
+            return Ok(());
+        }
         if ExecutionProcess::has_running_non_dev_server_processes_for_workspace(pool, workspace.id)
             .await
             .unwrap_or(true)
@@ -660,41 +675,45 @@ pub trait ContainerService {
             ExecutionProcessRepoState::find_by_execution_process_id(pool, target_process_id)
                 .await?;
 
-        let container_ref = self.ensure_container_exists(&workspace).await?;
-        let workspace_dir = std::path::PathBuf::from(container_ref);
-        let is_dirty = self
-            .is_container_clean(&workspace)
-            .await
-            .map(|is_clean| !is_clean)
-            .unwrap_or(false);
+        // Worktree-disabled workspaces leave git state to the user; never
+        // reconcile/reset the real repo on their behalf.
+        if workspace.use_worktree {
+            let container_ref = self.ensure_container_exists(&workspace).await?;
+            let workspace_dir = std::path::PathBuf::from(container_ref);
+            let is_dirty = self
+                .is_container_clean(&workspace)
+                .await
+                .map(|is_clean| !is_clean)
+                .unwrap_or(false);
 
-        for repo in &repos {
-            let repo_state = repo_states.iter().find(|s| s.repo_id == repo.id);
-            let target_oid = match repo_state.and_then(|s| s.before_head_commit.clone()) {
-                Some(oid) => Some(oid),
-                None => {
-                    ExecutionProcess::find_prev_after_head_commit(
-                        pool,
-                        session_id,
-                        target_process_id,
-                        repo.id,
-                    )
-                    .await?
+            for repo in &repos {
+                let repo_state = repo_states.iter().find(|s| s.repo_id == repo.id);
+                let target_oid = match repo_state.and_then(|s| s.before_head_commit.clone()) {
+                    Some(oid) => Some(oid),
+                    None => {
+                        ExecutionProcess::find_prev_after_head_commit(
+                            pool,
+                            session_id,
+                            target_process_id,
+                            repo.id,
+                        )
+                        .await?
+                    }
+                };
+
+                let worktree_path = workspace_dir.join(&repo.name);
+                if let Some(oid) = target_oid {
+                    self.git().reconcile_worktree_to_commit(
+                        &worktree_path,
+                        &oid,
+                        git::WorktreeResetOptions::new(
+                            perform_git_reset,
+                            force_when_dirty,
+                            is_dirty,
+                            perform_git_reset,
+                        ),
+                    );
                 }
-            };
-
-            let worktree_path = workspace_dir.join(&repo.name);
-            if let Some(oid) = target_oid {
-                self.git().reconcile_worktree_to_commit(
-                    &worktree_path,
-                    &oid,
-                    git::WorktreeResetOptions::new(
-                        perform_git_reset,
-                        force_when_dirty,
-                        is_dirty,
-                        perform_git_reset,
-                    ),
-                );
             }
         }
 
@@ -900,7 +919,7 @@ pub trait ContainerService {
                 );
             }
 
-            let current_dir = self.workspace_to_current_dir(&workspace);
+            let current_dir = self.workspace_to_current_dir(&workspace).await;
 
             let executor_action = if let Ok(executor_action) = process.executor_action() {
                 executor_action
@@ -1071,11 +1090,16 @@ pub trait ContainerService {
         )
         .await?;
 
-        let repos_with_setup: Vec<_> = repos.iter().filter(|r| r.setup_script.is_some()).collect();
+        // Worktree-disabled workspaces skip setup scripts entirely — the
+        // user's real repo already has its environment. Build only the coding
+        // agent action. Worktree-enabled path keeps the existing setup chain.
+        let repos_with_setup: Vec<_> = if workspace.use_worktree {
+            repos.iter().filter(|r| r.setup_script.is_some()).collect()
+        } else {
+            Vec::new()
+        };
 
         let all_parallel = repos_with_setup.iter().all(|r| r.parallel_setup_script);
-
-        let cleanup_action = self.cleanup_actions_for_repos(&repos);
 
         let working_dir = session
             .agent_working_dir
@@ -1089,10 +1113,19 @@ pub trait ContainerService {
                 executor_config: executor_config.clone(),
                 working_dir,
             }),
-            cleanup_action.map(Box::new),
+            None,
         );
 
-        let execution_process = if all_parallel {
+        let execution_process = if repos_with_setup.is_empty() {
+            // No setup to run (either no scripts configured, or worktree-disabled).
+            self.start_execution(
+                &workspace,
+                &session,
+                &coding_action,
+                &ExecutionProcessRunReason::CodingAgent,
+            )
+            .await?
+        } else if all_parallel {
             // All parallel: start each setup independently, then start coding agent
             for repo in &repos_with_setup {
                 if let Some(action) = Self::setup_action_for_repo(repo)
@@ -1147,16 +1180,12 @@ pub trait ContainerService {
             )));
         }
 
-        let workspace_root = workspace
-            .container_ref
-            .as_ref()
-            .map(std::path::PathBuf::from)
-            .ok_or_else(|| ContainerError::Other(anyhow!("Container ref not found")))?;
-
         let mut repo_states = Vec::with_capacity(repositories.len());
         for repo in &repositories {
-            let repo_path = workspace_root.join(&repo.name);
-            let before_head_commit = self.git().get_head_info(&repo_path).ok().map(|h| h.oid);
+            let before_head_commit = workspace
+                .execution_dir(repo)
+                .and_then(|repo_path| self.git().get_head_info(&repo_path).ok())
+                .map(|h| h.oid);
             repo_states.push(CreateExecutionProcessRepoState {
                 repo_id: repo.id,
                 before_head_commit,
@@ -1296,7 +1325,7 @@ pub trait ContainerService {
         }
 
         // Start processing normalised logs for executor requests and follow ups
-        let workspace_root = self.workspace_to_current_dir(workspace);
+        let workspace_root = self.workspace_to_current_dir(workspace).await;
         #[cfg_attr(feature = "qa-mode", allow(unused_variables))]
         if let Some((executor_profile_id, working_dir)) = match executor_action.typ() {
             ExecutorActionType::CodingAgentInitialRequest(request) => Some((

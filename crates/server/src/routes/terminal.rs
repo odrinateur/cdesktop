@@ -58,34 +58,43 @@ async fn terminal_ws(
         .await?
         .ok_or_else(|| ApiError::BadRequest("Attempt not found".to_string()))?;
 
-    let container_ref = attempt
-        .container_ref
-        .ok_or_else(|| ApiError::BadRequest("Attempt has no workspace directory".to_string()))?;
+    let repos = WorkspaceRepo::find_repos_for_workspace(&deployment.db().pool, query.workspace_id)
+        .await
+        .unwrap_or_default();
 
-    let base_dir = PathBuf::from(&container_ref);
-    if !base_dir.exists() {
-        return Err(ApiError::BadRequest(
-            "Workspace directory does not exist".to_string(),
-        ));
-    }
-
-    let mut working_dir = base_dir.clone();
-    match WorkspaceRepo::find_repos_for_workspace(&deployment.db().pool, query.workspace_id).await {
-        Ok(repos) if repos.len() == 1 => {
+    // Resolve terminal cwd:
+    // - Worktree mode: the container root; if a single repo is attached, the
+    //   per-repo subdir when it exists on disk.
+    // - Direct mode: the single attached repo's real path.
+    let working_dir = if attempt.use_worktree {
+        let container_ref = attempt.container_ref.clone().ok_or_else(|| {
+            ApiError::BadRequest("Attempt has no workspace directory".to_string())
+        })?;
+        let base_dir = PathBuf::from(&container_ref);
+        if !base_dir.exists() {
+            return Err(ApiError::BadRequest(
+                "Workspace directory does not exist".to_string(),
+            ));
+        }
+        let mut dir = base_dir.clone();
+        if repos.len() == 1 {
             let repo_dir = base_dir.join(&repos[0].name);
             if repo_dir.exists() {
-                working_dir = repo_dir;
+                dir = repo_dir;
             }
         }
-        Ok(_) => {}
-        Err(e) => {
-            tracing::warn!(
-                "Failed to resolve repos for workspace {}: {}",
-                attempt.id,
-                e
-            );
+        dir
+    } else {
+        let repo = repos.first().ok_or_else(|| {
+            ApiError::BadRequest("Worktree-disabled workspace has no attached repo".to_string())
+        })?;
+        if !repo.path.exists() {
+            return Err(ApiError::BadRequest(
+                "Repo directory does not exist".to_string(),
+            ));
         }
-    }
+        repo.path.clone()
+    };
 
     Ok(ws.on_upgrade(move |socket| {
         handle_terminal_ws(socket, deployment, working_dir, query.cols, query.rows)

@@ -20,6 +20,9 @@ pub struct WorkspaceRepoInput {
 #[derive(Debug, Serialize, Deserialize, TS)]
 pub struct CreateWorkspaceApiRequest {
     pub name: Option<String>,
+    #[serde(default)]
+    #[ts(optional)]
+    pub use_worktree: Option<bool>,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
@@ -36,6 +39,9 @@ pub struct CreateAndStartWorkspaceRequest {
     pub executor_config: ExecutorConfig,
     pub prompt: String,
     pub attachment_ids: Option<Vec<Uuid>>,
+    #[serde(default)]
+    #[ts(optional)]
+    pub use_worktree: Option<bool>,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]

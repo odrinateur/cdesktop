@@ -1,7 +1,4 @@
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-};
+use std::collections::HashMap;
 
 use axum::{
     Extension, Json, Router,
@@ -212,12 +209,13 @@ pub async fn merge_workspace(
         ));
     }
 
-    let container_ref = deployment
+    deployment
         .container()
         .ensure_container_exists(&workspace)
         .await?;
-    let workspace_path = Path::new(&container_ref);
-    let worktree_path = workspace_path.join(repo.name);
+    let worktree_path = workspace
+        .execution_dir(&repo)
+        .ok_or_else(|| ApiError::BadRequest("execution dir unresolved".to_string()))?;
 
     let workspace_label = workspace.name.as_deref().unwrap_or(&workspace.branch);
     let vk_id = resolve_cdesktop_identifier(&deployment, workspace.id).await;
@@ -285,8 +283,9 @@ pub async fn push_workspace_branch(
         .container()
         .ensure_container_exists(&workspace)
         .await?;
-    let workspace_path = Path::new(&container_ref);
-    let worktree_path = workspace_path.join(&repo.name);
+    let worktree_path = workspace
+        .execution_dir(&repo)
+        .ok_or_else(|| ApiError::BadRequest("execution dir unresolved".to_string()))?;
 
     match deployment
         .git()
@@ -297,7 +296,9 @@ pub async fn push_workspace_branch(
                 let pool = deployment.db().pool.clone();
                 let git = deployment.git().clone();
                 let mut ws = workspace.clone();
-                ws.container_ref = Some(container_ref.clone());
+                if workspace.use_worktree && !container_ref.is_empty() {
+                    ws.container_ref = Some(container_ref.clone());
+                }
                 tokio::spawn(async move {
                     let stats = diff_stream::compute_diff_stats(&pool, &git, &ws).await;
                     remote_sync::sync_workspace_to_remote(
@@ -339,8 +340,9 @@ pub async fn force_push_workspace_branch(
         .container()
         .ensure_container_exists(&workspace)
         .await?;
-    let workspace_path = Path::new(&container_ref);
-    let worktree_path = workspace_path.join(&repo.name);
+    let worktree_path = workspace
+        .execution_dir(&repo)
+        .ok_or_else(|| ApiError::BadRequest("execution dir unresolved".to_string()))?;
 
     deployment
         .git()
@@ -350,7 +352,9 @@ pub async fn force_push_workspace_branch(
         let pool = deployment.db().pool.clone();
         let git = deployment.git().clone();
         let mut ws = workspace.clone();
-        ws.container_ref = Some(container_ref.clone());
+        if workspace.use_worktree && !container_ref.is_empty() {
+            ws.container_ref = Some(container_ref.clone());
+        }
         tokio::spawn(async move {
             let stats = diff_stream::compute_diff_stats(&pool, &git, &ws).await;
             remote_sync::sync_workspace_to_remote(&client, ws.id, None, None, stats.as_ref()).await;
@@ -373,11 +377,10 @@ pub async fn get_workspace_branch_status(
         .map(|wr| (wr.repo_id, wr.target_branch.clone()))
         .collect();
 
-    let container_ref = deployment
+    deployment
         .container()
         .ensure_container_exists(&workspace)
         .await?;
-    let workspace_dir = PathBuf::from(&container_ref);
 
     let all_merges = Merge::find_by_workspace_id(pool, workspace.id).await?;
     let merges_by_repo: HashMap<Uuid, Vec<Merge>> =
@@ -400,7 +403,9 @@ pub async fn get_workspace_branch_status(
         };
 
         let repo_merges = merges_by_repo.get(&repo.id).cloned().unwrap_or_default();
-        let worktree_path = workspace_dir.join(&repo.name);
+        let Some(worktree_path) = workspace.execution_dir(&repo) else {
+            continue;
+        };
 
         let head_oid = deployment
             .git()
@@ -591,14 +596,15 @@ pub async fn rename_branch(
     }
 
     let repos = WorkspaceRepo::find_repos_for_workspace(pool, workspace.id).await?;
-    let container_ref = deployment
+    deployment
         .container()
         .ensure_container_exists(&workspace)
         .await?;
-    let workspace_dir = PathBuf::from(&container_ref);
 
     for repo in &repos {
-        let worktree_path = workspace_dir.join(&repo.name);
+        let Some(worktree_path) = workspace.execution_dir(repo) else {
+            continue;
+        };
 
         if deployment
             .git()
@@ -624,7 +630,9 @@ pub async fn rename_branch(
     let mut renamed_repos: Vec<&Repo> = Vec::new();
 
     for repo in &repos {
-        let worktree_path = workspace_dir.join(&repo.name);
+        let Some(worktree_path) = workspace.execution_dir(repo) else {
+            continue;
+        };
 
         match deployment.git().rename_local_branch(
             &worktree_path,
@@ -636,7 +644,9 @@ pub async fn rename_branch(
             }
             Err(e) => {
                 for renamed_repo in &renamed_repos {
-                    let rollback_path = workspace_dir.join(&renamed_repo.name);
+                    let Some(rollback_path) = workspace.execution_dir(renamed_repo) else {
+                        continue;
+                    };
                     if let Err(rollback_err) = deployment.git().rename_local_branch(
                         &rollback_path,
                         new_branch_name,
@@ -739,12 +749,13 @@ pub async fn rebase_workspace(
         }
     }
 
-    let container_ref = deployment
+    deployment
         .container()
         .ensure_container_exists(&workspace)
         .await?;
-    let workspace_path = Path::new(&container_ref);
-    let worktree_path = workspace_path.join(&repo.name);
+    let worktree_path = workspace
+        .execution_dir(&repo)
+        .ok_or_else(|| ApiError::BadRequest("execution dir unresolved".to_string()))?;
 
     let result = deployment.git().rebase_branch(
         &repo.path,
@@ -803,12 +814,13 @@ pub async fn abort_workspace_conflicts(
         .await?
         .ok_or(RepoError::NotFound)?;
 
-    let container_ref = deployment
+    deployment
         .container()
         .ensure_container_exists(&workspace)
         .await?;
-    let workspace_path = Path::new(&container_ref);
-    let worktree_path = workspace_path.join(&repo.name);
+    let worktree_path = workspace
+        .execution_dir(&repo)
+        .ok_or_else(|| ApiError::BadRequest("execution dir unresolved".to_string()))?;
 
     deployment.git().abort_conflicts(&worktree_path)?;
 
@@ -827,12 +839,13 @@ pub async fn continue_workspace_rebase(
         .await?
         .ok_or(RepoError::NotFound)?;
 
-    let container_ref = deployment
+    deployment
         .container()
         .ensure_container_exists(&workspace)
         .await?;
-    let workspace_path = Path::new(&container_ref);
-    let worktree_path = workspace_path.join(&repo.name);
+    let worktree_path = workspace
+        .execution_dir(&repo)
+        .ok_or_else(|| ApiError::BadRequest("execution dir unresolved".to_string()))?;
 
     deployment.git().continue_rebase(&worktree_path)?;
 
