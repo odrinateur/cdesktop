@@ -25,6 +25,11 @@ import {
   MIN_INITIAL_ENTRIES,
   REMAINING_BATCH_SIZE,
 } from '@/shared/hooks/useConversationHistory/constants';
+import { HISTORIC_FETCH_CONCURRENCY, runBounded } from '../runBounded';
+import {
+  getCachedEntries,
+  setCachedEntries,
+} from '../executionProcessEntriesCache';
 
 export const useConversationHistory = ({
   onTimelineUpdated,
@@ -95,7 +100,12 @@ export const useConversationHistory = ({
 
   const loadEntriesForHistoricExecutionProcess = (
     executionProcess: ExecutionProcess
-  ) => {
+  ): Promise<PatchType[]> => {
+    const cached = getCachedEntries(executionProcess.id);
+    if (cached !== undefined) {
+      return Promise.resolve(cached);
+    }
+
     let url = '';
     if (executionProcess.executor_action.typ.type === 'ScriptRequest') {
       url = `/api/execution-processes/${executionProcess.id}/raw-logs/ws`;
@@ -106,6 +116,7 @@ export const useConversationHistory = ({
     return new Promise<PatchType[]>((resolve) => {
       const controller = streamJsonPatchEntries<PatchType>(url, {
         onFinished: (allEntries) => {
+          setCachedEntries(executionProcess.id, allEntries);
           controller.close();
           resolve(allEntries);
         },
@@ -263,22 +274,27 @@ export const useConversationHistory = ({
 
       if (!executionProcesses?.current) return localDisplayedExecutionProcesses;
 
-      for (const executionProcess of [
-        ...executionProcesses.current,
-      ].reverse()) {
-        if (executionProcess.status === ExecutionProcessStatus.running)
-          continue;
+      const pending = [...executionProcesses.current]
+        .reverse()
+        .filter((ep) => ep.status !== ExecutionProcessStatus.running);
 
-        const entries =
-          await loadEntriesForHistoricExecutionProcess(executionProcess);
-        const entriesWithKey = entries.map((e, idx) =>
-          patchWithKey(e, executionProcess.id, idx)
+      for (let i = 0; i < pending.length; i += HISTORIC_FETCH_CONCURRENCY) {
+        const batch = pending.slice(i, i + HISTORIC_FETCH_CONCURRENCY);
+        const batchResults = await runBounded(
+          batch,
+          HISTORIC_FETCH_CONCURRENCY,
+          loadEntriesForHistoricExecutionProcess
         );
 
-        localDisplayedExecutionProcesses[executionProcess.id] = {
-          executionProcess,
-          entries: entriesWithKey,
-        };
+        batch.forEach((executionProcess, idx) => {
+          const entriesWithKey = batchResults[idx].map((e, eIdx) =>
+            patchWithKey(e, executionProcess.id, eIdx)
+          );
+          localDisplayedExecutionProcesses[executionProcess.id] = {
+            executionProcess,
+            entries: entriesWithKey,
+          };
+        });
 
         if (
           maxEntries != null &&
@@ -297,37 +313,41 @@ export const useConversationHistory = ({
     async (batchSize: number): Promise<boolean> => {
       if (!executionProcesses?.current) return false;
 
-      let anyUpdated = false;
-      for (const executionProcess of [
-        ...executionProcesses.current,
-      ].reverse()) {
-        const current = displayedExecutionProcesses.current;
-        if (
-          current[executionProcess.id] ||
-          executionProcess.status === ExecutionProcessStatus.running
-        )
-          continue;
+      const current = displayedExecutionProcesses.current;
+      const pending = [...executionProcesses.current]
+        .reverse()
+        .filter(
+          (ep) =>
+            !current[ep.id] && ep.status !== ExecutionProcessStatus.running
+        );
 
-        const entries =
-          await loadEntriesForHistoricExecutionProcess(executionProcess);
-        const entriesWithKey = entries.map((e, idx) =>
-          patchWithKey(e, executionProcess.id, idx)
+      let anyUpdated = false;
+      for (let i = 0; i < pending.length; i += HISTORIC_FETCH_CONCURRENCY) {
+        const batch = pending.slice(i, i + HISTORIC_FETCH_CONCURRENCY);
+        const batchResults = await runBounded(
+          batch,
+          HISTORIC_FETCH_CONCURRENCY,
+          loadEntriesForHistoricExecutionProcess
         );
 
         mergeIntoDisplayed((state) => {
-          state[executionProcess.id] = {
-            executionProcess,
-            entries: entriesWithKey,
-          };
+          batch.forEach((executionProcess, idx) => {
+            const entriesWithKey = batchResults[idx].map((e, eIdx) =>
+              patchWithKey(e, executionProcess.id, eIdx)
+            );
+            state[executionProcess.id] = {
+              executionProcess,
+              entries: entriesWithKey,
+            };
+          });
         });
+        anyUpdated = true;
 
         if (
           flattenEntries(displayedExecutionProcesses.current).length > batchSize
         ) {
-          anyUpdated = true;
           break;
         }
-        anyUpdated = true;
       }
       return anyUpdated;
     },
@@ -385,6 +405,10 @@ export const useConversationHistory = ({
     emittedEmptyInitialRef.current = false;
     streamingProcessIdsRef.current.clear();
     previousStatusMapRef.current.clear();
+    // Must stay declared before the load effect below — the load effect may flip
+    // this false in the empty-processes branch, and React runs effects in
+    // declaration order within a commit.
+    setIsLoadingHistory(true);
     emitEntries(displayedExecutionProcesses.current, 'initial', true);
   }, [scopeKey, emitEntries]);
 
@@ -398,6 +422,7 @@ export const useConversationHistory = ({
       if (executionProcesses.current.length === 0) {
         if (emittedEmptyInitialRef.current) return;
         emittedEmptyInitialRef.current = true;
+        setIsLoadingHistory(false);
         emitEntries(displayedExecutionProcesses.current, 'initial', false);
         return;
       }
@@ -412,7 +437,6 @@ export const useConversationHistory = ({
       });
       emitEntries(displayedExecutionProcesses.current, 'initial', false);
 
-      setIsLoadingHistory(true);
       while (
         !cancelled &&
         (await loadRemainingEntriesInBatches(REMAINING_BATCH_SIZE))
