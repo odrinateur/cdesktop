@@ -64,6 +64,9 @@ export interface ConversationListHandle {
 const ALWAYS_UNVIRTUALIZED_TAIL_ROWS = 8;
 const STREAMING_UNVIRTUALIZED_BUFFER_ROWS = 24;
 
+const SKELETON_ROW_WIDTHS = ['75%', '55%', '85%', '45%'];
+const SKELETON_ROW_HEIGHTS = ['64px', '48px', '80px', '40px'];
+
 function renderRowContent(
   entry: DisplayEntry,
   attempt: WorkspaceWithSession,
@@ -777,7 +780,23 @@ export const ConversationList = forwardRef<
             )}
           </div>
 
-          {isLoadingHistory && !showLoader && (
+          {isLoadingHistory && conversationRows.length === 0 && (
+            <div className="flex flex-col gap-base px-double py-base">
+              {SKELETON_ROW_WIDTHS.map((width, idx) => (
+                <div
+                  key={idx}
+                  className="animate-pulse rounded-md bg-foreground/[0.06]"
+                  style={{
+                    width,
+                    height: SKELETON_ROW_HEIGHTS[idx],
+                    animationDelay: `${idx * 120}ms`,
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
+          {isLoadingHistory && !showLoader && conversationRows.length > 0 && (
             <div className="flex flex-col items-center gap-2 px-double py-3">
               <div className="flex w-full max-w-md flex-col gap-1.5">
                 <div className="flex items-center gap-2">
