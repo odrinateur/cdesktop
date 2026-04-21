@@ -89,6 +89,10 @@ pub async fn get_repo_branches(
         .get_by_id(&deployment.db().pool, repo_id)
         .await?;
 
+    if !repo.is_git {
+        return Ok(ResponseJson(ApiResponse::success(vec![])));
+    }
+
     let branches = deployment.git().get_all_branches(&repo.path)?;
     Ok(ResponseJson(ApiResponse::success(branches)))
 }
@@ -101,6 +105,10 @@ pub async fn get_repo_remotes(
         .repo()
         .get_by_id(&deployment.db().pool, repo_id)
         .await?;
+
+    if !repo.is_git {
+        return Ok(ResponseJson(ApiResponse::success(vec![])));
+    }
 
     let remotes = deployment.git().list_remotes(&repo.path)?;
     Ok(ResponseJson(ApiResponse::success(remotes)))
@@ -238,6 +246,7 @@ pub enum ListPrsError {
     CliNotInstalled { provider: ProviderKind },
     AuthFailed { message: String },
     UnsupportedProvider,
+    NonGitRepo,
 }
 
 #[derive(Debug, Deserialize)]
@@ -254,6 +263,12 @@ pub async fn list_open_prs(
         .repo()
         .get_by_id(&deployment.db().pool, repo_id)
         .await?;
+
+    if !repo.is_git {
+        return Ok(ResponseJson(ApiResponse::error_with_data(
+            ListPrsError::NonGitRepo,
+        )));
+    }
 
     let remote = match query.remote {
         Some(name) => GitRemote {

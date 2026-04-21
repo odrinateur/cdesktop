@@ -57,6 +57,9 @@ pub async fn compute_diff_stats(
     let mut stats = DiffStats::default();
 
     for repo_with_branch in workspace_repos {
+        if !repo_with_branch.repo.is_git {
+            continue;
+        }
         let Some(worktree_path) = workspace.execution_dir(&repo_with_branch.repo) else {
             continue;
         };

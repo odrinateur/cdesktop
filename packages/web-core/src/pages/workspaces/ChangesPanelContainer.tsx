@@ -17,6 +17,7 @@ const WorkerUrl = new URL(
   import.meta.url
 ).href;
 import { sortDiffs } from '@/shared/lib/fileTreeUtils';
+import { useWorkspaceContext } from '@/shared/hooks/useWorkspaceContext';
 import { useChangesView } from '@/shared/hooks/useChangesView';
 import { useScrollSyncStateMachine } from '@/shared/hooks/useScrollSyncStateMachine';
 import { useFileInViewStore } from '@/shared/stores/useFileInViewStore';
@@ -599,6 +600,8 @@ export const ChangesPanelContainer = memo(function ChangesPanelContainer({
   workspaceId,
 }: ChangesPanelContainerProps) {
   const diffs = useDiffs();
+  const { repos } = useWorkspaceContext();
+  const hasGitRepo = repos.some((r) => r.is_git);
   const { registerScrollToFile } = useChangesView();
   const [processedPaths] = useState(() => new Set<string>());
   const [mountedCount, setMountedCount] = useState(0);
@@ -851,6 +854,16 @@ export const ChangesPanelContainer = memo(function ChangesPanelContainer({
       registerScrollToFile(null);
     };
   }, [registerScrollToFile, handleScrollToFile]);
+
+  if (repos.length > 0 && !hasGitRepo) {
+    return (
+      <div
+        className={`w-full h-full flex items-center justify-center bg-secondary text-sm text-tertiary ${className}`}
+      >
+        Not a Git repo — no diff available
+      </div>
+    );
+  }
 
   return (
     <WorkerPoolContextProvider

@@ -19,8 +19,6 @@ pub enum RepoError {
     PathNotFound(PathBuf),
     #[error("Path is not a directory: {0}")]
     PathNotDirectory(PathBuf),
-    #[error("Path is not a git repository: {0}")]
-    NotGitRepository(PathBuf),
     #[error("Repository not found")]
     NotFound,
     #[error("Directory already exists: {0}")]
@@ -41,7 +39,7 @@ impl RepoService {
         Self
     }
 
-    fn validate_git_repo_path(&self, path: &Path) -> Result<()> {
+    fn validate_repo_path(&self, path: &Path) -> Result<()> {
         if !path.exists() {
             return Err(RepoError::PathNotFound(path.to_path_buf()));
         }
@@ -50,11 +48,11 @@ impl RepoService {
             return Err(RepoError::PathNotDirectory(path.to_path_buf()));
         }
 
-        if !path.join(".git").exists() {
-            return Err(RepoError::NotGitRepository(path.to_path_buf()));
-        }
-
         Ok(())
+    }
+
+    fn detect_git_repo(&self, path: &Path) -> bool {
+        path.join(".git").exists()
     }
 
     pub fn normalize_path(&self, path: &str) -> std::io::Result<PathBuf> {
@@ -68,7 +66,8 @@ impl RepoService {
         display_name: Option<&str>,
     ) -> Result<RepoModel> {
         let normalized_path = self.normalize_path(path)?;
-        self.validate_git_repo_path(&normalized_path)?;
+        self.validate_repo_path(&normalized_path)?;
+        let is_git = self.detect_git_repo(&normalized_path);
 
         let name = normalized_path
             .file_name()
@@ -77,7 +76,7 @@ impl RepoService {
 
         let display_name = display_name.unwrap_or(&name);
 
-        let repo = RepoModel::find_or_create(pool, &normalized_path, display_name).await?;
+        let repo = RepoModel::find_or_create(pool, &normalized_path, display_name, is_git).await?;
         Ok(repo)
     }
 
@@ -123,7 +122,7 @@ impl RepoService {
 
         git.initialize_repo_with_main_branch(&repo_path)?;
 
-        let repo = RepoModel::find_or_create(pool, &repo_path, folder_name).await?;
+        let repo = RepoModel::find_or_create(pool, &repo_path, folder_name, true).await?;
         Ok(repo)
     }
 

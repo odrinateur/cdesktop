@@ -59,6 +59,7 @@ pub enum PrError {
     GitCliNotInstalled,
     TargetBranchNotFound { branch: String },
     UnsupportedProvider,
+    NonGitRepo,
 }
 
 #[derive(Debug, Serialize, TS)]
@@ -86,6 +87,7 @@ pub enum GetPrCommentsError {
     NoPrAttached,
     CliNotInstalled { provider: ProviderKind },
     CliNotLoggedIn { provider: ProviderKind },
+    NonGitRepo,
 }
 
 #[derive(Debug, Deserialize, TS)]
@@ -200,6 +202,12 @@ pub async fn create_pr(
     let repo = Repo::find_by_id(pool, workspace_repo.repo_id)
         .await?
         .ok_or(RepoError::NotFound)?;
+
+    if !repo.is_git {
+        return Ok(ResponseJson(ApiResponse::error_with_data(
+            PrError::NonGitRepo,
+        )));
+    }
 
     let repo_path = repo.path.clone();
     let target_branch = if let Some(branch) = request.target_branch {
@@ -404,6 +412,12 @@ pub async fn attach_existing_pr(
         .await?
         .ok_or(RepoError::NotFound)?;
 
+    if !repo.is_git {
+        return Ok(ResponseJson(ApiResponse::error_with_data(
+            PrError::NonGitRepo,
+        )));
+    }
+
     // Check if PR already attached for this repo
     let merges = Merge::find_by_workspace_and_repo_id(pool, workspace.id, request.repo_id).await?;
     if let Some(Merge::Pr(pr_merge)) = merges.into_iter().next() {
@@ -560,6 +574,12 @@ pub async fn get_pr_comments(
         .await?
         .ok_or(RepoError::NotFound)?;
 
+    if !repo.is_git {
+        return Ok(ResponseJson(ApiResponse::error_with_data(
+            GetPrCommentsError::NonGitRepo,
+        )));
+    }
+
     // Find the merge/PR for this specific repo
     let merges = Merge::find_by_workspace_and_repo_id(pool, workspace.id, query.repo_id).await?;
 
@@ -643,6 +663,7 @@ pub enum CreateFromPrError {
     CliNotInstalled { provider: ProviderKind },
     AuthFailed { message: String },
     UnsupportedProvider,
+    NonGitRepo,
 }
 
 /// Best-effort cleanup of partially-created workspace resources.
@@ -703,6 +724,12 @@ pub async fn create_workspace_from_pr(
     let repo = Repo::find_by_id(pool, payload.repo_id)
         .await?
         .ok_or(RepoError::NotFound)?;
+
+    if !repo.is_git {
+        return Ok(ResponseJson(ApiResponse::error_with_data(
+            CreateFromPrError::NonGitRepo,
+        )));
+    }
 
     let remote = match payload.remote_name {
         Some(ref name) => GitRemote {

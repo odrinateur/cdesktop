@@ -50,6 +50,8 @@ pub enum WorkspaceError {
     RepoAlreadyAttached,
     #[error("Branch '{branch}' does not exist in repository '{repo_name}'")]
     BranchNotFound { repo_name: String, branch: String },
+    #[error("Non-Git repo requires direct mode; set use_worktree = false on the workspace")]
+    NonGitRepoRequiresDirectMode,
     #[error("No repositories provided")]
     NoRepositories,
     #[error("Partial workspace creation failed: {0}")]
@@ -134,7 +136,11 @@ impl ManagedWorkspace {
             .await?
             .ok_or(RepoError::NotFound)?;
 
-        if !git.check_branch_exists(&repo.path, &repo_ref.target_branch)? {
+        if self.workspace.use_worktree && !repo.is_git {
+            return Err(WorkspaceError::NonGitRepoRequiresDirectMode);
+        }
+
+        if repo.is_git && !git.check_branch_exists(&repo.path, &repo_ref.target_branch)? {
             return Err(WorkspaceError::BranchNotFound {
                 repo_name: repo.name,
                 branch: repo_ref.target_branch.clone(),

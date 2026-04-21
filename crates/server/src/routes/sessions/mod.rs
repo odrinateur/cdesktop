@@ -150,7 +150,9 @@ pub async fn follow_up(
     // with their own working tree — no dirty-tree pre-check.
     if !workspace.use_worktree {
         let repos = WorkspaceRepo::find_repos_for_workspace(pool, workspace.id).await?;
-        if let Some(repo) = repos.first() {
+        if let Some(repo) = repos.first()
+            && repo.is_git
+        {
             let git = deployment.git();
             if let Some(branch) = payload.branch.as_deref() {
                 let create_new = payload.create_new_branch.unwrap_or(false);
