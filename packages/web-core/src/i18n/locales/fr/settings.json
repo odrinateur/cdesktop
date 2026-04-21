@@ -159,12 +159,12 @@
           }
         },
         "workspaceDir": {
-          "label": "Répertoire des espaces de travail",
+          "label": "Répertoire des sessions",
           "placeholder": "~/",
-          "helper": "Les espaces de travail seront créés dans un sous-répertoire .vibe-kanban-workspaces à l'intérieur de ce chemin. Laissez vide pour utiliser la valeur par défaut du système. Les modifications nécessitent un redémarrage de l'application.",
+          "helper": "Les sessions seront créées dans un sous-répertoire .cdesktop-workspaces à l'intérieur de ce chemin. Laissez vide pour utiliser la valeur par défaut du système. Les modifications nécessitent un redémarrage de l'application.",
           "browse": "Parcourir",
-          "dialogTitle": "Sélectionner le répertoire des espaces de travail",
-          "dialogDescription": "Choisissez un répertoire. Les espaces de travail seront créés dans un sous-répertoire .vibe-kanban-workspaces à l'intérieur."
+          "dialogTitle": "Sélectionner le répertoire des sessions",
+          "dialogDescription": "Choisissez un répertoire. Les sessions seront créées dans un sous-répertoire .cdesktop-workspaces à l'intérieur."
         }
       },
       "pullRequests": {
@@ -288,8 +288,8 @@
         "title": "Fonctionnalités bêta",
         "description": "Essayez les fonctionnalités expérimentales avant leur sortie.",
         "workspaces": {
-          "label": "Activer la bêta des espaces de travail",
-          "helper": "Utiliser la nouvelle interface des espaces de travail lors de la visualisation des tentatives de tâches. Les tâches s'ouvriront d'abord en vue tâche, et les tentatives s'ouvriront dans la nouvelle vue des espaces de travail."
+          "label": "Activer la bêta des sessions",
+          "helper": "Utiliser la nouvelle interface des sessions lors de la visualisation des tentatives de tâches. Les tâches s'ouvriront d'abord en vue tâche, et les tentatives s'ouvriront dans la nouvelle vue des sessions."
         }
       }
     },
@@ -429,7 +429,7 @@
     },
     "repos": {
       "title": "Configuration du dépôt",
-      "description": "Configurez les scripts qui s'exécutent lorsque ce dépôt est utilisé dans les espaces de travail.",
+      "description": "Configurez les scripts qui s'exécutent lorsque ce dépôt est utilisé dans les sessions.",
       "loading": "Chargement des dépôts...",
       "loadError": "Échec du chargement des dépôts.",
       "addRepo": {
@@ -458,12 +458,12 @@
         "defaultWorkingDir": {
           "label": "Répertoire de travail par défaut",
           "placeholder": "ex. : packages/frontend",
-          "helper": "Sous-répertoire relatif à la racine du dépôt où l'agent de codage s'exécute pour les espaces de travail à dépôt unique. Défini lors de la création de l'espace de travail. Laissez vide pour utiliser la racine du dépôt."
+          "helper": "Sous-répertoire relatif à la racine du dépôt où l'agent de codage s'exécute pour les sessions à dépôt unique. Défini lors de la création de la session. Laissez vide pour utiliser la racine du dépôt."
         },
         "defaultTargetBranch": {
           "label": "Branche cible par défaut",
           "placeholder": "Sélectionner une branche",
-          "helper": "La branche de base par défaut pour les nouveaux espaces de travail. Les worktrees partent de cette branche et les PRs la cibleront.",
+          "helper": "La branche de base par défaut pour les nouvelles sessions. Les worktrees partent de cette branche et les PRs la cibleront.",
           "search": "Rechercher des branches",
           "noBranches": "Aucune branche trouvée",
           "loading": "Chargement des branches...",
@@ -472,7 +472,7 @@
       },
       "scripts": {
         "title": "Scripts et configuration",
-        "description": "Configurez le serveur de développement, la configuration, le nettoyage et les fichiers à copier pour ce dépôt. Ces scripts s'exécutent chaque fois que le dépôt est utilisé dans un espace de travail.",
+        "description": "Configurez le serveur de développement, la configuration, le nettoyage et les fichiers à copier pour ce dépôt. Ces scripts s'exécutent chaque fois que le dépôt est utilisé dans une session.",
         "setup": {
           "label": "Script de configuration",
           "helper": "Ce script s'exécute depuis le worktree après sa création et avant le démarrage de l'agent de codage. Utilisez-le pour les tâches de configuration comme l'installation des dépendances ou la préparation de l'environnement.",
@@ -485,7 +485,7 @@
         },
         "archive": {
           "label": "Script d'archivage",
-          "helper": "Ce script s'exécute depuis le worktree lorsque l'espace de travail est archivé. Utilisez-le pour les tâches de nettoyage comme l'arrêt des services, la libération des ressources ou la sauvegarde de l'état."
+          "helper": "Ce script s'exécute depuis le worktree lorsque la session est archivéee. Utilisez-le pour les tâches de nettoyage comme l'arrêt des services, la libération des ressources ou la sauvegarde de l'état."
         },
         "copyFiles": {
           "label": "Copier les fichiers",
@@ -499,7 +499,7 @@
       },
       "linkedProjects": {
         "title": "Projets liés",
-        "description": "Projets utilisant ce dépôt dans leur configuration d'espace de travail par défaut.",
+        "description": "Projets utilisant ce dépôt dans leur configuration d'session par défaut.",
         "loading": "Vérification des projets…",
         "none": "Aucun projet lié"
       },
@@ -580,7 +580,7 @@
         },
         "defaultRepos": {
           "label": "Default Repositories",
-          "description": "Repositories that are automatically added when creating workspaces from this project's issues.",
+          "description": "Repositories that are automatically added when creating sessions from this project's issues.",
           "empty": "No default repositories configured",
           "addButton": "Add",
           "addNew": "Add new repository...",

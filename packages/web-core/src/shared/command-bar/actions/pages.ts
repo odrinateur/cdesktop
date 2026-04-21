@@ -51,13 +51,13 @@ export const Pages: Record<StaticPageId, CommandBarPage> = {
   // Workspace actions page - shown when clicking three-dots on a workspace
   workspaceActions: {
     id: 'workspace-actions',
-    title: 'Workspace Actions',
+    title: 'Session Actions',
     parent: 'root',
     isVisible: (ctx) => ctx.hasWorkspace,
     items: [
       {
         type: 'group',
-        label: 'Workspace',
+        label: 'Session',
         items: [
           { type: 'action', action: Actions.StartReview },
           { type: 'action', action: Actions.RenameWorkspace },

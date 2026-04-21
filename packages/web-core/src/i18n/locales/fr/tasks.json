@@ -473,8 +473,8 @@
     "statusKilled": "Le processus a été interrompu"
   },
   "createWorkspaceFromPr": {
-    "title": "Créer un espace de travail à partir d'une PR",
-    "description": "Sélectionnez une pull request ouverte pour créer un espace de travail. Une tâche sera créée automatiquement avec le titre de la PR.",
+    "title": "Créer une session à partir d'une PR",
+    "description": "Sélectionnez une pull request ouverte pour créer une session. Une tâche sera créée automatiquement avec le titre de la PR.",
     "repositoryLabel": "Dépôt",
     "remoteLabel": "Distant",
     "pullRequestLabel": "Pull Request",
@@ -486,7 +486,7 @@
     "noPullRequestsFound": "Aucune pull request ouverte trouvée",
     "runSetupScript": "Exécuter le script de configuration",
     "creating": "Création...",
-    "createWorkspace": "Créer l'espace de travail",
+    "createWorkspace": "Créer la session",
     "selectRepository": "Sélectionner un dépôt",
     "selectRemote": "Sélectionner un distant",
     "selectPullRequest": "Sélectionner une pull request",
@@ -499,7 +499,7 @@
       "unsupportedProvider": "Fournisseur Git non pris en charge",
       "failedToLoadPrs": "Échec du chargement des pull requests",
       "prNotFound": "Pull request non trouvée",
-      "failedToCreateWorkspace": "Échec de la création de l'espace de travail"
+      "failedToCreateWorkspace": "Échec de la création de la session"
     }
   },
   "shareDialog": {

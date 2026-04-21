@@ -49,7 +49,7 @@
     "subagent": {
       "defaultType": "Sous-agent"
     },
-    "loadingEarlierMessages": "Chargement des messages pr\u00e9c\u00e9dents"
+    "loadingEarlierMessages": "Chargement des messages précédents"
   },
   "folderPicker": {
     "legend": "Cliquez sur les noms de dossiers pour naviguer • Utilisez les boutons d'action pour sélectionner",
@@ -108,19 +108,19 @@
     "label": "Libellé"
   },
   "workspaces": {
-    "title": "Espaces de travail",
+    "title": "Sessions",
     "searchPlaceholder": "Rechercher...",
     "active": "Actif",
     "archived": "Archivé",
     "loading": "Chargement...",
-    "notFound": "Espace de travail introuvable",
-    "selectToStart": "Sélectionnez un espace de travail pour commencer",
+    "notFound": "Session introuvable",
+    "selectToStart": "Sélectionnez une session pour commencer",
     "draft": "Brouillon",
     "viewArchive": "Voir les archives",
     "backToActive": "Retour aux actifs",
-    "noArchived": "Aucun espace de travail archivé",
-    "noWorkspaces": "Aucun espace de travail",
-    "newWorkspace": "Nouvel espace de travail",
+    "noArchived": "Aucune session archivée",
+    "noWorkspaces": "Aucune session",
+    "newWorkspace": "Nouvelle session",
     "needsAttention": "Nécessite Attention",
     "idle": "Inactif",
     "running": "En Cours",
@@ -129,30 +129,30 @@
     "archive": "Archiver",
     "more": "Plus d'actions",
     "rename": {
-      "title": "Renommer l'espace de travail",
-      "description": "Saisissez un nouveau nom pour cet espace de travail.",
+      "title": "Renommer la session",
+      "description": "Saisissez un nouveau nom pour cette session.",
       "nameLabel": "Nom",
-      "placeholder": "Saisir le nom de l'espace de travail",
+      "placeholder": "Saisir le nom de la session",
       "action": "Renommer",
       "renaming": "Renommage..."
     },
     "unlinkFromIssue": "Dissocier du problème",
-    "deleteWorkspace": "Supprimer l'espace de travail",
+    "deleteWorkspace": "Supprimer la session",
     "unlink": "Dissocier",
     "delete": "Supprimer",
-    "unlinkConfirmMessage": "Êtes-vous sûr de vouloir dissocier cet espace de travail du problème ? L'espace de travail existera toujours mais ne sera plus associé à ce problème.",
-    "deleteConfirmMessage": "Êtes-vous sûr de vouloir supprimer cet espace de travail ? Cela le dissociera du problème et supprimera l'espace de travail local. Cette action est irréversible.",
-    "unlinkError": "Échec de la dissociation de l'espace de travail",
-    "deleteError": "Échec de la suppression de l'espace de travail",
+    "unlinkConfirmMessage": "Êtes-vous sûr de vouloir dissocier cette session du problème ? La session existera toujours mais ne sera plus associée à ce problème.",
+    "deleteConfirmMessage": "Êtes-vous sûr de vouloir supprimer cette session ? Cela la dissociera du problème et supprimera la session locale. Cette action est irréversible.",
+    "unlinkError": "Échec de la dissociation de la session",
+    "deleteError": "Échec de la suppression de la session",
     "filesChanged": "{{count}} fichiers",
     "deleteDialog": {
-      "title": "Supprimer l'espace de travail",
-      "description": "Êtes-vous sûr de vouloir supprimer cet espace de travail ? Cette action est irréversible.",
+      "title": "Supprimer la session",
+      "description": "Êtes-vous sûr de vouloir supprimer cette session ? Cette action est irréversible.",
       "deleteBranchLabel": "Supprimer la branche",
       "cannotDeleteOpenPr": "Impossible de supprimer la branche tant que la PR est ouverte",
       "unlinkFromIssueLabel": "Également dissocier du ticket"
     },
-    "linkError": "Failed to link workspace"
+    "linkError": "Failed to link session"
   },
   "fileTree": {
     "searchPlaceholder": "Rechercher des fichiers...",
@@ -179,8 +179,8 @@
     "notes": "Notes"
   },
   "notes": {
-    "placeholder": "Ajouter des notes sur cet espace de travail...",
-    "selectWorkspace": "Sélectionnez un espace de travail pour voir les notes"
+    "placeholder": "Ajouter des notes sur cette session...",
+    "selectWorkspace": "Sélectionnez une session pour voir les notes"
   },
   "actions": {
     "copyPath": "Copier le chemin",
@@ -216,27 +216,27 @@
   "workspacesGuide": {
     "welcome": {
       "title": "Bienvenue",
-      "content": "Bienvenue dans les Espaces de travail, une interface repensée pour Vibe Kanban. Nous la déployons auprès d'utilisateurs sélectionnés pour recueillir leurs premiers retours. Partagez vos impressions à tout moment en utilisant l'icône de feedback dans la barre de navigation."
+      "content": "Bienvenue dans les Sessions, une interface repensée pour Vibe Kanban. Nous la déployons auprès d'utilisateurs sélectionnés pour recueillir leurs premiers retours. Partagez vos impressions à tout moment en utilisant l'icône de feedback dans la barre de navigation."
     },
     "commandBar": {
       "title": "Barre de commandes",
-      "content": "La barre de commandes est votre hub central de navigation. Ouvrez-la avec CMD+K pour rechercher et accéder à toutes les actions disponibles dans un espace de travail."
+      "content": "La barre de commandes est votre hub central de navigation. Ouvrez-la avec CMD+K pour rechercher et accéder à toutes les actions disponibles dans une session."
     },
     "contextBar": {
       "title": "Barre de contexte",
       "content": "La barre de contexte vous permet de basculer rapidement entre les panneaux. Faites-la glisser là où cela vous convient le mieux."
     },
     "sidebar": {
-      "title": "Barre latérale des espaces de travail",
-      "content": "Visualisez l'état de tous vos espaces de travail d'un coup d'œil. Les notifications mettent en évidence ceux qui nécessitent votre attention. Archivez les espaces de travail fusionnés pour garder votre barre latérale propre."
+      "title": "Barre latérale des sessions",
+      "content": "Visualisez l'état de tous vos sessions d'un coup d'œil. Les notifications mettent en évidence ceux qui nécessitent votre attention. Archivez les sessions fusionnées pour garder votre barre latérale propre."
     },
     "multiRepo": {
       "title": "Support multi-dépôts",
-      "content": "Ajoutez plusieurs dépôts à un seul espace de travail. Référencez le code d'un dépôt tout en travaillant dans un autre, ou implémentez des modifications sur plusieurs dépôts à la fois."
+      "content": "Ajoutez plusieurs dépôts à un seul session. Référencez le code d'un dépôt tout en travaillant dans un autre, ou implémentez des modifications sur plusieurs dépôts à la fois."
     },
     "sessions": {
       "title": "Sessions multiples",
-      "content": "Créez plusieurs sessions de conversation d'agent au sein d'un même espace de travail, y compris des sessions avec différents agents. Cela vous aide à contourner les limites de conversation ou à lancer des agents de révision dans des fils séparés."
+      "content": "Créez plusieurs sessions de conversation d'agent au sein d'un même session, y compris des sessions avec différents agents. Cela vous aide à contourner les limites de conversation ou à lancer des agents de révision dans des fils séparés."
     },
     "preview": {
       "title": "Prévisualiser les modifications",
@@ -244,11 +244,11 @@
     },
     "diffs": {
       "title": "Diffs et commentaires",
-      "content": "Le panneau de diffs repensé inclut une arborescence de vos modifications. Commentez directement sur les diffs pour donner des retours à l'agent, et visualisez les commentaires GitHub lorsque votre espace de travail est lié à une PR."
+      "content": "Le panneau de diffs repensé inclut une arborescence de vos modifications. Commentez directement sur les diffs pour donner des retours à l'agent, et visualisez les commentaires GitHub lorsque votre session est liée à une PR."
     },
     "classicUi": {
       "title": "Retourner à l'interface classique",
-      "content": "Cliquez sur l'icône de sortie à gauche de la barre de navigation pour revenir au tableau kanban classique. Pour désactiver complètement la nouvelle interface, modifiez l'option \"Activer la bêta des espaces de travail\" sous \"Fonctionnalités bêta\" dans les paramètres."
+      "content": "Cliquez sur l'icône de sortie à gauche de la barre de navigation pour revenir au tableau kanban classique. Pour désactiver complètement la nouvelle interface, modifiez l'option \"Activer la bêta des sessions\" sous \"Fonctionnalités bêta\" dans les paramètres."
     }
   },
   "logs": {
@@ -271,7 +271,7 @@
   },
   "shortcuts": {
     "title": "Raccourcis Clavier",
-    "inWorkspace": "(dans l'espace de travail)",
+    "inWorkspace": "(dans la session)",
     "sequentialHint": "Raccourcis séquentiels : Appuyez sur la première touche, puis sur la seconde en 500ms.",
     "configurableHint": "Configurable dans Paramètres → Général → Saisie de Message",
     "groups": {
@@ -279,7 +279,7 @@
       "navigation": "Navigation",
       "modifiers": "Modificateurs",
       "goTo": "Aller à (G ...)",
-      "workspace": "Espace de travail (W ...)",
+      "workspace": "Session (W ...)",
       "view": "Vue (V ...)",
       "issues": "Tickets (I ...)",
       "git": "Git (X ...)",
@@ -301,12 +301,12 @@
       "formatInlineCode": "Format inline code",
       "sendMessage": "Envoyer le message",
       "settings": "Aller aux Paramètres",
-      "new-workspace": "Aller au Nouvel espace de travail",
-      "duplicate-workspace": "Dupliquer l'espace de travail",
-      "rename-workspace": "Renommer l'espace de travail",
-      "pin-workspace": "Épingler/Désépingler l'espace de travail",
-      "archive-workspace": "Archiver l'espace de travail",
-      "delete-workspace": "Supprimer l'espace de travail",
+      "new-workspace": "Aller à la nouvelle session",
+      "duplicate-workspace": "Dupliquer la session",
+      "rename-workspace": "Renommer la session",
+      "pin-workspace": "Épingler/Désépingler la session",
+      "archive-workspace": "Archiver la session",
+      "delete-workspace": "Supprimer la session",
       "toggle-changes-mode": "Basculer le panneau Modifications",
       "toggle-logs-mode": "Basculer le panneau Logs",
       "toggle-preview-mode": "Basculer le panneau Aperçu",
@@ -319,7 +319,7 @@
       "make-sub-issue-of": "Transformer en sous-ticket de",
       "add-sub-issue": "Ajouter un sous-ticket",
       "remove-parent-issue": "Retirer le parent",
-      "link-workspace": "Lier un espace de travail",
+      "link-workspace": "Lier une session",
       "duplicate-issue": "Dupliquer le ticket",
       "delete-issue": "Supprimer le ticket",
       "git-create-pr": "Créer une Pull Request",
@@ -372,8 +372,8 @@
     "copyLink": "Copier le lien",
     "issueTitlePlaceholder": "Titre du ticket...",
     "issueDescriptionPlaceholder": "Entrez la description de la tâche...",
-    "createDraftWorkspaceImmediately": "Créer immédiatement un espace de travail brouillon",
-    "createDraftWorkspaceDescription": "Après la création de l'issue, ouvrir le formulaire de création de workspace pré-rempli avec les détails de l'issue",
+    "createDraftWorkspaceImmediately": "Créer immédiatement une session brouillon",
+    "createDraftWorkspaceDescription": "Après la création de l'issue, ouvrir le formulaire de création de session pré-rempli avec les détails de l'issue",
     "createIssue": "Créer la tâche",
     "newIssue": "Nouveau ticket",
     "previewCodeBlock": "[Bloc de code]",
@@ -413,22 +413,22 @@
     "tags": "Tags",
     "sortBy": "Sort",
     "workspaceSidebar": {
-      "sortDialogTitle": "Sort workspaces",
-      "sortDialogDescription": "Choose how workspaces are ordered in the sidebar.",
+      "sortDialogTitle": "Sort sessions",
+      "sortDialogDescription": "Choose how sessions are ordered in the sidebar.",
       "sortByLabel": "Sort by",
       "sortOrderLabel": "Sort order",
       "sortUpdatedAt": "Updated at",
       "sortCreatedAt": "Created at",
-      "filterDialogTitle": "Filter workspaces",
-      "filterDialogDescription": "Narrow down workspaces by project and PR state.",
+      "filterDialogTitle": "Filter sessions",
+      "filterDialogDescription": "Narrow down sessions by project and PR state.",
       "projectFilterLabel": "Project",
       "prFilterLabel": "PR",
       "prFilterAll": "All",
       "prFilterHasPr": "Has PR",
       "prFilterNoPr": "No PR",
       "noProject": "No project",
-      "sortButtonTitle": "Sort workspaces",
-      "filterButtonTitle": "Filter workspaces"
+      "sortButtonTitle": "Sort sessions",
+      "filterButtonTitle": "Filter sessions"
     },
     "sortAscending": "Ascending",
     "sortDescending": "Descending",
@@ -436,15 +436,15 @@
     "self": "Me",
     "priority": "Priority",
     "subIssuesFilterLabel": "Sub-issues",
-    "workspacesFilterLabel": "Workspaces",
+    "workspacesFilterLabel": "Sessions",
     "selectAssignees": "Select assignees...",
     "relationships": "Relationships",
     "noRelationships": "No relationships",
     "openProjectsGuide": "Projects guide",
     "editProjectSettings": "Edit project settings",
-    "linkWorkspace": "Link workspace...",
-    "createNewWorkspace": "Create new workspace",
-    "workspaces": "Workspaces",
+    "linkWorkspace": "Link session...",
+    "createNewWorkspace": "Create new session",
+    "workspaces": "Sessions",
     "showingWorkspaces": "Showing {{count}} of {{total}}",
     "changeColor": "Change color",
     "editName": "Edit name",
@@ -471,8 +471,8 @@
         "content": "Each issue represents a feature or problem to solve. Issues have statuses, priorities, assignees, tags, relationships, comments, sub-issues and more."
       },
       "workspaces": {
-        "title": "Workspaces",
-        "content": "To start working on an issue, create a workspace. A single issue can have multiple workspaces. Issues describe the work to be done, workspaces are where the work happens."
+        "title": "Sessions",
+        "content": "To start working on an issue, create a session. A single issue can have multiple sessions. Issues describe the work to be done, sessions are where the work happens."
       },
       "organizations": {
         "title": "Invite your team",

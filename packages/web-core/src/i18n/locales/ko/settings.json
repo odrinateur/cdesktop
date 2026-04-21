@@ -159,12 +159,12 @@
           }
         },
         "workspaceDir": {
-          "label": "워크스페이스 디렉토리",
+          "label": "세션 디렉토리",
           "placeholder": "~/",
-          "helper": "이 경로 내의 .vibe-kanban-workspaces 하위 디렉토리에 워크스페이스가 생성됩니다. 시스템 기본값을 사용하려면 비워두세요. 변경 사항은 앱을 다시 시작해야 적용됩니다.",
+          "helper": "이 경로 내의 .cdesktop-workspaces 하위 디렉토리에 세션이 생성됩니다. 시스템 기본값을 사용하려면 비워두세요. 변경 사항은 앱을 다시 시작해야 적용됩니다.",
           "browse": "찾아보기",
-          "dialogTitle": "워크스페이스 디렉토리 선택",
-          "dialogDescription": "디렉토리를 선택하세요. 워크스페이스는 해당 디렉토리 내의 .vibe-kanban-workspaces 하위 디렉토리에 생성됩니다."
+          "dialogTitle": "세션 디렉토리 선택",
+          "dialogDescription": "디렉토리를 선택하세요. 세션은 해당 디렉토리 내의 .cdesktop-workspaces 하위 디렉토리에 생성됩니다."
         }
       },
       "pullRequests": {
@@ -288,8 +288,8 @@
         "title": "베타 기능",
         "description": "출시 전 실험적인 기능을 체험해보세요.",
         "workspaces": {
-          "label": "워크스페이스 베타 활성화",
-          "helper": "작업 시도를 볼 때 새로운 워크스페이스 인터페이스를 사용합니다. 작업은 먼저 작업 보기에서 열리고, 시도는 새로운 워크스페이스 보기에서 열립니다."
+          "label": "세션 베타 활성화",
+          "helper": "작업 시도를 볼 때 새로운 세션 인터페이스를 사용합니다. 작업은 먼저 작업 보기에서 열리고, 시도는 새로운 세션 보기에서 열립니다."
         }
       }
     },
@@ -429,7 +429,7 @@
     },
     "repos": {
       "title": "저장소 구성",
-      "description": "이 저장소가 워크스페이스에서 사용될 때 실행되는 스크립트를 구성합니다.",
+      "description": "이 저장소가 세션에서 사용될 때 실행되는 스크립트를 구성합니다.",
       "loading": "저장소 로딩 중...",
       "loadError": "저장소를 불러오지 못했습니다.",
       "addRepo": {
@@ -458,12 +458,12 @@
         "defaultWorkingDir": {
           "label": "기본 작업 디렉터리",
           "placeholder": "예: packages/frontend",
-          "helper": "단일 저장소 워크스페이스에서 코딩 에이전트가 실행되는 하위 디렉터리입니다. 워크스페이스 생성 시 설정됩니다. 저장소 루트를 사용하려면 비워 두세요."
+          "helper": "단일 저장소 세션에서 코딩 에이전트가 실행되는 하위 디렉터리입니다. 세션 생성 시 설정됩니다. 저장소 루트를 사용하려면 비워 두세요."
         },
         "defaultTargetBranch": {
           "label": "기본 대상 브랜치",
           "placeholder": "브랜치 선택",
-          "helper": "새 워크스페이스의 기본 베이스 브랜치입니다. 워크트리는 이 브랜치에서 분기하고 PR은 이 브랜치를 대상으로 합니다.",
+          "helper": "새 세션의 기본 베이스 브랜치입니다. 워크트리는 이 브랜치에서 분기하고 PR은 이 브랜치를 대상으로 합니다.",
           "search": "브랜치 검색",
           "noBranches": "브랜치를 찾을 수 없습니다",
           "loading": "브랜치 로딩 중...",
@@ -472,7 +472,7 @@
       },
       "scripts": {
         "title": "스크립트 및 구성",
-        "description": "이 저장소의 설정, 정리 스크립트 및 복사할 파일을 구성합니다. 이러한 스크립트는 저장소가 모든 워크스페이스에서 사용될 때마다 실행됩니다.",
+        "description": "이 저장소의 설정, 정리 스크립트 및 복사할 파일을 구성합니다. 이러한 스크립트는 저장소가 모든 세션에서 사용될 때마다 실행됩니다.",
         "setup": {
           "label": "설정 스크립트",
           "helper": "이 스크립트는 워크트리 내부에서 생성 후 코딩 에이전트가 시작되기 전에 실행됩니다. 종속성 설치 또는 환경 준비와 같은 설정 작업에 사용하세요.",
@@ -485,7 +485,7 @@
         },
         "archive": {
           "label": "아카이브 스크립트",
-          "helper": "이 스크립트는 워크스페이스가 아카이브될 때 워크트리 내부에서 실행됩니다. 서비스 중지, 리소스 해제 또는 상태 저장과 같은 정리 작업에 사용하세요."
+          "helper": "이 스크립트는 세션이 아카이브될 때 워크트리 내부에서 실행됩니다. 서비스 중지, 리소스 해제 또는 상태 저장과 같은 정리 작업에 사용하세요."
         },
         "copyFiles": {
           "label": "파일 복사",
@@ -499,7 +499,7 @@
       },
       "linkedProjects": {
         "title": "연결된 프로젝트",
-        "description": "기본 워크스페이스 설정에서 이 저장소를 사용하는 프로젝트입니다.",
+        "description": "기본 세션 설정에서 이 저장소를 사용하는 프로젝트입니다.",
         "loading": "프로젝트 확인 중…",
         "none": "연결된 프로젝트가 없습니다"
       },
@@ -580,7 +580,7 @@
         },
         "defaultRepos": {
           "label": "Default Repositories",
-          "description": "Repositories that are automatically added when creating workspaces from this project's issues.",
+          "description": "Repositories that are automatically added when creating 세션 from this project's issues.",
           "empty": "No default repositories configured",
           "addButton": "Add",
           "addNew": "Add new repository...",

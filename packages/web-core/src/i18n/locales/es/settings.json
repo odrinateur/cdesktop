@@ -159,12 +159,12 @@
           }
         },
         "workspaceDir": {
-          "label": "Directorio de Espacios de Trabajo",
+          "label": "Directorio de Sesiones",
           "placeholder": "~/",
-          "helper": "Los espacios de trabajo se crearán en un subdirectorio .vibe-kanban-workspaces dentro de esta ruta. Dejar vacío para usar el valor predeterminado del sistema. Los cambios requieren reiniciar la aplicación.",
+          "helper": "Las sesiones se crearán en un subdirectorio .cdesktop-workspaces dentro de esta ruta. Dejar vacío para usar el valor predeterminado del sistema. Los cambios requieren reiniciar la aplicación.",
           "browse": "Explorar",
-          "dialogTitle": "Seleccionar Directorio de Espacios de Trabajo",
-          "dialogDescription": "Elija un directorio. Los espacios de trabajo se crearán en un subdirectorio .vibe-kanban-workspaces dentro de él."
+          "dialogTitle": "Seleccionar Directorio de Sesiones",
+          "dialogDescription": "Elija un directorio. Las sesiones se crearán en un subdirectorio .cdesktop-workspaces dentro de él."
         }
       },
       "pullRequests": {
@@ -288,8 +288,8 @@
         "title": "Funciones Beta",
         "description": "Prueba funciones experimentales antes de su lanzamiento.",
         "workspaces": {
-          "label": "Habilitar Beta de Workspaces",
-          "helper": "Usa la nueva interfaz de workspaces al ver intentos de tareas. Las tareas se abrirán primero en la vista de tareas, y los intentos se abrirán en la nueva vista de workspaces."
+          "label": "Habilitar Beta de Sesiones",
+          "helper": "Usa la nueva interfaz de sesiones al ver intentos de tareas. Las tareas se abrirán primero en la vista de tareas, y los intentos se abrirán en la nueva vista de sesiones."
         }
       }
     },
@@ -429,7 +429,7 @@
     },
     "repos": {
       "title": "Configuración del Repositorio",
-      "description": "Configura los scripts que se ejecutan cuando este repositorio se usa en workspaces.",
+      "description": "Configura los scripts que se ejecutan cuando este repositorio se usa en sesiones.",
       "loading": "Cargando repositorios...",
       "loadError": "Error al cargar repositorios.",
       "addRepo": {
@@ -458,12 +458,12 @@
         "defaultWorkingDir": {
           "label": "Directorio de Trabajo Predeterminado",
           "placeholder": "ej., packages/frontend",
-          "helper": "Subdirectorio relativo a la raíz del repositorio donde se ejecuta el agente de codificación para espacios de trabajo de un solo repositorio. Se establece al crear el espacio de trabajo. Déjelo vacío para usar la raíz del repositorio."
+          "helper": "Subdirectorio relativo a la raíz del repositorio donde se ejecuta el agente de codificación para sesiones de un solo repositorio. Se establece al crear la sesión. Déjelo vacío para usar la raíz del repositorio."
         },
         "defaultTargetBranch": {
           "label": "Rama Objetivo Predeterminada",
           "placeholder": "Seleccionar una rama",
-          "helper": "La rama base predeterminada para nuevos workspaces. Los worktrees se ramifican desde esta rama y los PRs la tendrán como objetivo.",
+          "helper": "La rama base predeterminada para nuevas sesiones. Los worktrees se ramifican desde esta rama y los PRs la tendrán como objetivo.",
           "search": "Buscar ramas",
           "noBranches": "No se encontraron ramas",
           "loading": "Cargando ramas...",
@@ -472,7 +472,7 @@
       },
       "scripts": {
         "title": "Scripts y Configuración",
-        "description": "Configura los scripts de instalación, limpieza y archivos a copiar para este repositorio. Estos scripts se ejecutan cada vez que el repositorio se usa en cualquier workspace.",
+        "description": "Configura los scripts de instalación, limpieza y archivos a copiar para este repositorio. Estos scripts se ejecutan cada vez que el repositorio se usa en cualquier sesión.",
         "setup": {
           "label": "Script de Instalación",
           "helper": "Este script se ejecuta desde dentro del worktree después de crearse y antes de que comience el agente de codificación. Úsalo para tareas de configuración como instalar dependencias o preparar el entorno.",
@@ -485,7 +485,7 @@
         },
         "archive": {
           "label": "Script de Archivo",
-          "helper": "Este script se ejecuta desde dentro del worktree cuando se archiva el espacio de trabajo. Úsalo para tareas de limpieza como detener servicios, liberar recursos o guardar estado."
+          "helper": "Este script se ejecuta desde dentro del worktree cuando se archiva la sesión. Úsalo para tareas de limpieza como detener servicios, liberar recursos o guardar estado."
         },
         "copyFiles": {
           "label": "Copiar Archivos",
@@ -499,7 +499,7 @@
       },
       "linkedProjects": {
         "title": "Proyectos Vinculados",
-        "description": "Proyectos que usan este repositorio en su configuración de workspace predeterminada.",
+        "description": "Proyectos que usan este repositorio en su configuración de sesión predeterminada.",
         "loading": "Verificando proyectos…",
         "none": "No hay proyectos vinculados"
       },
@@ -580,7 +580,7 @@
         },
         "defaultRepos": {
           "label": "Default Repositories",
-          "description": "Repositories that are automatically added when creating workspaces from this project's issues.",
+          "description": "Repositories that are automatically added when creating sesiones from this project's issues.",
           "empty": "No default repositories configured",
           "addButton": "Add",
           "addNew": "Add new repository...",

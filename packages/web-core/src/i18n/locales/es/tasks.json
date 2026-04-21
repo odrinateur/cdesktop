@@ -473,8 +473,8 @@
     "statusKilled": "El proceso fue terminado"
   },
   "createWorkspaceFromPr": {
-    "title": "Crear Espacio de Trabajo desde PR",
-    "description": "Selecciona una solicitud de extracción abierta para crear un espacio de trabajo. Se creará una tarea automáticamente usando el título del PR.",
+    "title": "Crear Sesión desde PR",
+    "description": "Selecciona una solicitud de extracción abierta para crear una sesión. Se creará una tarea automáticamente usando el título del PR.",
     "repositoryLabel": "Repositorio",
     "remoteLabel": "Remoto",
     "pullRequestLabel": "Solicitud de Extracción",
@@ -486,7 +486,7 @@
     "noPullRequestsFound": "No se encontraron solicitudes de extracción abiertas",
     "runSetupScript": "Ejecutar script de configuración",
     "creating": "Creando...",
-    "createWorkspace": "Crear Espacio de Trabajo",
+    "createWorkspace": "Crear Sesión",
     "selectRepository": "Seleccionar un repositorio",
     "selectRemote": "Seleccionar un remoto",
     "selectPullRequest": "Seleccionar una solicitud de extracción",
@@ -499,7 +499,7 @@
       "unsupportedProvider": "Proveedor Git no soportado",
       "failedToLoadPrs": "Error al cargar solicitudes de extracción",
       "prNotFound": "Solicitud de extracción no encontrada",
-      "failedToCreateWorkspace": "Error al crear espacio de trabajo"
+      "failedToCreateWorkspace": "Error al crear sesión"
     }
   },
   "shareDialog": {

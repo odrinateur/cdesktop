@@ -473,8 +473,8 @@
     "statusKilled": "プロセスが強制終了されました"
   },
   "createWorkspaceFromPr": {
-    "title": "PRからワークスペースを作成",
-    "description": "オープンなプルリクエストを選択してワークスペースを作成します。PRのタイトルを使用してタスクが自動的に作成されます。",
+    "title": "PRからセッションを作成",
+    "description": "オープンなプルリクエストを選択してセッションを作成します。PRのタイトルを使用してタスクが自動的に作成されます。",
     "repositoryLabel": "リポジトリ",
     "remoteLabel": "リモート",
     "pullRequestLabel": "プルリクエスト",
@@ -486,7 +486,7 @@
     "noPullRequestsFound": "オープンなプルリクエストが見つかりません",
     "runSetupScript": "セットアップスクリプトを実行",
     "creating": "作成中...",
-    "createWorkspace": "ワークスペースを作成",
+    "createWorkspace": "セッションを作成",
     "selectRepository": "リポジトリを選択",
     "selectRemote": "リモートを選択",
     "selectPullRequest": "プルリクエストを選択",
@@ -499,7 +499,7 @@
       "unsupportedProvider": "Gitプロバイダーがサポートされていません",
       "failedToLoadPrs": "プルリクエストの読み込みに失敗しました",
       "prNotFound": "プルリクエストが見つかりません",
-      "failedToCreateWorkspace": "ワークスペースの作成に失敗しました"
+      "failedToCreateWorkspace": "セッションの作成に失敗しました"
     }
   },
   "shareDialog": {
