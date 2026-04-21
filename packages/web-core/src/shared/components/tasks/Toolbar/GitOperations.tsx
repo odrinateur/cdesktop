@@ -53,6 +53,11 @@ function GitOperations({
   const { repos, selectedRepoId, setSelectedRepoId } = useWorkspaceRepo(
     selectedAttempt.id
   );
+  const selectedRepo = useMemo(
+    () => repos.find((r) => r.id === selectedRepoId) ?? repos[0],
+    [repos, selectedRepoId]
+  );
+  const selectedRepoIsGit = selectedRepo?.is_git ?? true;
   const git = useGitOperations(selectedAttempt.id, selectedRepoId ?? undefined);
   const { data: branches = [] } = useRepoBranches(selectedRepoId);
   const isChangingTargetBranch = git.states.changeTargetBranchPending;
@@ -419,6 +424,10 @@ function GitOperations({
       </div>
     </>
   );
+
+  if (!selectedRepoIsGit) {
+    return null;
+  }
 
   return (
     <div className="w-full border-b py-2">

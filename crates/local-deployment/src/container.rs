@@ -153,6 +153,9 @@ impl LocalContainerService {
                 branch,
                 repo_name
             )),
+            WorkspaceError::NonGitRepoRequiresDirectMode => ContainerError::Other(anyhow!(
+                "Non-Git repo cannot be attached to a worktree-enabled workspace; set use_worktree = false"
+            )),
             WorkspaceError::PartialCreation(msg) => ContainerError::Other(anyhow!(msg)),
         }
     }

@@ -129,6 +129,9 @@ impl From<WorkspaceManagerError> for ApiError {
                     branch, repo_name
                 ))
             }
+            WorkspaceManagerError::NonGitRepoRequiresDirectMode => ApiError::BadRequest(
+                "Non-Git repo cannot be attached to a worktree-enabled workspace; set use_worktree = false".to_string(),
+            ),
             WorkspaceManagerError::NoRepositories => {
                 ApiError::BadRequest("Workspace has no repositories configured".to_string())
             }
@@ -551,9 +554,6 @@ impl From<RepoServiceError> for ApiError {
             }
             RepoServiceError::PathNotDirectory(path) => {
                 ApiError::BadRequest(format!("Path is not a directory: {}", path.display()))
-            }
-            RepoServiceError::NotGitRepository(path) => {
-                ApiError::BadRequest(format!("Path is not a git repository: {}", path.display()))
             }
             RepoServiceError::NotFound => ApiError::BadRequest("Repository not found".to_string()),
             RepoServiceError::DirectoryAlreadyExists(path) => {

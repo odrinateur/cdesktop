@@ -22,8 +22,9 @@ type PushState = 'idle' | 'pending' | 'success' | 'error';
 
 export function GitPanelContainer({
   selectedWorkspace,
-  repos,
+  repos: allRepos,
 }: GitPanelContainerProps) {
+  const repos = useMemo(() => allRepos.filter((r) => r.is_git), [allRepos]);
   const { executeAction } = useActions();
   const { activeWorkspaces, archivedWorkspaces } = useWorkspaceContext();
   const repoActions = useUiPreferencesStore((s) => s.repoActions);
