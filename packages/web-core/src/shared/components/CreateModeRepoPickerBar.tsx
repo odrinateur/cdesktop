@@ -138,6 +138,11 @@ export function CreateModeRepoPickerBar({
         return false;
       }
 
+      if (!repo.is_git) {
+        addRepo(repo);
+        return true;
+      }
+
       const selectedBranch = await pickBranchForRepo(repo);
       if (!selectedBranch) return false;
 
@@ -266,21 +271,30 @@ export function CreateModeRepoPickerBar({
                     <span className="min-w-0 flex-1 truncate text-sm text-normal">
                       {repoDisplayName}
                     </span>
-                    <span className="h-3 w-px shrink-0 bg-border/70" />
-                    <button
-                      type="button"
-                      onClick={() => handleChangeBranch(repo)}
-                      disabled={isBusy}
-                      className={repoRowButtonClassName}
-                      title="Change branch"
-                    >
-                      {isChangingBranch ? (
-                        <SpinnerIcon className="size-icon-xs animate-spin" />
-                      ) : (
-                        <GitBranchIcon className="size-icon-xs" weight="bold" />
-                      )}
-                      <span className="max-w-[200px] truncate">{branch}</span>
-                    </button>
+                    {repo.is_git && (
+                      <>
+                        <span className="h-3 w-px shrink-0 bg-border/70" />
+                        <button
+                          type="button"
+                          onClick={() => handleChangeBranch(repo)}
+                          disabled={isBusy}
+                          className={repoRowButtonClassName}
+                          title="Change branch"
+                        >
+                          {isChangingBranch ? (
+                            <SpinnerIcon className="size-icon-xs animate-spin" />
+                          ) : (
+                            <GitBranchIcon
+                              className="size-icon-xs"
+                              weight="bold"
+                            />
+                          )}
+                          <span className="max-w-[200px] truncate">
+                            {branch}
+                          </span>
+                        </button>
+                      </>
+                    )}
                     <span className="h-3 w-px shrink-0 bg-border/70" />
                     <button
                       type="button"

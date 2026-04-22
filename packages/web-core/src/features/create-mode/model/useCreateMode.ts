@@ -39,6 +39,10 @@ export interface CreateModeContextValue {
   attachments: DraftWorkspaceAttachment[];
   /** Update draft attachments (triggers debounced scratch save) */
   setAttachments: (attachments: DraftWorkspaceAttachment[]) => void;
+  /** Whether the new session should run inside a Git worktree (default false) */
+  useWorktree: boolean;
+  /** Toggle the worktree form field */
+  setUseWorktree: (useWorktree: boolean) => void;
 }
 
 export const CreateModeContext =

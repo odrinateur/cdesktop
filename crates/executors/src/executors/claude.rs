@@ -62,7 +62,7 @@ fn base_command(claude_code_router: bool) -> &'static str {
     if claude_code_router {
         "npx -y @musistudio/claude-code-router@1.0.66 code"
     } else {
-        "npx -y @anthropic-ai/claude-code@2.1.112"
+        "claude"
     }
 }
 
@@ -626,6 +626,13 @@ impl ClaudeCode {
     ) -> Result<SpawnedChild, ExecutorError> {
         let (program_path, args) = command_parts.into_resolved().await?;
         let combined_prompt = self.append_prompt.combine_prompt(prompt);
+
+        tracing::info!(
+            program = %program_path.display(),
+            args = ?args,
+            cwd = %current_dir.display(),
+            "Spawning Claude Code"
+        );
 
         let mut command = Command::new(program_path);
         command
@@ -1270,9 +1277,9 @@ impl ClaudeLogProcessor {
                         // We'll send system initialized message with first assistant message that has a model field.
                     }
                     Some("status") => {
-                        if let Some(status) = status {
-                            patches.push(add_system_message(status.clone(), entry_index_provider));
-                        }
+                        // Transient status indicators (e.g., "Requesting") are
+                        // noise in the conversation log — skip them.
+                        let _ = status;
                     }
                     Some("compact_boundary") => {}
                     Some("task_started") => {
@@ -2093,23 +2100,16 @@ fn add_system_message(
 fn extract_model_name(
     processor: &mut ClaudeLogProcessor,
     message: &ClaudeMessage,
-    entry_index_provider: &EntryIndexProvider,
+    _entry_index_provider: &EntryIndexProvider,
 ) -> Option<json_patch::Patch> {
+    // Capture the model name internally, but do NOT emit a system message
+    // announcing it — that noise belongs in telemetry, not the conversation log.
     if processor.model_name.is_none()
         && let Some(model) = message.model.as_ref()
     {
         processor.model_name = Some(model.clone());
-        let entry = NormalizedEntry {
-            timestamp: None,
-            entry_type: NormalizedEntryType::SystemMessage,
-            content: format!("System initialized with model: {model}"),
-            metadata: None,
-        };
-        let id = entry_index_provider.next();
-        Some(ConversationPatch::add_normalized_entry(id, entry))
-    } else {
-        None
     }
+    None
 }
 
 struct StreamingMessageState {
@@ -2795,15 +2795,14 @@ mod tests {
         let parsed: ClaudeJson = serde_json::from_str(assistant_json).unwrap();
         let entries = normalize(&parsed, "");
 
-        assert_eq!(entries.len(), 2);
+        // Model name is captured internally but no longer emitted as a
+        // SystemMessage; only the assistant's text entry should surface.
+        assert_eq!(entries.len(), 1);
         assert!(matches!(
             entries[0].entry_type,
-            NormalizedEntryType::SystemMessage
+            NormalizedEntryType::AssistantMessage
         ));
-        assert_eq!(
-            entries[0].content,
-            "System initialized with model: claude-sonnet-4-20250514"
-        );
+        assert_eq!(entries[0].content, "Hi! I'm Claude Code.");
     }
 
     #[test]

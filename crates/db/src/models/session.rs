@@ -5,7 +5,7 @@ use thiserror::Error;
 use ts_rs::TS;
 use uuid::Uuid;
 
-use super::workspace_repo::WorkspaceRepo;
+use super::{workspace::Workspace, workspace_repo::WorkspaceRepo};
 
 #[derive(Debug, Error)]
 pub enum SessionError {
@@ -176,6 +176,15 @@ impl Session {
         pool: &SqlitePool,
         workspace_id: Uuid,
     ) -> Result<Option<String>, sqlx::Error> {
+        // Direct-mode workspaces spawn in the repo's real on-disk path. A
+        // relative subdir like `repo.name` would be joined onto that path and
+        // produce a doubled-up cwd that doesn't exist.
+        if let Some(ws) = Workspace::find_by_id(pool, workspace_id).await?
+            && !ws.use_worktree
+        {
+            return Ok(None);
+        }
+
         let repos = WorkspaceRepo::find_repos_for_workspace(pool, workspace_id).await?;
         if repos.len() != 1 {
             return Ok(None);
