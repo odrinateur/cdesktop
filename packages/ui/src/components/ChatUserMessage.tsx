@@ -1,11 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  PencilSimpleIcon,
-  ArrowUUpLeftIcon,
-  CopyIcon,
-  CheckIcon,
-} from '@phosphor-icons/react';
+import { PencilSimpleIcon, ArrowUUpLeftIcon } from '@phosphor-icons/react';
+import { Clipboard, Check } from 'lucide-react';
 import { cn } from '../lib/cn';
 import { Tooltip } from './Tooltip';
 
@@ -128,9 +124,9 @@ export function ChatUserMessage({
               aria-label={t('conversation.actions.copy')}
             >
               {justCopied ? (
-                <CheckIcon className="size-icon-xs" />
+                <Check className="size-icon-xs" />
               ) : (
-                <CopyIcon className="size-icon-xs" />
+                <Clipboard className="size-icon-xs" />
               )}
             </button>
           </Tooltip>
