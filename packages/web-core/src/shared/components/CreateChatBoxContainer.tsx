@@ -1,7 +1,6 @@
 import { useMemo, useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useCreateMode } from '@/features/create-mode/model/useCreateMode';
-import { AgentIcon } from '@/shared/components/AgentIcon';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
 import WYSIWYGEditor from '@/shared/components/WYSIWYGEditor';
 import { useCreateWorkspace } from '@/shared/hooks/useCreateWorkspace';
@@ -273,7 +272,7 @@ export function CreateChatBoxContainer({
               localAttachments,
             }) => (
               <WYSIWYGEditor
-                placeholder="Describe the task..."
+                placeholder="Describe a task or ask a question"
                 value={value}
                 onChange={onChange}
                 onCmdEnter={onCmdEnter}
@@ -288,9 +287,6 @@ export function CreateChatBoxContainer({
                 sendShortcut={config?.send_message_shortcut}
               />
             )}
-            agentIcon={
-              <AgentIcon agent={effectiveExecutor} className="size-icon-xl" />
-            }
             onSend={handleSubmit}
             isSending={createWorkspace.isPending}
             disabled={!hasSelectedRepos}

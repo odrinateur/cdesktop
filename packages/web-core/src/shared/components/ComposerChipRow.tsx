@@ -5,7 +5,6 @@ import {
   PlusIcon,
   SpinnerIcon,
   TrashIcon,
-  TreeStructureIcon,
 } from '@phosphor-icons/react';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -30,8 +29,8 @@ import { repoApi } from '@/shared/lib/api';
 import { FolderPickerDialog } from '@/shared/dialogs/shared/FolderPickerDialog';
 
 const chipClassName =
-  'inline-flex items-center gap-half rounded-sm bg-secondary px-base py-half ' +
-  'text-sm text-normal hover:bg-panel border border-border ' +
+  'inline-flex items-center gap-half rounded-md bg-secondary px-base py-half ' +
+  'text-sm text-normal hover:bg-panel ' +
   'disabled:cursor-not-allowed disabled:opacity-50 ' +
   'focus:outline-none focus-visible:ring-1 focus-visible:ring-brand';
 
@@ -188,7 +187,6 @@ export function ComposerChipRow({ disabled }: { disabled?: boolean }) {
           className={`${chipClassName} cursor-pointer`}
           title={worktreeLabel}
         >
-          <TreeStructureIcon weight="bold" className="size-icon-xs" />
           <Checkbox
             checked={useWorktree}
             onCheckedChange={setUseWorktree}
