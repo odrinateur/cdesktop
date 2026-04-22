@@ -370,7 +370,11 @@ pub async fn get_workspace_branch_status(
 ) -> Result<ResponseJson<ApiResponse<Vec<RepoBranchStatus>>>, ApiError> {
     let pool = &deployment.db().pool;
 
-    let repositories = WorkspaceRepo::find_repos_for_workspace(pool, workspace.id).await?;
+    let repositories: Vec<_> = WorkspaceRepo::find_repos_for_workspace(pool, workspace.id)
+        .await?
+        .into_iter()
+        .filter(|r| r.is_git)
+        .collect();
     let workspace_repos = WorkspaceRepo::find_by_workspace_id(pool, workspace.id).await?;
     let target_branches: HashMap<_, _> = workspace_repos
         .iter()

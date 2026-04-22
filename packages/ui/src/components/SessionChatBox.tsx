@@ -379,9 +379,10 @@ export function SessionChatBox<TExecutor extends string = string>({
         : t('conversation.sessions.previous');
 
   // Stats
-  const filesChanged = stats?.filesChanged ?? 0;
+  const filesChanged = stats?.filesChanged;
   const linesAdded = stats?.linesAdded;
   const linesRemoved = stats?.linesRemoved;
+  const showStats = filesChanged !== undefined;
 
   // Render action buttons based on status
   const renderActionButtons = () => {
@@ -742,7 +743,7 @@ export function SessionChatBox<TExecutor extends string = string>({
                       actionIcon={ArrowsOutIcon}
                       className="min-w-0"
                     />
-                  ) : onViewCode ? (
+                  ) : onViewCode && showStats ? (
                     <PrimaryButton
                       variant="tertiary"
                       onClick={onViewCode}
@@ -769,7 +770,7 @@ export function SessionChatBox<TExecutor extends string = string>({
                         )}
                       </span>
                     </PrimaryButton>
-                  ) : (
+                  ) : showStats ? (
                     <span className="text-sm text-low space-x-half whitespace-nowrap truncate min-w-0">
                       <span>
                         {t('diff.filesChanged', { count: filesChanged })}
@@ -786,7 +787,7 @@ export function SessionChatBox<TExecutor extends string = string>({
                         </span>
                       )}
                     </span>
-                  )}
+                  ) : null}
                 </>
               )}
             </>

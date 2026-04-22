@@ -5,7 +5,7 @@ use db::models::{
     requests::{
         CreateAndStartWorkspaceRequest, CreateAndStartWorkspaceResponse, CreateWorkspaceApiRequest,
     },
-    workspace::{CreateWorkspace, Workspace},
+    workspace::{CreateWorkspace, Workspace, WorkspaceError},
 };
 use deployment::Deployment;
 use services::services::container::ContainerService;
@@ -251,6 +251,24 @@ pub async fn create_and_start_workspace(
             .map_err(ApiError::from)?;
     }
 
+    // Worktree-disabled + Git: check out the target branch the user picked in
+    // step 1 before spawning. Idempotent when HEAD already matches.
+    if !use_worktree
+        && let Some(first_repo) = managed_workspace.repos.first()
+        && first_repo.repo.is_git
+        && !first_repo.target_branch.is_empty()
+    {
+        let git = deployment.git();
+        let current = git.get_current_branch(&first_repo.repo.path).ok();
+        let already_on_branch = current.as_deref() == Some(first_repo.target_branch.as_str());
+        if !already_on_branch {
+            git.checkout_branch(&first_repo.repo.path, &first_repo.target_branch, false)
+                .map_err(|e| {
+                    ApiError::Workspace(WorkspaceError::ValidationError(e.to_string()))
+                })?;
+        }
+    }
+
     // Worktree-disabled mode: the synthesized `<prefix>/<id>` branch name
     // doesn't match what's checked out in the user's repo. Record the real
     // current HEAD so diff bases and UI labels line up.
@@ -265,6 +283,20 @@ pub async fn create_and_start_workspace(
         )
         .await?;
         managed_workspace.workspace.branch = current_branch;
+    }
+
+    // Non-Git repos have no branch. Clear the synthesized branch so UI that
+    // reads `workspace.branch` can treat empty as "no branch" and hide chips.
+    if let Some(first_repo) = managed_workspace.repos.first()
+        && !first_repo.repo.is_git
+    {
+        db::models::workspace::Workspace::update_branch_name(
+            &deployment.db().pool,
+            managed_workspace.workspace.id,
+            "",
+        )
+        .await?;
+        managed_workspace.workspace.branch = String::new();
     }
 
     if let Some(ids) = &attachment_ids {

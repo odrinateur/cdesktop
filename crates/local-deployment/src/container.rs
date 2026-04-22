@@ -1494,8 +1494,12 @@ impl ContainerService for LocalContainerService {
             .map(|wr| (wr.repo_id, wr.target_branch.clone()))
             .collect();
 
-        let repositories =
-            WorkspaceRepo::find_repos_for_workspace(&self.db.pool, workspace.id).await?;
+        let repositories: Vec<_> =
+            WorkspaceRepo::find_repos_for_workspace(&self.db.pool, workspace.id)
+                .await?
+                .into_iter()
+                .filter(|r| r.is_git)
+                .collect();
 
         let mut streams = Vec::new();
 

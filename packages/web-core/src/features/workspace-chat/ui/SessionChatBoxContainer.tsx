@@ -287,6 +287,7 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
   // Get repos for file search
   const { repos } = useWorkspaceRepo(workspaceId);
   const repoIds = repos.map((r) => r.id);
+  const hasGitRepo = repos.some((r) => r.is_git);
 
   // Approval feedback context
   const feedbackContext = useApprovalFeedbackOptional();
@@ -1062,9 +1063,9 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
         actionCtx.hasOpenPR ? handleInsertPrComments : undefined
       }
       stats={{
-        filesChanged,
-        linesAdded,
-        linesRemoved,
+        filesChanged: hasGitRepo ? filesChanged : undefined,
+        linesAdded: hasGitRepo ? linesAdded : undefined,
+        linesRemoved: hasGitRepo ? linesRemoved : undefined,
         hasConflicts,
         conflictedFilesCount,
         onResolveConflicts: SHOW_RESOLVE_CONFLICTS

@@ -16,8 +16,10 @@ import {
 } from '@/shared/lib/string';
 import type { BaseCodingAgent, Repo } from 'shared/types';
 import { CreateChatBox } from '@vibe/ui/components/CreateChatBox';
+import { Checkbox } from '@vibe/ui/components/Checkbox';
 import { SettingsDialog } from '@/shared/dialogs/settings/SettingsDialog';
 import { CreateModeRepoPickerBar } from './CreateModeRepoPickerBar';
+import { LandingContextSection } from './LandingContextSection';
 import { ModelSelectorContainer } from '@/shared/components/ModelSelectorContainer';
 
 function getRepoDisplayName(repo: Repo) {
@@ -56,6 +58,8 @@ export function CreateChatBoxContainer({
     setExecutorConfig: setDraftConfig,
     attachments: draftAttachments,
     setAttachments: setDraftAttachments,
+    useWorktree,
+    setUseWorktree,
   } = useCreateMode();
 
   const { createWorkspace } = useCreateWorkspace();
@@ -162,7 +166,7 @@ export function CreateChatBoxContainer({
   );
 
   const hasSelectedBranchesForAllRepos = repos.every(
-    (repo) => !!targetBranches[repo.id]
+    (repo) => !repo.is_git || !!targetBranches[repo.id]
   );
 
   // Determine if we can submit
@@ -232,7 +236,7 @@ export function CreateChatBoxContainer({
       prompt: message,
       repos: repos.map((r) => ({
         repo_id: r.id,
-        target_branch: targetBranches[r.id]!,
+        target_branch: targetBranches[r.id] ?? '',
       })),
       linked_issue: linkedIssue
         ? {
@@ -241,6 +245,7 @@ export function CreateChatBoxContainer({
           }
         : null,
       attachment_ids: getAttachmentIds(),
+      use_worktree: useWorktree,
     };
     const linkToIssue = linkedIssue
       ? {
@@ -278,6 +283,7 @@ export function CreateChatBoxContainer({
     clearAttachments,
     clearDraft,
     linkedIssue,
+    useWorktree,
   ]);
 
   // Determine error to display
@@ -300,27 +306,26 @@ export function CreateChatBoxContainer({
 
   return (
     <div className="relative flex flex-1 flex-col bg-primary h-full">
-      <div className="flex flex-1 items-center justify-center px-base">
-        <div className="flex w-chat max-w-full flex-col gap-base">
-          {showRepoPickerStep && (
-            <>
-              <h2 className="mb-double text-center text-4xl font-medium tracking-tight text-high">
-                {t('createMode.headings.repoStep')}
-              </h2>
-              <CreateModeRepoPickerBar
-                onContinueToPrompt={() => setIsSelectingRepos(false)}
-              />
-            </>
-          )}
+      {showRepoPickerStep && (
+        <div className="flex flex-1 items-center justify-center px-[24px]">
+          <div className="flex w-chat max-w-full flex-col gap-base">
+            <h2 className="mb-double text-center text-4xl font-medium tracking-tight text-high">
+              {t('createMode.headings.repoStep')}
+            </h2>
+            <CreateModeRepoPickerBar
+              onContinueToPrompt={() => setIsSelectingRepos(false)}
+            />
+          </div>
+        </div>
+      )}
 
-          {showChatStep && (
-            <>
-              <h2 className="mb-double text-center text-4xl font-medium tracking-tight text-high">
-                {t('createMode.headings.chatStep')}
-              </h2>
-
-              <div className="flex justify-center @container">
-                <CreateChatBox
+      {showChatStep && (
+        <div className="flex flex-1 flex-col px-[24px] pb-double">
+          <div className="mx-auto flex w-chat max-w-full flex-col gap-base pt-[18vh]">
+            <LandingContextSection />
+          </div>
+          <div className="mx-auto mt-auto flex w-chat max-w-full justify-center @container">
+            <CreateChatBox
                   editor={{
                     value: message,
                     onChange: setMessage,
@@ -391,6 +396,19 @@ export function CreateChatBoxContainer({
                   onEditRepos={() => setIsSelectingRepos(true)}
                   repoSummaryLabel={repoSummaryLabel}
                   repoSummaryTitle={repoSummaryTitle}
+                  worktreeToggle={
+                    repos.length > 0 && repos.every((r) => r.is_git) ? (
+                      <label className="ml-2 flex cursor-pointer items-center gap-1.5 text-sm text-low">
+                        <Checkbox
+                          checked={useWorktree}
+                          onCheckedChange={setUseWorktree}
+                          className="h-3.5 w-3.5"
+                          disabled={createWorkspace.isPending}
+                        />
+                        <span>Worktree</span>
+                      </label>
+                    ) : undefined
+                  }
                   linkedIssue={
                     linkedIssue?.simpleId
                       ? {
@@ -400,12 +418,10 @@ export function CreateChatBoxContainer({
                         }
                       : null
                   }
-                />
-              </div>
-            </>
-          )}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

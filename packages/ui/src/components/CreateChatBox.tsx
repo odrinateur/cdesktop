@@ -77,6 +77,7 @@ interface CreateChatBoxProps<TExecutor extends string = string> {
   repoSummaryLabel: string;
   repoSummaryTitle: string;
   linkedIssue?: LinkedIssueBadgeProps | null;
+  worktreeToggle?: ReactNode;
 }
 
 /**
@@ -112,6 +113,7 @@ export function CreateChatBox<TExecutor extends string = string>({
   repoSummaryLabel,
   repoSummaryTitle,
   linkedIssue,
+  worktreeToggle,
 }: CreateChatBoxProps<TExecutor>) {
   const { t } = useTranslation(['common', 'tasks']);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -214,6 +216,7 @@ export function CreateChatBox<TExecutor extends string = string>({
           >
             {repoSummaryLabel}
           </button>
+          {worktreeToggle}
           {linkedIssue && (
             <>
               <div

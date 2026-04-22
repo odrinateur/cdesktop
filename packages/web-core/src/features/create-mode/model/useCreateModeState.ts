@@ -50,6 +50,7 @@ interface DraftState {
   linkedIssue: LinkedIssue | null;
   executorConfig: ExecutorConfig | null;
   attachments: DraftWorkspaceAttachment[];
+  useWorktree: boolean;
 }
 
 type DraftAction =
@@ -72,7 +73,8 @@ type DraftAction =
       type: 'SET_EXECUTOR_CONFIG';
       config: ExecutorConfig | null;
     }
-  | { type: 'SET_ATTACHMENTS'; attachments: DraftWorkspaceAttachment[] };
+  | { type: 'SET_ATTACHMENTS'; attachments: DraftWorkspaceAttachment[] }
+  | { type: 'SET_USE_WORKTREE'; useWorktree: boolean };
 
 // ============================================================================
 // Reducer
@@ -86,6 +88,7 @@ const draftInitialState: DraftState = {
   linkedIssue: null,
   executorConfig: null,
   attachments: [],
+  useWorktree: false,
 };
 
 function draftReducer(state: DraftState, action: DraftAction): DraftState {
@@ -170,6 +173,9 @@ function draftReducer(state: DraftState, action: DraftAction): DraftState {
     case 'SET_ATTACHMENTS':
       return { ...state, attachments: action.attachments };
 
+    case 'SET_USE_WORKTREE':
+      return { ...state, useWorktree: action.useWorktree };
+
     default:
       return state;
   }
@@ -243,6 +249,8 @@ interface UseCreateModeStateResult {
   setExecutorConfig: (config: ExecutorConfig | null) => void;
   attachments: DraftWorkspaceAttachment[];
   setAttachments: (attachments: DraftWorkspaceAttachment[]) => void;
+  useWorktree: boolean;
+  setUseWorktree: (useWorktree: boolean) => void;
 }
 
 export function useCreateModeState({
@@ -638,6 +646,10 @@ export function useCreateModeState({
     []
   );
 
+  const setUseWorktree = useCallback((useWorktree: boolean) => {
+    dispatch({ type: 'SET_USE_WORKTREE', useWorktree });
+  }, []);
+
   return {
     repos,
     targetBranches,
@@ -658,5 +670,7 @@ export function useCreateModeState({
     setExecutorConfig,
     attachments: state.attachments,
     setAttachments,
+    useWorktree: state.useWorktree,
+    setUseWorktree,
   };
 }
