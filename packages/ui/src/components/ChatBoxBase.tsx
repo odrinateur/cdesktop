@@ -30,6 +30,10 @@ interface ChatBoxBaseProps {
   // Header content (left side - stats)
   headerLeft?: ReactNode;
 
+  // Chip row rendered above the editor, below the header. Used by the
+  // new-session composer for its folder/branch/worktree/+ chip row.
+  chipRow?: ReactNode;
+
   // Footer left content (additional toolbar items like attach button)
   footerLeft?: ReactNode;
 
@@ -61,6 +65,7 @@ export function ChatBoxBase({
   error,
   headerRight,
   headerLeft,
+  chipRow,
   footerLeft,
   footerRight,
   modelSelector,
@@ -119,6 +124,13 @@ export function ChatBoxBase({
             {headerLeft}
           </div>
           <Toolbar className="gap-[9px]">{headerRight}</Toolbar>
+        </div>
+      )}
+
+      {/* Chip row (new-session composer: folder / branch / worktree / +) */}
+      {chipRow && (
+        <div className="flex flex-wrap items-center gap-half border-b px-base py-half">
+          {chipRow}
         </div>
       )}
 

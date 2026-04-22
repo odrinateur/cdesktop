@@ -5,8 +5,6 @@ use thiserror::Error;
 use ts_rs::TS;
 use uuid::Uuid;
 
-use super::{workspace::Workspace, workspace_repo::WorkspaceRepo};
-
 #[derive(Debug, Error)]
 pub enum SessionError {
     #[error(transparent)]
@@ -172,31 +170,21 @@ impl Session {
         .await?)
     }
 
+    /// Resolves the per-session `agent_working_dir` field stored in the DB.
+    ///
+    /// Returns `None` for all workspaces. The executor's cwd is derived at
+    /// spawn time by `local-deployment`'s `start_execution_inner`:
+    /// - Direct mode: the primary repo's on-disk path.
+    /// - Worktree mode: `<container_ref>/<primary_repo.name>/`.
+    ///
+    /// The field is retained on the table for historical sessions and for
+    /// future per-session overrides (e.g. a subdirectory within the primary
+    /// repo). Today we always return `None` at create time.
     async fn resolve_agent_working_dir(
-        pool: &SqlitePool,
-        workspace_id: Uuid,
+        _pool: &SqlitePool,
+        _workspace_id: Uuid,
     ) -> Result<Option<String>, sqlx::Error> {
-        // Direct-mode workspaces spawn in the repo's real on-disk path. A
-        // relative subdir like `repo.name` would be joined onto that path and
-        // produce a doubled-up cwd that doesn't exist.
-        if let Some(ws) = Workspace::find_by_id(pool, workspace_id).await?
-            && !ws.use_worktree
-        {
-            return Ok(None);
-        }
-
-        let repos = WorkspaceRepo::find_repos_for_workspace(pool, workspace_id).await?;
-        if repos.len() != 1 {
-            return Ok(None);
-        }
-
-        let repo = &repos[0];
-        let path = match repo.default_working_dir.as_deref() {
-            Some(subdir) if !subdir.is_empty() => std::path::PathBuf::from(&repo.name).join(subdir),
-            _ => std::path::PathBuf::from(&repo.name),
-        };
-
-        Ok(Some(path.to_string_lossy().to_string()))
+        Ok(None)
     }
 
     pub async fn update(

@@ -1,5 +1,4 @@
-import { useMemo, useCallback, useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useMemo, useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useCreateMode } from '@/features/create-mode/model/useCreateMode';
 import { AgentIcon } from '@/shared/components/AgentIcon';
@@ -14,25 +13,12 @@ import {
   toPrettyCase,
   splitMessageToTitleDescription,
 } from '@/shared/lib/string';
-import type { BaseCodingAgent, Repo } from 'shared/types';
+import type { BaseCodingAgent } from 'shared/types';
 import { CreateChatBox } from '@vibe/ui/components/CreateChatBox';
-import { Checkbox } from '@vibe/ui/components/Checkbox';
 import { SettingsDialog } from '@/shared/dialogs/settings/SettingsDialog';
-import { CreateModeRepoPickerBar } from './CreateModeRepoPickerBar';
+import { ComposerChipRow, useAutoAttachMostRecent } from './ComposerChipRow';
 import { LandingContextSection } from './LandingContextSection';
 import { ModelSelectorContainer } from '@/shared/components/ModelSelectorContainer';
-
-function getRepoDisplayName(repo: Repo) {
-  return repo.display_name || repo.name;
-}
-
-const BRANCH_LABEL_MAX_CHARS = 15;
-
-function truncateBranchLabel(branch: string) {
-  return branch.length > BRANCH_LABEL_MAX_CHARS
-    ? `${branch.slice(0, BRANCH_LABEL_MAX_CHARS)}...`
-    : branch;
-}
 
 interface CreateChatBoxContainerProps {
   onWorkspaceCreated: (workspaceId: string) => void;
@@ -41,7 +27,6 @@ interface CreateChatBoxContainerProps {
 export function CreateChatBoxContainer({
   onWorkspaceCreated,
 }: CreateChatBoxContainerProps) {
-  const { t } = useTranslation('common');
   const { profiles, config } = useUserSystem();
   const {
     repos,
@@ -50,7 +35,6 @@ export function CreateChatBoxContainer({
     setMessage,
     clearDraft,
     hasInitialValue,
-    hasResolvedInitialRepoDefaults,
     linkedIssue,
     clearLinkedIssue,
     preferredExecutorConfig,
@@ -59,30 +43,15 @@ export function CreateChatBoxContainer({
     attachments: draftAttachments,
     setAttachments: setDraftAttachments,
     useWorktree,
-    setUseWorktree,
   } = useCreateMode();
+
+  // Auto-attach the most recently used repo as primary when composer mounts
+  // with no attached repos.
+  useAutoAttachMostRecent();
 
   const { createWorkspace } = useCreateWorkspace();
   const hasSelectedRepos = repos.length > 0;
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
-  const [hasInitializedStep, setHasInitializedStep] = useState(false);
-  const [isSelectingRepos, setIsSelectingRepos] = useState(true);
-
-  useEffect(() => {
-    if (!hasInitialValue || hasInitializedStep) return;
-    if (!hasSelectedRepos && !hasResolvedInitialRepoDefaults) return;
-
-    setIsSelectingRepos(!hasSelectedRepos);
-    setHasInitializedStep(true);
-  }, [
-    hasInitialValue,
-    hasInitializedStep,
-    hasSelectedRepos,
-    hasResolvedInitialRepoDefaults,
-  ]);
-
-  const showRepoPickerStep = !hasSelectedRepos || isSelectingRepos;
-  const showChatStep = hasSelectedRepos && !isSelectingRepos;
 
   // Attachment handling - insert markdown and track attachment IDs
   const handleInsertMarkdown = useCallback(
@@ -140,30 +109,6 @@ export function CreateChatBoxContainer({
   });
 
   const repoId = repos.length === 1 ? repos[0]?.id : undefined;
-  const repoSummaryLabel = useMemo(() => {
-    if (repos.length === 1) {
-      const repo = repos[0];
-      if (!repo) return '0 repositories selected';
-      const selectedBranch = targetBranches[repo.id];
-      const branch = selectedBranch
-        ? truncateBranchLabel(selectedBranch)
-        : 'Select branch';
-      return `${getRepoDisplayName(repo)} · ${branch}`;
-    }
-
-    return `${repos.length} repositories selected`;
-  }, [repos, targetBranches]);
-
-  const repoSummaryTitle = useMemo(
-    () =>
-      repos
-        .map((repo) => {
-          const branch = targetBranches[repo.id] ?? 'Select branch';
-          return `${getRepoDisplayName(repo)} (${branch})`;
-        })
-        .join('\n'),
-    [repos, targetBranches]
-  );
 
   const hasSelectedBranchesForAllRepos = repos.every(
     (repo) => !repo.is_git || !!targetBranches[repo.id]
@@ -306,122 +251,89 @@ export function CreateChatBoxContainer({
 
   return (
     <div className="relative flex flex-1 flex-col bg-primary h-full">
-      {showRepoPickerStep && (
-        <div className="flex flex-1 items-center justify-center px-[24px]">
-          <div className="flex w-chat max-w-full flex-col gap-base">
-            <h2 className="mb-double text-center text-4xl font-medium tracking-tight text-high">
-              {t('createMode.headings.repoStep')}
-            </h2>
-            <CreateModeRepoPickerBar
-              onContinueToPrompt={() => setIsSelectingRepos(false)}
-            />
-          </div>
+      <div className="flex flex-1 flex-col px-[24px] pb-double">
+        <div className="mx-auto flex w-chat max-w-full flex-col gap-base pt-[18vh]">
+          <LandingContextSection />
         </div>
-      )}
-
-      {showChatStep && (
-        <div className="flex flex-1 flex-col px-[24px] pb-double">
-          <div className="mx-auto flex w-chat max-w-full flex-col gap-base pt-[18vh]">
-            <LandingContextSection />
-          </div>
-          <div className="mx-auto mt-auto flex w-chat max-w-full justify-center @container">
-            <CreateChatBox
-                  editor={{
-                    value: message,
-                    onChange: setMessage,
-                  }}
-                  renderEditor={({
-                    value,
-                    onChange,
-                    onCmdEnter,
-                    disabled,
-                    repoIds,
-                    repoId,
-                    executor,
-                    onPasteFiles,
-                    localAttachments,
-                  }) => (
-                    <WYSIWYGEditor
-                      placeholder="Describe the task..."
-                      value={value}
-                      onChange={onChange}
-                      onCmdEnter={onCmdEnter}
-                      disabled={disabled}
-                      className="min-h-double max-h-[50vh] overflow-y-auto"
-                      repoIds={repoIds}
-                      repoId={repoId}
-                      executor={executor}
-                      autoFocus
-                      onPasteFiles={onPasteFiles}
-                      localAttachments={localAttachments}
-                      sendShortcut={config?.send_message_shortcut}
-                    />
-                  )}
-                  agentIcon={
-                    <AgentIcon
-                      agent={effectiveExecutor}
-                      className="size-icon-xl"
-                    />
+        <div className="mx-auto mt-auto flex w-chat max-w-full justify-center @container">
+          <CreateChatBox
+            editor={{
+              value: message,
+              onChange: setMessage,
+            }}
+            renderEditor={({
+              value,
+              onChange,
+              onCmdEnter,
+              disabled,
+              repoIds,
+              repoId,
+              executor,
+              onPasteFiles,
+              localAttachments,
+            }) => (
+              <WYSIWYGEditor
+                placeholder="Describe the task..."
+                value={value}
+                onChange={onChange}
+                onCmdEnter={onCmdEnter}
+                disabled={disabled}
+                className="min-h-double max-h-[50vh] overflow-y-auto"
+                repoIds={repoIds}
+                repoId={repoId}
+                executor={executor}
+                autoFocus
+                onPasteFiles={onPasteFiles}
+                localAttachments={localAttachments}
+                sendShortcut={config?.send_message_shortcut}
+              />
+            )}
+            agentIcon={
+              <AgentIcon agent={effectiveExecutor} className="size-icon-xl" />
+            }
+            onSend={handleSubmit}
+            isSending={createWorkspace.isPending}
+            disabled={!hasSelectedRepos}
+            executor={{
+              selected: effectiveExecutor,
+              options: executorOptions,
+              onChange: handleExecutorChange,
+            }}
+            formatExecutorLabel={toPrettyCase}
+            error={displayError}
+            repoIds={repos.map((r) => r.id)}
+            repoId={repoId}
+            modelSelector={
+              effectiveExecutor ? (
+                <ModelSelectorContainer
+                  agent={effectiveExecutor}
+                  workspaceId={undefined}
+                  onAdvancedSettings={handleCustomise}
+                  presets={variantOptions}
+                  selectedPreset={selectedVariant}
+                  onPresetSelect={handlePresetSelect}
+                  onOverrideChange={setExecutorOverrides}
+                  executorConfig={executorConfig}
+                  presetOptions={presetOptions}
+                />
+              ) : undefined
+            }
+            onPasteFiles={uploadFiles}
+            localAttachments={localAttachments}
+            dropzone={{ getRootProps, getInputProps, isDragActive }}
+            chipRow={<ComposerChipRow disabled={createWorkspace.isPending} />}
+            linkedIssue={
+              linkedIssue?.simpleId
+                ? {
+                    simpleId: linkedIssue.simpleId,
+                    title: linkedIssue.title ?? '',
+                    onRemove: clearLinkedIssue,
                   }
-                  onSend={handleSubmit}
-                  isSending={createWorkspace.isPending}
-                  disabled={!hasSelectedRepos}
-                  executor={{
-                    selected: effectiveExecutor,
-                    options: executorOptions,
-                    onChange: handleExecutorChange,
-                  }}
-                  formatExecutorLabel={toPrettyCase}
-                  error={displayError}
-                  repoIds={repos.map((r) => r.id)}
-                  repoId={repoId}
-                  modelSelector={
-                    effectiveExecutor ? (
-                      <ModelSelectorContainer
-                        agent={effectiveExecutor}
-                        workspaceId={undefined}
-                        onAdvancedSettings={handleCustomise}
-                        presets={variantOptions}
-                        selectedPreset={selectedVariant}
-                        onPresetSelect={handlePresetSelect}
-                        onOverrideChange={setExecutorOverrides}
-                        executorConfig={executorConfig}
-                        presetOptions={presetOptions}
-                      />
-                    ) : undefined
-                  }
-                  onPasteFiles={uploadFiles}
-                  localAttachments={localAttachments}
-                  dropzone={{ getRootProps, getInputProps, isDragActive }}
-                  onEditRepos={() => setIsSelectingRepos(true)}
-                  repoSummaryLabel={repoSummaryLabel}
-                  repoSummaryTitle={repoSummaryTitle}
-                  worktreeToggle={
-                    repos.length > 0 && repos.every((r) => r.is_git) ? (
-                      <label className="ml-2 flex cursor-pointer items-center gap-1.5 text-sm text-low">
-                        <Checkbox
-                          checked={useWorktree}
-                          onCheckedChange={setUseWorktree}
-                          className="h-3.5 w-3.5"
-                          disabled={createWorkspace.isPending}
-                        />
-                        <span>Worktree</span>
-                      </label>
-                    ) : undefined
-                  }
-                  linkedIssue={
-                    linkedIssue?.simpleId
-                      ? {
-                          simpleId: linkedIssue.simpleId,
-                          title: linkedIssue.title ?? '',
-                          onRemove: clearLinkedIssue,
-                        }
-                      : null
-                  }
-            />
-          </div>
+                : null
+            }
+          />
         </div>
-      )}
+      </div>
     </div>
   );
 }

@@ -73,11 +73,18 @@ interface CreateChatBoxProps<TExecutor extends string = string> {
   onPasteFiles?: (files: File[]) => void;
   localAttachments?: LocalAttachmentMetadata[];
   dropzone?: DropzoneProps;
-  onEditRepos: () => void;
-  repoSummaryLabel: string;
-  repoSummaryTitle: string;
+  onEditRepos?: () => void;
+  repoSummaryLabel?: string;
+  repoSummaryTitle?: string;
   linkedIssue?: LinkedIssueBadgeProps | null;
   worktreeToggle?: ReactNode;
+  /**
+   * Chip row rendered above the editor (folder, branch, worktree, `+`).
+   * When provided, the legacy repo-summary button + worktree checkbox in
+   * the footer are suppressed — the chip row is the canonical UI for
+   * editing those values.
+   */
+  chipRow?: ReactNode;
 }
 
 /**
@@ -114,6 +121,7 @@ export function CreateChatBox<TExecutor extends string = string>({
   repoSummaryTitle,
   linkedIssue,
   worktreeToggle,
+  chipRow,
 }: CreateChatBoxProps<TExecutor>) {
   const { t } = useTranslation(['common', 'tasks']);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -159,6 +167,7 @@ export function CreateChatBox<TExecutor extends string = string>({
       visualVariant={VisualVariant.NORMAL}
       dropzone={dropzone}
       modelSelector={modelSelector}
+      chipRow={chipRow}
       headerLeft={
         <>
           {agentIcon}
@@ -207,16 +216,18 @@ export function CreateChatBox<TExecutor extends string = string>({
             className="hidden"
             onChange={handleFileInputChange}
           />
-          <button
-            type="button"
-            onClick={onEditRepos}
-            title={repoSummaryTitle}
-            disabled={isDisabled}
-            className="max-w-[320px] truncate text-sm text-normal hover:text-high disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {repoSummaryLabel}
-          </button>
-          {worktreeToggle}
+          {!chipRow && onEditRepos && repoSummaryLabel && (
+            <button
+              type="button"
+              onClick={onEditRepos}
+              title={repoSummaryTitle}
+              disabled={isDisabled}
+              className="max-w-[320px] truncate text-sm text-normal hover:text-high disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {repoSummaryLabel}
+            </button>
+          )}
+          {!chipRow && worktreeToggle}
           {linkedIssue && (
             <>
               <div

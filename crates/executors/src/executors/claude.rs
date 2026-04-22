@@ -624,13 +624,24 @@ impl ClaudeCode {
         command_parts: CommandParts,
         env: &ExecutionEnv,
     ) -> Result<SpawnedChild, ExecutorError> {
-        let (program_path, args) = command_parts.into_resolved().await?;
+        let (program_path, mut args) = command_parts.into_resolved().await?;
         let combined_prompt = self.append_prompt.combine_prompt(prompt);
+
+        // Append `--add-dir <path>` for every secondary repo attached to the
+        // session. repo_paths[0] is the primary (already cwd); [1..] are the
+        // additional folders we want Claude to read and write in.
+        let additional_dirs: Vec<PathBuf> =
+            env.repo_context.repo_paths().into_iter().skip(1).collect();
+        for dir in &additional_dirs {
+            args.push("--add-dir".to_string());
+            args.push(dir.to_string_lossy().into_owned());
+        }
 
         tracing::info!(
             program = %program_path.display(),
             args = ?args,
             cwd = %current_dir.display(),
+            additional_dirs = ?additional_dirs,
             "Spawning Claude Code"
         );
 

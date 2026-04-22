@@ -11,17 +11,30 @@ pub struct RepoContext {
     pub workspace_root: PathBuf,
     /// Names of repositories in the workspace (subdirectory names)
     pub repo_names: Vec<String>,
+    /// Absolute on-disk paths of repositories in the workspace, in the same
+    /// order as `repo_names`. For worktree-mode workspaces each entry is
+    /// `<container_ref>/<name>`. For direct-mode workspaces each entry is
+    /// the repo's own real path, which is NOT derivable from `workspace_root`
+    /// because direct-mode secondaries can live anywhere on disk.
+    pub repo_paths: Vec<PathBuf>,
 }
 
 impl RepoContext {
-    pub fn new(workspace_root: PathBuf, repo_names: Vec<String>) -> Self {
+    pub fn new(workspace_root: PathBuf, repo_names: Vec<String>, repo_paths: Vec<PathBuf>) -> Self {
         Self {
             workspace_root,
             repo_names,
+            repo_paths,
         }
     }
 
+    /// Absolute on-disk paths for each repo. Prefer the explicit field; fall
+    /// back to deriving from `workspace_root + repo_names` for legacy
+    /// constructors that did not populate `repo_paths`.
     pub fn repo_paths(&self) -> Vec<PathBuf> {
+        if !self.repo_paths.is_empty() {
+            return self.repo_paths.clone();
+        }
         self.repo_names
             .iter()
             .map(|name| self.workspace_root.join(name))

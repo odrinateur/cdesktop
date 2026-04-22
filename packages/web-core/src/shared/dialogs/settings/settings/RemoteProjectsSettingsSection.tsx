@@ -70,14 +70,7 @@ import {
 import { useSettingsDirty } from './SettingsDirtyContext';
 import type { DraftWorkspaceRepo, GitBranch, Repo } from 'shared/types';
 import { repoApi } from '@/shared/lib/api';
-import {
-  SelectionDialog,
-  type SelectionPage,
-} from '@/shared/dialogs/command-bar/SelectionDialog';
-import {
-  buildBranchSelectionPages,
-  type BranchSelectionResult,
-} from '@/shared/dialogs/command-bar/selections/branchSelection';
+import { pickBranchForRepo } from '@/shared/lib/branchPicker';
 import { FolderPickerDialog } from '@/shared/dialogs/shared/FolderPickerDialog';
 import {
   getProjectRepoDefaults,
@@ -533,24 +526,6 @@ export function RemoteProjectsSettingsSection({
     () => allRepos.filter((r) => !defaultRepoIds.has(r.id)),
     [allRepos, defaultRepoIds]
   );
-
-  const pickBranchForRepo = useCallback(async (repo: Repo) => {
-    const branches = await repoApi.getBranches(repo.id);
-    const branchItems = branches.map((b) => ({
-      name: b.name,
-      isCurrent: b.is_current,
-    }));
-    if (branchItems.length === 0) return null;
-    const branchResult = (await SelectionDialog.show({
-      initialPageId: 'selectBranch',
-      pages: buildBranchSelectionPages(
-        branchItems,
-        repo.display_name || repo.name
-      ) as Record<string, SelectionPage>,
-    })) as BranchSelectionResult | undefined;
-
-    return branchResult?.branch ?? null;
-  }, []);
 
   const handleAddDefaultRepo = useCallback(
     async (repo: Repo) => {
