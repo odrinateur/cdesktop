@@ -249,9 +249,17 @@ pub async fn merge_workspace(
     // merged PR) and no PRs are still open. For single-repo workspaces this
     // is equivalent to the old unconditional archive; for multi-folder
     // sessions it defers archival until the last repo is merged.
-    let all_merged = Merge::all_repos_merged_for_workspace(pool, workspace.id)
-        .await
-        .unwrap_or(false);
+    let all_merged = match Merge::all_repos_merged_for_workspace(pool, workspace.id).await {
+        Ok(v) => v,
+        Err(e) => {
+            tracing::warn!(
+                "Failed to check merge completion for workspace {}: {}. Skipping auto-archive.",
+                workspace.id,
+                e
+            );
+            false
+        }
+    };
     if all_merged
         && !workspace.pinned
         && let Err(e) = deployment.container().archive_workspace(workspace.id).await
