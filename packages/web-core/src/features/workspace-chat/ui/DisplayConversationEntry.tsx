@@ -723,10 +723,7 @@ function UserMessageEntry({
   executorCanFork: boolean;
   resetAction: UseResetProcessResult;
 }) {
-  const isLong = useMemo(
-    () => content.split('\n').length > 20,
-    [content]
-  );
+  const isLong = useMemo(() => content.split('\n').length > 20, [content]);
   const [expanded, toggle] = usePersistedExpanded(
     `user:${expansionKey}`,
     false

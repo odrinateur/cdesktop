@@ -1317,21 +1317,23 @@ impl ContainerService for LocalContainerService {
         let repos = WorkspaceRepo::find_repos_for_workspace(&self.db.pool, workspace.id).await?;
 
         // Resolve the executor's working directory:
-        // - Worktree mode: the managed container root (repos live in subdirs).
-        // - Direct mode: the first attached repo's real on-disk path.
-        let current_dir = if workspace.use_worktree {
-            let container_ref = workspace
-                .container_ref
-                .as_ref()
-                .ok_or(ContainerError::Other(anyhow!(
-                    "Container ref not found for workspace"
-                )))?;
-            PathBuf::from(container_ref)
+        // - Worktree mode: the primary repo's worktree subdir under the
+        //   managed container. Claude's CLAUDE.md discovery needs to land
+        //   inside the repo, not in the synthetic parent.
+        // - Direct mode: the primary repo's real on-disk path.
+        let primary_repo = repos.first().ok_or(ContainerError::Other(anyhow!(
+            "Workspace has no attached repo"
+        )))?;
+        let worktree_root: Option<PathBuf> = if workspace.use_worktree {
+            Some(PathBuf::from(workspace.container_ref.as_ref().ok_or(
+                ContainerError::Other(anyhow!("Container ref not found for workspace")),
+            )?))
         } else {
-            let repo = repos.first().ok_or(ContainerError::Other(anyhow!(
-                "Worktree-disabled workspace has no attached repo"
-            )))?;
-            repo.path.clone()
+            None
+        };
+        let current_dir = match &worktree_root {
+            Some(root) => root.join(&primary_repo.name),
+            None => primary_repo.path.clone(),
         };
 
         let approvals_service: Arc<dyn ExecutorApprovalService> =
@@ -1352,7 +1354,16 @@ impl ContainerService for LocalContainerService {
             };
 
         let repo_names: Vec<String> = repos.iter().map(|r| r.name.clone()).collect();
-        let repo_context = RepoContext::new(current_dir.clone(), repo_names);
+        // Absolute on-disk paths for every repo in order. Direct-mode repos
+        // have arbitrary real locations; worktree-mode repos sit as siblings
+        // under worktree_root. The list is ordered so `repo_paths[0]` is the
+        // primary and `repo_paths[1..]` are the secondaries — the Claude
+        // executor consumes the tail as `--add-dir` arguments.
+        let repo_paths: Vec<PathBuf> = match &worktree_root {
+            Some(root) => repos.iter().map(|r| root.join(&r.name)).collect(),
+            None => repos.iter().map(|r| r.path.clone()).collect(),
+        };
+        let repo_context = RepoContext::new(current_dir.clone(), repo_names, repo_paths);
 
         let config = self.config.read().await;
         let commit_reminder_enabled = config.commit_reminder_enabled;

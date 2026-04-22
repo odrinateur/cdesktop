@@ -509,6 +509,15 @@
       "setupHint": "Tip: Configure setup scripts for this repository in Settings → Repositories",
       "setupHintDismiss": "Dismiss",
       "setupHintLink": "Configure in Settings"
+    },
+    "composerChips": {
+      "pickFolderPlaceholder": "Pick a folder…",
+      "pickBranch": "Select branch",
+      "openFolder": "Open folder…",
+      "recentsEmpty": "No recent folders",
+      "addFolderMenuItem": "Add folder",
+      "removeFolderAction": "Remove",
+      "worktreeChip": "Worktree"
     }
   },
   "modelSelector": {

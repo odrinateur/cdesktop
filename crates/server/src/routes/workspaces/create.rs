@@ -263,9 +263,7 @@ pub async fn create_and_start_workspace(
         let already_on_branch = current.as_deref() == Some(first_repo.target_branch.as_str());
         if !already_on_branch {
             git.checkout_branch(&first_repo.repo.path, &first_repo.target_branch, false)
-                .map_err(|e| {
-                    ApiError::Workspace(WorkspaceError::ValidationError(e.to_string()))
-                })?;
+                .map_err(|e| ApiError::Workspace(WorkspaceError::ValidationError(e.to_string())))?;
         }
     }
 
