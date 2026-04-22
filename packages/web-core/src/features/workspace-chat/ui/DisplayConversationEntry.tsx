@@ -476,12 +476,14 @@ function AppChatMarkdown({
   sessionId,
   className,
   maxWidth,
+  hideActions,
 }: {
   content: string;
   workspaceId: string | undefined;
   sessionId: string | undefined;
   className: string | undefined;
   maxWidth: string | undefined;
+  hideActions?: boolean;
 }) {
   const { viewFileInChanges, findMatchingDiffPath } = useChangesViewActions();
 
@@ -495,6 +497,7 @@ function AppChatMarkdown({
         <WYSIWYGEditor
           value={content}
           disabled
+          hideActions={hideActions}
           className={className}
           workspaceId={workspaceId}
           sessionId={sessionId}
@@ -720,7 +723,14 @@ function UserMessageEntry({
   executorCanFork: boolean;
   resetAction: UseResetProcessResult;
 }) {
-  const [expanded, toggle] = usePersistedExpanded(`user:${expansionKey}`, true);
+  const isLong = useMemo(
+    () => content.split('\n').length > 20,
+    [content]
+  );
+  const [expanded, toggle] = usePersistedExpanded(
+    `user:${expansionKey}`,
+    false
+  );
   const { startEdit, isEntryGreyed, isInEditMode } = useMessageEditContext();
   const { resetProcess, canResetProcess, isResetPending } = resetAction;
 
@@ -749,8 +759,8 @@ function UserMessageEntry({
   return (
     <ChatUserMessage
       content={content}
-      expanded={expanded}
-      onToggle={toggle}
+      expanded={isLong ? expanded : true}
+      onToggle={isLong ? toggle : undefined}
       workspaceId={workspaceId}
       onEdit={canEdit ? handleEdit : undefined}
       onReset={canReset ? handleReset : undefined}
@@ -762,6 +772,7 @@ function UserMessageEntry({
           sessionId={sessionId}
           className={undefined}
           maxWidth={undefined}
+          hideActions
         />
       )}
     />

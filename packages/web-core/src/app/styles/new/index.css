@@ -89,7 +89,7 @@ html {
     color-scheme: dark;
 
     /* Internal variables (dark) - needed for public tokens */
-    --_background: 0 0% 13%;
+    --_background: 0 0% 4%;
     --_foreground: 0 0% 96%;
     --_primary: 240 4.8% 95.9%;
     --_primary-foreground: 240 5.9% 10%;
@@ -121,8 +121,8 @@ html {
     --text-low: 0 0% 56%;
 
     /* Background (dark) - with VS Code overrides */
-    --_bg-primary-default: 0 0% 13%;
-    --_bg-secondary-default: 0 0% 11%;
+    --_bg-primary-default: 0 0% 4%;
+    --_bg-secondary-default: 0 0% 7%;
     --_bg-panel-default: 0 0% 16%;
     --bg-primary: var(--vscode-editor-background, var(--_bg-primary-default));
     --bg-secondary: var(
