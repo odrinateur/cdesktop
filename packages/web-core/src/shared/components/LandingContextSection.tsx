@@ -1,6 +1,11 @@
 import { useMemo } from 'react';
+import { CaretRightIcon } from '@phosphor-icons/react';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
-import { useWorkspaces } from '@/shared/hooks/useWorkspaces';
+import {
+  useWorkspaces,
+  type SidebarWorkspace,
+} from '@/shared/hooks/useWorkspaces';
+import { formatRelativeTimeShort } from '@/shared/lib/date';
 
 const RECENT_LIMIT = 8;
 
@@ -9,6 +14,40 @@ function formatSubhead(attentionCount: number): string {
   return attentionCount === 1
     ? '1 session awaiting input'
     : `${attentionCount} sessions awaiting input`;
+}
+
+type StatusTag = {
+  label: string;
+  textClass: string;
+  dotClass: string;
+};
+
+function getStatusTag(workspace: SidebarWorkspace): StatusTag | null {
+  if (workspace.hasPendingApproval) {
+    return {
+      label: 'Awaiting input',
+      textClass: 'text-amber-400',
+      dotClass: 'bg-amber-400',
+    };
+  }
+  if (workspace.isRunning) {
+    return {
+      label: 'Running',
+      textClass: 'text-blue-400',
+      dotClass: 'bg-blue-400',
+    };
+  }
+  if (
+    workspace.latestProcessStatus === 'failed' ||
+    workspace.latestProcessStatus === 'killed'
+  ) {
+    return {
+      label: 'Failed',
+      textClass: 'text-error',
+      dotClass: 'bg-error',
+    };
+  }
+  return null;
 }
 
 export function LandingContextSection() {
@@ -40,34 +79,48 @@ export function LandingContextSection() {
       {hasRecent ? (
         <>
           <p className="text-sm text-low">{formatSubhead(attentionCount)}</p>
-          <ul className="flex flex-col gap-half rounded-sm border border-border/60">
-            {recentWorkspaces.map((workspace, index) => (
-              <li
-                key={workspace.id}
-                className={index > 0 ? 'border-t border-border/60' : undefined}
-              >
-                <button
-                  type="button"
-                  onClick={() => appNavigation.goToWorkspace(workspace.id)}
-                  className="flex w-full min-w-0 items-center gap-base px-base py-half text-left text-sm text-normal hover:bg-secondary"
-                >
-                  {workspace.hasUnseenActivity && (
-                    <span
-                      aria-label="Awaiting input"
-                      className="inline-block size-2 shrink-0 rounded-full bg-accent"
-                    />
-                  )}
-                  <span className="min-w-0 flex-1 truncate">
-                    {workspace.name}
-                  </span>
-                  {workspace.branch && (
-                    <span className="shrink-0 text-xs text-low">
-                      {workspace.branch}
+          <ul className="flex flex-col gap-[0.375rem]">
+            {recentWorkspaces.map((workspace) => {
+              const status = getStatusTag(workspace);
+              return (
+                <li key={workspace.id}>
+                  <button
+                    type="button"
+                    onClick={() => appNavigation.goToWorkspace(workspace.id)}
+                    className="group flex w-full min-w-0 items-center gap-base rounded-md bg-secondary px-double py-base text-left text-sm text-normal hover:bg-panel"
+                  >
+                    {status && (
+                      <span className="flex shrink-0 items-center gap-1">
+                        <span
+                          className={`size-1.5 shrink-0 rounded-full ${status.dotClass}`}
+                          aria-hidden
+                        />
+                        <span
+                          className={`text-xs font-medium ${status.textClass}`}
+                        >
+                          {status.label}
+                        </span>
+                      </span>
+                    )}
+                    <span className="min-w-0 flex-1 truncate">
+                      {workspace.name}
                     </span>
-                  )}
-                </button>
-              </li>
-            ))}
+                    {workspace.branch && (
+                      <span className="shrink-0 text-xs text-neutral-500">
+                        {workspace.branch}
+                      </span>
+                    )}
+                    <span className="shrink-0 text-xs text-neutral-500">
+                      {formatRelativeTimeShort(workspace.updatedAt)}
+                    </span>
+                    <CaretRightIcon
+                      className="size-icon-xs shrink-0 text-neutral-600 group-hover:text-neutral-400"
+                      aria-hidden
+                    />
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </>
       ) : (
