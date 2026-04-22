@@ -146,7 +146,9 @@
       "edit": "Edit message",
       "scrollToPreviousMessage": "Go to previous message",
       "reset": "Reset",
-      "resetTooltip": "Reset to this point"
+      "resetTooltip": "Reset to this point",
+      "copy": "Copy",
+      "copied": "Copied"
     },
     "approval": {
       "conflictWarning": "Conflicted files need manual resolution",
