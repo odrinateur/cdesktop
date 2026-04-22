@@ -193,6 +193,48 @@ impl Merge {
 
         Ok(merges)
     }
+
+    /// True when every repo attached to the workspace has at least one merge
+    /// event (direct merge or a PR with status=merged), and no PRs are still
+    /// open on any of them. Used to gate auto-archive so multi-repo sessions
+    /// only archive after the LAST repo is merged.
+    pub async fn all_repos_merged_for_workspace(
+        pool: &SqlitePool,
+        workspace_id: Uuid,
+    ) -> Result<bool, sqlx::Error> {
+        let row = sqlx::query!(
+            r#"SELECT
+                (SELECT COUNT(1) FROM workspace_repos WHERE workspace_id = ?) AS "total!: i64",
+                (
+                    SELECT COUNT(DISTINCT wr.repo_id)
+                    FROM workspace_repos wr
+                    WHERE wr.workspace_id = ?
+                      AND (
+                        EXISTS (
+                            SELECT 1 FROM merges m
+                            WHERE m.workspace_id = wr.workspace_id
+                              AND m.repo_id = wr.repo_id
+                              AND m.merge_type = 'direct'
+                        )
+                        OR EXISTS (
+                            SELECT 1 FROM pull_requests pr
+                            WHERE pr.workspace_id = wr.workspace_id
+                              AND pr.repo_id = wr.repo_id
+                              AND pr.pr_status = 'merged'
+                        )
+                      )
+                ) AS "merged!: i64",
+                (SELECT COUNT(1) FROM pull_requests WHERE workspace_id = ? AND pr_status = 'open') AS "open_prs!: i64"
+            "#,
+            workspace_id,
+            workspace_id,
+            workspace_id,
+        )
+        .fetch_one(pool)
+        .await?;
+
+        Ok(row.total > 0 && row.merged >= row.total && row.open_prs == 0)
+    }
 }
 
 impl From<DirectMergeRow> for DirectMerge {
