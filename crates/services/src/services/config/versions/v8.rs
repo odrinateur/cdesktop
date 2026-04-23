@@ -133,7 +133,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             config_version: "v8".to_string(),
-            theme: ThemeMode::System,
+            theme: ThemeMode::Dark,
             executor_profile: ExecutorProfileId::new(BaseCodingAgent::ClaudeCode),
             disclaimer_acknowledged: false,
             onboarding_acknowledged: false,

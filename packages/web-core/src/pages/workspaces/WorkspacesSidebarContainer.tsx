@@ -1,15 +1,13 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useParams } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
+import { ThemeMode } from 'shared/types';
 import { useWorkspaceContext } from '@/shared/hooks/useWorkspaceContext';
 import { useUserContext } from '@/shared/hooks/useUserContext';
 import { useScratch } from '@/shared/hooks/useScratch';
-import { useAllOrganizationProjects } from '@/shared/hooks/useAllOrganizationProjects';
-import { useUserOrganizations } from '@/shared/hooks/useUserOrganizations';
+import { useTheme, getResolvedTheme } from '@/shared/hooks/useTheme';
 import { ScratchType, type DraftWorkspaceData } from 'shared/types';
-import type { Project } from 'shared/remote-types';
 import { splitMessageToTitleDescription } from '@/shared/lib/string';
-import { cn } from '@/shared/lib/utils';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
 import {
   PERSIST_KEYS,
@@ -24,7 +22,9 @@ import { CommandBarDialog } from '@/shared/dialogs/command-bar/CommandBarDialog'
 import { SettingsDialog } from '@/shared/dialogs/settings/SettingsDialog';
 import {
   WorkspacesSidebar,
+  type WorkspacesSidebarFolderGroup,
   type WorkspacesSidebarPersistKeys,
+  type WorkspaceLayoutMode,
 } from '@vibe/ui/components/WorkspacesSidebar';
 import {
   MultiSelectDropdown,
@@ -32,7 +32,6 @@ import {
 } from '@vibe/ui/components/MultiSelectDropdown';
 import { PropertyDropdown } from '@vibe/ui/components/PropertyDropdown';
 import { PrimaryButton } from '@vibe/ui/components/PrimaryButton';
-import { IconButton } from '@vibe/ui/components/IconButton';
 import {
   ButtonGroup,
   ButtonGroupItem,
@@ -44,27 +43,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@vibe/ui/components/Dialog';
-import {
-  FunnelIcon,
-  FolderIcon,
-  GitPullRequestIcon,
-  SortAscendingIcon,
-  SortDescendingIcon,
-  XIcon,
-} from '@phosphor-icons/react';
+import { FolderIcon, GitPullRequestIcon, XIcon } from '@phosphor-icons/react';
 import { useRemoteCloudHostsAppBarModel } from '@/shared/hooks/useRemoteCloudHosts';
-
-export type WorkspaceLayoutMode = 'flat' | 'accordion';
 
 // Fixed UUID for the universal workspace draft (same as in useCreateModeState.ts)
 const DRAFT_WORKSPACE_ID = '00000000-0000-0000-0000-000000000001';
 
 const PAGE_SIZE = 50;
 const NO_PROJECT_ID = '__no_project__';
-const DEFAULT_WORKSPACE_SORT = {
-  sortBy: 'updated_at' as WorkspaceSortBy,
-  sortOrder: 'desc' as WorkspaceSortOrder,
-};
 
 const PR_FILTER_OPTIONS: WorkspacePrFilter[] = ['all', 'has_pr', 'no_pr'];
 
@@ -83,7 +69,9 @@ interface WorkspacesSortDialogProps {
   onSortOrderChange: (sortOrder: WorkspaceSortOrder) => void;
 }
 
-function WorkspacesSortDialog({
+// Sort/filter dialogs kept defined (hide, don't strip). Not rendered while
+// enableFlatGrouping / enableAccordionGrouping are both false.
+export function WorkspacesSortDialog({
   open,
   onOpenChange,
   sortBy,
@@ -163,7 +151,7 @@ interface WorkspacesFilterDialogProps {
   onClearFilters: () => void;
 }
 
-function WorkspacesFilterDialog({
+export function WorkspacesFilterDialog({
   open,
   onOpenChange,
   projectOptions,
@@ -268,6 +256,7 @@ export function WorkspacesSidebarContainer({
   const { hosts: remoteCloudHosts } = useRemoteCloudHostsAppBarModel();
   const { hostId: routeHostId } = useParams({ strict: false });
   const setMobileActiveTab = useUiPreferencesStore((s) => s.setMobileActiveTab);
+  const toggleLeftSidebar = useUiPreferencesStore((s) => s.toggleLeftSidebar);
   const [searchQuery, setSearchQuery] = useState('');
   const [showArchive, setShowArchive] = usePersistedExpanded(
     PERSIST_KEYS.workspacesSidebarArchived,
@@ -277,42 +266,29 @@ export function WorkspacesSidebarContainer({
     PERSIST_KEYS.workspacesSidebarAccordionLayout,
     true
   );
-  const [isSortDialogOpen, setIsSortDialogOpen] = useState(false);
-  const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
-  const { t } = useTranslation('common');
-  const sortDialogTitle = t('kanban.workspaceSidebar.sortButtonTitle');
-  const filterDialogTitle = t('kanban.workspaceSidebar.filterButtonTitle');
+  const enableFlatGrouping = useUiPreferencesStore((s) => s.enableFlatGrouping);
+  const enableAccordionGrouping = useUiPreferencesStore(
+    (s) => s.enableAccordionGrouping
+  );
 
-  const layoutMode: WorkspaceLayoutMode = isAccordionLayout
-    ? 'accordion'
-    : 'flat';
+  const layoutMode: WorkspaceLayoutMode = enableAccordionGrouping
+    ? isAccordionLayout
+      ? 'accordion'
+      : enableFlatGrouping
+        ? 'flat'
+        : 'folder'
+    : enableFlatGrouping
+      ? 'flat'
+      : 'folder';
   const toggleLayoutMode = () => setAccordionLayout(!isAccordionLayout);
 
-  // Workspace sidebar filters + sort
+  // Workspace sidebar filters + sort (state preserved behind the scenes;
+  // UI entry points are hidden in default mode).
   const workspaceFilters = useUiPreferencesStore((s) => s.workspaceFilters);
-  const setWorkspaceProjectFilter = useUiPreferencesStore(
-    (s) => s.setWorkspaceProjectFilter
-  );
-  const setWorkspacePrFilter = useUiPreferencesStore(
-    (s) => s.setWorkspacePrFilter
-  );
-  const clearWorkspaceFilters = useUiPreferencesStore(
-    (s) => s.clearWorkspaceFilters
-  );
   const workspaceSort = useUiPreferencesStore((s) => s.workspaceSort);
-  const setWorkspaceSortBy = useUiPreferencesStore((s) => s.setWorkspaceSortBy);
-  const setWorkspaceSortOrder = useUiPreferencesStore(
-    (s) => s.setWorkspaceSortOrder
-  );
 
-  // Remote data for project filter (all orgs)
+  // Remote data for project filter (all orgs) — hidden in default mode.
   const { workspaces: remoteWorkspaces } = useUserContext();
-  const { data: allRemoteProjects } = useAllOrganizationProjects();
-  const { data: orgsData } = useUserOrganizations();
-  const organizations = useMemo(
-    () => orgsData?.organizations ?? [],
-    [orgsData?.organizations]
-  );
 
   // Map local workspace ID → remote project ID
   const remoteProjectByLocalId = useMemo(() => {
@@ -325,70 +301,14 @@ export function WorkspacesSidebarContainer({
     return map;
   }, [remoteWorkspaces]);
 
-  // Build org name lookup
-  const orgNameById = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const org of organizations) {
-      map.set(org.id, org.name);
-    }
-    return map;
-  }, [organizations]);
-
-  // Group projects by org, only including projects with linked workspaces
-  const projectGroups = useMemo(() => {
-    const linkedProjectIds = new Set(remoteProjectByLocalId.values());
-    const relevant = allRemoteProjects.filter((p) =>
-      linkedProjectIds.has(p.id)
+  // Theme toggle (footer)
+  const { theme, setTheme } = useTheme();
+  const resolvedTheme = getResolvedTheme(theme);
+  const handleToggleTheme = useCallback(() => {
+    setTheme(
+      getResolvedTheme(theme) === 'dark' ? ThemeMode.LIGHT : ThemeMode.DARK
     );
-
-    const groupMap = new Map<string, Project[]>();
-    for (const project of relevant) {
-      const arr = groupMap.get(project.organization_id) ?? [];
-      arr.push(project);
-      groupMap.set(project.organization_id, arr);
-    }
-
-    return Array.from(groupMap.entries())
-      .map(([orgId, projects]) => ({
-        orgId,
-        orgName: orgNameById.get(orgId) ?? 'Unknown',
-        projects: projects.sort((a, b) => a.name.localeCompare(b.name)),
-      }))
-      .sort((a, b) => a.orgName.localeCompare(b.orgName));
-  }, [allRemoteProjects, remoteProjectByLocalId, orgNameById]);
-
-  // Build flat project options for MultiSelectDropdown
-  const projectOptions = useMemo<MultiSelectDropdownOption<string>[]>(
-    () => [
-      {
-        value: NO_PROJECT_ID,
-        label: t('kanban.workspaceSidebar.noProject'),
-      },
-      ...projectGroups.flatMap((g) =>
-        g.projects.map((p) => ({
-          value: p.id,
-          label: p.name,
-          renderOption: () => (
-            <div className="flex items-center gap-base">
-              <span
-                className="h-2 w-2 shrink-0 rounded-full"
-                style={{ backgroundColor: `hsl(${p.color})` }}
-              />
-              {p.name}
-            </div>
-          ),
-        }))
-      ),
-    ],
-    [projectGroups, t]
-  );
-
-  const hasActiveFilters =
-    workspaceFilters.projectIds.length > 0 ||
-    workspaceFilters.prFilter !== 'all';
-  const hasNonDefaultSort =
-    workspaceSort.sortBy !== DEFAULT_WORKSPACE_SORT.sortBy ||
-    workspaceSort.sortOrder !== DEFAULT_WORKSPACE_SORT.sortOrder;
+  }, [theme, setTheme]);
 
   // Pagination state for infinite scroll
   const [displayLimit, setDisplayLimit] = useState(PAGE_SIZE);
@@ -536,6 +456,43 @@ export function WorkspacesSidebarContainer({
     [sortedArchivedWorkspaces, displayLimit, isSearching]
   );
 
+  // Partition paginated active list into { pinned, byFolder }.
+  const { pinnedWorkspaces, folderGroups } = useMemo(() => {
+    const pinned: typeof paginatedActiveWorkspaces = [];
+    const groups = new Map<string, WorkspacesSidebarFolderGroup>();
+
+    for (const ws of paginatedActiveWorkspaces) {
+      if (ws.isPinned) {
+        pinned.push(ws);
+        continue;
+      }
+      const primary = ws.primaryRepo;
+      if (!primary) {
+        // Defensive: workspace with no attached repo. Skip and warn.
+        // (Under multi-folder-sessions invariant this should not happen.)
+        console.warn(
+          `[sidebar] Workspace ${ws.id} has no primary repo; skipping folder grouping.`
+        );
+        continue;
+      }
+      const existing = groups.get(primary.id);
+      if (existing) {
+        existing.sessions.push(ws);
+      } else {
+        groups.set(primary.id, {
+          repoId: primary.id,
+          displayName: primary.displayName || primary.name,
+          sessions: [ws],
+        });
+      }
+    }
+
+    const folderGroupsArr = Array.from(groups.values()).sort((a, b) =>
+      a.displayName.localeCompare(b.displayName)
+    );
+    return { pinnedWorkspaces: pinned, folderGroups: folderGroupsArr };
+  }, [paginatedActiveWorkspaces]);
+
   // Check if there are more workspaces to load
   const hasMoreWorkspaces = showArchive
     ? sortedArchivedWorkspaces.length > displayLimit
@@ -609,59 +566,6 @@ export function WorkspacesSidebarContainer({
     running: PERSIST_KEYS.workspacesSidebarRunning,
   };
 
-  const searchControls = (
-    <>
-      <div className="shrink-0">
-        <div className="flex items-stretch">
-          <IconButton
-            icon={
-              workspaceSort.sortOrder === 'asc'
-                ? SortAscendingIcon
-                : SortDescendingIcon
-            }
-            onClick={() => setIsSortDialogOpen(true)}
-            aria-label={sortDialogTitle}
-            title={sortDialogTitle}
-            className={cn(
-              '!h-cta !px-half !py-0',
-              hasNonDefaultSort && 'text-brand hover:text-brand'
-            )}
-            iconClassName="size-icon-lg"
-          />
-          <IconButton
-            icon={FunnelIcon}
-            onClick={() => setIsFilterDialogOpen(true)}
-            aria-label={filterDialogTitle}
-            title={filterDialogTitle}
-            className="!h-cta !px-half !py-0"
-            iconClassName={cn('size-icon-lg', hasActiveFilters && 'text-brand')}
-          />
-        </div>
-      </div>
-
-      <WorkspacesSortDialog
-        open={isSortDialogOpen}
-        onOpenChange={setIsSortDialogOpen}
-        sortBy={workspaceSort.sortBy}
-        sortOrder={workspaceSort.sortOrder}
-        onSortByChange={setWorkspaceSortBy}
-        onSortOrderChange={setWorkspaceSortOrder}
-      />
-
-      <WorkspacesFilterDialog
-        open={isFilterDialogOpen}
-        onOpenChange={setIsFilterDialogOpen}
-        projectOptions={projectOptions}
-        projectIds={workspaceFilters.projectIds}
-        prFilter={workspaceFilters.prFilter}
-        hasActiveFilters={hasActiveFilters}
-        onProjectFilterChange={setWorkspaceProjectFilter}
-        onPrFilterChange={setWorkspacePrFilter}
-        onClearFilters={clearWorkspaceFilters}
-      />
-    </>
-  );
-
   const activeRemoteHost = useMemo(() => {
     if (remoteCloudHosts.length === 0 || !routeHostId) {
       return null;
@@ -695,13 +599,19 @@ export function WorkspacesSidebarContainer({
       onShowArchiveChange={setShowArchive}
       layoutMode={layoutMode}
       onToggleLayoutMode={toggleLayoutMode}
+      enableFlatGrouping={enableFlatGrouping}
+      enableAccordionGrouping={enableAccordionGrouping}
+      folderGroups={folderGroups}
+      pinnedWorkspaces={pinnedWorkspaces}
       onLoadMore={handleLoadMore}
       hasMoreWorkspaces={hasMoreWorkspaces && !isSearching}
-      searchControls={searchControls}
       onOpenWorkspaceActions={handleOpenWorkspaceActions}
       persistKeys={sidebarPersistKeys}
       activeRemoteHost={activeRemoteHost}
       onOpenRemoteHostSettings={handleOpenRemoteHostSettings}
+      onHideSidebar={toggleLeftSidebar}
+      resolvedTheme={resolvedTheme}
+      onToggleTheme={handleToggleTheme}
     />
   );
 }

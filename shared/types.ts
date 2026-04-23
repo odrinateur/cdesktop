@@ -484,11 +484,17 @@ pr_number: bigint | null,
 /**
  * PR URL for this workspace (if any PR exists)
  */
-pr_url: string | null, };
+pr_url: string | null, 
+/**
+ * Primary (alphabetically first) attached repo — drives sidebar folder grouping.
+ */
+primary_repo: PrimaryRepoInfo | null, };
 
 export type WorkspaceSummaryResponse = { summaries: Array<WorkspaceSummary>, };
 
 export type DiffStats = { files_changed: number, lines_added: number, lines_removed: number, };
+
+export type PrimaryRepoInfo = { id: string, name: string, display_name: string, };
 
 export type DirectoryEntry = { name: string, path: string, is_directory: boolean, is_git_repo: boolean, last_modified: bigint | null, };
 

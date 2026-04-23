@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -7,6 +7,14 @@ use ts_rs::TS;
 use uuid::Uuid;
 
 use super::repo::Repo;
+
+/// Lightweight primary-repo descriptor for sidebar folder grouping.
+#[derive(Debug, Clone, Serialize, TS)]
+pub struct PrimaryRepoInfo {
+    pub id: Uuid,
+    pub name: String,
+    pub display_name: String,
+}
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, TS)]
 pub struct WorkspaceRepo {
@@ -277,5 +285,38 @@ impl WorkspaceRepo {
                 copy_files: row.copy_files,
             })
             .collect())
+    }
+
+    /// Batch-fetch the primary repo for every workspace with a given archived
+    /// status. Primary = alphabetically first attached repo by `display_name`
+    /// (matches the ordering used by `find_repos_for_workspace` / composer).
+    pub async fn find_primary_repos_for_archived(
+        pool: &SqlitePool,
+        archived: bool,
+    ) -> Result<HashMap<Uuid, PrimaryRepoInfo>, sqlx::Error> {
+        let rows = sqlx::query!(
+            r#"SELECT wr.workspace_id as "workspace_id!: Uuid",
+                      r.id             as "repo_id!: Uuid",
+                      r.name,
+                      r.display_name
+               FROM workspace_repos wr
+               JOIN repos r      ON r.id = wr.repo_id
+               JOIN workspaces w ON w.id = wr.workspace_id
+               WHERE w.archived = $1
+               ORDER BY wr.workspace_id, r.display_name ASC"#,
+            archived
+        )
+        .fetch_all(pool)
+        .await?;
+
+        let mut map: HashMap<Uuid, PrimaryRepoInfo> = HashMap::new();
+        for row in rows {
+            map.entry(row.workspace_id).or_insert(PrimaryRepoInfo {
+                id: row.repo_id,
+                name: row.name,
+                display_name: row.display_name,
+            });
+        }
+        Ok(map)
     }
 }

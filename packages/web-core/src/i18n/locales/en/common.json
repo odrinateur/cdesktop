@@ -177,6 +177,37 @@
     "prevGitHubComment": "Previous file with comments",
     "nextGitHubComment": "Next file with comments"
   },
+  "sidebar": {
+    "newSession": "New session",
+    "hideSidebar": {
+      "aria": "Hide sidebar"
+    },
+    "search": {
+      "open": {
+        "aria": "Search sessions"
+      },
+      "collapse": {
+        "aria": "Close search"
+      }
+    },
+    "pinned": {
+      "sectionHeader": "Pinned",
+      "emptyHint": "Pin sessions from their menu to keep them here."
+    },
+    "kebab": {
+      "pin": "Pin session",
+      "unpin": "Unpin session"
+    },
+    "theme": {
+      "light": "light",
+      "dark": "dark"
+    },
+    "footer": {
+      "themeToggle": {
+        "aria": "Switch to {{mode}} mode"
+      }
+    }
+  },
   "sections": {
     "changes": "Changes",
     "repositories": "Repositories",

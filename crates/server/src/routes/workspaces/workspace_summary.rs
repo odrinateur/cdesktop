@@ -7,6 +7,7 @@ use db::models::{
     merge::MergeStatus,
     pull_request::PullRequest,
     workspace::Workspace,
+    workspace_repo::{PrimaryRepoInfo, WorkspaceRepo},
 };
 use deployment::Deployment;
 use serde::{Deserialize, Serialize};
@@ -51,6 +52,8 @@ pub struct WorkspaceSummary {
     pub pr_number: Option<i64>,
     /// PR URL for this workspace (if any PR exists)
     pub pr_url: Option<String>,
+    /// Primary (alphabetically first) attached repo — drives sidebar folder grouping.
+    pub primary_repo: Option<PrimaryRepoInfo>,
 }
 
 /// Response containing summaries for requested workspaces
@@ -112,6 +115,9 @@ pub async fn get_workspace_summaries(
     // 6. Get PR status for each workspace
     let pr_statuses = PullRequest::get_latest_for_workspaces(pool, archived).await?;
 
+    // 6b. Primary repo per workspace (drives sidebar folder grouping)
+    let primary_repos = WorkspaceRepo::find_primary_repos_for_archived(pool, archived).await?;
+
     // 7. Compute diff stats for each workspace (in parallel)
     let diff_futures: Vec<_> = workspaces
         .iter()
@@ -159,6 +165,7 @@ pub async fn get_workspace_summaries(
                 pr_status: pr_statuses.get(&id).map(|pr| pr.pr_status.clone()),
                 pr_number: pr_statuses.get(&id).map(|pr| pr.pr_number),
                 pr_url: pr_statuses.get(&id).map(|pr| pr.pr_url.clone()),
+                primary_repo: primary_repos.get(&id).cloned(),
             }
         })
         .collect();

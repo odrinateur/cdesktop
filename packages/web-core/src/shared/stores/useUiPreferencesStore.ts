@@ -340,6 +340,11 @@ type State = {
   workspaceFilters: WorkspaceFilterState;
   workspaceSort: WorkspaceSortState;
 
+  // Deprecated grouping modes kept behind runtime flags (sidebar-overhaul).
+  // Both default false; flip in devtools to restore the pre-v1 UI.
+  enableFlatGrouping: boolean;
+  enableAccordionGrouping: boolean;
+
   // Kanban view mode state
   kanbanViewMode: KanbanViewMode;
   listViewStatusFilter: string | null;
@@ -428,6 +433,10 @@ type State = {
   setWorkspaceSortBy: (sortBy: WorkspaceSortBy) => void;
   setWorkspaceSortOrder: (sortOrder: WorkspaceSortOrder) => void;
 
+  // Deprecated grouping-mode flag setters.
+  setEnableFlatGrouping: (value: boolean) => void;
+  setEnableAccordionGrouping: (value: boolean) => void;
+
   // Kanban view mode actions
   setKanbanViewMode: (mode: KanbanViewMode) => void;
   setListViewStatusFilter: (statusId: string | null) => void;
@@ -471,6 +480,10 @@ export const useUiPreferencesStore = create<State>()((set, get) => ({
   // Workspace sidebar filter state
   workspaceFilters: DEFAULT_WORKSPACE_FILTER_STATE,
   workspaceSort: DEFAULT_WORKSPACE_SORT_STATE,
+
+  // Deprecated grouping modes off by default; flip in devtools to restore.
+  enableFlatGrouping: false,
+  enableAccordionGrouping: false,
 
   // Kanban view mode state
   kanbanViewMode: 'kanban' as KanbanViewMode,
@@ -812,6 +825,11 @@ export const useUiPreferencesStore = create<State>()((set, get) => ({
     set((s) => ({
       workspaceSort: { ...s.workspaceSort, sortOrder },
     })),
+
+  // Deprecated grouping-mode flag setters.
+  setEnableFlatGrouping: (value) => set({ enableFlatGrouping: value }),
+  setEnableAccordionGrouping: (value) =>
+    set({ enableAccordionGrouping: value }),
 
   // Kanban view mode actions
   setKanbanViewMode: (mode) => set({ kanbanViewMode: mode }),

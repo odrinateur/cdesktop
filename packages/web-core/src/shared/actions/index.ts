@@ -2,6 +2,7 @@ import { forwardRef, createElement } from 'react';
 import type { Icon, IconProps } from '@phosphor-icons/react';
 import type { ExecutorConfig, Merge, Workspace } from 'shared/types';
 import type { QueryClient } from '@tanstack/react-query';
+import i18n from '@/i18n';
 import {
   CopyIcon,
   XIcon,
@@ -242,7 +243,10 @@ export const Actions = {
 
   PinWorkspace: {
     id: 'pin-workspace',
-    label: (workspace?: Workspace) => (workspace?.pinned ? 'Unpin' : 'Pin'),
+    label: (workspace?: Workspace) =>
+      workspace?.pinned
+        ? i18n.t('common:sidebar.kebab.unpin', { defaultValue: 'Unpin session' })
+        : i18n.t('common:sidebar.kebab.pin', { defaultValue: 'Pin session' }),
     icon: PushPinIcon,
     shortcut: 'W P',
     requiresTarget: ActionTargetType.WORKSPACE,
