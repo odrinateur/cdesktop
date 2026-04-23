@@ -85,30 +85,18 @@ export function WorkspaceSummary({
   return (
     <div
       className={cn(
-        'group relative rounded-sm transition-all duration-100 overflow-hidden',
-        isActive ? 'bg-tertiary' : '',
+        'group relative mx-base rounded-[8px] transition-all duration-100 overflow-hidden',
+        isActive ? 'bg-panel' : '',
         className
       )}
     >
-      {/* Selection indicator - thin colored tab on the left */}
-      <div
-        className={cn(
-          'absolute left-0 top-1 bottom-1 w-0.5 rounded-full transition-colors duration-100',
-          isActive ? 'bg-brand' : 'bg-transparent'
-        )}
-      />
       <button
         onClick={onClick}
-        className={cn(
-          'flex w-full cursor-pointer flex-col text-left px-base py-half transition-all duration-150',
-          isActive
-            ? 'text-normal'
-            : 'text-low sm:opacity-60 sm:hover:opacity-100 sm:hover:text-normal'
-        )}
+        className="flex w-full cursor-pointer flex-col text-left px-base py-half text-normal transition-all duration-150"
       >
         <div
           className={cn(
-            'overflow-hidden whitespace-nowrap pr-double',
+            'flex items-center gap-base overflow-hidden whitespace-nowrap pr-double',
             !summary && 'text-normal'
           )}
           style={{
@@ -118,9 +106,42 @@ export function WorkspaceSummary({
               'linear-gradient(to right, black calc(100% - 24px), transparent 100%)',
           }}
         >
-          {name}
+          {summary && (
+            <span className="inline-flex size-icon-xs items-center justify-center shrink-0">
+              {isRunning && hasPendingApproval ? (
+                <HandIcon
+                  className="size-icon-xs text-brand"
+                  weight="fill"
+                />
+              ) : isRunning ? (
+                <RunningDots sizeClass="size-[3px]" colorClass="bg-low" />
+              ) : isFailed ? (
+                <CircleIcon
+                  className="size-icon-xs text-error"
+                  weight="fill"
+                />
+              ) : hasUnseenActivity ? (
+                <CircleIcon
+                  className="size-icon-xs text-brand"
+                  weight="fill"
+                />
+              ) : (
+                <CircleIcon
+                  className="size-icon-xs text-low opacity-40"
+                  weight="regular"
+                />
+              )}
+            </span>
+          )}
+          <span className="min-w-0 flex-1">{name}</span>
+          {summary && isPinned && (
+            <PushPinIcon
+              className="size-icon-xs text-brand shrink-0"
+              weight="fill"
+            />
+          )}
         </div>
-        {(!summary || isActive) && (
+        {!summary && (
           <div className="flex w-full items-center gap-base text-sm h-5">
             {/* Dev server running - leftmost */}
             {hasRunningDevServer && (
@@ -182,7 +203,7 @@ export function WorkspaceSummary({
             {/* Time elapsed OR "Draft" label (when not running) */}
             {!isRunning &&
               (isDraft ? (
-                <span className="min-w-0 flex-1 truncate">
+                <span className="min-w-0 flex-1 truncate text-low opacity-70">
                   {t('workspaces.draft')}
                 </span>
               ) : latestProcessCompletedAt ? (
@@ -217,7 +238,7 @@ export function WorkspaceSummary({
       {workspaceId && onOpenWorkspaceActions && (
         <div className="absolute right-0 top-0 bottom-0 flex items-center sm:opacity-0 sm:group-hover:opacity-100">
           {/* Gradient fade from transparent to background */}
-          <div className="h-full w-6 pointer-events-none bg-gradient-to-r from-transparent to-secondary" />
+          <div className="h-full w-4 pointer-events-none bg-gradient-to-r from-transparent to-secondary" />
           {/* Single action button */}
           <div className="flex items-center pr-base h-full bg-secondary">
             <button

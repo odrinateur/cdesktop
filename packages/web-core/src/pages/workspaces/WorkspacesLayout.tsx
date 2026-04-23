@@ -417,9 +417,14 @@ export function WorkspacesLayout() {
   );
 
   return (
-    <div className="flex flex-1 min-h-0 h-full">
-      {isLeftSidebarVisible && (
-        <div className="w-[300px] shrink-0 h-full overflow-hidden">
+    <div
+      className={cn(
+        'flex flex-1 min-h-0 h-full',
+        isLeftSidebarVisible && !isMobile && 'ml-[300px]'
+      )}
+    >
+      {isLeftSidebarVisible && !isMobile && (
+        <div className="fixed top-0 left-0 bottom-0 w-[300px] z-40 overflow-hidden">
           <WorkspacesSidebarContainer onScrollToBottom={handleScrollToBottom} />
         </div>
       )}
