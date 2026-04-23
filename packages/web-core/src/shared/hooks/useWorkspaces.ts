@@ -11,6 +11,12 @@ import type {
   ApiResponse,
 } from 'shared/types';
 
+export interface SidebarPrimaryRepo {
+  id: string;
+  name: string;
+  displayName: string;
+}
+
 // UI-specific workspace type for sidebar display
 export interface SidebarWorkspace {
   id: string;
@@ -33,6 +39,7 @@ export interface SidebarWorkspace {
   prStatus?: 'open' | 'merged' | 'closed' | 'unknown';
   prNumber?: number;
   prUrl?: string;
+  primaryRepo?: SidebarPrimaryRepo;
 }
 
 // Keep the old export name for backwards compatibility
@@ -81,6 +88,13 @@ function toSidebarWorkspace(
     prNumber:
       summary?.pr_number != null ? Number(summary.pr_number) : undefined,
     prUrl: summary?.pr_url ?? undefined,
+    primaryRepo: summary?.primary_repo
+      ? {
+          id: summary.primary_repo.id,
+          name: summary.primary_repo.name,
+          displayName: summary.primary_repo.display_name,
+        }
+      : undefined,
   };
 }
 

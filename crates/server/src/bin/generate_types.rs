@@ -175,6 +175,7 @@ fn generate_types_content() -> String {
         server::routes::workspaces::workspace_summary::WorkspaceSummary::decl(),
         server::routes::workspaces::workspace_summary::WorkspaceSummaryResponse::decl(),
         server::routes::workspaces::workspace_summary::DiffStats::decl(),
+        db::models::workspace_repo::PrimaryRepoInfo::decl(),
         services::services::filesystem::DirectoryEntry::decl(),
         services::services::filesystem::DirectoryListResponse::decl(),
         services::services::file_search::SearchMode::decl(),
