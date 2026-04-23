@@ -204,6 +204,7 @@ function WorkspaceList({
           latestProcessCompletedAt={workspace.latestProcessCompletedAt}
           latestProcessStatus={workspace.latestProcessStatus}
           prStatus={workspace.prStatus}
+          summary
           onOpenWorkspaceActions={onOpenWorkspaceActions}
           onClick={() => onSelectWorkspace(workspace.id)}
         />
@@ -240,7 +241,7 @@ function FolderGroup({
       <button
         type="button"
         onClick={toggle}
-        className="group w-full flex items-center gap-half px-base py-half text-sm text-low hover:text-normal transition-colors lowercase"
+        className="group w-full flex items-center gap-half px-double py-half text-sm text-low opacity-60 hover:opacity-100 hover:text-normal transition-colors lowercase"
       >
         <span className="flex-1 text-left truncate">{group.displayName}</span>
         <CaretDownIcon
@@ -290,7 +291,7 @@ function SidebarTopBar({
   }, [isSearchExpanded]);
 
   return (
-    <div className="flex items-center gap-half px-base py-half border-b">
+    <div className="flex items-center gap-half px-base pt-base pb-half mb-base">
       <IconButton
         icon={SidebarSimpleIcon}
         onClick={onHideSidebar}
@@ -324,19 +325,16 @@ function SidebarTopBar({
           />
         </div>
       ) : (
-        <>
-          <div className="flex-1" />
-          <IconButton
-            icon={MagnifyingGlassIcon}
-            onClick={() => setIsSearchExpanded(true)}
-            aria-label={t('sidebar.search.open.aria', {
-              defaultValue: 'Search sessions',
-            })}
-            title={t('sidebar.search.open.aria', {
-              defaultValue: 'Search sessions',
-            })}
-          />
-        </>
+        <IconButton
+          icon={MagnifyingGlassIcon}
+          onClick={() => setIsSearchExpanded(true)}
+          aria-label={t('sidebar.search.open.aria', {
+            defaultValue: 'Search sessions',
+          })}
+          title={t('sidebar.search.open.aria', {
+            defaultValue: 'Search sessions',
+          })}
+        />
       )}
     </div>
   );
@@ -348,7 +346,7 @@ function NewSessionRow({ onAddWorkspace }: { onAddWorkspace?: () => void }) {
     <button
       type="button"
       onClick={onAddWorkspace}
-      className="w-full flex items-center gap-base px-base py-half text-sm text-normal hover:bg-tertiary/60 transition-colors"
+      className="w-full flex items-center gap-base px-double py-half text-base text-normal hover:bg-tertiary/60 transition-colors"
     >
       <PlusIcon className="size-icon-sm" weight="bold" />
       <span>{t('sidebar.newSession', { defaultValue: 'New session' })}</span>
@@ -370,8 +368,8 @@ function PinnedSection({
   const { t } = useTranslation('common');
   return (
     <div className="flex flex-col">
-      <div className="px-base py-half">
-        <span className="text-xs font-medium text-low uppercase tracking-wide">
+      <div className="px-double py-half">
+        <span className="text-sm text-low opacity-60">
           {t('sidebar.pinned.sectionHeader', { defaultValue: 'Pinned' })}
         </span>
       </div>
@@ -383,7 +381,7 @@ function PinnedSection({
           onOpenWorkspaceActions={onOpenWorkspaceActions}
         />
       ) : (
-        <p className="px-base py-half text-sm text-low opacity-60">
+        <p className="px-double py-half text-sm text-low opacity-60">
           {t('sidebar.pinned.emptyHint', {
             defaultValue: 'Pin sessions from their menu to keep them here.',
           })}
@@ -753,7 +751,7 @@ export function WorkspacesSidebar({
       </div>
 
       {/* Footer: archive toggle + theme toggle */}
-      <div className="border-t border-primary p-base flex items-center gap-base">
+      <div className="p-double flex items-center gap-base">
         <button
           onClick={() => onShowArchiveChange?.(!showArchive)}
           className="flex-1 flex items-center gap-base text-sm text-low hover:text-normal transition-colors duration-100"
