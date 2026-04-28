@@ -919,6 +919,7 @@ export function SessionChatBox<TExecutor extends string = string>({
           {modelSelectorLeft}
           <ToolbarIconButton
             icon={PaperclipIcon}
+            pill
             aria-label={t('tasks:taskFormDialog.attachFile')}
             title={t('tasks:taskFormDialog.attachFile')}
             onClick={handleAttachClick}

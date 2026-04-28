@@ -33,25 +33,29 @@ function Toolbar({ children, className, ...props }: ToolbarProps) {
 interface ToolbarIconButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon: Icon;
+  pill?: boolean;
 }
 
 function ToolbarIconButton({
   icon: IconComponent,
   className,
   disabled,
+  pill,
   ...props
 }: ToolbarIconButtonProps) {
   return (
     <button
       className={cn(
         'flex items-center justify-center text-low hover:text-normal',
+        pill &&
+          'bg-secondary border border-border rounded-sm h-cta px-base focus:outline-none focus-visible:ring-1 focus-visible:ring-brand',
         disabled && 'opacity-40 cursor-not-allowed hover:text-low',
         className
       )}
       disabled={disabled}
       {...props}
     >
-      <IconComponent className="size-icon-base" />
+      <IconComponent className={cn(pill ? 'size-icon-xs' : 'size-icon-base')} />
     </button>
   );
 }
