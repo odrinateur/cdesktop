@@ -67,6 +67,12 @@ export interface ConversationVirtualizerOptions {
    */
   onAtBottomChange?: (atBottom: boolean) => void;
 
+  /**
+   * Called when the at-top state changes. Shells use this to show/hide
+   * the top-fade gradient.
+   */
+  onAtTopChange?: (atTop: boolean) => void;
+
   shouldSuppressSizeAdjustment?: () => boolean;
 }
 
@@ -112,6 +118,12 @@ export interface ConversationVirtualizerResult {
    */
   isAtBottom: boolean;
 
+  /**
+   * Whether the scroll container is currently at (or very near) the top.
+   * Reactive — updates via scroll event listener.
+   */
+  isAtTop: boolean;
+
   /** Point-in-time check (non-reactive). Reads DOM directly. */
   checkIsAtBottom: () => boolean;
 
@@ -150,6 +162,7 @@ export function useConversationVirtualizer({
   totalRowCount,
   scrollContainerRef,
   onAtBottomChange,
+  onAtTopChange,
   shouldSuppressSizeAdjustment,
 }: ConversationVirtualizerOptions): ConversationVirtualizerResult {
   const bottomLockedRef = useRef(false);
@@ -232,6 +245,11 @@ export function useConversationVirtualizer({
   onAtBottomChangeRef.current = onAtBottomChange;
   const lastAtBottomRef = useRef(true);
 
+  const [isAtTopState, setIsAtTopState] = useState(true);
+  const onAtTopChangeRef = useRef(onAtTopChange);
+  onAtTopChangeRef.current = onAtTopChange;
+  const lastAtTopRef = useRef(true);
+
   const syncIsAtBottom = useCallback(() => {
     const el = scrollContainerRef.current;
     const nextValue = isBottomScrollCorrectionActive()
@@ -244,12 +262,18 @@ export function useConversationVirtualizer({
       lastAtBottomRef.current = nextValue;
       setIsAtBottomState(nextValue);
       onAtBottomChangeRef.current?.(nextValue);
-      return;
+    } else {
+      setIsAtBottomState((current) =>
+        current === nextValue ? current : nextValue
+      );
     }
 
-    setIsAtBottomState((current) =>
-      current === nextValue ? current : nextValue
-    );
+    const nextAtTop = el ? el.scrollTop <= 4 : true;
+    if (nextAtTop !== lastAtTopRef.current) {
+      lastAtTopRef.current = nextAtTop;
+      setIsAtTopState(nextAtTop);
+      onAtTopChangeRef.current?.(nextAtTop);
+    }
   }, [isBottomScrollCorrectionActive, scrollContainerRef]);
 
   const prevScrollTopRef = useRef(0);
@@ -283,9 +307,30 @@ export function useConversationVirtualizer({
 
     el.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
+    // Force-emit current at-edge state on mount: the parent may carry
+    // stale state from a previous virtualizer instance (e.g., session
+    // switch), and syncIsAtBottom only fires on change.
+    onAtBottomChangeRef.current?.(lastAtBottomRef.current);
+    onAtTopChangeRef.current?.(lastAtTopRef.current);
+
+    // Re-sync when the scroll container itself or its content resizes.
+    // Catches cases the scroll handler misses: viewport changes,
+    // unvirtualized tail rows growing during streaming, and image/markdown
+    // reflow inside rows.
+    let observer: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      observer = new ResizeObserver(() => {
+        syncIsAtBottom();
+      });
+      observer.observe(el);
+      for (const child of Array.from(el.children)) {
+        observer.observe(child);
+      }
+    }
 
     return () => {
       el.removeEventListener('scroll', handleScroll);
+      observer?.disconnect();
     };
   }, [scrollContainerRef, shouldSuppressSizeAdjustment, syncIsAtBottom]);
 
@@ -422,6 +467,7 @@ export function useConversationVirtualizer({
     scrollToIndex,
     scrollToPreviousUserMessage,
     isAtBottom: isAtBottomState,
+    isAtTop: isAtTopState,
     checkIsAtBottom,
     releaseBottomLock,
     rowIndexForVirtualItem,

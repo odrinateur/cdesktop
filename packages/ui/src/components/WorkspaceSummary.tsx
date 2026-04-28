@@ -134,12 +134,12 @@ export function WorkspaceSummary({
             </span>
           )}
           <span className="min-w-0 flex-1">{name}</span>
-          {summary && isPinned && (
+          {/* {summary && isPinned && (
             <PushPinIcon
               className="size-icon-xs text-brand shrink-0"
               weight="fill"
             />
-          )}
+          )} */}
         </div>
         {!summary && (
           <div className="flex w-full items-center gap-base text-sm h-5">

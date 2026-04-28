@@ -588,9 +588,13 @@ export function SessionChatBox<TExecutor extends string = string>({
           onClick={actions.onStop}
           aria-label={t('conversation.actions.stop')}
           title={t('conversation.actions.stop')}
-          className="text-low hover:text-error"
+          className="relative top-[5px] text-low hover:text-error"
         >
-          <StopIcon weight="fill" className="size-icon-xs" aria-hidden="true" />
+          <StopIcon
+            weight="regular"
+            className="size-icon-xs"
+            aria-hidden="true"
+          />
         </button>
       );
     }
