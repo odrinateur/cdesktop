@@ -76,11 +76,7 @@ export function ContextUsageGauge({
       ? 'text-low/40'
       : status === 'critical'
         ? 'text-error'
-        : status === 'high'
-          ? 'text-brand-secondary'
-          : status === 'medium'
-            ? 'text-normal'
-            : 'text-low';
+        : 'text-[#0066c8] dark:text-[#0099fb]';
 
   const radius = 8;
   const strokeWidth = 2;

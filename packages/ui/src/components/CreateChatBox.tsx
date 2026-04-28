@@ -1,10 +1,15 @@
 import { type ReactNode, useRef } from 'react';
-import { CheckIcon, PaperclipIcon, XIcon } from '@phosphor-icons/react';
+import {
+  ArrowBendDownLeftIcon,
+  CheckIcon,
+  PaperclipIcon,
+  SpinnerIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { Checkbox } from './Checkbox';
 import { ChatBoxBase, VisualVariant, type DropzoneProps } from './ChatBoxBase';
 import { DropdownMenuItem, DropdownMenuLabel } from './Dropdown';
-import { PrimaryButton } from './PrimaryButton';
 import type { LocalAttachmentMetadata } from './WorkspaceContext';
 import { ToolbarDropdown, ToolbarIconButton } from './Toolbar';
 
@@ -70,6 +75,12 @@ interface CreateChatBoxProps<TExecutor extends string = string> {
   repoIds?: string[];
   repoId?: string;
   modelSelector?: ReactNode;
+  /**
+   * Model-selector controls that belong on the bottom-left (preset,
+   * permission policy, agent / "profile"). Rendered ahead of the
+   * paperclip in the footer-left toolbar.
+   */
+  modelSelectorLeft?: ReactNode;
   onPasteFiles?: (files: File[]) => void;
   localAttachments?: LocalAttachmentMetadata[];
   dropzone?: DropzoneProps;
@@ -113,6 +124,7 @@ export function CreateChatBox<TExecutor extends string = string>({
   repoIds,
   repoId,
   modelSelector,
+  modelSelectorLeft,
   onPasteFiles,
   localAttachments,
   dropzone,
@@ -202,6 +214,7 @@ export function CreateChatBox<TExecutor extends string = string>({
       }
       footerLeft={
         <>
+          {modelSelectorLeft}
           <ToolbarIconButton
             icon={PaperclipIcon}
             aria-label={t('tasks:taskFormDialog.attachFile')}
@@ -251,17 +264,29 @@ export function CreateChatBox<TExecutor extends string = string>({
           )}
         </>
       }
-      footerRight={
-        <PrimaryButton
-          onClick={onSend}
-          disabled={!canSend}
-          actionIcon={isSending ? 'spinner' : undefined}
-          value={
-            isSending
-              ? t('tasks:conversation.workspace.creating')
-              : t('tasks:conversation.workspace.create')
-          }
-        />
+      editorOverlay={
+        isSending ? (
+          <SpinnerIcon
+            weight="bold"
+            className="size-icon-xs text-low animate-spin"
+            aria-label={t('tasks:conversation.workspace.creating')}
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={onSend}
+            disabled={!canSend}
+            aria-label={t('tasks:conversation.workspace.create')}
+            title={t('tasks:conversation.workspace.create')}
+            className="text-[hsl(0_0%_30%)] hover:text-normal disabled:cursor-not-allowed disabled:hover:text-[hsl(0_0%_30%)]"
+          >
+            <ArrowBendDownLeftIcon
+              weight="bold"
+              className="size-icon-xs"
+              aria-hidden="true"
+            />
+          </button>
+        )
       }
     />
   );

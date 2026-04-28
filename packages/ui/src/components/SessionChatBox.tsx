@@ -7,6 +7,7 @@ import {
   XIcon,
   PlusIcon,
   SpinnerIcon,
+  StopIcon,
   ChatCircleIcon,
   TrashIcon,
   WarningIcon,
@@ -169,6 +170,12 @@ interface SessionChatBoxProps<TExecutor extends string = string> {
   reviewComments?: ReviewCommentsProps;
   toolbarActions?: ToolbarActionsProps;
   modelSelector?: ReactNode;
+  /**
+   * Model-selector controls that belong on the bottom-left (preset,
+   * permission policy, agent / "profile"). Rendered alongside the
+   * paperclip in the footer-left toolbar.
+   */
+  modelSelectorLeft?: ReactNode;
   error?: string | null;
   repoIds?: string[];
   agent?: TExecutor | null;
@@ -240,6 +247,7 @@ export function SessionChatBox<TExecutor extends string = string>({
   reviewComments,
   toolbarActions,
   modelSelector,
+  modelSelectorLeft,
   error,
   repoIds,
   agent,
@@ -314,9 +322,7 @@ export function SessionChatBox<TExecutor extends string = string>({
         ? 'Provide feedback to request changes...'
         : isInAskQuestionMode
           ? 'Type a different answer...'
-          : session.isNewSessionMode
-            ? 'Start a new conversation...'
-            : 'Continue working on this task...';
+          : 'Type / for commands';
 
   // Cmd+Enter handler
   const handleCmdEnter = () => {
@@ -510,66 +516,33 @@ export function SessionChatBox<TExecutor extends string = string>({
     }
 
     switch (status) {
+      // idle/sending/stopping: cmd+enter sends; the editor overlay shows
+      // an enter / spinner / stop affordance. No prominent button.
       case 'idle':
-        return (
-          <PrimaryButton
-            onClick={actions.onSend}
-            disabled={!canSend}
-            value={t('conversation.actions.send')}
-          />
-        );
-
       case 'sending':
-        return (
-          <PrimaryButton
-            onClick={actions.onStop}
-            actionIcon="spinner"
-            value={t('conversation.actions.sending')}
-          />
-        );
+      case 'stopping':
+        return null;
 
       case 'running':
+        // Stop icon lives in the editor overlay; queueing stays as a
+        // discoverable prominent action while the agent is busy.
         return (
-          <>
-            <PrimaryButton
-              onClick={actions.onQueue}
-              disabled={!canSend}
-              value={t('conversation.actions.queue')}
-            />
-            <PrimaryButton
-              onClick={actions.onStop}
-              variant="secondary"
-              value={t('conversation.actions.stop')}
-              actionIcon="spinner"
-            />
-          </>
+          <PrimaryButton
+            onClick={actions.onQueue}
+            disabled={!canSend}
+            value={t('conversation.actions.queue')}
+          />
         );
 
       case 'queued':
         return (
-          <>
-            <PrimaryButton
-              onClick={actions.onCancelQueue}
-              value={t('conversation.actions.cancelQueue')}
-              actionIcon={XIcon}
-            />
-            <PrimaryButton
-              onClick={actions.onStop}
-              variant="secondary"
-              value={t('conversation.actions.stop')}
-              actionIcon="spinner"
-            />
-          </>
-        );
-
-      case 'stopping':
-        return (
           <PrimaryButton
-            disabled
-            value={t('conversation.actions.stopping')}
-            actionIcon="spinner"
+            onClick={actions.onCancelQueue}
+            value={t('conversation.actions.cancelQueue')}
+            actionIcon={XIcon}
           />
         );
+
       case 'queue-loading':
         return (
           <PrimaryButton
@@ -582,6 +555,47 @@ export function SessionChatBox<TExecutor extends string = string>({
       case 'edit':
         return null;
     }
+  };
+
+  // Render the bottom-right textarea overlay: a static enter hint when
+  // idle, a stop button while the agent is running, and a spinner while
+  // sending/stopping. Returning undefined falls back to ChatBoxBase's
+  // default arrow icon.
+  const renderEditorOverlay = (): ReactNode | undefined => {
+    if (
+      isInFeedbackMode ||
+      isInEditMode ||
+      isInApprovalMode ||
+      isInAskQuestionMode
+    ) {
+      return undefined;
+    }
+
+    if (status === 'sending' || status === 'stopping') {
+      return (
+        <SpinnerIcon
+          weight="bold"
+          className="size-icon-xs text-low animate-spin"
+          aria-hidden="true"
+        />
+      );
+    }
+
+    if (status === 'running' || status === 'queued') {
+      return (
+        <button
+          type="button"
+          onClick={actions.onStop}
+          aria-label={t('conversation.actions.stop')}
+          title={t('conversation.actions.stop')}
+          className="text-low hover:text-error"
+        >
+          <StopIcon weight="fill" className="size-icon-xs" aria-hidden="true" />
+        </button>
+      );
+    }
+
+    return undefined;
   };
 
   // Banner content
@@ -674,12 +688,18 @@ export function SessionChatBox<TExecutor extends string = string>({
         onPasteFiles: actions.onPasteFiles,
         localAttachments,
       })}
+      editorOverlay={renderEditorOverlay()}
       error={displayError}
       banner={renderBanner()}
       visualVariant={getVisualVariant()}
       isRunning={showRunningAnimation}
       dropzone={dropzone}
       modelSelector={modelSelector}
+      contextGauge={
+        supportsContextUsage ? (
+          <ContextUsageGauge tokenUsageInfo={tokenUsageInfo} />
+        ) : undefined
+      }
       headerLeft={
         <>
           {/* New session mode: agent icon + executor dropdown */}
@@ -820,9 +840,6 @@ export function SessionChatBox<TExecutor extends string = string>({
           )}
           {/* Todo progress popup - always rendered, disabled when no todos */}
           <TodoProgressPopup todos={todos ?? []} />
-          {supportsContextUsage && (
-            <ContextUsageGauge tokenUsageInfo={tokenUsageInfo} />
-          )}
           {showSessionSwitcher && (
             <ToolbarDropdown
               label={sessionLabel}
@@ -895,6 +912,7 @@ export function SessionChatBox<TExecutor extends string = string>({
       }
       footerLeft={
         <>
+          {modelSelectorLeft}
           <ToolbarIconButton
             icon={PaperclipIcon}
             aria-label={t('tasks:taskFormDialog.attachFile')}
