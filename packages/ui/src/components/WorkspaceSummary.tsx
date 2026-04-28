@@ -133,7 +133,9 @@ export function WorkspaceSummary({
               )}
             </span>
           )}
-          <span className="min-w-0 flex-1">{name}</span>
+          <span className={cn('min-w-0 flex-1', isActive && 'font-semibold')}>
+            {name}
+          </span>
           {/* {summary && isPinned && (
             <PushPinIcon
               className="size-icon-xs text-brand shrink-0"
