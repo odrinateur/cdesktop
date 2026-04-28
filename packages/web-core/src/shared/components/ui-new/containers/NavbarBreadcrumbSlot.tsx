@@ -91,16 +91,16 @@ export function NavbarBreadcrumbSlot() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <span className="text-low shrink-0">/</span>
+      <span className="-mx-1 text-low shrink-0">/</span>
       <button
         type="button"
         onClick={handleRename}
-        className="flex items-center gap-half min-w-0 rounded px-1.5 py-1 hover:bg-tertiary/60 transition-colors outline-none focus-visible:ring-1 focus-visible:ring-brand"
+        className="flex items-center gap-half min-w-0 rounded px-1.5 py-1 text-low hover:bg-tertiary/60 transition-colors outline-none focus-visible:ring-1 focus-visible:ring-brand"
         title="Rename session"
       >
         <span className="truncate">{sessionName}</span>
         <CaretDownIcon
-          className="size-icon-xs text-low shrink-0"
+          className="size-icon-2xs text-low shrink-0"
           weight="regular"
         />
       </button>
