@@ -40,7 +40,7 @@ export function WorkspacesMain({
     <main
       ref={containerRef}
       className={cn(
-        'relative flex flex-1 flex-col bg-primary',
+        'relative flex flex-1 flex-col',
         isMobile ? 'min-h-0' : 'h-full'
       )}
     >
@@ -81,7 +81,7 @@ export function WorkspacesMain({
       )}
       {/* Chat box - always rendered to prevent flash during workspace switch */}
       <div
-        className="flex justify-center @container pl-px"
+        className="flex justify-center @container px-double pb-[12px]"
         data-chatbox-container="true"
       >
         {chatBoxContent}

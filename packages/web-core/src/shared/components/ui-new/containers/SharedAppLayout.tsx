@@ -304,7 +304,7 @@ export function SharedAppLayout() {
     <SyncErrorProvider>
       <div
         className={cn(
-          'bg-primary',
+          'bg-[#fdfdfc] dark:bg-primary',
           isMobile
             ? 'flex fixed inset-0 pb-[env(safe-area-inset-bottom)]'
             : cn(
@@ -391,7 +391,7 @@ export function SharedAppLayout() {
               {isWorkspaceSidebarPreviewEnabled && (
                 <div
                   className={cn(
-                    'absolute left-0 top-0 z-30 h-full w-[300px] transition-transform duration-150 ease-out',
+                    'absolute left-0 top-0 bottom-0 z-30 w-[300px] pt-2 pb-3 pl-3 pr-2 transition-transform duration-150 ease-out',
                     sidebarPreview.isPreviewOpen
                       ? 'translate-x-0 pointer-events-auto'
                       : '-translate-x-full pointer-events-none'
@@ -399,9 +399,7 @@ export function SharedAppLayout() {
                   onMouseEnter={sidebarPreview.handlePreviewHoverStart}
                   onMouseLeave={sidebarPreview.handlePreviewHoverEnd}
                 >
-                  <div className="h-full w-full overflow-hidden border-r border-border bg-secondary shadow-lg">
-                    <WorkspacesSidebarContainer />
-                  </div>
+                  <WorkspacesSidebarContainer />
                 </div>
               )}
 

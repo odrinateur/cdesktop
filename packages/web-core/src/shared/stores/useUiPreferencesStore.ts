@@ -321,6 +321,7 @@ type State = {
   isRightSidebarVisible: boolean;
   isTerminalVisible: boolean;
   previewRefreshKey: number;
+  sidebarSearchQuery: string;
   // Note: Kanban issue panel state (selectedKanbanIssueId, createMode, etc.)
   // is derived from URL via app navigation route state
 
@@ -391,6 +392,7 @@ type State = {
   setLeftSidebarVisible: (value: boolean) => void;
   setLeftMainPanelVisible: (value: boolean, workspaceId?: string) => void;
   triggerPreviewRefresh: () => void;
+  setSidebarSearchQuery: (query: string) => void;
 
   // Workspace-specific panel state actions
   getWorkspacePanelState: (workspaceId: string) => WorkspacePanelState;
@@ -469,6 +471,7 @@ export const useUiPreferencesStore = create<State>()((set, get) => ({
   isRightSidebarVisible: true,
   isTerminalVisible: true,
   previewRefreshKey: 0,
+  sidebarSearchQuery: '',
 
   // Workspace-specific panel state
   workspacePanelStates: {},
@@ -534,6 +537,8 @@ export const useUiPreferencesStore = create<State>()((set, get) => ({
     })),
   toggleLeftSidebar: () =>
     set((s) => ({ isLeftSidebarVisible: !s.isLeftSidebarVisible })),
+
+  setSidebarSearchQuery: (query) => set({ sidebarSearchQuery: query }),
 
   toggleLeftMainPanel: (workspaceId) => {
     if (!workspaceId) return;

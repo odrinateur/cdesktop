@@ -1,13 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   PlusIcon,
   ArrowLeftIcon,
   ArchiveIcon,
   StackIcon,
   SpinnerIcon,
-  SidebarSimpleIcon,
-  MagnifyingGlassIcon,
-  XIcon,
   CaretDownIcon,
   SunIcon,
   MoonIcon,
@@ -90,9 +87,6 @@ export interface WorkspacesSidebarProps {
   selectedWorkspaceId: string | null;
   onSelectWorkspace: (id: string) => void;
   onAddWorkspace?: () => void;
-  /** Current search query (controlled; container owns filtering). */
-  searchQuery: string;
-  onSearchChange: (value: string) => void;
   /** Whether we're in create mode */
   isCreateMode?: boolean;
   /** Title extracted from draft message (only shown when isCreateMode and non-empty) */
@@ -127,8 +121,6 @@ export interface WorkspacesSidebarProps {
     status: AppBarHostStatus;
   } | null;
   onOpenRemoteHostSettings?: () => void;
-  /** Hide-sidebar button wiring (left icon in top bar). */
-  onHideSidebar?: () => void;
   /** Theme toggle wiring (footer, bottom-right). */
   resolvedTheme?: 'light' | 'dark';
   onToggleTheme?: () => void;
@@ -157,18 +149,15 @@ export function WorkspacesSidebarReopenTag({
       aria-label={ariaLabel ?? 'Preview sessions sidebar'}
       title={ariaLabel ?? 'Preview sessions sidebar'}
       className={cn(
-        'group inline-flex h-24 w-4 items-center justify-center rounded-md border border-border bg-secondary/95 shadow-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 cursor-e-resize',
-        active ? 'bg-panel text-normal' : 'text-low hover:text-normal',
+        'group inline-flex h-24 w-2 items-center justify-center rounded-r-md bg-secondary/40 hover:bg-secondary/80 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 cursor-e-resize',
+        active && 'bg-secondary/80',
         className
       )}
     >
-      <span className="grid grid-cols-2 gap-[2px]">
-        <span className="size-dot rounded-full bg-low/70 group-hover:bg-low" />
-        <span className="size-dot rounded-full bg-low/70 group-hover:bg-low" />
-        <span className="size-dot rounded-full bg-low/70 group-hover:bg-low" />
-        <span className="size-dot rounded-full bg-low/70 group-hover:bg-low" />
-        <span className="size-dot rounded-full bg-low/70 group-hover:bg-low" />
-        <span className="size-dot rounded-full bg-low/70 group-hover:bg-low" />
+      <span className="grid grid-cols-1 gap-[2px] opacity-40 group-hover:opacity-80 transition-opacity">
+        <span className="size-dot rounded-full bg-low" />
+        <span className="size-dot rounded-full bg-low" />
+        <span className="size-dot rounded-full bg-low" />
       </span>
     </button>
   );
@@ -266,79 +255,6 @@ function FolderGroup({
   );
 }
 
-function SidebarTopBar({
-  searchQuery,
-  onSearchChange,
-  onHideSidebar,
-}: {
-  searchQuery: string;
-  onSearchChange: (value: string) => void;
-  onHideSidebar?: () => void;
-}) {
-  const { t } = useTranslation('common');
-  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const collapse = useCallback(() => {
-    setIsSearchExpanded(false);
-    onSearchChange('');
-  }, [onSearchChange]);
-
-  useEffect(() => {
-    if (isSearchExpanded) {
-      inputRef.current?.focus();
-    }
-  }, [isSearchExpanded]);
-
-  return (
-    <div className="flex items-center gap-half px-base pt-base pb-half mb-base">
-      <IconButton
-        icon={SidebarSimpleIcon}
-        onClick={onHideSidebar}
-        aria-label={t('sidebar.hideSidebar.aria', {
-          defaultValue: 'Hide sidebar',
-        })}
-        title={t('sidebar.hideSidebar.aria', { defaultValue: 'Hide sidebar' })}
-      />
-      {isSearchExpanded ? (
-        <div className="flex-1 flex items-center gap-half">
-          <input
-            ref={inputRef}
-            type="text"
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
-                e.preventDefault();
-                collapse();
-              }
-            }}
-            placeholder={t('workspaces.searchPlaceholder')}
-            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-sm text-normal placeholder:text-low"
-          />
-          <IconButton
-            icon={XIcon}
-            onClick={collapse}
-            aria-label={t('sidebar.search.collapse.aria', {
-              defaultValue: 'Close search',
-            })}
-          />
-        </div>
-      ) : (
-        <IconButton
-          icon={MagnifyingGlassIcon}
-          onClick={() => setIsSearchExpanded(true)}
-          aria-label={t('sidebar.search.open.aria', {
-            defaultValue: 'Search sessions',
-          })}
-          title={t('sidebar.search.open.aria', {
-            defaultValue: 'Search sessions',
-          })}
-        />
-      )}
-    </div>
-  );
-}
 
 function NewSessionRow({ onAddWorkspace }: { onAddWorkspace?: () => void }) {
   const { t } = useTranslation('common');
@@ -399,8 +315,6 @@ export function WorkspacesSidebar({
   selectedWorkspaceId,
   onSelectWorkspace,
   onAddWorkspace,
-  searchQuery,
-  onSearchChange,
   isCreateMode = false,
   draftTitle,
   onSelectCreate,
@@ -418,7 +332,6 @@ export function WorkspacesSidebar({
   persistKeys = DEFAULT_PERSIST_KEYS,
   activeRemoteHost = null,
   onOpenRemoteHostSettings,
-  onHideSidebar,
   resolvedTheme,
   onToggleTheme,
 }: WorkspacesSidebarProps) {
@@ -495,14 +408,7 @@ export function WorkspacesSidebar({
   );
 
   return (
-    <div className="w-full h-full bg-secondary flex flex-col">
-      {/* Top bar: hide-sidebar + expandable search */}
-      <SidebarTopBar
-        searchQuery={searchQuery}
-        onSearchChange={onSearchChange}
-        onHideSidebar={onHideSidebar}
-      />
-
+    <div className="w-full h-full bg-[#fdfdfc] dark:bg-secondary flex flex-col rounded-2xl border border-[#d4d4d4] dark:border-[#1e1e1e] overflow-hidden pt-base">
       {/* Legacy header title row — only rendered when a mode-toggle is available */}
       {headerActions.length > 0 && (
         <CollapsibleSectionHeader
@@ -614,14 +520,14 @@ export function WorkspacesSidebar({
               defaultExpanded={true}
             >
               <div className="flex flex-col gap-base py-half">
-                {draftTitle && (
+                {/* {draftTitle && (
                   <WorkspaceSummary
                     name={draftTitle}
                     isActive={isCreateMode}
                     isDraft={true}
                     onClick={onSelectCreate}
                   />
-                )}
+                )} */}
                 {raisedHandWorkspaces.length === 0 && !draftTitle ? (
                   <span className="text-sm text-low opacity-60 pl-base">
                     {t('common:workspaces.noWorkspaces')}
@@ -690,14 +596,14 @@ export function WorkspacesSidebar({
               </span>
               <span className="text-xs text-low">{totalWorkspacesCount}</span>
             </div>
-            {draftTitle && (
+            {/* {draftTitle && (
               <WorkspaceSummary
                 name={draftTitle}
                 isActive={isCreateMode}
                 isDraft={true}
                 onClick={onSelectCreate}
               />
-            )}
+            )} */}
             {workspaces.map((workspace) => (
               <WorkspaceSummary
                 key={workspace.id}
@@ -723,14 +629,14 @@ export function WorkspacesSidebar({
         ) : (
           /* Default: Pinned + folder groups */
           <div className="flex flex-col gap-base">
-            {draftTitle && (
+            {/* {draftTitle && (
               <WorkspaceSummary
                 name={draftTitle}
                 isActive={isCreateMode}
                 isDraft={true}
                 onClick={onSelectCreate}
               />
-            )}
+            )} */}
             <PinnedSection
               pinnedWorkspaces={pinnedWorkspaces}
               selectedWorkspaceId={selectedWorkspaceId}

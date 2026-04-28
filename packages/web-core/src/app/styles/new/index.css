@@ -264,6 +264,10 @@ html {
     @apply border-border;
   }
 
+  html {
+    font-size: 16.5px;
+  }
+
   html,
   body,
   #root {
