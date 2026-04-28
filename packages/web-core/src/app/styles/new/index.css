@@ -123,7 +123,7 @@ html {
     /* Background (dark) - with VS Code overrides */
     --_bg-primary-default: 0 0% 4%;
     --_bg-secondary-default: 0 0% 7%;
-    --_bg-panel-default: 0 0% 16%;
+    --_bg-panel-default: 60 2% 17%;
     --bg-primary: var(--vscode-editor-background, var(--_bg-primary-default));
     --bg-secondary: var(
       --vscode-editorWidget-background,
@@ -390,9 +390,8 @@ html {
 
   .chat-box-running::before {
     content: '';
-    @apply absolute inset-0 pointer-events-none rounded-t-md;
+    @apply absolute inset-0 pointer-events-none rounded-[10px];
     padding: 1px;
-    padding-bottom: 0;
     background: linear-gradient(
       45deg,
       transparent,

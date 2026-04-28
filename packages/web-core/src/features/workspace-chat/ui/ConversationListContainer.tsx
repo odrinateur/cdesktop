@@ -49,6 +49,7 @@ interface ConversationListProps {
   attempt: WorkspaceWithSession;
   repos?: RepoWithTargetBranch[];
   onAtBottomChange?: (atBottom: boolean) => void;
+  onAtTopChange?: (atTop: boolean) => void;
   sessionScopeId?: string;
 }
 
@@ -151,7 +152,13 @@ export const ConversationList = forwardRef<
   ConversationListHandle,
   ConversationListProps
 >(function ConversationList(
-  { attempt, repos: reposProp = [], onAtBottomChange, sessionScopeId },
+  {
+    attempt,
+    repos: reposProp = [],
+    onAtBottomChange,
+    onAtTopChange,
+    sessionScopeId,
+  },
   ref
 ) {
   const { t } = useTranslation('common');
@@ -467,6 +474,7 @@ export const ConversationList = forwardRef<
     totalRowCount: conversationRows.length,
     scrollContainerRef: tanstackScrollRef,
     onAtBottomChange,
+    onAtTopChange,
     shouldSuppressSizeAdjustment: shouldSuppressInteractionDrivenSizeAdjustment,
   });
 

@@ -1,6 +1,6 @@
 import type { ReactNode, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowDownIcon, SpinnerIcon } from '@phosphor-icons/react';
+import { CaretDownIcon, SpinnerIcon } from '@phosphor-icons/react';
 import { cn } from '../lib/cn';
 
 export interface WorkspacesMainWorkspace {
@@ -16,6 +16,7 @@ interface WorkspacesMainProps {
   chatBoxContent: ReactNode;
   contextBarContent?: ReactNode;
   isAtBottom?: boolean;
+  isAtTop?: boolean;
   onAtBottomChange?: (atBottom: boolean) => void;
   onScrollToBottom?: (behavior?: 'auto' | 'smooth') => void;
   isMobile?: boolean;
@@ -30,6 +31,7 @@ export function WorkspacesMain({
   chatBoxContent,
   contextBarContent,
   isAtBottom = true,
+  isAtTop = true,
   onScrollToBottom,
   isMobile,
 }: WorkspacesMainProps) {
@@ -61,6 +63,13 @@ export function WorkspacesMain({
             </div>
           )}
           {conversationContent}
+          {/* Top fade — mirrors the bottom gradient above the chatbox. */}
+          {!isAtTop && (
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#fdfdfc] to-transparent dark:from-[#0a0a0a]"
+            />
+          )}
         </>
       )}
       {/* Scroll to bottom button */}
@@ -70,20 +79,26 @@ export function WorkspacesMain({
             <button
               type="button"
               onClick={() => onScrollToBottom?.('auto')}
-              className="absolute bottom-2 right-4 z-10 pointer-events-auto flex items-center justify-center size-8 rounded-full bg-secondary/80 backdrop-blur-sm border border-secondary text-low hover:text-normal hover:bg-secondary shadow-md transition-all"
+              className="absolute bottom-0 left-1/2 -translate-x-1/2 z-10 pointer-events-auto flex items-center justify-center size-6 rounded-md bg-secondary/80 backdrop-blur-sm border border-secondary text-low hover:text-normal hover:bg-secondary shadow-md transition-all"
               aria-label="Scroll to bottom"
               title="Scroll to bottom"
             >
-              <ArrowDownIcon className="size-icon-base" weight="bold" />
+              <CaretDownIcon className="size-icon-2xs" weight="bold" />
             </button>
           </div>
         </div>
       )}
       {/* Chat box - always rendered to prevent flash during workspace switch */}
       <div
-        className="flex justify-center @container px-double pb-[12px]"
+        className="relative flex justify-center @container px-double pb-[12px]"
         data-chatbox-container="true"
       >
+        {workspaceWithSession && !isAtBottom && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-full h-16 bg-gradient-to-t from-[#fdfdfc] to-transparent dark:from-[#0a0a0a]"
+          />
+        )}
         {chatBoxContent}
       </div>
       {/* Context Bar - floating toolbar */}

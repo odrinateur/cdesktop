@@ -148,6 +148,11 @@ export const WorkspacesMainContainer = forwardRef<
     setIsAtBottom(atBottom);
   }, []);
 
+  const [isAtTop, setIsAtTop] = useState(true);
+  const handleAtTopChange = useCallback((atTop: boolean) => {
+    setIsAtTop(atTop);
+  }, []);
+
   const handleScrollToBottom = useCallback(
     (behavior: 'auto' | 'smooth' = 'smooth') => {
       conversationListRef.current?.scrollToBottom(behavior);
@@ -213,6 +218,7 @@ export const WorkspacesMainContainer = forwardRef<
             attempt={workspaceWithSession}
             repos={repos}
             onAtBottomChange={handleAtBottomChange}
+            onAtTopChange={handleAtTopChange}
             sessionScopeId={selectedSessionId}
           />
         </RetryUiProvider>
@@ -263,6 +269,7 @@ export const WorkspacesMainContainer = forwardRef<
             chatBoxContent={chatBoxContent}
             contextBarContent={contextBarContent}
             isAtBottom={isAtBottom}
+            isAtTop={isAtTop}
             onAtBottomChange={handleAtBottomChange}
             onScrollToBottom={handleScrollToBottom}
           />
