@@ -17,6 +17,7 @@ import { useShape } from '@/shared/integrations/electric/hooks';
 import { PROJECT_ISSUES_SHAPE } from 'shared/remote-types';
 import { RemoteIssueLink } from './RemoteIssueLink';
 import { NavbarSidebarSearchSlot } from './NavbarSidebarSearchSlot';
+import { NavbarBreadcrumbSlot } from './NavbarBreadcrumbSlot';
 import { AppBarUserPopoverContainer } from './AppBarUserPopoverContainer';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
 import { NavbarActionGroups } from '@/shared/actions';
@@ -152,8 +153,6 @@ export function NavbarContainer({
 
   const { data: orgsData } = useUserOrganizations();
   const selectedOrgId = useOrganizationStore((s) => s.selectedOrgId);
-  const orgName =
-    orgsData?.organizations.find((o) => o.id === selectedOrgId)?.name ?? '';
 
   // Get action visibility context (includes all state for visibility/active/enabled)
   const actionCtx = useActionVisibilityContext();
@@ -189,12 +188,6 @@ export function NavbarContainer({
       ),
     [actionCtx, handleExecuteAction]
   );
-
-  const navbarTitle = isCreateMode
-    ? 'Create Workspace'
-    : isOnProjectPage
-      ? orgName
-      : selectedWorkspace?.branch;
 
   // Breadcrumbs: Project / Issue / Workspace (only on workspace pages with linked project)
   const linkedProjectId = linkedRemoteWorkspace?.project_id ?? null;
@@ -327,7 +320,6 @@ export function NavbarContainer({
 
   return (
     <Navbar
-      workspaceTitle={navbarTitle}
       breadcrumbs={breadcrumbs}
       leftItems={leftItems}
       rightItems={rightItems}
@@ -346,6 +338,7 @@ export function NavbarContainer({
       leftSlot={
         <>
           <NavbarSidebarSearchSlot />
+          <NavbarBreadcrumbSlot />
           {!breadcrumbs &&
           !isWaitingForBreadcrumbData &&
           linkedRemoteWorkspace?.issue_id ? (
