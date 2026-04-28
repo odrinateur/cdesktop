@@ -157,7 +157,7 @@ impl StandardCodingAgentExecutor for Amp {
             model_id: None,
             agent_id: None,
             reasoning_id: None,
-            permission_policy: Some(crate::model_selector::PermissionPolicy::Auto),
+            permission_policy: Some(crate::model_selector::PermissionPolicy::BypassPermissions),
         }
     }
 }

@@ -51,13 +51,20 @@ pub struct AgentInfo {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[ts(use_ts_enum)]
 pub enum PermissionPolicy {
-    #[default]
-    /// Skip all permission checks
-    Auto,
     /// Require approval for risky operations
     Supervised,
+    /// Auto-accept edit operations (Claude --permission-mode=acceptEdits)
+    AcceptEdits,
     /// Plan mode before execution (executor-defined meaning)
     Plan,
+    /// Auto mode (Claude --permission-mode=auto)
+    #[serde(rename = "AUTO_MODE")]
+    Auto,
+    /// Bypass all permission checks (formerly serialized as "AUTO";
+    /// alias retained for back-compat with persisted configs).
+    #[default]
+    #[serde(alias = "AUTO")]
+    BypassPermissions,
 }
 
 /// Full model selector configuration

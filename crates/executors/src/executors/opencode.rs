@@ -377,7 +377,7 @@ fn default_discovered_options() -> crate::executor_discovery::ExecutorDiscovered
             models: vec![],
             default_model: None,
             agents: vec![],
-            permissions: vec![PermissionPolicy::Auto, PermissionPolicy::Supervised],
+            permissions: vec![PermissionPolicy::BypassPermissions, PermissionPolicy::Supervised],
         },
         slash_commands: hardcoded_slash_commands(),
         loading_models: false,
@@ -399,7 +399,7 @@ impl StandardCodingAgentExecutor for Opencode {
         }
 
         if let Some(permission_policy) = executor_config.permission_policy.clone() {
-            self.auto_approve = matches!(permission_policy, PermissionPolicy::Auto);
+            self.auto_approve = matches!(permission_policy, PermissionPolicy::BypassPermissions);
         }
 
         if let Some(reasoning_id) = &executor_config.reasoning_id {
@@ -761,7 +761,7 @@ impl StandardCodingAgentExecutor for Opencode {
             agent_id: self.agent.clone(),
             reasoning_id: self.variant.clone(),
             permission_policy: Some(if self.auto_approve {
-                PermissionPolicy::Auto
+                PermissionPolicy::BypassPermissions
             } else {
                 PermissionPolicy::Supervised
             }),

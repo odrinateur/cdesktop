@@ -116,7 +116,7 @@ impl StandardCodingAgentExecutor for QaMockExecutor {
             model_id: Some("qa-mock".to_string()),
             agent_id: None,
             reasoning_id: None,
-            permission_policy: Some(crate::model_selector::PermissionPolicy::Auto),
+            permission_policy: Some(crate::model_selector::PermissionPolicy::BypassPermissions),
         }
     }
 }

@@ -178,7 +178,7 @@ impl StandardCodingAgentExecutor for CursorAgent {
         if let Some(permission_policy) = executor_config.permission_policy.clone() {
             self.force = Some(matches!(
                 permission_policy,
-                crate::model_selector::PermissionPolicy::Auto
+                crate::model_selector::PermissionPolicy::BypassPermissions
             ));
         }
     }
@@ -637,7 +637,7 @@ impl StandardCodingAgentExecutor for CursorAgent {
             model_id: self.model.clone(),
             agent_id: None,
             reasoning_id: self.reasoning.clone(),
-            permission_policy: Some(crate::model_selector::PermissionPolicy::Auto),
+            permission_policy: Some(crate::model_selector::PermissionPolicy::BypassPermissions),
         }
     }
 

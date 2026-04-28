@@ -6,7 +6,9 @@ import {
   GearIcon,
   HandIcon,
   ListBulletsIcon,
+  PencilSimpleIcon,
   SlidersHorizontalIcon,
+  WarningIcon,
   type Icon,
 } from '@phosphor-icons/react';
 import type { BaseCodingAgent, ExecutorConfig, ModelInfo } from 'shared/types';
@@ -91,19 +93,29 @@ export function ModelSelectorContainer({
 
   const permissionMetaByPolicy: Record<
     PermissionPolicy,
-    { label: string; icon: Icon }
+    { label: string; icon: Icon; triggerColorClass?: string }
   > = {
-    [PermissionPolicy.AUTO]: {
-      label: t('modelSelector.permissionAuto'),
-      icon: FastForwardIcon,
-    },
     [PermissionPolicy.SUPERVISED]: {
       label: t('modelSelector.permissionAsk'),
       icon: HandIcon,
     },
+    [PermissionPolicy.ACCEPT_EDITS]: {
+      label: t('modelSelector.permissionAcceptEdits'),
+      icon: PencilSimpleIcon,
+    },
     [PermissionPolicy.PLAN]: {
       label: t('modelSelector.permissionPlan'),
       icon: ListBulletsIcon,
+    },
+    [PermissionPolicy.AUTO_MODE]: {
+      label: t('modelSelector.permissionAuto'),
+      icon: FastForwardIcon,
+      triggerColorClass: '!text-error',
+    },
+    [PermissionPolicy.BYPASS_PERMISSIONS]: {
+      label: t('modelSelector.permissionBypass'),
+      icon: WarningIcon,
+      triggerColorClass: '!text-yellow-500',
     },
   };
 
@@ -426,9 +438,18 @@ export function ModelSelectorContainer({
   const modelLabelBase = loadingModels
     ? loadingLabel
     : (displaySelectedModel?.name ?? selectedModelId ?? defaultLabel);
-  const modelLabel = reasoningLabel
-    ? `${modelLabelBase} · ${reasoningLabel}`
-    : modelLabelBase;
+  const contextMatch = modelLabelBase.match(/^(.*) \((\d+M) context\)$/);
+  const modelNamePart = contextMatch ? contextMatch[1] : modelLabelBase;
+  const contextSuffix = contextMatch ? contextMatch[2] : null;
+  const modelLabel = (
+    <>
+      {modelNamePart}
+      {contextSuffix && <span className="text-low"> {contextSuffix}</span>}
+      {reasoningLabel && (
+        <span className="text-low"> · {reasoningLabel}</span>
+      )}
+    </>
+  );
 
   const agentLabel = selectedAgentId
     ? (config.agents.find((entry) => entry.id === selectedAgentId)?.label ??
@@ -438,7 +459,6 @@ export function ModelSelectorContainer({
   const permissionMeta = permissionPolicy
     ? (permissionMetaByPolicy[permissionPolicy] ?? null)
     : null;
-  const permissionIcon = permissionMeta?.icon ?? HandIcon;
 
   const showLeft = slot === 'left' || slot === 'all';
   const showRight = slot === 'right' || slot === 'all';
@@ -511,7 +531,13 @@ export function ModelSelectorContainer({
       <DropdownMenu>
         <DropdownMenuTriggerButton
           size="sm"
-          icon={permissionIcon}
+          label={
+            permissionMeta ? (
+              <span className={permissionMeta.triggerColorClass}>
+                {permissionMeta.label}
+              </span>
+            ) : undefined
+          }
           showCaret={false}
         />
         <DropdownMenuContent align="start">
@@ -564,8 +590,8 @@ export function ModelSelectorContainer({
     <>
       {showLeft && (
         <>
-          {presetNode}
           {permissionNode}
+          {presetNode}
           {agentNode}
         </>
       )}

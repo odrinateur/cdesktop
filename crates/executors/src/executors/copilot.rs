@@ -99,7 +99,7 @@ impl StandardCodingAgentExecutor for Copilot {
         if let Some(permission_policy) = &executor_config.permission_policy {
             self.allow_all_tools = Some(matches!(
                 permission_policy,
-                crate::model_selector::PermissionPolicy::Auto
+                crate::model_selector::PermissionPolicy::BypassPermissions
             ));
         }
     }
@@ -185,7 +185,7 @@ impl StandardCodingAgentExecutor for Copilot {
             model_id: self.model.clone(),
             agent_id: None,
             reasoning_id: None,
-            permission_policy: Some(crate::model_selector::PermissionPolicy::Auto),
+            permission_policy: Some(crate::model_selector::PermissionPolicy::BypassPermissions),
         }
     }
 
@@ -224,7 +224,7 @@ impl StandardCodingAgentExecutor for Copilot {
                     reasoning_options: vec![],
                 })
                 .collect(),
-                permissions: vec![PermissionPolicy::Auto, PermissionPolicy::Supervised],
+                permissions: vec![PermissionPolicy::BypassPermissions, PermissionPolicy::Supervised],
                 ..Default::default()
             },
             ..Default::default()

@@ -127,6 +127,8 @@ pub struct ClaudeCode {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub approvals: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub permission_mode_override: Option<PermissionMode>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub model: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub effort: Option<ClaudeEffort>,
@@ -170,6 +172,12 @@ impl ClaudeCode {
                 "--permission-mode={}",
                 PermissionMode::BypassPermissions
             )]);
+        } else if let Some(mode) = self.permission_mode_override {
+            // AcceptEdits / Auto / BypassPermissions: still route prompts via stdio so the
+            // executor's approval UI can gate the operations the CLI does ask about.
+            builder = builder.extend_params(["--permission-prompt-tool=stdio"]);
+            builder = builder.extend_params([format!("--permission-mode={}", mode)]);
+            builder = builder.extend_params(["--disallowedTools=AskUserQuestion"]);
         } else {
             builder = builder.extend_params(["--disallowedTools=AskUserQuestion"]);
         }
@@ -298,9 +306,11 @@ fn default_discovered_options() -> crate::executor_discovery::ExecutorDiscovered
             default_model: Some("opus".to_string()),
             agents: vec![],
             permissions: vec![
-                PermissionPolicy::Auto,
                 PermissionPolicy::Supervised,
+                PermissionPolicy::AcceptEdits,
                 PermissionPolicy::Plan,
+                PermissionPolicy::Auto,
+                PermissionPolicy::BypassPermissions,
             ],
         },
         slash_commands: ClaudeCode::hardcoded_slash_commands(),
@@ -328,14 +338,27 @@ impl StandardCodingAgentExecutor for ClaudeCode {
                 PermissionPolicy::Plan => {
                     self.plan = Some(true);
                     self.approvals = Some(false);
+                    self.permission_mode_override = None;
                 }
                 PermissionPolicy::Supervised => {
                     self.plan = Some(false);
                     self.approvals = Some(true);
+                    self.permission_mode_override = None;
+                }
+                PermissionPolicy::AcceptEdits => {
+                    self.plan = Some(false);
+                    self.approvals = Some(false);
+                    self.permission_mode_override = Some(PermissionMode::AcceptEdits);
                 }
                 PermissionPolicy::Auto => {
                     self.plan = Some(false);
                     self.approvals = Some(false);
+                    self.permission_mode_override = Some(PermissionMode::Auto);
+                }
+                PermissionPolicy::BypassPermissions => {
+                    self.plan = Some(false);
+                    self.approvals = Some(false);
+                    self.permission_mode_override = Some(PermissionMode::BypassPermissions);
                 }
             }
         }
@@ -570,11 +593,20 @@ impl StandardCodingAgentExecutor for ClaudeCode {
         let permission_policy = if self.plan.unwrap_or(false) {
             PermissionPolicy::Plan
         } else if self.dangerously_skip_permissions.unwrap_or(false) {
-            PermissionPolicy::Auto
+            PermissionPolicy::BypassPermissions
         } else if self.approvals.unwrap_or(false) {
             PermissionPolicy::Supervised
+        } else if let Some(mode) = &self.permission_mode_override {
+            match mode {
+                PermissionMode::AcceptEdits => PermissionPolicy::AcceptEdits,
+                PermissionMode::Auto => PermissionPolicy::Auto,
+                PermissionMode::BypassPermissions => PermissionPolicy::BypassPermissions,
+                PermissionMode::Default | PermissionMode::Plan => {
+                    PermissionPolicy::BypassPermissions
+                }
+            }
         } else {
-            PermissionPolicy::Auto
+            PermissionPolicy::BypassPermissions
         };
 
         ExecutorConfig {
@@ -2952,6 +2984,7 @@ mod tests {
             claude_code_router: Some(false),
             plan: None,
             approvals: None,
+            permission_mode_override: None,
             model: None,
             effort: None,
             agent: None,

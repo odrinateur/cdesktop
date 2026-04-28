@@ -29,6 +29,20 @@
         "null"
       ]
     },
+    "permission_mode_override": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "default",
+        "acceptEdits",
+        "plan",
+        "auto",
+        "bypassPermissions",
+        null
+      ]
+    },
     "model": {
       "type": [
         "string",
