@@ -160,7 +160,7 @@ export function ChatBoxBase({
         )}
       >
         {editor}
-        <div className="absolute right-base bottom-[15px]">
+        <div className="absolute right-base bottom-[17px]">
           {editorOverlay ?? (
             <ArrowBendDownLeftIcon
               weight="bold"

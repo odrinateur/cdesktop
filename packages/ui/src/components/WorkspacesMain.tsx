@@ -67,7 +67,7 @@ export function WorkspacesMain({
           {!isAtTop && (
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#fdfdfc] to-transparent dark:from-[#0a0a0a]"
+              className="pointer-events-none absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-[#fdfdfc] to-transparent dark:from-[#0a0a0a]"
             />
           )}
         </>
@@ -96,7 +96,7 @@ export function WorkspacesMain({
         {workspaceWithSession && !isAtBottom && (
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 bottom-full h-16 bg-gradient-to-t from-[#fdfdfc] to-transparent dark:from-[#0a0a0a]"
+            className="pointer-events-none absolute inset-x-0 bottom-full h-12 bg-gradient-to-t from-[#fdfdfc] to-transparent dark:from-[#0a0a0a]"
           />
         )}
         <div className="w-chat max-w-full px-double">{chatBoxContent}</div>

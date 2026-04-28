@@ -316,21 +316,48 @@ export function useConversationVirtualizer({
     // Re-sync when the scroll container itself or its content resizes.
     // Catches cases the scroll handler misses: viewport changes,
     // unvirtualized tail rows growing during streaming, and image/markdown
-    // reflow inside rows.
-    let observer: ResizeObserver | null = null;
+    // reflow inside rows. When bottom is locked, also re-snap to the new
+    // bottom — covers late reflows (running→completed entry replacement,
+    // syntax highlighting, image loads) that fire after the layout-effect
+    // correction window has already settled.
+    let resizeObserver: ResizeObserver | null = null;
+    let mutationObserver: MutationObserver | null = null;
     if (typeof ResizeObserver !== 'undefined') {
-      observer = new ResizeObserver(() => {
+      const handleResize = () => {
         syncIsAtBottom();
-      });
-      observer.observe(el);
+        if (!bottomLockedRef.current) return;
+        if (performance.now() < smoothScrollDeadlineRef.current) return;
+        const maxScroll = el.scrollHeight - el.clientHeight;
+        if (maxScroll > 0 && Math.abs(maxScroll - el.scrollTop) > 1) {
+          el.scrollTop = maxScroll;
+        }
+      };
+
+      resizeObserver = new ResizeObserver(handleResize);
+      resizeObserver.observe(el);
       for (const child of Array.from(el.children)) {
-        observer.observe(child);
+        resizeObserver.observe(child);
+      }
+
+      // Children of the scroll container are dynamic (spacer div, tail
+      // rows, placeholders). Observe newly-added children so resizes of
+      // late-mounted nodes still trigger the re-snap.
+      if (typeof MutationObserver !== 'undefined') {
+        mutationObserver = new MutationObserver((mutations) => {
+          for (const mutation of mutations) {
+            for (const node of Array.from(mutation.addedNodes)) {
+              if (node instanceof Element) resizeObserver?.observe(node);
+            }
+          }
+        });
+        mutationObserver.observe(el, { childList: true });
       }
     }
 
     return () => {
       el.removeEventListener('scroll', handleScroll);
-      observer?.disconnect();
+      resizeObserver?.disconnect();
+      mutationObserver?.disconnect();
     };
   }, [scrollContainerRef, shouldSuppressSizeAdjustment, syncIsAtBottom]);
 

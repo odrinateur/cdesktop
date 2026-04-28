@@ -14,7 +14,7 @@ import type { AddEntryType } from '@/shared/hooks/useConversationHistory/types';
  * Pixel distance from bottom within which the user is considered "at bottom".
  * Accounts for sub-pixel rounding, scroll inertia, and minor content growth.
  */
-export const NEAR_BOTTOM_THRESHOLD_PX = 64;
+export const NEAR_BOTTOM_THRESHOLD_PX = 16;
 
 // ---------------------------------------------------------------------------
 // Scroll Intent
