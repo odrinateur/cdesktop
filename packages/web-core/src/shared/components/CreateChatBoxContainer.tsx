@@ -250,7 +250,7 @@ export function CreateChatBoxContainer({
 
   return (
     <div className="relative flex flex-1 flex-col bg-primary h-full">
-      <div className="flex flex-1 flex-col px-[24px] pb-double">
+      <div className="flex flex-1 flex-col px-[24px] pb-[12px]">
         <div className="mx-auto flex w-chat max-w-full flex-col gap-base pt-[18vh]">
           <LandingContextSection />
         </div>
@@ -272,12 +272,12 @@ export function CreateChatBoxContainer({
               localAttachments,
             }) => (
               <WYSIWYGEditor
-                placeholder="Describe a task or ask a question"
+                placeholder="Type / for commands"
                 value={value}
                 onChange={onChange}
                 onCmdEnter={onCmdEnter}
                 disabled={disabled}
-                className="min-h-double max-h-[50vh] overflow-y-auto"
+                className="min-h-double max-h-[10rem] overflow-y-auto"
                 repoIds={repoIds}
                 repoId={repoId}
                 executor={executor}
@@ -302,6 +302,23 @@ export function CreateChatBoxContainer({
             modelSelector={
               effectiveExecutor ? (
                 <ModelSelectorContainer
+                  slot="right"
+                  agent={effectiveExecutor}
+                  workspaceId={undefined}
+                  onAdvancedSettings={handleCustomise}
+                  presets={variantOptions}
+                  selectedPreset={selectedVariant}
+                  onPresetSelect={handlePresetSelect}
+                  onOverrideChange={setExecutorOverrides}
+                  executorConfig={executorConfig}
+                  presetOptions={presetOptions}
+                />
+              ) : undefined
+            }
+            modelSelectorLeft={
+              effectiveExecutor ? (
+                <ModelSelectorContainer
+                  slot="left"
                   agent={effectiveExecutor}
                   workspaceId={undefined}
                   onAdvancedSettings={handleCustomise}

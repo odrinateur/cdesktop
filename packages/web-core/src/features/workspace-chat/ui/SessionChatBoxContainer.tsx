@@ -946,6 +946,23 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
 
   const modelSelectorNode = effectiveExecutor ? (
     <ModelSelectorContainer
+      slot="right"
+      agent={effectiveExecutor}
+      workspaceId={workspaceId}
+      sessionId={sessionId}
+      onAdvancedSettings={handleCustomise}
+      presets={variantOptions}
+      selectedPreset={selectedVariant}
+      onPresetSelect={setSelectedVariant}
+      onOverrideChange={setExecutorOverrides}
+      executorConfig={executorConfig}
+      presetOptions={presetOptions}
+    />
+  ) : undefined;
+
+  const modelSelectorLeftNode = effectiveExecutor ? (
+    <ModelSelectorContainer
+      slot="left"
       agent={effectiveExecutor}
       workspaceId={workspaceId}
       sessionId={sessionId}
@@ -1139,6 +1156,7 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
       localAttachments={localAttachments}
       dropzone={{ getRootProps, getInputProps, isDragActive }}
       modelSelector={modelSelectorNode}
+      modelSelectorLeft={modelSelectorLeftNode}
     />
   );
 }

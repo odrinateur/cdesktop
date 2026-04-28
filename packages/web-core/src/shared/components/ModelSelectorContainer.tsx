@@ -55,6 +55,15 @@ interface ModelSelectorContainerProps {
   onOverrideChange: (partial: Partial<ExecutorConfig>) => void;
   executorConfig: ExecutorConfig | null;
   presetOptions: ExecutorConfig | null | undefined;
+  /**
+   * Which subset of dropdowns to render.
+   * - `right` (default): just the model picker (rendered in the
+   *   composer's bottom-right alongside the context gauge).
+   * - `left`: preset + permission policy + agent ("profile") — these
+   *   live in the composer's bottom-left toolbar.
+   * - `all`: every dropdown in one node (legacy callers).
+   */
+  slot?: 'right' | 'left' | 'all';
 }
 
 export function ModelSelectorContainer({
@@ -68,6 +77,7 @@ export function ModelSelectorContainer({
   onOverrideChange,
   executorConfig,
   presetOptions,
+  slot = 'all',
 }: ModelSelectorContainerProps) {
   const { t } = useTranslation('common');
   const { theme } = useTheme();
@@ -430,124 +440,136 @@ export function ModelSelectorContainer({
     : null;
   const permissionIcon = permissionMeta?.icon ?? HandIcon;
 
-  return (
-    <>
+  const showLeft = slot === 'left' || slot === 'all';
+  const showRight = slot === 'right' || slot === 'all';
+
+  const presetNode = (
+    <DropdownMenu>
+      <DropdownMenuTriggerButton
+        size="sm"
+        icon={SlidersHorizontalIcon}
+        label={
+          resolvedPreset?.toLowerCase() !== 'default' ? presetLabel : undefined
+        }
+        showCaret={false}
+      />
+      <DropdownMenuContent align="start">
+        <DropdownMenuLabel>{t('modelSelector.preset')}</DropdownMenuLabel>
+        {presets.length > 0 ? (
+          presets.map((preset) => (
+            <DropdownMenuItem
+              key={preset}
+              icon={preset === resolvedPreset ? CheckIcon : undefined}
+              onClick={() => onPresetSelect?.(preset)}
+            >
+              {toPrettyCase(preset)}
+            </DropdownMenuItem>
+          ))
+        ) : (
+          <DropdownMenuItem disabled>{presetLabel}</DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem icon={GearIcon} onClick={onAdvancedSettings}>
+          {t('modelSelector.custom')}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
+  const modelNode = showModelSelector ? (
+    <ModelSelectorPopover
+      isOpen={isOpen}
+      onOpenChange={handleOpenChange}
+      trigger={
+        <DropdownMenuTriggerButton
+          size="sm"
+          label={modelLabel}
+          disabled={loadingModels}
+        />
+      }
+      config={config}
+      error={streamError}
+      selectedProviderId={selectedProviderId}
+      selectedModelId={selectedModelId}
+      selectedReasoningId={selectedReasoningId}
+      searchQuery={searchQuery}
+      onSearchChange={setSearchQuery}
+      onModelSelect={handleModelSelect}
+      onReasoningSelect={handleReasoningSelect}
+      recentModelEntries={recentModelEntries}
+      showDefaultOption={showDefaultOption}
+      onSelectDefault={() => handleModelSelect(null)}
+      scrollRef={scrollRef}
+      expandedProviderId={expandedProviderId}
+      onExpandedProviderIdChange={setExpandedProviderId}
+      resolvedTheme={resolvedTheme}
+    />
+  ) : null;
+
+  const permissionNode =
+    permissionPolicy && config.permissions.length > 0 ? (
       <DropdownMenu>
         <DropdownMenuTriggerButton
           size="sm"
-          icon={SlidersHorizontalIcon}
-          label={
-            resolvedPreset?.toLowerCase() !== 'default'
-              ? presetLabel
-              : undefined
-          }
+          icon={permissionIcon}
           showCaret={false}
         />
         <DropdownMenuContent align="start">
-          <DropdownMenuLabel>{t('modelSelector.preset')}</DropdownMenuLabel>
-          {presets.length > 0 ? (
-            presets.map((preset) => (
+          <DropdownMenuLabel>
+            {t('modelSelector.permissions')}
+          </DropdownMenuLabel>
+          {config.permissions.map((policy) => {
+            const meta = permissionMetaByPolicy[policy];
+            return (
               <DropdownMenuItem
-                key={preset}
-                icon={preset === resolvedPreset ? CheckIcon : undefined}
-                onClick={() => onPresetSelect?.(preset)}
+                key={policy}
+                icon={meta?.icon ?? HandIcon}
+                onClick={() => handlePermissionPolicyChange(policy)}
               >
-                {toPrettyCase(preset)}
+                {meta?.label ?? toPrettyCase(policy)}
               </DropdownMenuItem>
-            ))
-          ) : (
-            <DropdownMenuItem disabled>{presetLabel}</DropdownMenuItem>
-          )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem icon={GearIcon} onClick={onAdvancedSettings}>
-            {t('modelSelector.custom')}
-          </DropdownMenuItem>
+            );
+          })}
         </DropdownMenuContent>
       </DropdownMenu>
+    ) : null;
 
-      {showModelSelector && (
-        <ModelSelectorPopover
-          isOpen={isOpen}
-          onOpenChange={handleOpenChange}
-          trigger={
-            <DropdownMenuTriggerButton
-              size="sm"
-              label={modelLabel}
-              disabled={loadingModels}
-            />
-          }
-          config={config}
-          error={streamError}
-          selectedProviderId={selectedProviderId}
-          selectedModelId={selectedModelId}
-          selectedReasoningId={selectedReasoningId}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          onModelSelect={handleModelSelect}
-          onReasoningSelect={handleReasoningSelect}
-          recentModelEntries={recentModelEntries}
-          showDefaultOption={showDefaultOption}
-          onSelectDefault={() => handleModelSelect(null)}
-          scrollRef={scrollRef}
-          expandedProviderId={expandedProviderId}
-          onExpandedProviderIdChange={setExpandedProviderId}
-          resolvedTheme={resolvedTheme}
-        />
-      )}
-
-      {permissionPolicy && config.permissions.length > 0 && (
-        <DropdownMenu>
-          <DropdownMenuTriggerButton
-            size="sm"
-            icon={permissionIcon}
-            showCaret={false}
-          />
-          <DropdownMenuContent align="start">
-            <DropdownMenuLabel>
-              {t('modelSelector.permissions')}
-            </DropdownMenuLabel>
-            {config.permissions.map((policy) => {
-              const meta = permissionMetaByPolicy[policy];
-              return (
-                <DropdownMenuItem
-                  key={policy}
-                  icon={meta?.icon ?? HandIcon}
-                  onClick={() => handlePermissionPolicyChange(policy)}
-                >
-                  {meta?.label ?? toPrettyCase(policy)}
-                </DropdownMenuItem>
-              );
-            })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-
-      {config.agents.length > 0 && (
-        <DropdownMenu>
-          <DropdownMenuTriggerButton size="sm" label={agentLabel} />
-          <DropdownMenuContent align="start">
-            <DropdownMenuLabel>{t('modelSelector.agent')}</DropdownMenuLabel>
+  const agentNode =
+    config.agents.length > 0 ? (
+      <DropdownMenu>
+        <DropdownMenuTriggerButton size="sm" label={agentLabel} />
+        <DropdownMenuContent align="start">
+          <DropdownMenuLabel>{t('modelSelector.agent')}</DropdownMenuLabel>
+          <DropdownMenuItem
+            icon={selectedAgentId === null ? CheckIcon : undefined}
+            onClick={() => handleAgentSelect(null)}
+          >
+            {t('modelSelector.default')}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          {config.agents.map((agentOption) => (
             <DropdownMenuItem
-              icon={selectedAgentId === null ? CheckIcon : undefined}
-              onClick={() => handleAgentSelect(null)}
+              key={agentOption.id}
+              icon={agentOption.id === selectedAgentId ? CheckIcon : undefined}
+              onClick={() => handleAgentSelect(agentOption.id)}
             >
-              {t('modelSelector.default')}
+              {agentOption.label}
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            {config.agents.map((agentOption) => (
-              <DropdownMenuItem
-                key={agentOption.id}
-                icon={
-                  agentOption.id === selectedAgentId ? CheckIcon : undefined
-                }
-                onClick={() => handleAgentSelect(agentOption.id)}
-              >
-                {agentOption.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    ) : null;
+
+  return (
+    <>
+      {showLeft && (
+        <>
+          {presetNode}
+          {permissionNode}
+          {agentNode}
+        </>
       )}
+      {showRight && modelNode}
     </>
   );
 }

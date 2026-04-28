@@ -21,6 +21,11 @@ interface ChatBoxBaseProps {
   // Editor node (provided by frontend)
   editor: ReactNode;
 
+  // Element rendered absolutely-positioned in the textarea card's
+  // bottom-right corner. Defaults to a static enter-key icon hint.
+  // Callers pass a clickable stop button when the agent is running.
+  editorOverlay?: ReactNode;
+
   // Error display
   error?: string | null;
 
@@ -37,11 +42,18 @@ interface ChatBoxBaseProps {
   // Footer left content (additional toolbar items like attach button)
   footerLeft?: ReactNode;
 
-  // Footer right content (action buttons)
-  footerRight: ReactNode;
+  // Footer right content (prominent action buttons — feedback Submit,
+  // edit Cancel, etc). Rendered to the right of the model selector with
+  // its native styling (no ghost overrides).
+  footerRight?: ReactNode;
 
-  // Model selector node (rendered with footer controls)
+  // Model selector node (rendered on the bottom-right with ghost
+  // styling, ahead of any footerRight buttons).
   modelSelector?: ReactNode;
+
+  // Context usage gauge (rendered on the bottom-right alongside the
+  // model selector).
+  contextGauge?: ReactNode;
 
   // Banner content (queued message indicator, feedback mode indicator)
   banner?: ReactNode;
@@ -66,6 +78,7 @@ interface ChatBoxBaseProps {
  */
 export function ChatBoxBase({
   editor,
+  editorOverlay,
   error,
   headerRight,
   headerLeft,
@@ -73,6 +86,7 @@ export function ChatBoxBase({
   footerLeft,
   footerRight,
   modelSelector,
+  contextGauge,
   banner,
   visualVariant,
   isRunning,
@@ -90,7 +104,7 @@ export function ChatBoxBase({
   return (
     <div
       {...(dropzone?.getRootProps() ?? {})}
-      className="relative flex w-chat max-w-full flex-col gap-half"
+      className="relative flex w-chat max-w-full flex-col gap-base"
     >
       {dropzone && <input {...dropzone.getInputProps()} />}
 
@@ -132,7 +146,7 @@ export function ChatBoxBase({
 
       {/* Chip row (new-session composer: folder / branch / worktree / +) */}
       {chipRow && (
-        <div className="flex flex-wrap items-center gap-half py-half">
+        <div className="flex flex-wrap items-center gap-base py-half">
           {chipRow}
         </div>
       )}
@@ -140,23 +154,28 @@ export function ChatBoxBase({
       {/* Textarea — the only bordered element */}
       <div
         className={cn(
-          'relative rounded-md border bg-secondary pl-base pr-double py-base',
+          'relative rounded-[10px] border bg-white pl-plusfifty pr-double py-plusfifty dark:bg-secondary',
           isAccent ? 'border-brand bg-brand/10' : 'border-border',
           isRunning && 'chat-box-running'
         )}
       >
         {editor}
-        <ArrowBendDownLeftIcon
-          weight="bold"
-          className="pointer-events-none absolute right-base bottom-base size-icon-xs text-low"
-          aria-hidden="true"
-        />
+        <div className="absolute right-base bottom-[15px]">
+          {editorOverlay ?? (
+            <ArrowBendDownLeftIcon
+              weight="bold"
+              className="pointer-events-none size-icon-xs text-[hsl(0_0%_30%)]"
+              aria-hidden="true"
+            />
+          )}
+        </div>
       </div>
 
       {/* Footer — floats unbordered below the textarea. Toolbar triggers
-          (config, model selector, permissions, etc.) render as ghost
-          buttons: no bg/border. Send button (in footerRight) is outside
-          the Toolbar so its PrimaryButton styling is untouched. */}
+          (attach, model selector, permissions, etc.) render as ghost
+          buttons: no bg/border. Prominent action buttons in footerRight
+          (Submit feedback, Cancel edit, etc) sit outside the ghost
+          toolbar so PrimaryButton styling is untouched. */}
       <div className="flex items-end justify-between gap-base py-half">
         <Toolbar
           className={cn(
@@ -165,10 +184,23 @@ export function ChatBoxBase({
             '[&_button:hover]:!bg-panel'
           )}
         >
-          {modelSelector}
           {footerLeft}
         </Toolbar>
-        <div className="flex shrink-0 gap-base">{footerRight}</div>
+        <div className="flex shrink-0 items-center gap-base">
+          {(modelSelector || contextGauge) && (
+            <div
+              className={cn(
+                'flex items-center gap-half',
+                '[&_button]:!bg-transparent [&_button]:!border-transparent',
+                '[&_button:hover]:!bg-panel'
+              )}
+            >
+              {modelSelector}
+              {contextGauge}
+            </div>
+          )}
+          {footerRight}
+        </div>
       </div>
     </div>
   );
