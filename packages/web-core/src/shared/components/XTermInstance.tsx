@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
@@ -25,7 +25,6 @@ export function XTermInstance({
   const resizeRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<Terminal | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
-  const initialSizeRef = useRef({ cols: 80, rows: 24 });
   const { theme } = useTheme();
   const {
     registerTerminalInstance,
@@ -33,12 +32,6 @@ export function XTermInstance({
     createTerminalConnection,
     getTerminalConnection,
   } = useTerminal();
-
-  const endpoint = useMemo(() => {
-    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
-    const host = window.location.host;
-    return `${protocol}//${host}/api/terminal/ws?workspace_id=${workspaceId}&cols=${initialSizeRef.current.cols}&rows=${initialSizeRef.current.rows}`;
-  }, [workspaceId]);
 
   const fitTerminal = useCallback(() => {
     fitAddonRef.current?.fit();
@@ -81,12 +74,15 @@ export function XTermInstance({
     terminal.open(containerRef.current);
 
     fitAddon.fit();
-    initialSizeRef.current = { cols: terminal.cols, rows: terminal.rows };
 
     terminalRef.current = terminal;
     fitAddonRef.current = fitAddon;
 
     if (!getTerminalConnection(tabId)) {
+      const protocol =
+        window.location.protocol === 'https:' ? 'https:' : 'http:';
+      const host = window.location.host;
+      const endpoint = `${protocol}//${host}/api/terminal/ws?workspace_id=${workspaceId}&cols=${terminal.cols}&rows=${terminal.rows}`;
       createTerminalConnection(
         tabId,
         endpoint,
@@ -111,7 +107,7 @@ export function XTermInstance({
     };
   }, [
     tabId,
-    endpoint,
+    workspaceId,
     onClose,
     getTerminalInstance,
     registerTerminalInstance,

@@ -15,7 +15,6 @@ export function TerminalPanelContainer() {
   } = useTerminal();
 
   const workspaceId = workspace?.id;
-  const containerRef = workspace?.container_ref ?? null;
   const tabs = workspaceId ? getTabsForWorkspace(workspaceId) : [];
   const activeTab = workspaceId ? getActiveTab(workspaceId) : null;
 
@@ -35,19 +34,14 @@ export function TerminalPanelContainer() {
 
   // Auto-create first tab when workspace is selected and terminal mode is active
   useEffect(() => {
-    if (
-      workspaceId &&
-      containerRef &&
-      tabs.length === 0 &&
-      !creatingRef.current
-    ) {
+    if (workspaceId && tabs.length === 0 && !creatingRef.current) {
       creatingRef.current = true;
-      createTab(workspaceId, containerRef);
+      createTab(workspaceId);
     }
     if (tabs.length > 0) {
       creatingRef.current = false;
     }
-  }, [workspaceId, containerRef, tabs.length, createTab]);
+  }, [workspaceId, tabs.length, createTab]);
 
   return (
     <TerminalPanel
