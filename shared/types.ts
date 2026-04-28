@@ -637,7 +637,7 @@ export enum BaseAgentCapability { SESSION_FORK = "SESSION_FORK", SETUP_HELPER = 
 
 export type ClaudeEffort = "low" | "medium" | "high" | "xhigh" | "max";
 
-export type ClaudeCode = { append_prompt: AppendPrompt, claude_code_router?: boolean | null, plan?: boolean | null, approvals?: boolean | null, model?: string | null, effort?: ClaudeEffort | null, agent?: string | null, dangerously_skip_permissions?: boolean | null, disable_api_key?: boolean | null, base_command_override?: string | null, additional_params?: Array<string> | null, env?: { [key in string]?: string } | null, };
+export type ClaudeCode = { append_prompt: AppendPrompt, claude_code_router?: boolean | null, plan?: boolean | null, approvals?: boolean | null, permission_mode_override?: PermissionMode | null, model?: string | null, effort?: ClaudeEffort | null, agent?: string | null, dangerously_skip_permissions?: boolean | null, disable_api_key?: boolean | null, base_command_override?: string | null, additional_params?: Array<string> | null, env?: { [key in string]?: string } | null, };
 
 export type Gemini = { append_prompt: AppendPrompt, model?: string | null, yolo?: boolean | null, base_command_override?: string | null, additional_params?: Array<string> | null, env?: { [key in string]?: string } | null, };
 
@@ -795,7 +795,9 @@ name: string, };
 
 export type AgentInfo = { id: string, label: string, description?: string | null, is_default: boolean, };
 
-export enum PermissionPolicy { AUTO = "AUTO", SUPERVISED = "SUPERVISED", PLAN = "PLAN" }
+export enum PermissionPolicy { SUPERVISED = "SUPERVISED", ACCEPT_EDITS = "ACCEPT_EDITS", PLAN = "PLAN", AUTO_MODE = "AUTO_MODE", BYPASS_PERMISSIONS = "BYPASS_PERMISSIONS" }
+
+export enum PermissionMode { default = "default", acceptEdits = "acceptEdits", plan = "plan", auto = "auto", bypassPermissions = "bypassPermissions" }
 
 export type ModelSelectorConfig = { 
 /**

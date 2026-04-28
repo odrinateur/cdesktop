@@ -72,7 +72,7 @@ impl StandardCodingAgentExecutor for Gemini {
         if let Some(permission_policy) = executor_config.permission_policy.clone() {
             self.yolo = Some(matches!(
                 permission_policy,
-                crate::model_selector::PermissionPolicy::Auto
+                crate::model_selector::PermissionPolicy::BypassPermissions
             ));
         }
     }
@@ -189,7 +189,7 @@ impl StandardCodingAgentExecutor for Gemini {
             agent_id: None,
             reasoning_id: None,
             permission_policy: Some(if self.yolo.unwrap_or(false) {
-                PermissionPolicy::Auto
+                PermissionPolicy::BypassPermissions
             } else {
                 PermissionPolicy::Supervised
             }),
@@ -224,7 +224,7 @@ impl StandardCodingAgentExecutor for Gemini {
                     },
                 ],
                 default_model: Some("gemini-3-pro-preview".to_string()),
-                permissions: vec![PermissionPolicy::Auto, PermissionPolicy::Supervised],
+                permissions: vec![PermissionPolicy::BypassPermissions, PermissionPolicy::Supervised],
                 ..Default::default()
             },
             ..Default::default()

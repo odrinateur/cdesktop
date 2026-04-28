@@ -148,9 +148,11 @@ impl StandardCodingAgentExecutor for Droid {
         }
         if let Some(permission_policy) = executor_config.permission_policy.clone() {
             self.autonomy = match permission_policy {
-                crate::model_selector::PermissionPolicy::Auto => Autonomy::SkipPermissionsUnsafe,
+                crate::model_selector::PermissionPolicy::BypassPermissions => Autonomy::SkipPermissionsUnsafe,
                 crate::model_selector::PermissionPolicy::Supervised
-                | crate::model_selector::PermissionPolicy::Plan => Autonomy::Normal,
+                | crate::model_selector::PermissionPolicy::Plan
+                | crate::model_selector::PermissionPolicy::AcceptEdits
+                | crate::model_selector::PermissionPolicy::Auto => Autonomy::Normal,
             };
         }
     }
@@ -226,7 +228,7 @@ impl StandardCodingAgentExecutor for Droid {
                 .reasoning_effort
                 .as_ref()
                 .map(|e| e.as_ref().to_string()),
-            permission_policy: Some(crate::model_selector::PermissionPolicy::Auto),
+            permission_policy: Some(crate::model_selector::PermissionPolicy::BypassPermissions),
         }
     }
 

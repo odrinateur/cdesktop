@@ -2,8 +2,10 @@
 //!
 //! Similar to: https://github.com/ZhangHanDong/claude-code-api-rs/blob/main/claude-code-sdk-rs/src/types.rs
 
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use ts_rs::TS;
 
 /// Top-level message types from CLI stdout
 #[derive(Debug, Deserialize)]
@@ -201,12 +203,14 @@ pub enum SDKControlRequestType {
     Interrupt {},
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS, JsonSchema)]
 #[serde(rename_all = "camelCase")]
+#[ts(use_ts_enum)]
 pub enum PermissionMode {
     Default,
     AcceptEdits,
     Plan,
+    Auto,
     BypassPermissions,
 }
 
@@ -216,6 +220,7 @@ impl PermissionMode {
             Self::Default => "default",
             Self::AcceptEdits => "acceptEdits",
             Self::Plan => "plan",
+            Self::Auto => "auto",
             Self::BypassPermissions => "bypassPermissions",
         }
     }

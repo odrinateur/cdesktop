@@ -90,7 +90,7 @@ export function WorkspacesMain({
       )}
       {/* Chat box - always rendered to prevent flash during workspace switch */}
       <div
-        className="relative flex justify-center @container px-double pb-[12px]"
+        className="relative flex justify-center @container pb-[12px]"
         data-chatbox-container="true"
       >
         {workspaceWithSession && !isAtBottom && (
@@ -99,7 +99,7 @@ export function WorkspacesMain({
             className="pointer-events-none absolute inset-x-0 bottom-full h-16 bg-gradient-to-t from-[#fdfdfc] to-transparent dark:from-[#0a0a0a]"
           />
         )}
-        {chatBoxContent}
+        <div className="w-chat max-w-full px-double">{chatBoxContent}</div>
       </div>
       {/* Context Bar - floating toolbar */}
       {workspaceWithSession ? contextBarContent : null}

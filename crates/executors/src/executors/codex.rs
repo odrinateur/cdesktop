@@ -203,7 +203,7 @@ impl StandardCodingAgentExecutor for Codex {
         }
         if let Some(permission_policy) = &executor_config.permission_policy {
             match permission_policy {
-                crate::model_selector::PermissionPolicy::Auto => {
+                crate::model_selector::PermissionPolicy::BypassPermissions => {
                     self.ask_for_approval = Some(AskForApproval::Never);
                     self.plan = false;
                 }
@@ -215,6 +215,13 @@ impl StandardCodingAgentExecutor for Codex {
                 }
                 crate::model_selector::PermissionPolicy::Plan => {
                     self.plan = true;
+                }
+                crate::model_selector::PermissionPolicy::AcceptEdits
+                | crate::model_selector::PermissionPolicy::Auto => {
+                    if matches!(self.ask_for_approval, None | Some(AskForApproval::Never)) {
+                        self.ask_for_approval = Some(AskForApproval::UnlessTrusted);
+                    }
+                    self.plan = false;
                 }
             }
         }
@@ -291,7 +298,7 @@ impl StandardCodingAgentExecutor for Codex {
         let permission_policy = if self.plan {
             PermissionPolicy::Plan
         } else if matches!(self.ask_for_approval, None | Some(AskForApproval::Never)) {
-            PermissionPolicy::Auto
+            PermissionPolicy::BypassPermissions
         } else {
             PermissionPolicy::Supervised
         };
@@ -365,7 +372,7 @@ impl StandardCodingAgentExecutor for Codex {
                     },
                 ],
                 permissions: vec![
-                    PermissionPolicy::Auto,
+                    PermissionPolicy::BypassPermissions,
                     PermissionPolicy::Supervised,
                     PermissionPolicy::Plan,
                 ],

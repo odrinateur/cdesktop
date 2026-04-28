@@ -69,7 +69,7 @@ impl StandardCodingAgentExecutor for QwenCode {
         if let Some(permission_policy) = executor_config.permission_policy.clone() {
             self.yolo = Some(matches!(
                 permission_policy,
-                crate::model_selector::PermissionPolicy::Auto
+                crate::model_selector::PermissionPolicy::BypassPermissions
             ));
         }
     }
@@ -184,7 +184,7 @@ impl StandardCodingAgentExecutor for QwenCode {
             agent_id: self.agent.clone(),
             reasoning_id: None,
             permission_policy: Some(if self.yolo.unwrap_or(false) {
-                PermissionPolicy::Auto
+                PermissionPolicy::BypassPermissions
             } else {
                 PermissionPolicy::Supervised
             }),
@@ -198,7 +198,7 @@ impl StandardCodingAgentExecutor for QwenCode {
     ) -> Result<futures::stream::BoxStream<'static, json_patch::Patch>, ExecutorError> {
         let options = ExecutorDiscoveredOptions {
             model_selector: ModelSelectorConfig {
-                permissions: vec![PermissionPolicy::Auto, PermissionPolicy::Supervised],
+                permissions: vec![PermissionPolicy::BypassPermissions, PermissionPolicy::Supervised],
                 ..Default::default()
             },
             ..Default::default()
