@@ -894,7 +894,7 @@ export const ConversationList = forwardRef<
           <div ref={planRevealSpacerRef} style={{ height: 0 }} />
 
           {/* Footer placeholder */}
-          <div className="pb-2">
+          <div className="pb-8">
             {showCleanupPlaceholder && (
               <div className="my-base px-double">
                 <ChatScriptPlaceholder
