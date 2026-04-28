@@ -59,8 +59,9 @@ export function ChatUserMessage({
     >
       <div
         className={cn(
-          'max-w-[75%] rounded-2xl px-double py-base text-left',
-          'bg-[#0f1826] text-[#389ce0]'
+          'max-w-[75%] rounded-xl rounded-bl-sm px-double py-base text-left',
+          'bg-[#eaf3fa] text-[#0066c8]',
+          'dark:bg-[#081b24] dark:text-[#0099fb]'
         )}
       >
         <div className={cn(!expanded && 'max-h-[140px] overflow-hidden')}>

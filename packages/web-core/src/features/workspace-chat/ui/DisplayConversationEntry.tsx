@@ -1396,11 +1396,14 @@ function AggregatedDiffGroupEntry({ group }: { group: AggregatedDiffGroup }) {
 const DisplayConversationEntrySpaced = (props: Props) => {
   const { isEntryGreyed } = useMessageEditContext();
   const isGreyed = isEntryGreyed(props.expansionKey);
+  const isUserMessage = props.entry?.entry_type.type === 'user_message';
 
   return (
     <div
       className={cn(
-        'py-base px-double',
+        isUserMessage
+          ? 'px-double pb-0 mb-[-3px] mt-[20px]'
+          : 'py-base px-double',
         isGreyed && 'opacity-50 pointer-events-none'
       )}
     >

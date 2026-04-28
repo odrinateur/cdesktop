@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ThemeMode } from 'shared/types';
 import { useWorkspaceContext } from '@/shared/hooks/useWorkspaceContext';
 import { useUserContext } from '@/shared/hooks/useUserContext';
+import { useUserSystem } from '@/shared/hooks/useUserSystem';
 import { useScratch } from '@/shared/hooks/useScratch';
 import { useTheme, getResolvedTheme } from '@/shared/hooks/useTheme';
 import { ScratchType, type DraftWorkspaceData } from 'shared/types';
@@ -256,8 +257,7 @@ export function WorkspacesSidebarContainer({
   const { hosts: remoteCloudHosts } = useRemoteCloudHostsAppBarModel();
   const { hostId: routeHostId } = useParams({ strict: false });
   const setMobileActiveTab = useUiPreferencesStore((s) => s.setMobileActiveTab);
-  const toggleLeftSidebar = useUiPreferencesStore((s) => s.toggleLeftSidebar);
-  const [searchQuery, setSearchQuery] = useState('');
+  const searchQuery = useUiPreferencesStore((s) => s.sidebarSearchQuery);
   const [showArchive, setShowArchive] = usePersistedExpanded(
     PERSIST_KEYS.workspacesSidebarArchived,
     false
@@ -303,12 +303,14 @@ export function WorkspacesSidebarContainer({
 
   // Theme toggle (footer)
   const { theme, setTheme } = useTheme();
+  const { updateAndSaveConfig } = useUserSystem();
   const resolvedTheme = getResolvedTheme(theme);
   const handleToggleTheme = useCallback(() => {
-    setTheme(
-      getResolvedTheme(theme) === 'dark' ? ThemeMode.LIGHT : ThemeMode.DARK
-    );
-  }, [theme, setTheme]);
+    const next =
+      getResolvedTheme(theme) === 'dark' ? ThemeMode.LIGHT : ThemeMode.DARK;
+    setTheme(next);
+    void updateAndSaveConfig({ theme: next });
+  }, [theme, setTheme, updateAndSaveConfig]);
 
   // Pagination state for infinite scroll
   const [displayLimit, setDisplayLimit] = useState(PAGE_SIZE);
@@ -589,8 +591,6 @@ export function WorkspacesSidebarContainer({
       isLoading={isWorkspacesListLoading}
       selectedWorkspaceId={selectedWorkspaceId ?? null}
       onSelectWorkspace={handleSelectWorkspace}
-      searchQuery={searchQuery}
-      onSearchChange={setSearchQuery}
       onAddWorkspace={handleAddWorkspace}
       isCreateMode={isCreateMode}
       draftTitle={persistedDraftTitle}
@@ -609,7 +609,6 @@ export function WorkspacesSidebarContainer({
       persistKeys={sidebarPersistKeys}
       activeRemoteHost={activeRemoteHost}
       onOpenRemoteHostSettings={handleOpenRemoteHostSettings}
-      onHideSidebar={toggleLeftSidebar}
       resolvedTheme={resolvedTheme}
       onToggleTheme={handleToggleTheme}
     />

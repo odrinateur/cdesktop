@@ -16,6 +16,7 @@ import { useAllOrganizationProjects } from '@/shared/hooks/useAllOrganizationPro
 import { useShape } from '@/shared/integrations/electric/hooks';
 import { PROJECT_ISSUES_SHAPE } from 'shared/remote-types';
 import { RemoteIssueLink } from './RemoteIssueLink';
+import { NavbarSidebarSearchSlot } from './NavbarSidebarSearchSlot';
 import { AppBarUserPopoverContainer } from './AppBarUserPopoverContainer';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
 import { NavbarActionGroups } from '@/shared/actions';
@@ -343,14 +344,17 @@ export function NavbarContainer({
       mobileActiveTab={mobileActiveTab as MobileTabId}
       onMobileTabChange={(tab) => setMobileActiveTab(tab)}
       leftSlot={
-        !breadcrumbs &&
-        !isWaitingForBreadcrumbData &&
-        linkedRemoteWorkspace?.issue_id ? (
-          <RemoteIssueLink
-            projectId={linkedRemoteWorkspace.project_id}
-            issueId={linkedRemoteWorkspace.issue_id}
-          />
-        ) : null
+        <>
+          <NavbarSidebarSearchSlot />
+          {!breadcrumbs &&
+          !isWaitingForBreadcrumbData &&
+          linkedRemoteWorkspace?.issue_id ? (
+            <RemoteIssueLink
+              projectId={linkedRemoteWorkspace.project_id}
+              issueId={linkedRemoteWorkspace.issue_id}
+            />
+          ) : null}
+        </>
       }
     />
   );
