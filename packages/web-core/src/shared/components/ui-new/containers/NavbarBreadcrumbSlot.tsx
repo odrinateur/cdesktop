@@ -13,6 +13,8 @@ import {
   DropdownMenuItem,
 } from '@vibe/ui/components/DropdownMenu';
 import { isTauriApp } from '@/shared/lib/platform';
+import { useActions } from '@/shared/hooks/useActions';
+import { Actions } from '@/shared/actions';
 
 type TauriInternals = {
   invoke: (cmd: string, args: unknown) => Promise<unknown>;
@@ -28,7 +30,12 @@ async function revealInFileExplorer(path: string): Promise<void> {
 export function NavbarBreadcrumbSlot() {
   const queryClient = useQueryClient();
   const { workspace, repos, isCreateMode } = useWorkspaceContext();
+  const { executeAction } = useActions();
   const repo = repos[0];
+
+  const handleOpenInIde = useCallback(() => {
+    void executeAction(Actions.OpenInIDE);
+  }, [executeAction]);
 
   const handleRename = useCallback(async () => {
     if (!workspace) return;
@@ -81,6 +88,9 @@ export function NavbarBreadcrumbSlot() {
           <span className="truncate font-semibold">{folderName}</span>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
+          <DropdownMenuItem onClick={handleOpenInIde}>
+            Open in IDE
+          </DropdownMenuItem>
           {isTauriApp() && (
             <DropdownMenuItem onClick={handleReveal}>
               Show in Explorer
