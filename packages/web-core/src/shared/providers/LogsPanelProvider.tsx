@@ -8,8 +8,8 @@ import {
 } from 'react';
 import type { LogsPanelContent } from '@/shared/types/actions';
 import {
-  useWorkspacePanelState,
-  RIGHT_MAIN_PANEL_MODES,
+  useWorkspacePanelLayout,
+  useUiPreferencesStore,
 } from '@/shared/stores/useUiPreferencesStore';
 import { useWorkspaceContext } from '@/shared/hooks/useWorkspaceContext';
 import {
@@ -23,11 +23,15 @@ interface LogsPanelProviderProps {
 
 export function LogsPanelProvider({ children }: LogsPanelProviderProps) {
   const { workspaceId, isCreateMode } = useWorkspaceContext();
-  const { rightMainPanelMode, setRightMainPanelMode } = useWorkspacePanelState(
-    isCreateMode ? undefined : workspaceId
-  );
-  const rightMainPanelModeRef = useRef(rightMainPanelMode);
-  rightMainPanelModeRef.current = rightMainPanelMode;
+  const layoutWorkspaceId = isCreateMode ? undefined : workspaceId;
+  const { openPanels } = useWorkspacePanelLayout(layoutWorkspaceId);
+  const isLogsOpen = openPanels.has('logs');
+  const isLogsOpenRef = useRef(isLogsOpen);
+  isLogsOpenRef.current = isLogsOpen;
+  const ensureLogsOpen = useCallback(() => {
+    if (!layoutWorkspaceId || isLogsOpenRef.current) return;
+    useUiPreferencesStore.getState().openPanel(layoutWorkspaceId, 'logs');
+  }, [layoutWorkspaceId]);
   const [logsPanelContent, setLogsPanelContent] =
     useState<LogsPanelContent | null>(null);
   const [logSearchQuery, setLogSearchQuery] = useState('');
@@ -52,15 +56,12 @@ export function LogsPanelProvider({ children }: LogsPanelProviderProps) {
     setLogCurrentMatchIdx(0);
   }, [logSearchQuery]);
 
-  // Collapse terminal when switching away from Logs panel mode
+  // Collapse terminal when the Logs panel is closed
   useEffect(() => {
-    if (
-      rightMainPanelMode !== RIGHT_MAIN_PANEL_MODES.LOGS &&
-      isTerminalExpanded
-    ) {
+    if (!isLogsOpen && isTerminalExpanded) {
       setLogsPanelContent(null);
     }
-  }, [rightMainPanelMode, isTerminalExpanded]);
+  }, [isLogsOpen, isTerminalExpanded]);
 
   const handleLogPrevMatch = useCallback(() => {
     if (logMatchIndices.length === 0) return;
@@ -78,30 +79,24 @@ export function LogsPanelProvider({ children }: LogsPanelProviderProps) {
 
   const viewProcessInPanel = useCallback(
     (processId: string) => {
-      if (rightMainPanelModeRef.current !== RIGHT_MAIN_PANEL_MODES.LOGS) {
-        setRightMainPanelMode(RIGHT_MAIN_PANEL_MODES.LOGS);
-      }
+      ensureLogsOpen();
       setLogsPanelContent({ type: 'process', processId });
     },
-    [setRightMainPanelMode]
+    [ensureLogsOpen]
   );
 
   const viewToolContentInPanel = useCallback(
     (toolName: string, content: string, command?: string) => {
-      if (rightMainPanelModeRef.current !== RIGHT_MAIN_PANEL_MODES.LOGS) {
-        setRightMainPanelMode(RIGHT_MAIN_PANEL_MODES.LOGS);
-      }
+      ensureLogsOpen();
       setLogsPanelContent({ type: 'tool', toolName, content, command });
     },
-    [setRightMainPanelMode]
+    [ensureLogsOpen]
   );
 
   const expandTerminal = useCallback(() => {
-    if (rightMainPanelModeRef.current !== RIGHT_MAIN_PANEL_MODES.LOGS) {
-      setRightMainPanelMode(RIGHT_MAIN_PANEL_MODES.LOGS);
-    }
+    ensureLogsOpen();
     setLogsPanelContent({ type: 'terminal' });
-  }, [setRightMainPanelMode]);
+  }, [ensureLogsOpen]);
 
   const collapseTerminal = useCallback(() => {
     setLogsPanelContent(null);

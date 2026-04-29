@@ -12,6 +12,27 @@ export const RIGHT_MAIN_PANEL_MODES = {
 export type RightMainPanelMode =
   (typeof RIGHT_MAIN_PANEL_MODES)[keyof typeof RIGHT_MAIN_PANEL_MODES];
 
+export const PANEL_IDS = [
+  'git',
+  'terminal',
+  'preview',
+  'logs',
+  'changes',
+] as const;
+
+export type PanelId = (typeof PANEL_IDS)[number];
+
+export type PanelColumn = {
+  panels: PanelId[]; // 1 or 2 entries
+  splitRatio?: number; // 0–1 fraction for the top panel when 2 stacked
+};
+
+export type PanelLayoutState = {
+  columns: PanelColumn[];
+};
+
+export const DEFAULT_PANEL_LAYOUT: PanelLayoutState = { columns: [] };
+
 export type LayoutMode = 'workspaces' | 'kanban';
 
 export type MobileTab =
@@ -51,11 +72,13 @@ export type ContextBarPosition =
 export type WorkspacePanelState = {
   rightMainPanelMode: RightMainPanelMode | null;
   isLeftMainPanelVisible: boolean;
+  panelLayout: PanelLayoutState;
 };
 
 const DEFAULT_WORKSPACE_PANEL_STATE: WorkspacePanelState = {
   rightMainPanelMode: null,
   isLeftMainPanelVisible: true,
+  panelLayout: DEFAULT_PANEL_LAYOUT,
 };
 
 // Kanban filter state
@@ -401,6 +424,16 @@ type State = {
     state: Partial<WorkspacePanelState>
   ) => void;
 
+  // Per-session panel layout actions
+  openPanel: (workspaceId: string, panelId: PanelId) => void;
+  closePanel: (workspaceId: string, panelId: PanelId) => void;
+  togglePanel: (workspaceId: string, panelId: PanelId) => void;
+  setPanelColumnSplitRatio: (
+    workspaceId: string,
+    columnIdx: number,
+    ratio: number
+  ) => void;
+
   // Kanban view selection actions
   setKanbanProjectView: (projectId: string, viewId: string) => void;
   setKanbanProjectViewFilters: (
@@ -545,8 +578,9 @@ export const useUiPreferencesStore = create<State>()((set, get) => ({
     const state = get();
     const wsState =
       state.workspacePanelStates[workspaceId] ?? DEFAULT_WORKSPACE_PANEL_STATE;
-    if (wsState.isLeftMainPanelVisible && wsState.rightMainPanelMode === null)
-      return;
+    const layoutColumns =
+      wsState.panelLayout?.columns ?? DEFAULT_PANEL_LAYOUT.columns;
+    if (wsState.isLeftMainPanelVisible && layoutColumns.length === 0) return;
     set({
       workspacePanelStates: {
         ...state.workspacePanelStates,
@@ -653,6 +687,98 @@ export const useUiPreferencesStore = create<State>()((set, get) => ({
         [workspaceId]: {
           ...currentWsState,
           ...panelState,
+        },
+      },
+    });
+  },
+
+  // Per-session panel layout actions
+  openPanel: (workspaceId, panelId) => {
+    if (!workspaceId) return;
+    const state = get();
+    const wsState =
+      state.workspacePanelStates[workspaceId] ?? DEFAULT_WORKSPACE_PANEL_STATE;
+    const layout = wsState.panelLayout ?? DEFAULT_PANEL_LAYOUT;
+    if (layout.columns.some((c) => c.panels.includes(panelId))) return;
+
+    const last = layout.columns[layout.columns.length - 1];
+    const nextColumns: PanelColumn[] =
+      last && last.panels.length === 1
+        ? [
+            ...layout.columns.slice(0, -1),
+            { ...last, panels: [...last.panels, panelId] },
+          ]
+        : [...layout.columns, { panels: [panelId] }];
+
+    set({
+      workspacePanelStates: {
+        ...state.workspacePanelStates,
+        [workspaceId]: {
+          ...wsState,
+          panelLayout: { columns: nextColumns },
+        },
+      },
+    });
+  },
+
+  closePanel: (workspaceId, panelId) => {
+    if (!workspaceId) return;
+    const state = get();
+    const wsState =
+      state.workspacePanelStates[workspaceId] ?? DEFAULT_WORKSPACE_PANEL_STATE;
+    const layout = wsState.panelLayout ?? DEFAULT_PANEL_LAYOUT;
+    if (!layout.columns.some((c) => c.panels.includes(panelId))) return;
+
+    const nextColumns = layout.columns
+      .map((c) => ({
+        ...c,
+        panels: c.panels.filter((p) => p !== panelId),
+      }))
+      .filter((c) => c.panels.length > 0)
+      .map((c) =>
+        c.panels.length === 1 ? { panels: c.panels } : c
+      );
+
+    set({
+      workspacePanelStates: {
+        ...state.workspacePanelStates,
+        [workspaceId]: {
+          ...wsState,
+          panelLayout: { columns: nextColumns },
+        },
+      },
+    });
+  },
+
+  togglePanel: (workspaceId, panelId) => {
+    if (!workspaceId) return;
+    const state = get();
+    const wsState =
+      state.workspacePanelStates[workspaceId] ?? DEFAULT_WORKSPACE_PANEL_STATE;
+    const layout = wsState.panelLayout ?? DEFAULT_PANEL_LAYOUT;
+    const isOpen = layout.columns.some((c) => c.panels.includes(panelId));
+    if (isOpen) get().closePanel(workspaceId, panelId);
+    else get().openPanel(workspaceId, panelId);
+  },
+
+  setPanelColumnSplitRatio: (workspaceId, columnIdx, ratio) => {
+    if (!workspaceId) return;
+    const state = get();
+    const wsState =
+      state.workspacePanelStates[workspaceId] ?? DEFAULT_WORKSPACE_PANEL_STATE;
+    const layout = wsState.panelLayout ?? DEFAULT_PANEL_LAYOUT;
+    const target = layout.columns[columnIdx];
+    if (!target || target.panels.length !== 2) return;
+
+    const nextColumns = layout.columns.map((c, i) =>
+      i === columnIdx ? { ...c, splitRatio: ratio } : c
+    );
+    set({
+      workspacePanelStates: {
+        ...state.workspacePanelStates,
+        [workspaceId]: {
+          ...wsState,
+          panelLayout: { columns: nextColumns },
         },
       },
     });
@@ -1036,5 +1162,62 @@ export function useWorkspacePanelState(workspaceId: string | undefined) {
 
     // Global actions
     setLeftSidebarVisible,
+  };
+}
+
+// Hook for per-session panel layout (columns of stacked panels)
+export function useWorkspacePanelLayout(workspaceId: string | undefined) {
+  const layout = useUiPreferencesStore((s) =>
+    workspaceId
+      ? (s.workspacePanelStates[workspaceId]?.panelLayout ??
+        DEFAULT_PANEL_LAYOUT)
+      : DEFAULT_PANEL_LAYOUT
+  );
+
+  const openPanelAction = useUiPreferencesStore((s) => s.openPanel);
+  const closePanelAction = useUiPreferencesStore((s) => s.closePanel);
+  const togglePanelAction = useUiPreferencesStore((s) => s.togglePanel);
+  const setSplitRatioAction = useUiPreferencesStore(
+    (s) => s.setPanelColumnSplitRatio
+  );
+
+  const openPanels = useMemo(() => {
+    const set = new Set<PanelId>();
+    for (const c of layout.columns) for (const p of c.panels) set.add(p);
+    return set;
+  }, [layout]);
+
+  const openPanel = useCallback(
+    (panelId: PanelId) => {
+      if (workspaceId) openPanelAction(workspaceId, panelId);
+    },
+    [openPanelAction, workspaceId]
+  );
+  const closePanel = useCallback(
+    (panelId: PanelId) => {
+      if (workspaceId) closePanelAction(workspaceId, panelId);
+    },
+    [closePanelAction, workspaceId]
+  );
+  const togglePanel = useCallback(
+    (panelId: PanelId) => {
+      if (workspaceId) togglePanelAction(workspaceId, panelId);
+    },
+    [togglePanelAction, workspaceId]
+  );
+  const setColumnSplitRatio = useCallback(
+    (columnIdx: number, ratio: number) => {
+      if (workspaceId) setSplitRatioAction(workspaceId, columnIdx, ratio);
+    },
+    [setSplitRatioAction, workspaceId]
+  );
+
+  return {
+    columns: layout.columns,
+    openPanels,
+    openPanel,
+    closePanel,
+    togglePanel,
+    setColumnSplitRatio,
   };
 }
