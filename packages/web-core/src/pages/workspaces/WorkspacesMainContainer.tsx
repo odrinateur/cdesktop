@@ -52,7 +52,7 @@ function ChatBoxWithDiffStats({
   onScrollToUserMessage: (patchKey: string) => void;
   getActiveTurnPatchKey: () => string | null;
 }) {
-  const diffStats = useDiffStats();
+  const diffStats = useDiffStats(workspaceId);
 
   return (
     <SessionChatBoxContainer
@@ -190,6 +190,16 @@ export const WorkspacesMainContainer = forwardRef<
 
       requestAnimationFrame(() => {
         if (!isAtBottomRef.current) return;
+        // When the chatbox shrinks (heightDelta < 0), the conversation
+        // viewport grows and the browser auto-clamps scrollTop down to the
+        // new max — we're already at the new bottom. Adding a negative
+        // adjustScrollBy here would shift us back UP by |heightDelta|,
+        // stranding us mid-list (visible when two cells finish prompts
+        // near-simultaneously and only one trips the race).
+        if (heightDelta < 0) {
+          conversationListRef.current?.scrollToBottom('auto');
+          return;
+        }
         conversationListRef.current?.adjustScrollBy(heightDelta);
       });
     });

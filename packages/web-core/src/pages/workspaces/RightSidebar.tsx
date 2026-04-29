@@ -44,7 +44,7 @@ export const RightSidebar = memo(function RightSidebar({
   repos,
 }: RightSidebarProps) {
   const { t } = useTranslation(['tasks', 'common']);
-  const diffs = useDiffs();
+  const diffs = useDiffs(selectedWorkspace?.id);
   const isTerminalVisible = useUiPreferencesStore((s) => s.isTerminalVisible);
   const { expandTerminal, isTerminalExpanded } = useLogsPanel();
 

@@ -47,7 +47,7 @@ import {
   ProhibitIcon,
 } from '@phosphor-icons/react';
 import { useDiffViewStore } from '@/shared/stores/useDiffViewStore';
-import { useWorkspaceDiffStore } from '@/shared/stores/useWorkspaceDiffStore';
+import { getWorkspaceDiffData } from '@/shared/stores/useWorkspaceDiffStore';
 import { useUiPreferencesStore } from '@/shared/stores/useUiPreferencesStore';
 
 import { workspacesApi, relayApi, repoApi } from '@/shared/lib/api';
@@ -242,7 +242,9 @@ export const Actions = {
     id: 'pin-workspace',
     label: (workspace?: Workspace) =>
       workspace?.pinned
-        ? i18n.t('common:sidebar.kebab.unpin', { defaultValue: 'Unpin session' })
+        ? i18n.t('common:sidebar.kebab.unpin', {
+            defaultValue: 'Unpin session',
+          })
         : i18n.t('common:sidebar.kebab.pin', { defaultValue: 'Pin session' }),
     icon: PushPinIcon,
     shortcut: 'W P',
@@ -540,8 +542,7 @@ export const Actions = {
     icon: ColumnsIcon,
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) =>
-      ctx.openPanels.has('changes') &&
-      ctx.layoutMode === 'workspaces',
+      ctx.openPanels.has('changes') && ctx.layoutMode === 'workspaces',
     isActive: (ctx) => ctx.diffViewMode === 'split',
     getIcon: (ctx) => (ctx.diffViewMode === 'split' ? ColumnsIcon : RowsIcon),
     getTooltip: (ctx) =>
@@ -560,8 +561,7 @@ export const Actions = {
     icon: EyeSlashIcon,
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) =>
-      ctx.openPanels.has('changes') &&
-      ctx.layoutMode === 'workspaces',
+      ctx.openPanels.has('changes') && ctx.layoutMode === 'workspaces',
     execute: () => {
       const store = useDiffViewStore.getState();
       store.setIgnoreWhitespace(!store.ignoreWhitespace);
@@ -578,8 +578,7 @@ export const Actions = {
     shortcut: 'T W',
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) =>
-      ctx.openPanels.has('changes') &&
-      ctx.layoutMode === 'workspaces',
+      ctx.openPanels.has('changes') && ctx.layoutMode === 'workspaces',
     execute: () => {
       const store = useDiffViewStore.getState();
       store.setWrapText(!store.wrapText);
@@ -701,25 +700,19 @@ export const Actions = {
   // === Diff Actions for Navbar ===
   ToggleAllDiffs: {
     id: 'toggle-all-diffs',
-    label: () => {
-      const diffPaths = Array.from(useWorkspaceDiffStore.getState().diffPaths);
-      const { expanded } = useUiPreferencesStore.getState();
-      const keys = diffPaths.map((p) => `diff:${p}`);
-      const isAllExpanded =
-        keys.length > 0 && keys.every((k) => expanded[k] !== false);
-      return isAllExpanded ? 'Collapse All Diffs' : 'Expand All Diffs';
-    },
+    label: 'Toggle All Diffs',
     icon: CaretDoubleUpIcon,
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) =>
-      ctx.openPanels.has('changes') &&
-      ctx.layoutMode === 'workspaces',
+      ctx.openPanels.has('changes') && ctx.layoutMode === 'workspaces',
     getIcon: (ctx) =>
       ctx.isAllDiffsExpanded ? CaretDoubleUpIcon : CaretDoubleDownIcon,
     getTooltip: (ctx) =>
       ctx.isAllDiffsExpanded ? 'Collapse all diffs' : 'Expand all diffs',
-    execute: () => {
-      const diffPaths = Array.from(useWorkspaceDiffStore.getState().diffPaths);
+    execute: (ctx) => {
+      const diffPaths = Array.from(
+        getWorkspaceDiffData(ctx.currentWorkspaceId ?? undefined).diffPaths
+      );
       const { expanded, setExpandedAll } = useUiPreferencesStore.getState();
       const keys = diffPaths.map((p) => `diff:${p}`);
       const isAllExpanded =
@@ -783,8 +776,7 @@ export const Actions = {
     shortcut: 'Y L',
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) =>
-      ctx.openPanels.has('logs') &&
-      ctx.logsPanelContent?.type !== 'terminal',
+      ctx.openPanels.has('logs') && ctx.logsPanelContent?.type !== 'terminal',
     execute: async (ctx) => {
       if (!ctx.currentLogs || ctx.currentLogs.length === 0) return;
       const rawText = ctx.currentLogs.map((log) => log.content).join('\n');

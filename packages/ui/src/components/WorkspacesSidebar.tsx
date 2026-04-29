@@ -124,6 +124,25 @@ export interface WorkspacesSidebarProps {
   /** Theme toggle wiring (footer, bottom-right). */
   resolvedTheme?: 'light' | 'dark';
   onToggleTheme?: () => void;
+  /** Per-pill drag props (HTML5). Returning undefined disables drag for that pill. */
+  getWorkspaceDragProps?: (workspaceId: string) =>
+    | {
+        draggable?: boolean;
+        onDragStart?: (e: React.DragEvent<HTMLDivElement>) => void;
+        onDragEnd?: (e: React.DragEvent<HTMLDivElement>) => void;
+      }
+    | undefined;
+  /**
+   * Called when a pill is dropped onto the Pinned section. The consumer
+   * is expected to mutate the workspace to `pinned: true`.
+   */
+  onPinDrop?: (workspaceId: string) => void;
+  /**
+   * Set of workspace ids currently open in any cell of the session grid.
+   * Each pill in this set gets a background; the *focused* one (matched by
+   * `selectedWorkspaceId`) additionally gets brighter + semibold.
+   */
+  openInGridWorkspaceIds?: Set<string>;
 }
 
 export interface WorkspacesSidebarReopenTagProps {
@@ -168,11 +187,15 @@ function WorkspaceList({
   selectedWorkspaceId,
   onSelectWorkspace,
   onOpenWorkspaceActions,
+  getWorkspaceDragProps,
+  openInGridWorkspaceIds,
 }: {
   workspaces: WorkspacesSidebarWorkspace[];
   selectedWorkspaceId: string | null;
   onSelectWorkspace: (id: string) => void;
   onOpenWorkspaceActions: (workspaceId: string) => void;
+  getWorkspaceDragProps?: WorkspacesSidebarProps['getWorkspaceDragProps'];
+  openInGridWorkspaceIds?: ReadonlySet<string>;
 }) {
   return (
     <>
@@ -185,6 +208,7 @@ function WorkspaceList({
           linesAdded={workspace.linesAdded}
           linesRemoved={workspace.linesRemoved}
           isActive={selectedWorkspaceId === workspace.id}
+          isOpenInGrid={openInGridWorkspaceIds?.has(workspace.id)}
           isRunning={workspace.isRunning}
           isPinned={workspace.isPinned}
           hasPendingApproval={workspace.hasPendingApproval}
@@ -196,6 +220,7 @@ function WorkspaceList({
           summary
           onOpenWorkspaceActions={onOpenWorkspaceActions}
           onClick={() => onSelectWorkspace(workspace.id)}
+          {...getWorkspaceDragProps?.(workspace.id)}
         />
       ))}
     </>
@@ -207,11 +232,15 @@ function FolderGroup({
   selectedWorkspaceId,
   onSelectWorkspace,
   onOpenWorkspaceActions,
+  getWorkspaceDragProps,
+  openInGridWorkspaceIds,
 }: {
   group: WorkspacesSidebarFolderGroup;
   selectedWorkspaceId: string | null;
   onSelectWorkspace: (id: string) => void;
   onOpenWorkspaceActions: (workspaceId: string) => void;
+  getWorkspaceDragProps?: WorkspacesSidebarProps['getWorkspaceDragProps'];
+  openInGridWorkspaceIds?: ReadonlySet<string>;
 }) {
   const [expanded, setExpandedState] = useState(() =>
     readFolderExpanded(group.repoId)
@@ -248,13 +277,14 @@ function FolderGroup({
             selectedWorkspaceId={selectedWorkspaceId}
             onSelectWorkspace={onSelectWorkspace}
             onOpenWorkspaceActions={onOpenWorkspaceActions}
+            getWorkspaceDragProps={getWorkspaceDragProps}
+            openInGridWorkspaceIds={openInGridWorkspaceIds}
           />
         </div>
       )}
     </div>
   );
 }
-
 
 function NewSessionRow({ onAddWorkspace }: { onAddWorkspace?: () => void }) {
   const { t } = useTranslation('common');
@@ -275,15 +305,44 @@ function PinnedSection({
   selectedWorkspaceId,
   onSelectWorkspace,
   onOpenWorkspaceActions,
+  getWorkspaceDragProps,
+  onPinDrop,
+  openInGridWorkspaceIds,
 }: {
   pinnedWorkspaces: WorkspacesSidebarWorkspace[];
   selectedWorkspaceId: string | null;
   onSelectWorkspace: (id: string) => void;
   onOpenWorkspaceActions: (workspaceId: string) => void;
+  getWorkspaceDragProps?: WorkspacesSidebarProps['getWorkspaceDragProps'];
+  onPinDrop?: WorkspacesSidebarProps['onPinDrop'];
+  openInGridWorkspaceIds?: ReadonlySet<string>;
 }) {
   const { t } = useTranslation('common');
+  const [isDragOver, setIsDragOver] = useState(false);
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    if (!onPinDrop) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    setIsDragOver(true);
+  };
+  const handleDragLeave = () => setIsDragOver(false);
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    if (!onPinDrop) return;
+    e.preventDefault();
+    setIsDragOver(false);
+    const id = e.dataTransfer.getData('application/x-vibe-pill');
+    if (id) onPinDrop(id);
+  };
   return (
-    <div className="flex flex-col">
+    <div
+      className={cn(
+        'flex flex-col rounded-md transition-colors',
+        isDragOver && 'bg-blue-500/10 ring-2 ring-inset ring-blue-500/40'
+      )}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <div className="px-double py-half">
         <span className="text-sm text-low opacity-60">
           {t('sidebar.pinned.sectionHeader', { defaultValue: 'Pinned' })}
@@ -295,6 +354,8 @@ function PinnedSection({
           selectedWorkspaceId={selectedWorkspaceId}
           onSelectWorkspace={onSelectWorkspace}
           onOpenWorkspaceActions={onOpenWorkspaceActions}
+          getWorkspaceDragProps={getWorkspaceDragProps}
+          openInGridWorkspaceIds={openInGridWorkspaceIds}
         />
       ) : (
         <p className="px-double py-half text-sm text-low opacity-60">
@@ -334,6 +395,9 @@ export function WorkspacesSidebar({
   onOpenRemoteHostSettings,
   resolvedTheme,
   onToggleTheme,
+  getWorkspaceDragProps,
+  onPinDrop,
+  openInGridWorkspaceIds,
 }: WorkspacesSidebarProps) {
   const { t } = useTranslation(['tasks', 'common']);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -420,7 +484,9 @@ export function WorkspacesSidebar({
       )}
 
       {/* New Session row */}
-      {!isLoading && !showArchive && <NewSessionRow onAddWorkspace={onAddWorkspace} />}
+      {!isLoading && !showArchive && (
+        <NewSessionRow onAddWorkspace={onAddWorkspace} />
+      )}
 
       {activeRemoteHost && (
         <div className="px-base py-half">
@@ -496,6 +562,7 @@ export function WorkspacesSidebar({
                   linesAdded={workspace.linesAdded}
                   linesRemoved={workspace.linesRemoved}
                   isActive={selectedWorkspaceId === workspace.id}
+                  isOpenInGrid={openInGridWorkspaceIds?.has(workspace.id)}
                   isRunning={workspace.isRunning}
                   isPinned={workspace.isPinned}
                   hasPendingApproval={workspace.hasPendingApproval}
@@ -506,6 +573,7 @@ export function WorkspacesSidebar({
                   prStatus={workspace.prStatus}
                   onOpenWorkspaceActions={handleOpenWorkspaceActions}
                   onClick={() => onSelectWorkspace(workspace.id)}
+                  {...getWorkspaceDragProps?.(workspace.id)}
                 />
               ))
             )}
@@ -538,6 +606,8 @@ export function WorkspacesSidebar({
                     selectedWorkspaceId={selectedWorkspaceId}
                     onSelectWorkspace={onSelectWorkspace}
                     onOpenWorkspaceActions={handleOpenWorkspaceActions}
+                    getWorkspaceDragProps={getWorkspaceDragProps}
+                    openInGridWorkspaceIds={openInGridWorkspaceIds}
                   />
                 )}
               </div>
@@ -560,6 +630,8 @@ export function WorkspacesSidebar({
                     selectedWorkspaceId={selectedWorkspaceId}
                     onSelectWorkspace={onSelectWorkspace}
                     onOpenWorkspaceActions={handleOpenWorkspaceActions}
+                    getWorkspaceDragProps={getWorkspaceDragProps}
+                    openInGridWorkspaceIds={openInGridWorkspaceIds}
                   />
                 )}
               </div>
@@ -582,6 +654,8 @@ export function WorkspacesSidebar({
                     selectedWorkspaceId={selectedWorkspaceId}
                     onSelectWorkspace={onSelectWorkspace}
                     onOpenWorkspaceActions={handleOpenWorkspaceActions}
+                    getWorkspaceDragProps={getWorkspaceDragProps}
+                    openInGridWorkspaceIds={openInGridWorkspaceIds}
                   />
                 )}
               </div>
@@ -613,6 +687,7 @@ export function WorkspacesSidebar({
                 linesAdded={workspace.linesAdded}
                 linesRemoved={workspace.linesRemoved}
                 isActive={selectedWorkspaceId === workspace.id}
+                isOpenInGrid={openInGridWorkspaceIds?.has(workspace.id)}
                 isRunning={workspace.isRunning}
                 isPinned={workspace.isPinned}
                 hasPendingApproval={workspace.hasPendingApproval}
@@ -623,6 +698,7 @@ export function WorkspacesSidebar({
                 prStatus={workspace.prStatus}
                 onOpenWorkspaceActions={handleOpenWorkspaceActions}
                 onClick={() => onSelectWorkspace(workspace.id)}
+                {...getWorkspaceDragProps?.(workspace.id)}
               />
             ))}
           </div>
@@ -642,6 +718,9 @@ export function WorkspacesSidebar({
               selectedWorkspaceId={selectedWorkspaceId}
               onSelectWorkspace={onSelectWorkspace}
               onOpenWorkspaceActions={handleOpenWorkspaceActions}
+              getWorkspaceDragProps={getWorkspaceDragProps}
+              onPinDrop={onPinDrop}
+              openInGridWorkspaceIds={openInGridWorkspaceIds}
             />
             {folderGroups.map((group) => (
               <FolderGroup
@@ -650,6 +729,8 @@ export function WorkspacesSidebar({
                 selectedWorkspaceId={selectedWorkspaceId}
                 onSelectWorkspace={onSelectWorkspace}
                 onOpenWorkspaceActions={handleOpenWorkspaceActions}
+                getWorkspaceDragProps={getWorkspaceDragProps}
+                openInGridWorkspaceIds={openInGridWorkspaceIds}
               />
             ))}
           </div>

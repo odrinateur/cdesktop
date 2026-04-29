@@ -445,9 +445,7 @@ export function ModelSelectorContainer({
     <>
       {modelNamePart}
       {contextSuffix && <span className="text-low"> {contextSuffix}</span>}
-      {reasoningLabel && (
-        <span className="text-low"> · {reasoningLabel}</span>
-      )}
+      {reasoningLabel && <span className="text-low"> · {reasoningLabel}</span>}
     </>
   );
 

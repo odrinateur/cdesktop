@@ -1,5 +1,10 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { usePillDragStore } from '@/shared/stores/usePillDragStore';
+import { useSessionGridStore } from '@/shared/stores/useSessionGridStore';
 import { useParams } from '@tanstack/react-router';
+import { useQueryClient } from '@tanstack/react-query';
+import { workspacesApi } from '@/shared/lib/api';
+import { workspaceSummaryKeys } from '@/shared/hooks/workspaceSummaryKeys';
 import { useTranslation } from 'react-i18next';
 import { ThemeMode } from 'shared/types';
 import { useWorkspaceContext } from '@/shared/hooks/useWorkspaceContext';
@@ -527,13 +532,27 @@ export function WorkspacesSidebarContainer({
     return title || 'New Workspace';
   }, [draftScratch]);
 
-  // Handle workspace selection - scroll to bottom if re-selecting same workspace
+  // Handle workspace selection.
+  // - If already in this cell (focused first cell): scroll to bottom.
+  // - If mounted in another cell of the grid: just focus that cell (don't
+  //   navigate, since the URL tracks the first cell only).
+  // - Otherwise: navigate the URL, which routes through WorkspaceProvider
+  //   into setFirstCellSession (replacing cell #1).
   const handleSelectWorkspace = useCallback(
     (id: string) => {
       if (id === selectedWorkspaceId) {
         onScrollToBottom();
       } else {
-        selectWorkspace(id);
+        const grid = useSessionGridStore.getState().grid;
+        const mountedCell = grid.groups
+          .flatMap((g) => g.cells)
+          .find((c) => c.sessionId === id);
+        const isFirstCell = grid.groups[0]?.cells[0]?.sessionId === id;
+        if (mountedCell && !isFirstCell) {
+          useSessionGridStore.getState().focusCell(mountedCell.id);
+        } else {
+          selectWorkspace(id);
+        }
       }
       if (isMobile) {
         setMobileActiveTab('chat');
@@ -583,13 +602,68 @@ export function WorkspacesSidebarContainer({
     });
   }, [routeHostId]);
 
+  // Make every pill a drag source. The grid's per-cell drop overlay reads
+  // `usePillDragStore` to know what's being dragged; the actual drop
+  // (split / open-in-split / pin) is performed by the drop target.
+  const getWorkspaceDragProps = useCallback(
+    (workspaceId: string) => ({
+      draggable: !isMobile,
+      onDragStart: (e: React.DragEvent<HTMLDivElement>) => {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('application/x-vibe-pill', workspaceId);
+        usePillDragStore.getState().setDragging(workspaceId);
+      },
+      onDragEnd: () => {
+        usePillDragStore.getState().setDragging(null);
+      },
+    }),
+    [isMobile]
+  );
+
+  // Sidebar pill state derived from the session-grid:
+  // - openInGridWorkspaceIds = every cell's sessionId (gives pill background)
+  // - focusedSessionId       = the focused cell's sessionId (gives bright + bold)
+  const grid = useSessionGridStore((s) => s.grid);
+  const openInGridWorkspaceIds = useMemo(
+    () =>
+      new Set(
+        grid.groups
+          .flatMap((g) => g.cells)
+          .map((c) => c.sessionId)
+          .filter(Boolean)
+      ),
+    [grid]
+  );
+  const focusedSessionId = useMemo(
+    () =>
+      grid.groups
+        .flatMap((g) => g.cells)
+        .find((c) => c.id === grid.focusedCellId)?.sessionId ?? null,
+    [grid]
+  );
+
+  // Drop on the Pinned section pins the workspace. Backend has no pin-order
+  // field today so the drop position is ignored.
+  const queryClient = useQueryClient();
+  const handlePinDrop = useCallback(
+    async (workspaceId: string) => {
+      try {
+        await workspacesApi.update(workspaceId, { pinned: true });
+        queryClient.invalidateQueries({ queryKey: workspaceSummaryKeys.all });
+      } catch (err) {
+        console.warn('Pin via drag failed', err);
+      }
+    },
+    [queryClient]
+  );
+
   return (
     <WorkspacesSidebar
       workspaces={paginatedActiveWorkspaces}
       totalWorkspacesCount={activeWorkspaces.length}
       archivedWorkspaces={paginatedArchivedWorkspaces}
       isLoading={isWorkspacesListLoading}
-      selectedWorkspaceId={selectedWorkspaceId ?? null}
+      selectedWorkspaceId={focusedSessionId ?? selectedWorkspaceId ?? null}
       onSelectWorkspace={handleSelectWorkspace}
       onAddWorkspace={handleAddWorkspace}
       isCreateMode={isCreateMode}
@@ -611,6 +685,9 @@ export function WorkspacesSidebarContainer({
       onOpenRemoteHostSettings={handleOpenRemoteHostSettings}
       resolvedTheme={resolvedTheme}
       onToggleTheme={handleToggleTheme}
+      getWorkspaceDragProps={getWorkspaceDragProps}
+      onPinDrop={handlePinDrop}
+      openInGridWorkspaceIds={openInGridWorkspaceIds}
     />
   );
 }

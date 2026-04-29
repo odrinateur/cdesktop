@@ -73,9 +73,7 @@ export function ChatUserMessage({
             onClick={onToggle}
             className="mt-half text-xs opacity-80 hover:underline hover:opacity-100"
           >
-            {expanded
-              ? t('conversation.showLess')
-              : t('conversation.showMore')}
+            {expanded ? t('conversation.showLess') : t('conversation.showMore')}
           </button>
         )}
       </div>

@@ -297,7 +297,7 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorRef, WysiwygProps>(
 
     // Copy button state
     const [copied, setCopied] = useState(false);
-    const diffPaths = useDiffPaths();
+    const diffPaths = useDiffPaths(workspaceId);
     const preferredRepoId = useUiPreferencesStore(
       (state) => state.fileSearchRepoId
     );

@@ -171,11 +171,7 @@ export function ComposerChipRow({ disabled }: { disabled?: boolean }) {
       {showBranchChip && primary && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              disabled={disabled}
-              className={chipClassName}
-            >
+            <button type="button" disabled={disabled} className={chipClassName}>
               <GitBranchIcon weight="bold" className="size-icon-xs" />
               <span className="max-w-[140px] truncate">
                 {primaryBranch || branchPlaceholder}

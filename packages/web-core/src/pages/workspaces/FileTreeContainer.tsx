@@ -41,12 +41,13 @@ export function FileTreeContainer({
   const [searchQuery, setSearchQuery] = useState('');
   const [collapsedPaths, setCollapsedPaths] =
     usePersistedCollapsedPaths(workspaceId);
-  const showGitHubComments = useShowGitHubComments();
-  const setShowGitHubComments = useSetShowGitHubComments();
-  const getGitHubCommentCountForFile = useGetGitHubCommentCountForFile();
-  const getFilesWithGitHubComments = useGetFilesWithGitHubComments();
-  const getFirstCommentLineForFile = useGetFirstCommentLineForFile();
-  const isGitHubCommentsLoading = useIsGitHubCommentsLoading();
+  const showGitHubComments = useShowGitHubComments(workspaceId);
+  const setShowGitHubComments = useSetShowGitHubComments(workspaceId);
+  const getGitHubCommentCountForFile =
+    useGetGitHubCommentCountForFile(workspaceId);
+  const getFilesWithGitHubComments = useGetFilesWithGitHubComments(workspaceId);
+  const getFirstCommentLineForFile = useGetFirstCommentLineForFile(workspaceId);
+  const isGitHubCommentsLoading = useIsGitHubCommentsLoading(workspaceId);
 
   const { selectedFilePath, scrollToFile } = useChangesView();
   const fileInView = useFileInView();
