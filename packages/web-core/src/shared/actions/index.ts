@@ -48,10 +48,7 @@ import {
 } from '@phosphor-icons/react';
 import { useDiffViewStore } from '@/shared/stores/useDiffViewStore';
 import { useWorkspaceDiffStore } from '@/shared/stores/useWorkspaceDiffStore';
-import {
-  useUiPreferencesStore,
-  RIGHT_MAIN_PANEL_MODES,
-} from '@/shared/stores/useUiPreferencesStore';
+import { useUiPreferencesStore } from '@/shared/stores/useUiPreferencesStore';
 
 import { workspacesApi, relayApi, repoApi } from '@/shared/lib/api';
 import { bulkUpdateIssues } from '@/shared/lib/remoteApi';
@@ -543,7 +540,7 @@ export const Actions = {
     icon: ColumnsIcon,
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) =>
-      ctx.rightMainPanelMode === RIGHT_MAIN_PANEL_MODES.CHANGES &&
+      ctx.openPanels.has('changes') &&
       ctx.layoutMode === 'workspaces',
     isActive: (ctx) => ctx.diffViewMode === 'split',
     getIcon: (ctx) => (ctx.diffViewMode === 'split' ? ColumnsIcon : RowsIcon),
@@ -563,7 +560,7 @@ export const Actions = {
     icon: EyeSlashIcon,
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) =>
-      ctx.rightMainPanelMode === RIGHT_MAIN_PANEL_MODES.CHANGES &&
+      ctx.openPanels.has('changes') &&
       ctx.layoutMode === 'workspaces',
     execute: () => {
       const store = useDiffViewStore.getState();
@@ -581,7 +578,7 @@ export const Actions = {
     shortcut: 'T W',
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) =>
-      ctx.rightMainPanelMode === RIGHT_MAIN_PANEL_MODES.CHANGES &&
+      ctx.openPanels.has('changes') &&
       ctx.layoutMode === 'workspaces',
     execute: () => {
       const store = useDiffViewStore.getState();
@@ -615,7 +612,7 @@ export const Actions = {
     isVisible: (ctx) => ctx.layoutMode === 'workspaces',
     isActive: (ctx) => ctx.isLeftMainPanelVisible,
     isEnabled: (ctx) =>
-      !(ctx.isLeftMainPanelVisible && ctx.rightMainPanelMode === null),
+      !(ctx.isLeftMainPanelVisible && ctx.openPanels.size === 0),
     getLabel: (ctx) =>
       ctx.isLeftMainPanelVisible ? 'Hide Chat Panel' : 'Show Chat Panel',
     execute: (ctx) => {
@@ -647,20 +644,17 @@ export const Actions = {
     shortcut: 'V C',
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) => !ctx.isCreateMode && ctx.layoutMode === 'workspaces',
-    isActive: (ctx) =>
-      ctx.rightMainPanelMode === RIGHT_MAIN_PANEL_MODES.CHANGES,
+    isActive: (ctx) => ctx.openPanels.has('changes'),
     isEnabled: (ctx) => !ctx.isCreateMode,
     getLabel: (ctx) =>
-      ctx.rightMainPanelMode === RIGHT_MAIN_PANEL_MODES.CHANGES
+      ctx.openPanels.has('changes')
         ? 'Hide Changes Panel'
         : 'Show Changes Panel',
     execute: (ctx) => {
+      if (!ctx.currentWorkspaceId) return;
       useUiPreferencesStore
         .getState()
-        .toggleRightMainPanelMode(
-          RIGHT_MAIN_PANEL_MODES.CHANGES,
-          ctx.currentWorkspaceId ?? undefined
-        );
+        .togglePanel(ctx.currentWorkspaceId, 'changes');
     },
   },
 
@@ -671,19 +665,15 @@ export const Actions = {
     shortcut: 'V L',
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) => !ctx.isCreateMode && ctx.layoutMode === 'workspaces',
-    isActive: (ctx) => ctx.rightMainPanelMode === RIGHT_MAIN_PANEL_MODES.LOGS,
+    isActive: (ctx) => ctx.openPanels.has('logs'),
     isEnabled: (ctx) => !ctx.isCreateMode,
     getLabel: (ctx) =>
-      ctx.rightMainPanelMode === RIGHT_MAIN_PANEL_MODES.LOGS
-        ? 'Hide Logs Panel'
-        : 'Show Logs Panel',
+      ctx.openPanels.has('logs') ? 'Hide Logs Panel' : 'Show Logs Panel',
     execute: (ctx) => {
+      if (!ctx.currentWorkspaceId) return;
       useUiPreferencesStore
         .getState()
-        .toggleRightMainPanelMode(
-          RIGHT_MAIN_PANEL_MODES.LOGS,
-          ctx.currentWorkspaceId ?? undefined
-        );
+        .togglePanel(ctx.currentWorkspaceId, 'logs');
     },
   },
 
@@ -694,20 +684,17 @@ export const Actions = {
     shortcut: 'V P',
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) => !ctx.isCreateMode && ctx.layoutMode === 'workspaces',
-    isActive: (ctx) =>
-      ctx.rightMainPanelMode === RIGHT_MAIN_PANEL_MODES.PREVIEW,
+    isActive: (ctx) => ctx.openPanels.has('preview'),
     isEnabled: (ctx) => !ctx.isCreateMode,
     getLabel: (ctx) =>
-      ctx.rightMainPanelMode === RIGHT_MAIN_PANEL_MODES.PREVIEW
+      ctx.openPanels.has('preview')
         ? 'Hide Preview Panel'
         : 'Show Preview Panel',
     execute: (ctx) => {
+      if (!ctx.currentWorkspaceId) return;
       useUiPreferencesStore
         .getState()
-        .toggleRightMainPanelMode(
-          RIGHT_MAIN_PANEL_MODES.PREVIEW,
-          ctx.currentWorkspaceId ?? undefined
-        );
+        .togglePanel(ctx.currentWorkspaceId, 'preview');
     },
   },
 
@@ -725,7 +712,7 @@ export const Actions = {
     icon: CaretDoubleUpIcon,
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) =>
-      ctx.rightMainPanelMode === RIGHT_MAIN_PANEL_MODES.CHANGES &&
+      ctx.openPanels.has('changes') &&
       ctx.layoutMode === 'workspaces',
     getIcon: (ctx) =>
       ctx.isAllDiffsExpanded ? CaretDoubleUpIcon : CaretDoubleDownIcon,
@@ -796,7 +783,7 @@ export const Actions = {
     shortcut: 'Y L',
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) =>
-      ctx.rightMainPanelMode === RIGHT_MAIN_PANEL_MODES.LOGS &&
+      ctx.openPanels.has('logs') &&
       ctx.logsPanelContent?.type !== 'terminal',
     execute: async (ctx) => {
       if (!ctx.currentLogs || ctx.currentLogs.length === 0) return;
@@ -845,13 +832,12 @@ export const Actions = {
         ctx.stopDevServer();
       } else {
         ctx.startDevServer();
-        // Auto-open preview mode when starting dev server
-        useUiPreferencesStore
-          .getState()
-          .setRightMainPanelMode(
-            RIGHT_MAIN_PANEL_MODES.PREVIEW,
-            ctx.currentWorkspaceId ?? undefined
-          );
+        // Auto-open preview panel when starting dev server
+        if (ctx.currentWorkspaceId) {
+          useUiPreferencesStore
+            .getState()
+            .openPanel(ctx.currentWorkspaceId, 'preview');
+        }
       }
     },
   },
@@ -1549,13 +1535,7 @@ export const Actions = {
 export const NavbarActionGroups = {
   left: [Actions.ToggleLeftSidebar] as NavbarItem[],
   right: [
-    Actions.ToggleDiffViewMode,
-    Actions.ToggleAllDiffs,
-    NavbarDivider,
     Actions.ToggleLeftMainPanel,
-    Actions.ToggleChangesMode,
-    Actions.ToggleLogsMode,
-    Actions.TogglePreviewMode,
     Actions.ToggleRightSidebar,
     NavbarDivider,
     Actions.OpenCommandBar,

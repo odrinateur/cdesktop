@@ -11,6 +11,7 @@ import {
 import {
   useUiPreferencesStore,
   DEFAULT_CREATE_DRAFT_WORKSPACE_BY_DEFAULT,
+  DEFAULT_PANEL_LAYOUT,
   type RightMainPanelMode,
   type ContextBarPosition,
   type WorkspacePanelState,
@@ -126,6 +127,7 @@ function scratchDataToStore(data: UiPreferencesData): {
           rightMainPanelMode:
             (value.right_main_panel_mode as RightMainPanelMode) ?? null,
           isLeftMainPanelVisible: value.is_left_main_panel_visible ?? true,
+          panelLayout: DEFAULT_PANEL_LAYOUT,
         };
       }
     }

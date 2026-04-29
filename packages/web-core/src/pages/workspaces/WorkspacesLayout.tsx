@@ -6,7 +6,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Group, Layout, Panel, Separator } from 'react-resizable-panels';
+import { Group, Layout, Panel } from 'react-resizable-panels';
 import type { CreateModeInitialState } from '@/shared/types/createMode';
 import { useWorkspaceContext } from '@/shared/hooks/useWorkspaceContext';
 import { usePageTitle } from '@/shared/hooks/usePageTitle';
@@ -31,6 +31,11 @@ import { RightSidebar } from './RightSidebar';
 import { ChangesPanelContainer } from './ChangesPanelContainer';
 import { CreateChatBoxContainer } from '@/shared/components/CreateChatBoxContainer';
 import { PreviewBrowserContainer } from './PreviewBrowserContainer';
+import { GitPanelContainer } from './GitPanelContainer';
+import { TerminalPanelContainer } from '@/shared/components/TerminalPanelContainer';
+import { PanelLayout, PanelMenu, ResizeHandle } from './panels';
+import { PanelHeaderActionButton } from './panels/PanelHeaderActionButton';
+import { Actions } from '@/shared/actions';
 import { WorkspacesGuideDialog } from '@/shared/dialogs/shared/WorkspacesGuideDialog';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
 
@@ -38,7 +43,8 @@ import {
   PERSIST_KEYS,
   usePaneSize,
   useWorkspacePanelState,
-  RIGHT_MAIN_PANEL_MODES,
+  useWorkspacePanelLayout,
+  type PanelId,
 } from '@/shared/stores/useUiPreferencesStore';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 
@@ -129,11 +135,67 @@ export function WorkspacesLayout() {
   const {
     isLeftSidebarVisible,
     isLeftMainPanelVisible,
-    isRightSidebarVisible,
-    rightMainPanelMode,
-    setLeftSidebarVisible,
     setLeftMainPanelVisible,
   } = useWorkspacePanelState(isCreateMode ? undefined : workspaceId);
+
+  const panelLayoutWorkspaceId = isCreateMode ? undefined : workspaceId;
+  const { columns: panelColumns } =
+    useWorkspacePanelLayout(panelLayoutWorkspaceId);
+  const hasPanels = panelColumns.length > 0;
+
+  const renderPanel = useCallback(
+    (panelId: PanelId) => {
+      switch (panelId) {
+        case 'changes':
+          return selectedWorkspace?.id ? (
+            <ChangesPanelContainer
+              className=""
+              workspaceId={selectedWorkspace.id}
+            />
+          ) : null;
+        case 'logs':
+          return <LogsContentContainer className="" />;
+        case 'preview':
+          return selectedWorkspace?.id ? (
+            <PreviewBrowserContainer
+              workspaceId={selectedWorkspace.id}
+              className=""
+            />
+          ) : null;
+        case 'git':
+          return (
+            <GitPanelContainer
+              selectedWorkspace={selectedWorkspace}
+              repos={repos}
+            />
+          );
+        case 'terminal':
+          return <TerminalPanelContainer />;
+        default:
+          return null;
+      }
+    },
+    [selectedWorkspace, repos]
+  );
+
+  const renderPanelHeader = useCallback(
+    (panelId: PanelId) => {
+      if (panelId !== 'changes') return null;
+      return (
+        <>
+          <PanelHeaderActionButton
+            action={Actions.ToggleDiffViewMode}
+            workspaceId={selectedWorkspace?.id}
+          />
+          <PanelHeaderActionButton
+            action={Actions.ToggleAllDiffs}
+            workspaceId={selectedWorkspace?.id}
+          />
+        </>
+      );
+    },
+    [selectedWorkspace?.id]
+  );
 
   const {
     config,
@@ -158,18 +220,14 @@ export function WorkspacesLayout() {
     WorkspacesGuideDialog.show().finally(() => WorkspacesGuideDialog.hide());
   }, [configLoading, config, updateAndSaveConfig]);
 
-  // Ensure left panels visible when right main panel hidden
+  // If the user has no panels open AND the chat is hidden, force the chat
+  // back so the workspace isn't a blank screen. Don't touch the left sidebar
+  // — the user may have hidden it intentionally.
   useEffect(() => {
-    if (rightMainPanelMode === null) {
-      setLeftSidebarVisible(true);
-      if (!isLeftMainPanelVisible) setLeftMainPanelVisible(true);
+    if (!hasPanels && !isLeftMainPanelVisible) {
+      setLeftMainPanelVisible(true);
     }
-  }, [
-    isLeftMainPanelVisible,
-    rightMainPanelMode,
-    setLeftSidebarVisible,
-    setLeftMainPanelVisible,
-  ]);
+  }, [hasPanels, isLeftMainPanelVisible, setLeftMainPanelVisible]);
 
   const [rightMainPanelSize, setRightMainPanelSize] = usePaneSize(
     PERSIST_KEYS.rightMainPanel,
@@ -194,14 +252,14 @@ export function WorkspacesLayout() {
 
   const onLayoutChange = useCallback(
     (layout: Layout) => {
-      if (isLeftMainPanelVisible && rightMainPanelMode !== null) {
+      if (isLeftMainPanelVisible && hasPanels) {
         if (layoutTimerRef.current) clearTimeout(layoutTimerRef.current);
         layoutTimerRef.current = setTimeout(() => {
           setRightMainPanelSize(layout['right-main']);
         }, 150);
       }
     },
-    [isLeftMainPanelVisible, rightMainPanelMode, setRightMainPanelSize]
+    [isLeftMainPanelVisible, hasPanels, setRightMainPanelSize]
   );
 
   // ── Mobile layout ──────────────────────────────────────────────────
@@ -301,7 +359,7 @@ export function WorkspacesLayout() {
             >
               {selectedWorkspace && !isCreateMode && (
                 <RightSidebar
-                  rightMainPanelMode={rightMainPanelMode}
+                  rightMainPanelMode={null}
                   selectedWorkspace={selectedWorkspace}
                   repos={repos}
                 />
@@ -333,7 +391,7 @@ export function WorkspacesLayout() {
   const mainContent = (
     <ReviewProvider workspaceId={selectedWorkspace?.id}>
       <ChangesViewProvider>
-        <div className="flex h-full">
+        <div className="relative flex h-full">
           <Group
             orientation="horizontal"
             className="flex-1 min-w-0 h-full"
@@ -368,47 +426,31 @@ export function WorkspacesLayout() {
               </Panel>
             )}
 
-            {isLeftMainPanelVisible && rightMainPanelMode !== null && (
-              <Separator
+            {isLeftMainPanelVisible && hasPanels && !isCreateMode && (
+              <ResizeHandle
                 id="main-separator"
-                className="w-1 bg-transparent hover:bg-brand/50 transition-colors cursor-col-resize"
+                orientation="vertical"
               />
             )}
 
-            {rightMainPanelMode !== null && (
+            {hasPanels && !isCreateMode && (
               <Panel
                 id="right-main"
                 minSize="20%"
                 className="min-w-0 h-full overflow-hidden"
               >
-                {rightMainPanelMode === RIGHT_MAIN_PANEL_MODES.CHANGES &&
-                  selectedWorkspace?.id && (
-                    <ChangesPanelContainer
-                      className=""
-                      workspaceId={selectedWorkspace.id}
-                    />
-                  )}
-                {rightMainPanelMode === RIGHT_MAIN_PANEL_MODES.LOGS && (
-                  <LogsContentContainer className="" />
-                )}
-                {rightMainPanelMode === RIGHT_MAIN_PANEL_MODES.PREVIEW &&
-                  selectedWorkspace?.id && (
-                    <PreviewBrowserContainer
-                      workspaceId={selectedWorkspace.id}
-                      className=""
-                    />
-                  )}
+                <PanelLayout
+                  workspaceId={panelLayoutWorkspaceId}
+                  renderPanel={renderPanel}
+                  renderPanelHeader={renderPanelHeader}
+                />
               </Panel>
             )}
           </Group>
 
-          {isRightSidebarVisible && !isCreateMode && (
-            <div className="w-[300px] shrink-0 h-full overflow-hidden">
-              <RightSidebar
-                rightMainPanelMode={rightMainPanelMode}
-                selectedWorkspace={selectedWorkspace}
-                repos={repos}
-              />
+          {!isCreateMode && (
+            <div className="absolute top-2 right-3 z-20">
+              <PanelMenu workspaceId={panelLayoutWorkspaceId} />
             </div>
           )}
         </div>

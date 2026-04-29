@@ -528,7 +528,7 @@ function FileEditEntry({
   );
   const { theme } = useTheme();
   const actualTheme = getActualTheme(theme);
-  const { viewFileInChanges, hasDiffPath } = useChangesViewActions();
+  const { viewFileInChanges } = useChangesViewActions();
   const FileIcon = useMemo(
     () => getFileIcon(path, actualTheme),
     [path, actualTheme]
@@ -573,11 +573,9 @@ function FileEditEntry({
   );
   const hasDiffContent = Boolean(diffContent && diffPreviewData.isValid);
 
-  // Only show "open in changes" button if the file exists in current diffs
   const handleOpenInChanges = useCallback(() => {
-    if (!hasDiffPath(path)) return;
     viewFileInChanges(path);
-  }, [viewFileInChanges, hasDiffPath, path]);
+  }, [viewFileInChanges, path]);
   const handleOpenInVSCode = useCallback((filename: string) => {
     openFileInVSCode(filename, { openAsDiff: false });
   }, []);

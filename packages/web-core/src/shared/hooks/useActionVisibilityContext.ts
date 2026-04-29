@@ -3,6 +3,7 @@ import { useParams } from '@tanstack/react-router';
 import {
   useUiPreferencesStore,
   useWorkspacePanelState,
+  useWorkspacePanelLayout,
   type LayoutMode,
 } from '@/shared/stores/useUiPreferencesStore';
 import { useDiffViewMode } from '@/shared/stores/useDiffViewStore';
@@ -41,6 +42,9 @@ export function useActionVisibilityContext(
   const { workspace, workspaceId, isCreateMode, repos } = useWorkspaceContext();
   // Use workspace-specific panel state (pass undefined when in create mode)
   const panelState = useWorkspacePanelState(
+    isCreateMode ? undefined : workspaceId
+  );
+  const { openPanels } = useWorkspacePanelLayout(
     isCreateMode ? undefined : workspaceId
   );
   const diffPathsSet = useDiffPaths();
@@ -125,7 +129,7 @@ export function useActionVisibilityContext(
 
     return {
       layoutMode,
-      rightMainPanelMode: panelState.rightMainPanelMode,
+      openPanels,
       isLeftSidebarVisible: panelState.isLeftSidebarVisible,
       isLeftMainPanelVisible: panelState.isLeftMainPanelVisible,
       isRightSidebarVisible: panelState.isRightSidebarVisible,
@@ -151,7 +155,7 @@ export function useActionVisibilityContext(
     };
   }, [
     layoutMode,
-    panelState.rightMainPanelMode,
+    openPanels,
     panelState.isLeftSidebarVisible,
     panelState.isLeftMainPanelVisible,
     panelState.isRightSidebarVisible,
