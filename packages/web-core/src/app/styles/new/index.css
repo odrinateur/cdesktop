@@ -264,9 +264,9 @@ html {
     @apply border-border;
   }
 
-  html {
+  /* html {
     font-size: 17px;
-  }
+  } */
 
   html,
   body,
