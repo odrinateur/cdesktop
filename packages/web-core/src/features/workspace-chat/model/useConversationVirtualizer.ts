@@ -292,11 +292,15 @@ export function useConversationVirtualizer({
       // - smoothScrollDeadlineRef: set during scrollToBottom('smooth')
       // - shouldSuppressSizeAdjustment: set during interaction anchor corrections
       // - 5px threshold: filters input-resize micro-adjustments
+      // - near-bottom check: when the chatbox shrinks, the browser auto-
+      //   clamps scrollTop down to the new max, which looks like an upward
+      //   scroll but should not release the lock — we're still at bottom.
       if (
         bottomLockedRef.current &&
         prevScrollTopRef.current - currentScrollTop > 5 &&
         performance.now() > smoothScrollDeadlineRef.current &&
-        !shouldSuppressSizeAdjustment?.()
+        !shouldSuppressSizeAdjustment?.() &&
+        !isNearBottom(currentScrollTop, el.clientHeight, el.scrollHeight)
       ) {
         bottomLockedRef.current = false;
       }

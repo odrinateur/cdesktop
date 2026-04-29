@@ -141,11 +141,7 @@ function PanelColumnContent({
       defaultLayout={defaultLayout}
       onLayoutChange={handleLayoutChange}
     >
-      <Panel
-        id={`row-${columnIdx}-0`}
-        minSize="15%"
-        className="min-h-0 w-full"
-      >
+      <Panel id={`row-${columnIdx}-0`} minSize="15%" className="min-h-0 w-full">
         <div className="h-full w-full p-1">
           <PanelHost
             panelId={topId!}
@@ -161,11 +157,7 @@ function PanelColumnContent({
         id={`panel-row-sep-${columnIdx}`}
         orientation="horizontal"
       />
-      <Panel
-        id={`row-${columnIdx}-1`}
-        minSize="15%"
-        className="min-h-0 w-full"
-      >
+      <Panel id={`row-${columnIdx}-1`} minSize="15%" className="min-h-0 w-full">
         <div className="h-full w-full p-1">
           <PanelHost
             panelId={bottomId!}

@@ -735,9 +735,7 @@ export const useUiPreferencesStore = create<State>()((set, get) => ({
         panels: c.panels.filter((p) => p !== panelId),
       }))
       .filter((c) => c.panels.length > 0)
-      .map((c) =>
-        c.panels.length === 1 ? { panels: c.panels } : c
-      );
+      .map((c) => (c.panels.length === 1 ? { panels: c.panels } : c));
 
     set({
       workspacePanelStates: {

@@ -1,4 +1,11 @@
-import { ReactNode, useMemo, useCallback, useEffect, useRef } from 'react';
+import {
+  ReactNode,
+  useContext,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+} from 'react';
 import { useParams } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useWorkspaces } from '@/shared/hooks/useWorkspaces';
@@ -10,6 +17,7 @@ import { useGitHubComments } from '@/shared/hooks/useGitHubComments';
 import { useDiffStream } from '@/shared/hooks/useDiffStream';
 import { workspacesApi } from '@/shared/lib/api';
 import { useWorkspaceDiffStore } from '@/shared/stores/useWorkspaceDiffStore';
+import { useSessionGridStore } from '@/shared/stores/useSessionGridStore';
 import type { DiffStats } from 'shared/types';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import { useCurrentAppDestination } from '@/shared/hooks/useCurrentAppDestination';
@@ -18,15 +26,57 @@ import { WorkspaceContext } from '@/shared/hooks/useWorkspaceContext';
 
 interface WorkspaceProviderProps {
   children: ReactNode;
+  /**
+   * Override the URL-derived workspace. When omitted, the provider falls
+   * back to the workspaceId in the route params — that's the path used at
+   * the route level. When set explicitly, it lets a parent (e.g.
+   * `<SessionGrid>`) mount one provider per cell with a different workspace
+   * each.
+   */
+  workspaceId?: string;
 }
 
-export function WorkspaceProvider({ children }: WorkspaceProviderProps) {
-  const { workspaceId } = useParams({ strict: false });
+export function WorkspaceProvider({
+  children,
+  workspaceId: workspaceIdProp,
+}: WorkspaceProviderProps) {
+  const { workspaceId: workspaceIdFromRoute } = useParams({ strict: false });
+  const workspaceId = workspaceIdProp ?? workspaceIdFromRoute;
+  const outer = useContext(WorkspaceContext);
+
+  // If an outer provider is already serving this same workspaceId (e.g.
+  // route-level provider + a CellHost that happens to render the URL
+  // workspace), pass through instead of mounting a duplicate fetcher.
+  if (workspaceIdProp && outer && outer.workspaceId === workspaceIdProp) {
+    return <>{children}</>;
+  }
+  return (
+    <WorkspaceProviderInner
+      workspaceId={workspaceId}
+      workspaceIdProp={workspaceIdProp}
+    >
+      {children}
+    </WorkspaceProviderInner>
+  );
+}
+
+function WorkspaceProviderInner({
+  children,
+  workspaceId,
+  workspaceIdProp,
+}: {
+  children: ReactNode;
+  workspaceId: string | undefined;
+  workspaceIdProp: string | undefined;
+}) {
   const appNavigation = useAppNavigation();
   const currentDestination = useCurrentAppDestination();
   const queryClient = useQueryClient();
 
-  const isCreateMode = currentDestination?.kind === 'workspaces-create';
+  // Create mode is a URL-level state; only the route-level provider can be
+  // in create mode. Child providers (per-cell) always render a real workspace.
+  const isCreateMode =
+    !workspaceIdProp && currentDestination?.kind === 'workspaces-create';
 
   const {
     workspaces: activeWorkspaces,
@@ -125,6 +175,7 @@ export function WorkspaceProvider({ children }: WorkspaceProviderProps) {
   };
 
   useEffect(() => {
+    if (!workspaceId) return;
     batchCountRef.current++;
     if (rafRef.current === null) {
       rafRef.current = requestAnimationFrame(() => {
@@ -132,7 +183,7 @@ export function WorkspaceProvider({ children }: WorkspaceProviderProps) {
         batchCountRef.current = 0;
         useWorkspaceDiffStore
           .getState()
-          .setWorkspaceDiffData(latestDiffDataRef.current);
+          .setWorkspaceDiffData(workspaceId, latestDiffDataRef.current);
       });
     }
     return () => {
@@ -142,6 +193,7 @@ export function WorkspaceProvider({ children }: WorkspaceProviderProps) {
       }
     };
   }, [
+    workspaceId,
     diffs,
     diffPaths,
     diffStats,
@@ -156,10 +208,11 @@ export function WorkspaceProvider({ children }: WorkspaceProviderProps) {
   ]);
 
   useEffect(() => {
+    if (!workspaceId) return;
     return () => {
-      useWorkspaceDiffStore.getState().clearWorkspaceDiffData();
+      useWorkspaceDiffStore.getState().clearWorkspaceDiffData(workspaceId);
     };
-  }, []);
+  }, [workspaceId]);
 
   const isLoading = isLoadingList || isLoadingWorkspace;
 
@@ -175,6 +228,18 @@ export function WorkspaceProvider({ children }: WorkspaceProviderProps) {
         console.warn('Failed to mark workspace as seen:', error);
       });
   }, [workspaceId, isCreateMode, queryClient]);
+
+  // Reflect URL → session-grid first cell. The grid keeps the rest of the
+  // layout (other cells, primary orientation, ratios) untouched; only the
+  // top-left cell follows the URL. If the URL workspace is already mounted
+  // in another cell, setFirstCellSession just shifts focus there.
+  // Per-cell providers (workspaceIdProp set) skip this — only the route-
+  // level provider drives the URL→grid sync.
+  useEffect(() => {
+    if (workspaceIdProp) return;
+    if (!workspaceId || isCreateMode) return;
+    useSessionGridStore.getState().setFirstCellSession(workspaceId);
+  }, [workspaceIdProp, workspaceId, isCreateMode]);
 
   const selectWorkspace = useCallback(
     (id: string) => {

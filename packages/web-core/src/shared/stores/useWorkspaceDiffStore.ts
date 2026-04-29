@@ -4,8 +4,11 @@ import type { NormalizedGitHubComment } from '@/shared/hooks/useWorkspaceContext
 
 // ---------------------------------------------------------------------------
 // Zustand store for workspace diff data (diffs, stats, GitHub comments).
-// Populated by WorkspaceProvider via setWorkspaceDiffData(); consumers can
-// subscribe to individual slices with the exported atomic selectors below.
+//
+// Keyed by workspaceId so multiple workspaces can render simultaneously
+// (e.g. several cells in the session-grid layout). Each WorkspaceProvider
+// owns one slot — it calls setWorkspaceDiffData(id, …) on update and
+// clearWorkspaceDiffData(id) on unmount.
 // ---------------------------------------------------------------------------
 
 const EMPTY_DIFFS: Diff[] = [];
@@ -29,7 +32,7 @@ const noopSetShowGitHubComments = () => {};
 // State shape
 // ---------------------------------------------------------------------------
 
-interface WorkspaceDiffData {
+export interface WorkspaceDiffData {
   diffs: Diff[];
   diffPaths: Set<string>;
   diffStats: DiffStats;
@@ -43,11 +46,12 @@ interface WorkspaceDiffData {
   getFirstCommentLineForFile: (filePath: string) => number | null;
 }
 
-interface WorkspaceDiffState extends WorkspaceDiffData {
-  /** Batch-update all diff data fields. Called by WorkspaceProvider. */
-  setWorkspaceDiffData: (data: WorkspaceDiffData) => void;
-  /** Reset to defaults. Called on workspace switch / unmount. */
-  clearWorkspaceDiffData: () => void;
+interface WorkspaceDiffState {
+  byWorkspace: { [workspaceId: string]: WorkspaceDiffData };
+  /** Write/replace one workspace's slot. Called by WorkspaceProvider. */
+  setWorkspaceDiffData: (workspaceId: string, data: WorkspaceDiffData) => void;
+  /** Drop one workspace's slot. Called on workspace switch / unmount. */
+  clearWorkspaceDiffData: (workspaceId: string) => void;
 }
 
 const DEFAULT_DATA: WorkspaceDiffData = {
@@ -69,43 +73,81 @@ const DEFAULT_DATA: WorkspaceDiffData = {
 // ---------------------------------------------------------------------------
 
 export const useWorkspaceDiffStore = create<WorkspaceDiffState>()((set) => ({
-  ...DEFAULT_DATA,
+  byWorkspace: {},
 
-  setWorkspaceDiffData: (data) => set(data),
+  setWorkspaceDiffData: (workspaceId, data) =>
+    set((s) => ({
+      byWorkspace: { ...s.byWorkspace, [workspaceId]: data },
+    })),
 
-  clearWorkspaceDiffData: () => set(DEFAULT_DATA),
+  clearWorkspaceDiffData: (workspaceId) =>
+    set((s) => {
+      if (!(workspaceId in s.byWorkspace)) return s;
+      const next = { ...s.byWorkspace };
+      delete next[workspaceId];
+      return { byWorkspace: next };
+    }),
 }));
 
+/** Read one workspace's slot, or the empty defaults when unknown. */
+export function getWorkspaceDiffData(
+  workspaceId: string | undefined
+): WorkspaceDiffData {
+  if (!workspaceId) return DEFAULT_DATA;
+  return (
+    useWorkspaceDiffStore.getState().byWorkspace[workspaceId] ?? DEFAULT_DATA
+  );
+}
+
 // ---------------------------------------------------------------------------
-// Atomic selectors — each subscribes to a single field to minimise rerenders
+// Atomic selectors — each subscribes to a single field of one workspace's
+// slot so re-renders stay scoped. Pass `undefined` for workspaceId during
+// loading / no-workspace contexts and the hook returns the empty default.
 // ---------------------------------------------------------------------------
 
-export const useDiffs = () => useWorkspaceDiffStore((s) => s.diffs);
+function selectSlice<K extends keyof WorkspaceDiffData>(
+  workspaceId: string | undefined,
+  key: K
+): WorkspaceDiffData[K] {
+  return useWorkspaceDiffStore(
+    (s) =>
+      (workspaceId ? s.byWorkspace[workspaceId] : undefined)?.[key] ??
+      DEFAULT_DATA[key]
+  );
+}
 
-export const useDiffPaths = () => useWorkspaceDiffStore((s) => s.diffPaths);
+export const useDiffs = (workspaceId: string | undefined) =>
+  selectSlice(workspaceId, 'diffs');
 
-export const useDiffStats = () => useWorkspaceDiffStore((s) => s.diffStats);
+export const useDiffPaths = (workspaceId: string | undefined) =>
+  selectSlice(workspaceId, 'diffPaths');
 
-export const useStoreDiffGitHubComments = () =>
-  useWorkspaceDiffStore((s) => s.gitHubComments);
+export const useDiffStats = (workspaceId: string | undefined) =>
+  selectSlice(workspaceId, 'diffStats');
 
-export const useIsGitHubCommentsLoading = () =>
-  useWorkspaceDiffStore((s) => s.isGitHubCommentsLoading);
+export const useStoreDiffGitHubComments = (workspaceId: string | undefined) =>
+  selectSlice(workspaceId, 'gitHubComments');
 
-export const useShowGitHubComments = () =>
-  useWorkspaceDiffStore((s) => s.showGitHubComments);
+export const useIsGitHubCommentsLoading = (workspaceId: string | undefined) =>
+  selectSlice(workspaceId, 'isGitHubCommentsLoading');
 
-export const useSetShowGitHubComments = () =>
-  useWorkspaceDiffStore((s) => s.setShowGitHubComments);
+export const useShowGitHubComments = (workspaceId: string | undefined) =>
+  selectSlice(workspaceId, 'showGitHubComments');
 
-export const useGetGitHubCommentsForFile = () =>
-  useWorkspaceDiffStore((s) => s.getGitHubCommentsForFile);
+export const useSetShowGitHubComments = (workspaceId: string | undefined) =>
+  selectSlice(workspaceId, 'setShowGitHubComments');
 
-export const useGetGitHubCommentCountForFile = () =>
-  useWorkspaceDiffStore((s) => s.getGitHubCommentCountForFile);
+export const useGetGitHubCommentsForFile = (workspaceId: string | undefined) =>
+  selectSlice(workspaceId, 'getGitHubCommentsForFile');
 
-export const useGetFilesWithGitHubComments = () =>
-  useWorkspaceDiffStore((s) => s.getFilesWithGitHubComments);
+export const useGetGitHubCommentCountForFile = (
+  workspaceId: string | undefined
+) => selectSlice(workspaceId, 'getGitHubCommentCountForFile');
 
-export const useGetFirstCommentLineForFile = () =>
-  useWorkspaceDiffStore((s) => s.getFirstCommentLineForFile);
+export const useGetFilesWithGitHubComments = (
+  workspaceId: string | undefined
+) => selectSlice(workspaceId, 'getFilesWithGitHubComments');
+
+export const useGetFirstCommentLineForFile = (
+  workspaceId: string | undefined
+) => selectSlice(workspaceId, 'getFirstCommentLineForFile');

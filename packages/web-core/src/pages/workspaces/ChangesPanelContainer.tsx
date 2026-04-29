@@ -342,8 +342,8 @@ const DiffFileItem = memo(function DiffFileItem({
   const draftsRef = useRef(drafts);
   draftsRef.current = drafts;
 
-  const showGitHubComments = useShowGitHubComments();
-  const getGitHubCommentsForFile = useGetGitHubCommentsForFile();
+  const showGitHubComments = useShowGitHubComments(workspaceId);
+  const getGitHubCommentsForFile = useGetGitHubCommentsForFile(workspaceId);
 
   const openInEditor = useOpenInEditor(workspaceId);
 
@@ -599,7 +599,7 @@ export const ChangesPanelContainer = memo(function ChangesPanelContainer({
   className,
   workspaceId,
 }: ChangesPanelContainerProps) {
-  const diffs = useDiffs();
+  const diffs = useDiffs(workspaceId);
   const { repos } = useWorkspaceContext();
   const hasGitRepo = repos.some((r) => r.is_git);
   const { registerScrollToFile } = useChangesView();

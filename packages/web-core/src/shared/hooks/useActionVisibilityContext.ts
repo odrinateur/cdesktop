@@ -47,7 +47,7 @@ export function useActionVisibilityContext(
   const { openPanels } = useWorkspacePanelLayout(
     isCreateMode ? undefined : workspaceId
   );
-  const diffPathsSet = useDiffPaths();
+  const diffPathsSet = useDiffPaths(workspaceId);
   const diffViewMode = useDiffViewMode();
   const expanded = useUiPreferencesStore((s) => s.expanded);
 

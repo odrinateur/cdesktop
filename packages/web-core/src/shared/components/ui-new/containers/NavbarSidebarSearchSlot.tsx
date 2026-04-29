@@ -7,9 +7,7 @@ import { useUiPreferencesStore } from '@/shared/stores/useUiPreferencesStore';
 export function NavbarSidebarSearchSlot() {
   const { t } = useTranslation('common');
   const searchQuery = useUiPreferencesStore((s) => s.sidebarSearchQuery);
-  const setSearchQuery = useUiPreferencesStore(
-    (s) => s.setSidebarSearchQuery
-  );
+  const setSearchQuery = useUiPreferencesStore((s) => s.setSidebarSearchQuery);
   const setLeftSidebarVisible = useUiPreferencesStore(
     (s) => s.setLeftSidebarVisible
   );

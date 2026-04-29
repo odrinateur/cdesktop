@@ -46,7 +46,7 @@ function VSCodeChatBox({
   onScrollToUserMessage: (patchKey: string) => void;
   getActiveTurnPatchKey: () => string | null;
 }) {
-  const diffStats = useDiffStats();
+  const diffStats = useDiffStats(workspaceId);
 
   return (
     <SessionChatBoxContainer

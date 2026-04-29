@@ -6,12 +6,14 @@ import {
   useSyncExternalStore,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Group, Layout, Panel } from 'react-resizable-panels';
 import type { CreateModeInitialState } from '@/shared/types/createMode';
 import { useWorkspaceContext } from '@/shared/hooks/useWorkspaceContext';
 import { usePageTitle } from '@/shared/hooks/usePageTitle';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
-import { useMobileActiveTab } from '@/shared/stores/useUiPreferencesStore';
+import {
+  useMobileActiveTab,
+  useWorkspacePanelState,
+} from '@/shared/stores/useUiPreferencesStore';
 import { cn } from '@/shared/lib/utils';
 import { CreateModeProvider } from '@/features/create-mode/model/CreateModeProvider';
 import {
@@ -31,21 +33,10 @@ import { RightSidebar } from './RightSidebar';
 import { ChangesPanelContainer } from './ChangesPanelContainer';
 import { CreateChatBoxContainer } from '@/shared/components/CreateChatBoxContainer';
 import { PreviewBrowserContainer } from './PreviewBrowserContainer';
-import { GitPanelContainer } from './GitPanelContainer';
-import { TerminalPanelContainer } from '@/shared/components/TerminalPanelContainer';
-import { PanelLayout, PanelMenu, ResizeHandle } from './panels';
-import { PanelHeaderActionButton } from './panels/PanelHeaderActionButton';
-import { Actions } from '@/shared/actions';
+import { SessionGrid } from './cells/SessionGrid';
+import { scrollFirstCellToBottom } from './cells/firstCellScroll';
 import { WorkspacesGuideDialog } from '@/shared/dialogs/shared/WorkspacesGuideDialog';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
-
-import {
-  PERSIST_KEYS,
-  usePaneSize,
-  useWorkspacePanelState,
-  useWorkspacePanelLayout,
-  type PanelId,
-} from '@/shared/stores/useUiPreferencesStore';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 
 const WORKSPACES_GUIDE_ID = 'workspaces-guide';
@@ -117,11 +108,18 @@ export function WorkspacesLayout() {
   const [mobileTab] = useMobileActiveTab();
   const mainContainerRef = useRef<WorkspacesMainContainerHandle>(null);
 
+  // Desktop's first cell registers its scroll handler in firstCellScroll.ts;
+  // mobile keeps using the local ref. The single sidebar callback dispatches
+  // to whichever is active.
   const handleScrollToBottom = useCallback(
     (behavior: 'auto' | 'smooth' = 'smooth') => {
-      mainContainerRef.current?.scrollToBottom(behavior);
+      if (isMobile) {
+        mainContainerRef.current?.scrollToBottom(behavior);
+        return;
+      }
+      scrollFirstCellToBottom(behavior);
     },
-    []
+    [isMobile]
   );
 
   const handleWorkspaceCreated = useCallback(
@@ -131,70 +129,11 @@ export function WorkspacesLayout() {
     [appNavigation]
   );
 
-  // Use workspace-specific panel state (pass undefined when in create mode)
-  const {
-    isLeftSidebarVisible,
-    isLeftMainPanelVisible,
-    setLeftMainPanelVisible,
-  } = useWorkspacePanelState(isCreateMode ? undefined : workspaceId);
-
-  const panelLayoutWorkspaceId = isCreateMode ? undefined : workspaceId;
-  const { columns: panelColumns } =
-    useWorkspacePanelLayout(panelLayoutWorkspaceId);
-  const hasPanels = panelColumns.length > 0;
-
-  const renderPanel = useCallback(
-    (panelId: PanelId) => {
-      switch (panelId) {
-        case 'changes':
-          return selectedWorkspace?.id ? (
-            <ChangesPanelContainer
-              className=""
-              workspaceId={selectedWorkspace.id}
-            />
-          ) : null;
-        case 'logs':
-          return <LogsContentContainer className="" />;
-        case 'preview':
-          return selectedWorkspace?.id ? (
-            <PreviewBrowserContainer
-              workspaceId={selectedWorkspace.id}
-              className=""
-            />
-          ) : null;
-        case 'git':
-          return (
-            <GitPanelContainer
-              selectedWorkspace={selectedWorkspace}
-              repos={repos}
-            />
-          );
-        case 'terminal':
-          return <TerminalPanelContainer />;
-        default:
-          return null;
-      }
-    },
-    [selectedWorkspace, repos]
-  );
-
-  const renderPanelHeader = useCallback(
-    (panelId: PanelId) => {
-      if (panelId !== 'changes') return null;
-      return (
-        <>
-          <PanelHeaderActionButton
-            action={Actions.ToggleDiffViewMode}
-            workspaceId={selectedWorkspace?.id}
-          />
-          <PanelHeaderActionButton
-            action={Actions.ToggleAllDiffs}
-            workspaceId={selectedWorkspace?.id}
-          />
-        </>
-      );
-    },
-    [selectedWorkspace?.id]
+  // Sidebar visibility lives at the layout level. Per-cell panel state and
+  // panel layout now live inside CellHost via useWorkspacePanelState /
+  // useWorkspacePanelLayout, scoped to each cell's workspace.
+  const { isLeftSidebarVisible } = useWorkspacePanelState(
+    isCreateMode ? undefined : workspaceId
   );
 
   const {
@@ -219,48 +158,6 @@ export function WorkspacesLayout() {
     });
     WorkspacesGuideDialog.show().finally(() => WorkspacesGuideDialog.hide());
   }, [configLoading, config, updateAndSaveConfig]);
-
-  // If the user has no panels open AND the chat is hidden, force the chat
-  // back so the workspace isn't a blank screen. Don't touch the left sidebar
-  // — the user may have hidden it intentionally.
-  useEffect(() => {
-    if (!hasPanels && !isLeftMainPanelVisible) {
-      setLeftMainPanelVisible(true);
-    }
-  }, [hasPanels, isLeftMainPanelVisible, setLeftMainPanelVisible]);
-
-  const [rightMainPanelSize, setRightMainPanelSize] = usePaneSize(
-    PERSIST_KEYS.rightMainPanel,
-    50
-  );
-
-  const defaultLayout: Layout =
-    typeof rightMainPanelSize === 'number'
-      ? {
-          'left-main': 100 - rightMainPanelSize,
-          'right-main': rightMainPanelSize,
-        }
-      : { 'left-main': 50, 'right-main': 50 };
-
-  const layoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (layoutTimerRef.current) clearTimeout(layoutTimerRef.current);
-    };
-  }, []);
-
-  const onLayoutChange = useCallback(
-    (layout: Layout) => {
-      if (isLeftMainPanelVisible && hasPanels) {
-        if (layoutTimerRef.current) clearTimeout(layoutTimerRef.current);
-        layoutTimerRef.current = setTimeout(() => {
-          setRightMainPanelSize(layout['right-main']);
-        }, 150);
-      }
-    },
-    [isLeftMainPanelVisible, hasPanels, setRightMainPanelSize]
-  );
 
   // ── Mobile layout ──────────────────────────────────────────────────
   // Uses `hidden` CSS class (NOT conditional rendering) to preserve
@@ -388,74 +285,14 @@ export function WorkspacesLayout() {
     );
   }
 
-  const mainContent = (
-    <ReviewProvider workspaceId={selectedWorkspace?.id}>
+  const mainContent = isCreateMode ? (
+    <ReviewProvider workspaceId={undefined}>
       <ChangesViewProvider>
-        <div className="relative flex h-full">
-          <Group
-            orientation="horizontal"
-            className="flex-1 min-w-0 h-full"
-            defaultLayout={defaultLayout}
-            onLayoutChange={onLayoutChange}
-          >
-            {isLeftMainPanelVisible && (
-              <Panel
-                id="left-main"
-                minSize="20%"
-                className="min-w-0 h-full overflow-hidden"
-              >
-                {isCreateMode ? (
-                  <CreateChatBoxContainer
-                    onWorkspaceCreated={handleWorkspaceCreated}
-                  />
-                ) : (
-                  <WorkspacesMainContainer
-                    ref={mainContainerRef}
-                    selectedWorkspace={selectedWorkspace ?? null}
-                    selectedSession={selectedSession}
-                    selectedSessionId={selectedSessionId}
-                    sessions={sessions}
-                    repos={repos}
-                    onSelectSession={selectSession}
-                    isLoading={isLoading}
-                    isSessionsLoading={isSessionsLoading}
-                    isNewSessionMode={isNewSessionMode}
-                    onStartNewSession={startNewSession}
-                  />
-                )}
-              </Panel>
-            )}
-
-            {isLeftMainPanelVisible && hasPanels && !isCreateMode && (
-              <ResizeHandle
-                id="main-separator"
-                orientation="vertical"
-              />
-            )}
-
-            {hasPanels && !isCreateMode && (
-              <Panel
-                id="right-main"
-                minSize="20%"
-                className="min-w-0 h-full overflow-hidden"
-              >
-                <PanelLayout
-                  workspaceId={panelLayoutWorkspaceId}
-                  renderPanel={renderPanel}
-                  renderPanelHeader={renderPanelHeader}
-                />
-              </Panel>
-            )}
-          </Group>
-
-          {!isCreateMode && (
-            <div className="absolute top-2 right-3 z-20">
-              <PanelMenu workspaceId={panelLayoutWorkspaceId} />
-            </div>
-          )}
-        </div>
+        <CreateChatBoxContainer onWorkspaceCreated={handleWorkspaceCreated} />
       </ChangesViewProvider>
     </ReviewProvider>
+  ) : (
+    <SessionGrid />
   );
 
   return (

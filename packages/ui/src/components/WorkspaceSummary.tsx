@@ -34,6 +34,12 @@ export interface WorkspaceSummaryProps {
   linesAdded?: number;
   linesRemoved?: number;
   isActive?: boolean;
+  /**
+   * True for any session currently mounted in the grid (visually shown as
+   * a pill background). The `isActive` flag is the *focused* one, which
+   * additionally gets brighter + semibold.
+   */
+  isOpenInGrid?: boolean;
   isRunning?: boolean;
   isPinned?: boolean;
   hasPendingApproval?: boolean;
@@ -48,6 +54,10 @@ export interface WorkspaceSummaryProps {
   /** Whether this is a draft workspace (shows "Draft" instead of elapsed time) */
   isDraft?: boolean;
   onOpenWorkspaceActions?: (workspaceId: string) => void;
+  /** HTML5 drag affordance — set by callers that wire pills as drag sources. */
+  draggable?: boolean;
+  onDragStart?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragEnd?: (e: React.DragEvent<HTMLDivElement>) => void;
 }
 
 export function WorkspaceSummary({
@@ -57,6 +67,7 @@ export function WorkspaceSummary({
   linesAdded,
   linesRemoved,
   isActive = false,
+  isOpenInGrid = false,
   isRunning = false,
   isPinned = false,
   hasPendingApproval = false,
@@ -70,6 +81,9 @@ export function WorkspaceSummary({
   summary = false,
   isDraft = false,
   onOpenWorkspaceActions,
+  draggable,
+  onDragStart,
+  onDragEnd,
 }: WorkspaceSummaryProps) {
   const { t } = useTranslation('common');
   const hasChanges = filesChanged !== undefined && filesChanged > 0;
@@ -84,9 +98,15 @@ export function WorkspaceSummary({
 
   return (
     <div
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
       className={cn(
         'group relative mx-base rounded-[8px] transition-all duration-100 overflow-hidden',
-        isActive ? 'bg-panel' : '',
+        // Background appears for any session present in the grid;
+        // semibold + brighter tone is reserved for the focused one
+        // (handled below via `isActive`).
+        (isActive || isOpenInGrid) && 'bg-panel',
         className
       )}
     >
@@ -109,22 +129,13 @@ export function WorkspaceSummary({
           {summary && (
             <span className="inline-flex size-icon-xs items-center justify-center shrink-0">
               {isRunning && hasPendingApproval ? (
-                <HandIcon
-                  className="size-icon-xs text-brand"
-                  weight="fill"
-                />
+                <HandIcon className="size-icon-xs text-brand" weight="fill" />
               ) : isRunning ? (
                 <RunningDots sizeClass="size-[3px]" colorClass="bg-low" />
               ) : isFailed ? (
-                <CircleIcon
-                  className="size-icon-xs text-error"
-                  weight="fill"
-                />
+                <CircleIcon className="size-icon-xs text-error" weight="fill" />
               ) : hasUnseenActivity ? (
-                <CircleIcon
-                  className="size-icon-xs text-brand"
-                  weight="fill"
-                />
+                <CircleIcon className="size-icon-xs text-brand" weight="fill" />
               ) : (
                 <CircleIcon
                   className="size-icon-xs text-low opacity-40"

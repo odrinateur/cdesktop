@@ -14,13 +14,13 @@ interface ChangesViewProviderProps {
 }
 
 export function ChangesViewProvider({ children }: ChangesViewProviderProps) {
-  const diffPaths = useDiffPaths();
+  const { workspaceId } = useWorkspaceContext();
+  const diffPaths = useDiffPaths(workspaceId);
   const [selectedFilePath, setSelectedFilePath] = useState<string | null>(null);
   const [selectedLineNumber, setSelectedLineNumber] = useState<number | null>(
     null
   );
   const openPanel = useUiPreferencesStore((s) => s.openPanel);
-  const { workspaceId } = useWorkspaceContext();
 
   const scrollToFileCallbackRef = useRef<ScrollToFileCallback | null>(null);
   const diffPathsRef = useRef(diffPaths);
