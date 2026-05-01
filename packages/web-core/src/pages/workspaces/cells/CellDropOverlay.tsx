@@ -48,35 +48,36 @@ export function CellDropOverlay({ cellId }: { cellId: CellId }) {
   const handleDragOver = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
       if (!draggingWorkspaceId) return;
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
       const rect = e.currentTarget.getBoundingClientRect();
       const xFrac = (e.clientX - rect.left) / rect.width;
       const yFrac = (e.clientY - rect.top) / rect.height;
-      // Whichever fraction is *more extreme* (larger from 0.5) wins.
-      // Right half: x >= 0.5; bottom half: y >= 0.5.
       const right = xFrac - 0.5;
       const bottom = yFrac - 0.5;
-      // Use sign + magnitude. Cursor in the lower-right corner is closer
-      // to whichever boundary it's nearer to.
+      // Top-left quadrant is the "no-op" zone — leave it as a passthrough
+      // (do NOT preventDefault) so a pinned-pill release here triggers
+      // unpin via the source pill's onDragEnd (dropEffect='none').
+      if (right < 0 && bottom < 0) {
+        setHoverHalf(null);
+        usePillDragStore.getState().setOverDropTarget(false);
+        return;
+      }
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
       let half: DropHalf;
       if (Math.abs(right) > Math.abs(bottom)) {
-        half = right > 0 ? 'right' : 'bottom'; // left half also resolves to bottom (treat as no-op zone)
+        half = right > 0 ? 'right' : 'bottom';
       } else {
         half = bottom > 0 ? 'bottom' : 'right';
       }
-      // Only set hover if we're actually in the right or bottom half.
-      if (right < 0 && bottom < 0) {
-        setHoverHalf(null);
-      } else {
-        setHoverHalf(half);
-      }
+      setHoverHalf(half);
+      usePillDragStore.getState().setOverDropTarget(true);
     },
     [draggingWorkspaceId]
   );
 
   const handleDragLeave = useCallback(() => {
     setHoverHalf(null);
+    usePillDragStore.getState().setOverDropTarget(false);
   }, []);
 
   const handleDrop = useCallback(
@@ -88,7 +89,9 @@ export function CellDropOverlay({ cellId }: { cellId: CellId }) {
         '';
       const half = hoverHalf;
       setHoverHalf(null);
-      usePillDragStore.getState().setDragging(null);
+      // NOTE: do not clear draggingWorkspaceId here. The source pill's
+      // onDragEnd does that *after* this handler returns, and it needs
+      // to read draggingIsPinned to decide whether to unpin.
       if (!sessionId || !half) return;
       useSessionGridStore.getState().splitFromPill(sessionId, {
         cellId,

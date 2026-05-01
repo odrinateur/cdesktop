@@ -310,9 +310,11 @@ export function SharedAppLayout() {
             : cn(
                 'grid h-screen',
                 SHOW_CLOUD_APPBAR ? 'grid-cols-[auto_1fr]' : 'grid-cols-1',
+                // Top navbar is hidden (sidebar carries its actions); when
+                // visible, banner gets an auto row above the 1fr content row.
                 showCloudShutdownBanner
-                  ? 'grid-rows-[auto_auto_1fr]'
-                  : 'grid-rows-[auto_1fr]'
+                  ? 'grid-rows-[auto_1fr]'
+                  : 'grid-rows-1'
               )
         )}
       >
@@ -330,11 +332,14 @@ export function SharedAppLayout() {
                 style={isTauriMac() ? { minWidth: 56 } : undefined}
               />
             )}
-            {/* Desktop navbar. */}
+            {/* Desktop navbar — hidden; left/right actions moved into the
+                sidebar. Keep the import so re-enabling is a one-liner. */}
+            {/*
             <NavbarContainer
               onOrgSelect={setSelectedOrgId}
               onOpenDrawer={() => setIsDrawerOpen(true)}
             />
+            */}
             {SHOW_CLOUD_APPBAR && (
               <AppBar
                 projects={orderedProjects}

@@ -26,6 +26,22 @@ import {
 import type { Workspace } from '@/shared/hooks/useWorkspaces';
 import { CommandBarDialog } from '@/shared/dialogs/command-bar/CommandBarDialog';
 import { SettingsDialog } from '@/shared/dialogs/settings/SettingsDialog';
+import { NavbarSidebarSearchSlot } from '@/shared/components/ui-new/containers/NavbarSidebarSearchSlot';
+import { UnpinDragIndicator } from './UnpinDragIndicator';
+import { useActions } from '@/shared/hooks/useActions';
+import { useActionVisibilityContext } from '@/shared/hooks/useActionVisibilityContext';
+import { Actions, NavbarActionGroups } from '@/shared/actions';
+import {
+  type ActionDefinition,
+  type NavbarItem as ActionNavbarItem,
+  isSpecialIcon,
+  getActionIcon,
+  getActionTooltip,
+  isActionActive,
+  isActionEnabled,
+  isActionVisible,
+} from '@/shared/types/actions';
+import { IconButton } from '@vibe/ui/components/IconButton';
 import {
   WorkspacesSidebar,
   type WorkspacesSidebarFolderGroup,
@@ -602,6 +618,29 @@ export function WorkspacesSidebarContainer({
     });
   }, [routeHostId]);
 
+  // Set of currently-pinned ids (used to mark the drag as a pinned drag,
+  // which drives the "release to unpin" affordance).
+  const pinnedIds = useMemo(
+    () => new Set(activeWorkspaces.filter((w) => w.isPinned).map((w) => w.id)),
+    [activeWorkspaces]
+  );
+
+  const queryClient = useQueryClient();
+
+  // Drop on something other than a known target with no successful drop
+  // unpins the workspace. Triggered by onDragEnd below.
+  const handleUnpin = useCallback(
+    async (workspaceId: string) => {
+      try {
+        await workspacesApi.update(workspaceId, { pinned: false });
+        queryClient.invalidateQueries({ queryKey: workspaceSummaryKeys.all });
+      } catch (err) {
+        console.warn('Unpin via drag failed', err);
+      }
+    },
+    [queryClient]
+  );
+
   // Make every pill a drag source. The grid's per-cell drop overlay reads
   // `usePillDragStore` to know what's being dragged; the actual drop
   // (split / open-in-split / pin) is performed by the drop target.
@@ -611,14 +650,30 @@ export function WorkspacesSidebarContainer({
       onDragStart: (e: React.DragEvent<HTMLDivElement>) => {
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('application/x-vibe-pill', workspaceId);
-        usePillDragStore.getState().setDragging(workspaceId);
+        usePillDragStore
+          .getState()
+          .setDragging(workspaceId, pinnedIds.has(workspaceId));
       },
       onDragEnd: () => {
-        usePillDragStore.getState().setDragging(null);
+        const state = usePillDragStore.getState();
+        const wasPinned = state.draggingIsPinned;
+        const droppedInPin = state.droppedInPinSection;
+        state.setDragging(null);
+        // Any release of a pinned pill *outside* the Pinned section
+        // unpins it. Drops on a cell's drop-half still split / open-in-split
+        // and *also* unpin (the pill is now somewhere else, no need to
+        // keep it pinned).
+        if (wasPinned && !droppedInPin) {
+          void handleUnpin(workspaceId);
+        }
       },
     }),
-    [isMobile]
+    [isMobile, pinnedIds, handleUnpin]
   );
+
+  const handlePinAreaHover = useCallback((over: boolean) => {
+    usePillDragStore.getState().setOverDropTarget(over);
+  }, []);
 
   // Sidebar pill state derived from the session-grid:
   // - openInGridWorkspaceIds = every cell's sessionId (gives pill background)
@@ -643,10 +698,12 @@ export function WorkspacesSidebarContainer({
   );
 
   // Drop on the Pinned section pins the workspace. Backend has no pin-order
-  // field today so the drop position is ignored.
-  const queryClient = useQueryClient();
+  // field today so the drop position is ignored. Setting droppedInPinSection
+  // synchronously here prevents the source pill's onDragEnd (which fires
+  // *after* this handler) from interpreting the release as "unpin".
   const handlePinDrop = useCallback(
     async (workspaceId: string) => {
+      usePillDragStore.getState().setDroppedInPinSection(true);
       try {
         await workspacesApi.update(workspaceId, { pinned: true });
         queryClient.invalidateQueries({ queryKey: workspaceSummaryKeys.all });
@@ -657,7 +714,62 @@ export function WorkspacesSidebarContainer({
     [queryClient]
   );
 
+  // Action items lifted from the now-hidden top navbar.
+  // Top of sidebar: full left group (sidebar toggle).
+  // Bottom of sidebar: only command bar + settings from the right group.
+  const actionCtx = useActionVisibilityContext();
+  const { executeAction } = useActions();
+  const handleExecuteAction = useCallback(
+    (action: ActionDefinition) => {
+      executeAction(action);
+    },
+    [executeAction]
+  );
+
+  const topActionItems: ActionNavbarItem[] = useMemo(
+    () => [...NavbarActionGroups.left],
+    []
+  );
+  const bottomActionItems: ActionNavbarItem[] = useMemo(
+    () => [Actions.OpenCommandBar, Actions.Settings],
+    []
+  );
+
+  const renderActionItems = useCallback(
+    (items: ActionNavbarItem[]) =>
+      items
+        .filter(
+          (item): item is ActionDefinition =>
+            !('type' in item) &&
+            isActionVisible(item, actionCtx) &&
+            !isSpecialIcon(getActionIcon(item, actionCtx))
+        )
+        .map((action) => {
+          const icon = getActionIcon(action, actionCtx);
+          if (isSpecialIcon(icon)) return null;
+          const tooltip = getActionTooltip(action, actionCtx);
+          const enabled = isActionEnabled(action, actionCtx);
+          const active = isActionActive(action, actionCtx);
+          return (
+            <IconButton
+              key={action.id}
+              icon={icon}
+              onClick={() => handleExecuteAction(action)}
+              disabled={!enabled}
+              aria-label={tooltip}
+              title={tooltip}
+              className={active ? 'text-normal' : ''}
+            />
+          );
+        }),
+    [actionCtx, handleExecuteAction]
+  );
+
+  const topActions = renderActionItems(topActionItems);
+  const bottomActions = renderActionItems(bottomActionItems);
+
   return (
+    <>
     <WorkspacesSidebar
       workspaces={paginatedActiveWorkspaces}
       totalWorkspacesCount={activeWorkspaces.length}
@@ -687,7 +799,17 @@ export function WorkspacesSidebarContainer({
       onToggleTheme={handleToggleTheme}
       getWorkspaceDragProps={getWorkspaceDragProps}
       onPinDrop={handlePinDrop}
+      onPinAreaHover={handlePinAreaHover}
       openInGridWorkspaceIds={openInGridWorkspaceIds}
+      topActions={
+        <>
+          {topActions}
+          <NavbarSidebarSearchSlot />
+        </>
+      }
+      bottomActions={bottomActions.length > 0 ? <>{bottomActions}</> : undefined}
     />
+    <UnpinDragIndicator />
+    </>
   );
 }
