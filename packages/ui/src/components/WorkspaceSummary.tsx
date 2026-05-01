@@ -144,7 +144,14 @@ export function WorkspaceSummary({
               )}
             </span>
           )}
-          <span className={cn('min-w-0 flex-1', isActive && 'font-semibold')}>
+          <span
+            className={cn(
+              'min-w-0 flex-1',
+              isActive
+                ? 'font-semibold'
+                : 'font-light text-[#373734] dark:text-[#c3c2b8]'
+            )}
+          >
             {name}
           </span>
           {/* {summary && isPinned && (

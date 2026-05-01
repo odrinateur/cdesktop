@@ -17,7 +17,6 @@ import { useShape } from '@/shared/integrations/electric/hooks';
 import { PROJECT_ISSUES_SHAPE } from 'shared/remote-types';
 import { RemoteIssueLink } from './RemoteIssueLink';
 import { NavbarSidebarSearchSlot } from './NavbarSidebarSearchSlot';
-import { NavbarBreadcrumbSlot } from './NavbarBreadcrumbSlot';
 import { AppBarUserPopoverContainer } from './AppBarUserPopoverContainer';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
 import { NavbarActionGroups } from '@/shared/actions';
@@ -338,7 +337,6 @@ export function NavbarContainer({
       leftSlot={
         <>
           <NavbarSidebarSearchSlot />
-          <NavbarBreadcrumbSlot />
           {!breadcrumbs &&
           !isWaitingForBreadcrumbData &&
           linkedRemoteWorkspace?.issue_id ? (

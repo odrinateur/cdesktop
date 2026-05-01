@@ -271,7 +271,7 @@ function FolderGroup({
         />
       </button>
       {expanded && (
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-[2px]">
           <WorkspaceList
             workspaces={group.sessions}
             selectedWorkspaceId={selectedWorkspaceId}
@@ -349,14 +349,16 @@ function PinnedSection({
         </span>
       </div>
       {pinnedWorkspaces.length > 0 ? (
-        <WorkspaceList
-          workspaces={pinnedWorkspaces}
-          selectedWorkspaceId={selectedWorkspaceId}
-          onSelectWorkspace={onSelectWorkspace}
-          onOpenWorkspaceActions={onOpenWorkspaceActions}
-          getWorkspaceDragProps={getWorkspaceDragProps}
-          openInGridWorkspaceIds={openInGridWorkspaceIds}
-        />
+        <div className="flex flex-col gap-[2px]">
+          <WorkspaceList
+            workspaces={pinnedWorkspaces}
+            selectedWorkspaceId={selectedWorkspaceId}
+            onSelectWorkspace={onSelectWorkspace}
+            onOpenWorkspaceActions={onOpenWorkspaceActions}
+            getWorkspaceDragProps={getWorkspaceDragProps}
+            openInGridWorkspaceIds={openInGridWorkspaceIds}
+          />
+        </div>
       ) : (
         <p className="px-double py-half text-sm text-low opacity-60">
           {t('sidebar.pinned.emptyHint', {

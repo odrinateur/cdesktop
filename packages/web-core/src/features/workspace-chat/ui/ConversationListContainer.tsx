@@ -773,7 +773,7 @@ export const ConversationList = forwardRef<
         )}
         <div
           ref={tanstackScrollRef}
-          className="h-full overflow-y-auto scrollbar-none"
+          className="h-full overflow-y-auto scrollbar-none pt-12"
           style={{ overflowAnchor: 'none', contain: 'strict' }}
           onClickCapture={handleConversationClickCapture}
         >

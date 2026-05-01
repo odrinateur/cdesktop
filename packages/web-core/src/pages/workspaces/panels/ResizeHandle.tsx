@@ -7,13 +7,30 @@ type Props = {
   id: string;
   orientation: Orientation;
   className?: string;
+  /**
+   * Render a permanent 1px bar in #262625 instead of the transparent gutter.
+   * Used for the dividers between session cells.
+   */
+  solid?: boolean;
 };
 
 // Transparent gutter; reveals a thin bar on hover/drag. Used between columns,
 // inside columns (between stacked panels), and on the left edge of the panel
 // region. The hit area is wider than the visible bar so it's easy to grab.
-export function ResizeHandle({ id, orientation, className }: Props) {
+export function ResizeHandle({ id, orientation, className, solid }: Props) {
   const isVertical = orientation === 'vertical';
+  if (solid) {
+    return (
+      <Separator
+        id={id}
+        className={cn(
+          'shrink-0 bg-[#e2e2e1] dark:bg-[#262625]',
+          isVertical ? 'w-px cursor-col-resize' : 'h-px cursor-row-resize',
+          className
+        )}
+      />
+    );
+  }
   return (
     <Separator
       id={id}
