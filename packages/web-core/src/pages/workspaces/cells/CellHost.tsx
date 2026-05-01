@@ -16,6 +16,7 @@ import {
   useWorkspacePanelState,
   type PanelId,
 } from '@/shared/stores/useUiPreferencesStore';
+import { NavbarBreadcrumbSlot } from '@/shared/components/ui-new/containers/NavbarBreadcrumbSlot';
 import { ChangesPanelContainer } from '../ChangesPanelContainer';
 import { GitPanelContainer } from '../GitPanelContainer';
 import { LogsContentContainer } from '../LogsContentContainer';
@@ -247,7 +248,7 @@ function CellHostInner({
       onMouseDownCapture={handleMouseDownCapture}
       className={cn(
         'relative flex h-full transition-opacity',
-        !isFocused && 'opacity-60'
+        !isFocused && 'opacity-85'
       )}
     >
       <Group
@@ -260,7 +261,7 @@ function CellHostInner({
           <Panel
             id="left-main"
             minSize="20%"
-            className="min-w-0 h-full overflow-hidden"
+            className="relative min-w-0 h-full overflow-hidden"
           >
             <WorkspacesMainContainer
               ref={mainContainerRef}
@@ -275,6 +276,13 @@ function CellHostInner({
               isNewSessionMode={isNewSessionMode}
               onStartNewSession={startNewSession}
             />
+            {/* Breadcrumb — overlay only on the chat panel so it does not
+                cover preview/git/etc. on the right. Right padding leaves
+                room for the cell-level toolbar (close + panel-menu) when
+                the chat panel is full-width (no right panels open). */}
+            <div className="absolute top-2 left-3 right-[80px] z-20 overflow-hidden">
+              <NavbarBreadcrumbSlot />
+            </div>
           </Panel>
         )}
 

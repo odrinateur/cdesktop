@@ -111,6 +111,7 @@ function PrimaryGroupSlot({
           orientation={
             primaryOrientation === 'vertical' ? 'vertical' : 'horizontal'
           }
+          solid
         />
       )}
     </>
@@ -220,6 +221,7 @@ function GroupBody({
         orientation={
           innerOrientation === 'horizontal' ? 'vertical' : 'horizontal'
         }
+        solid
       />
       <Panel
         id="cell-1"

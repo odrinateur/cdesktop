@@ -63,11 +63,13 @@ export function WorkspacesMain({
             </div>
           )}
           {conversationContent}
-          {/* Top fade — mirrors the bottom gradient above the chatbox. */}
+          {/* Top fade — solid behind the breadcrumb row (top ~44px), then
+              fades to transparent below it so the transcript doesn't visually
+              overlap the breadcrumb. */}
           {!isAtTop && (
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-[#fdfdfc] to-transparent dark:from-[#0a0a0a]"
+              className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#fdfdfc] from-[31px] to-transparent dark:from-[#0a0a0a]"
             />
           )}
         </>
@@ -99,7 +101,7 @@ export function WorkspacesMain({
             className="pointer-events-none absolute inset-x-0 bottom-full h-12 bg-gradient-to-t from-[#fdfdfc] to-transparent dark:from-[#0a0a0a]"
           />
         )}
-        <div className="w-chat max-w-full px-double">{chatBoxContent}</div>
+        <div className="w-chat max-w-full px-[45px]">{chatBoxContent}</div>
       </div>
       {/* Context Bar - floating toolbar */}
       {workspaceWithSession ? contextBarContent : null}
