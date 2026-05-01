@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   PlusIcon,
   ArrowLeftIcon,
@@ -138,11 +138,21 @@ export interface WorkspacesSidebarProps {
    */
   onPinDrop?: (workspaceId: string) => void;
   /**
+   * Fired during a pill drag whenever the cursor enters / leaves the
+   * Pinned section. Lets the consumer drive a "release to unpin"
+   * indicator while a pinned pill is being dragged outside the section.
+   */
+  onPinAreaHover?: (over: boolean) => void;
+  /**
    * Set of workspace ids currently open in any cell of the session grid.
    * Each pill in this set gets a background; the *focused* one (matched by
    * `selectedWorkspaceId`) additionally gets brighter + semibold.
    */
   openInGridWorkspaceIds?: Set<string>;
+  /** Action row rendered at the top of the sidebar (above the new-session row). */
+  topActions?: ReactNode;
+  /** Action buttons rendered in the footer next to the archive toggle. */
+  bottomActions?: ReactNode;
 }
 
 export interface WorkspacesSidebarReopenTagProps {
@@ -307,6 +317,7 @@ function PinnedSection({
   onOpenWorkspaceActions,
   getWorkspaceDragProps,
   onPinDrop,
+  onPinAreaHover,
   openInGridWorkspaceIds,
 }: {
   pinnedWorkspaces: WorkspacesSidebarWorkspace[];
@@ -315,6 +326,7 @@ function PinnedSection({
   onOpenWorkspaceActions: (workspaceId: string) => void;
   getWorkspaceDragProps?: WorkspacesSidebarProps['getWorkspaceDragProps'];
   onPinDrop?: WorkspacesSidebarProps['onPinDrop'];
+  onPinAreaHover?: WorkspacesSidebarProps['onPinAreaHover'];
   openInGridWorkspaceIds?: ReadonlySet<string>;
 }) {
   const { t } = useTranslation('common');
@@ -322,14 +334,19 @@ function PinnedSection({
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     if (!onPinDrop) return;
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
+    e.dataTransfer.dropEffect = 'move';
     setIsDragOver(true);
+    onPinAreaHover?.(true);
   };
-  const handleDragLeave = () => setIsDragOver(false);
+  const handleDragLeave = () => {
+    setIsDragOver(false);
+    onPinAreaHover?.(false);
+  };
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     if (!onPinDrop) return;
     e.preventDefault();
     setIsDragOver(false);
+    onPinAreaHover?.(false);
     const id = e.dataTransfer.getData('application/x-vibe-pill');
     if (id) onPinDrop(id);
   };
@@ -399,7 +416,10 @@ export function WorkspacesSidebar({
   onToggleTheme,
   getWorkspaceDragProps,
   onPinDrop,
+  onPinAreaHover,
   openInGridWorkspaceIds,
+  topActions,
+  bottomActions,
 }: WorkspacesSidebarProps) {
   const { t } = useTranslation(['tasks', 'common']);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -475,6 +495,11 @@ export function WorkspacesSidebar({
 
   return (
     <div className="w-full h-full bg-[#fdfdfc] dark:bg-secondary flex flex-col rounded-2xl border border-[#d4d4d4] dark:border-[#1e1e1e] overflow-hidden pt-base">
+      {topActions && (
+        <div className="px-double pb-half flex items-center gap-base">
+          {topActions}
+        </div>
+      )}
       {/* Legacy header title row — only rendered when a mode-toggle is available */}
       {headerActions.length > 0 && (
         <CollapsibleSectionHeader
@@ -722,6 +747,7 @@ export function WorkspacesSidebar({
               onOpenWorkspaceActions={handleOpenWorkspaceActions}
               getWorkspaceDragProps={getWorkspaceDragProps}
               onPinDrop={onPinDrop}
+              onPinAreaHover={onPinAreaHover}
               openInGridWorkspaceIds={openInGridWorkspaceIds}
             />
             {folderGroups.map((group) => (
@@ -739,35 +765,39 @@ export function WorkspacesSidebar({
         )}
       </div>
 
-      {/* Footer: archive toggle + theme toggle */}
+      {/* Footer: archive toggle (icon only) + bottom actions + theme toggle */}
       <div className="p-double flex items-center gap-base">
         <button
           onClick={() => onShowArchiveChange?.(!showArchive)}
-          className="flex-1 flex items-center gap-base text-sm text-low hover:text-normal transition-colors duration-100"
+          aria-label={
+            showArchive
+              ? t('common:workspaces.backToActive')
+              : t('common:workspaces.viewArchive')
+          }
+          title={
+            showArchive
+              ? t('common:workspaces.backToActive')
+              : t('common:workspaces.viewArchive')
+          }
+          className="inline-flex h-7 w-7 items-center justify-center rounded text-low hover:text-normal hover:bg-tertiary/60 transition-colors"
         >
           {showArchive ? (
-            <>
-              <ArrowLeftIcon className="size-icon-xs" />
-              <span>{t('common:workspaces.backToActive')}</span>
-            </>
+            <ArrowLeftIcon className="size-icon-xs" />
           ) : (
-            <>
-              <ArchiveIcon className="size-icon-xs" />
-              <span>{t('common:workspaces.viewArchive')}</span>
-              <span className="ml-auto text-xs bg-tertiary px-1.5 py-0.5 rounded">
-                {archivedWorkspaces.length}
-              </span>
-            </>
+            <ArchiveIcon className="size-icon-xs" />
           )}
         </button>
-        {onToggleTheme && (
-          <IconButton
-            icon={resolvedTheme === 'dark' ? SunIcon : MoonIcon}
-            onClick={onToggleTheme}
-            aria-label={themeAriaLabel}
-            title={themeAriaLabel}
-          />
-        )}
+        {bottomActions}
+        <div className="ml-auto flex items-center gap-base">
+          {onToggleTheme && (
+            <IconButton
+              icon={resolvedTheme === 'dark' ? SunIcon : MoonIcon}
+              onClick={onToggleTheme}
+              aria-label={themeAriaLabel}
+              title={themeAriaLabel}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

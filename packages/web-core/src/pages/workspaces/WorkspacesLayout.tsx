@@ -303,7 +303,7 @@ export function WorkspacesLayout() {
       )}
     >
       {isLeftSidebarVisible && !isMobile && (
-        <div className="fixed top-14 left-0 bottom-0 w-[300px] z-40 pb-3 pl-3 pr-2">
+        <div className="fixed top-0 left-0 bottom-0 w-[300px] z-40 pt-2 pb-3 pl-3 pr-2">
           <WorkspacesSidebarContainer onScrollToBottom={handleScrollToBottom} />
         </div>
       )}
