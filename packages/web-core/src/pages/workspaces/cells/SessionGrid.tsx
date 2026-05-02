@@ -37,27 +37,30 @@ export function SessionGrid() {
     );
   }
 
-  const totalCells = grid.groups.flatMap((g) => g.cells).length;
-
-  // Single-cell fast path — no outer Group needed.
-  if (totalCells === 1) {
-    return <CellWrapper cell={grid.groups[0].cells[0]} isFirstCell />;
-  }
-
-  // primaryOrientation 'vertical' = vertical split line between left/right
-  // groups (so children are arranged horizontally).
+  // Always render the outer <Group> + <Panel> shape, even with one group, so
+  // that the surviving cell stays mounted across 1↔2 group transitions
+  // (close-the-other-group, split-from-1-group). React preserves a Panel by
+  // its position+key; a JSX shape change (bare CellWrapper ↔ Group) would
+  // tear it down. Top-insert / cell-reordering still remounts because cells
+  // physically swap Panels there.
   const outerOrientation =
     grid.primaryOrientation === 'vertical' ? 'horizontal' : 'vertical';
 
+  const groupCount = grid.groups.length;
+
   const onPrimaryLayoutChange = (layout: Layout) => {
+    if (groupCount < 2) return;
     const ratio = (layout['group-0'] ?? 50) / 100;
     useSessionGridStore.getState().setPrimarySplitRatio(ratio);
   };
 
-  const primaryDefault: Layout = {
-    'group-0': grid.splitRatio * 100,
-    'group-1': (1 - grid.splitRatio) * 100,
-  };
+  const primaryDefault: Layout =
+    groupCount === 2
+      ? {
+          'group-0': grid.splitRatio * 100,
+          'group-1': (1 - grid.splitRatio) * 100,
+        }
+      : { 'group-0': 100 };
 
   return (
     <Group
@@ -139,26 +142,34 @@ function GroupBody({
   const closeCell = useSessionGridStore((s) => s.closeCell);
   const setGroupSplitRatio = useSessionGridStore((s) => s.setGroupSplitRatio);
 
-  // Hooks below run regardless of cell count — keep them above the
-  // 1-cell early return so the hook order stays stable when a group
-  // transitions 1↔2 cells (otherwise React throws "rendered more hooks
-  // than expected"). When the group has 1 cell the values are unused.
   const isFull2x2 = otherGroupCellCount === 2;
   const effectiveRatio = isFull2x2 ? otherGroupRatio : group.splitRatio;
   const groupRef = useRef<GroupImperativeHandle>(null);
 
   // Imperative ratio mirror: when the *other* group's ratio changes (in
   // 2x2), push the layout into our Group so the visible split tracks.
+  // Guarded on `group.cells.length === 2` because the inner <Group> is only
+  // rendered in that branch — without this, the effect can fire after a
+  // close-then-reopen sequence where react-resizable-panels has briefly torn
+  // down the group from its mountedGroups map and setLayout would throw
+  // "Could not find Group with id …".
+  const ourGroupHasInner = group.cells.length === 2;
   useEffect(() => {
-    if (!isFull2x2) return;
-    groupRef.current?.setLayout({
-      'cell-0': effectiveRatio * 100,
-      'cell-1': (1 - effectiveRatio) * 100,
-    });
-  }, [effectiveRatio, isFull2x2]);
+    if (!isFull2x2 || !ourGroupHasInner) return;
+    try {
+      groupRef.current?.setLayout({
+        'cell-0': effectiveRatio * 100,
+        'cell-1': (1 - effectiveRatio) * 100,
+      });
+    } catch {
+      // Group was torn down between ref capture and effect run; the next
+      // commit will re-establish the layout via defaultLayout.
+    }
+  }, [effectiveRatio, isFull2x2, ourGroupHasInner]);
 
   const onInnerLayoutChange = useCallback(
     (layout: Layout) => {
+      if (group.cells.length < 2) return;
       const ratio = (layout['cell-0'] ?? 50) / 100;
       setGroupSplitRatio(groupIndex, ratio);
       // 2x2 synchronization: write into the *other* group too so all four
@@ -167,31 +178,26 @@ function GroupBody({
         setGroupSplitRatio(1 - groupIndex, ratio);
       }
     },
-    [groupIndex, isFull2x2, setGroupSplitRatio]
+    [group.cells.length, groupIndex, isFull2x2, setGroupSplitRatio]
   );
 
-  // Single cell in this group — no inner Group needed.
-  if (group.cells.length === 1) {
-    const cell = group.cells[0];
-    return (
-      <CellWrapper
-        cell={cell}
-        isFirstCell={groupIndex === 0}
-        isFocused={focusedCellId === cell.id}
-        onFocus={() => focusCell(cell.id)}
-        onClose={groupIndex === 0 ? undefined : () => closeCell(cell.id)}
-      />
-    );
-  }
-
-  // Two cells in this group → orthogonal inner Group.
+  // Always render the inner <Group> + <Panel id="cell-0"> shape, even with
+  // one cell, so the cell-0 Panel and its CellHost survive 1↔2 cell
+  // transitions (bottom-insert, sibling-close). The library accepts a
+  // single-Panel Group; ResizeHandle and cell-1 only render at 2 cells.
   const innerOrientation =
     primaryOrientation === 'vertical' ? 'vertical' : 'horizontal';
 
-  const innerDefault: Layout = {
-    'cell-0': effectiveRatio * 100,
-    'cell-1': (1 - effectiveRatio) * 100,
-  };
+  const isAnchor = (cellIndex: number) =>
+    groupIndex === 0 && cellIndex === 0;
+
+  const innerDefault: Layout =
+    group.cells.length === 2
+      ? {
+          'cell-0': effectiveRatio * 100,
+          'cell-1': (1 - effectiveRatio) * 100,
+        }
+      : { 'cell-0': 100 };
 
   return (
     <Group
@@ -208,34 +214,38 @@ function GroupBody({
       >
         <CellWrapper
           cell={group.cells[0]}
-          isFirstCell={groupIndex === 0}
+          isFirstCell={isAnchor(0)}
           isFocused={focusedCellId === group.cells[0].id}
           onFocus={() => focusCell(group.cells[0].id)}
           onClose={
-            groupIndex === 0 ? undefined : () => closeCell(group.cells[0].id)
+            isAnchor(0) ? undefined : () => closeCell(group.cells[0].id)
           }
         />
       </Panel>
-      <ResizeHandle
-        id={`secondary-${groupIndex}`}
-        orientation={
-          innerOrientation === 'horizontal' ? 'vertical' : 'horizontal'
-        }
-        solid
-      />
-      <Panel
-        id="cell-1"
-        minSize="20%"
-        className="min-w-0 min-h-0 overflow-hidden"
-      >
-        <CellWrapper
-          cell={group.cells[1]}
-          isFirstCell={false}
-          isFocused={focusedCellId === group.cells[1].id}
-          onFocus={() => focusCell(group.cells[1].id)}
-          onClose={() => closeCell(group.cells[1].id)}
-        />
-      </Panel>
+      {group.cells.length === 2 && (
+        <>
+          <ResizeHandle
+            id={`secondary-${groupIndex}`}
+            orientation={
+              innerOrientation === 'horizontal' ? 'vertical' : 'horizontal'
+            }
+            solid
+          />
+          <Panel
+            id="cell-1"
+            minSize="20%"
+            className="min-w-0 min-h-0 overflow-hidden"
+          >
+            <CellWrapper
+              cell={group.cells[1]}
+              isFirstCell={false}
+              isFocused={focusedCellId === group.cells[1].id}
+              onFocus={() => focusCell(group.cells[1].id)}
+              onClose={() => closeCell(group.cells[1].id)}
+            />
+          </Panel>
+        </>
+      )}
     </Group>
   );
 }

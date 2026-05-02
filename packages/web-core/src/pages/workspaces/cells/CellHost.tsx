@@ -216,13 +216,21 @@ function CellHostInner({
     };
   }, []);
 
+  // defaultLayout MUST match the set of Panels that actually render below;
+  // react-resizable-panels throws "Invalid N panel layout" when entries don't
+  // match registered Panels. The recovery effect above flips chat back on
+  // when both sides would be empty, but that runs *after* the first render —
+  // so we also short-circuit the Group when there's nothing to put in it.
+  const rightSize =
+    typeof rightMainPanelSize === 'number' ? rightMainPanelSize : 50;
   const defaultLayout: Layout =
-    typeof rightMainPanelSize === 'number'
-      ? {
-          'left-main': 100 - rightMainPanelSize,
-          'right-main': rightMainPanelSize,
-        }
-      : { 'left-main': 50, 'right-main': 50 };
+    isLeftMainPanelVisible && hasPanels
+      ? { 'left-main': 100 - rightSize, 'right-main': rightSize }
+      : isLeftMainPanelVisible
+        ? { 'left-main': 100 }
+        : hasPanels
+          ? { 'right-main': 100 }
+          : {};
 
   const onLayoutChange = useCallback(
     (layout: Layout) => {
@@ -242,6 +250,20 @@ function CellHostInner({
   const handleMouseDownCapture = useCallback(() => {
     if (!isFocused) onFocus();
   }, [isFocused, onFocus]);
+
+  // Nothing to render this paint — the recovery effect will flip
+  // isLeftMainPanelVisible back to true on the next tick.
+  if (!isLeftMainPanelVisible && !hasPanels) {
+    return (
+      <div
+        onMouseDownCapture={handleMouseDownCapture}
+        className={cn(
+          'relative flex h-full transition-opacity',
+          !isFocused && 'opacity-85'
+        )}
+      />
+    );
+  }
 
   return (
     <div
