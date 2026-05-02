@@ -38,7 +38,7 @@ export type SessionGrid = {
   focusedCellId: CellId;
 };
 
-export type DropHalf = 'right' | 'bottom';
+export type DropHalf = 'right' | 'bottom' | 'top' | 'left' | 'full';
 
 export type DropTarget = {
   cellId: CellId;
@@ -164,11 +164,18 @@ function reduceSplitFromPill(
   const loc = findCell(grid, target.cellId);
   if (!loc) return grid;
 
+  // 'full' → unconditional replace. The overlay offers this when the target
+  // cell is in a full (2-cell) group.
+  if (target.half === 'full') {
+    return reduceReplaceCell(grid, target.cellId, sessionId);
+  }
+
   const totalCells = getAllCells(grid).length;
 
   // First split: orientation is decided here. 'right' → vertical (columns),
-  // 'bottom' → horizontal (rows).
+  // 'bottom' → horizontal (rows). Other halves are not offered in this state.
   if (totalCells === 1) {
+    if (target.half !== 'right' && target.half !== 'bottom') return grid;
     const orientation: PrimaryOrientation =
       target.half === 'right' ? 'vertical' : 'horizontal';
     const newCell = makeCell(sessionId);
@@ -180,40 +187,79 @@ function reduceSplitFromPill(
     };
   }
 
-  // After the first split, 'right' and 'bottom' map to "across primary axis"
-  // vs "within group" depending on orientation.
-  const isPrimaryAxisDrop =
-    (grid.primaryOrientation === 'vertical' && target.half === 'right') ||
-    (grid.primaryOrientation === 'horizontal' && target.half === 'bottom');
-
+  // After the first split, the secondary axis (within group) is perpendicular
+  // to primary. 'top'/'bottom' insert before/after for vertical primary;
+  // 'left'/'right' insert before/after for horizontal primary.
+  const targetGroup = grid.groups[loc.groupIndex];
   const newCell = makeCell(sessionId);
 
-  if (isPrimaryAxisDrop) {
-    // Want a new group across the primary axis.
-    if (grid.groups.length < 2) {
-      return {
-        ...grid,
-        groups: [...grid.groups, makeGroup([newCell])],
-        focusedCellId: newCell.id,
-      };
-    }
-    // Already maxed → "Open in split": replace the target cell.
+  if (targetGroup.cells.length >= 2) {
+    // Defensive — overlay should offer 'full' instead of stack halves here.
     return reduceReplaceCell(grid, target.cellId, sessionId);
   }
 
-  // Stack within the target's group.
-  const targetGroup = grid.groups[loc.groupIndex];
-  if (targetGroup.cells.length < 2) {
-    const newGroup: SessionGroup = {
-      ...targetGroup,
-      cells: [...targetGroup.cells, newCell],
-    };
-    const newGroups = grid.groups.slice();
-    newGroups[loc.groupIndex] = newGroup;
-    return { ...grid, groups: newGroups, focusedCellId: newCell.id };
+  let insertAt: number | null = null;
+  if (grid.primaryOrientation === 'vertical') {
+    if (target.half === 'top') insertAt = 0;
+    else if (target.half === 'bottom') insertAt = targetGroup.cells.length;
+    else if (target.half === 'right') {
+      // Defensive cross-axis path (overlay doesn't currently offer this in
+      // multi-cell state). Add a new group when there's room; else replace.
+      if (grid.groups.length < 2) {
+        return {
+          ...grid,
+          groups: [...grid.groups, makeGroup([newCell])],
+          focusedCellId: newCell.id,
+        };
+      }
+      return reduceReplaceCell(grid, target.cellId, sessionId);
+    }
+  } else {
+    if (target.half === 'left') insertAt = 0;
+    else if (target.half === 'right') insertAt = targetGroup.cells.length;
+    else if (target.half === 'bottom') {
+      if (grid.groups.length < 2) {
+        return {
+          ...grid,
+          groups: [...grid.groups, makeGroup([newCell])],
+          focusedCellId: newCell.id,
+        };
+      }
+      return reduceReplaceCell(grid, target.cellId, sessionId);
+    }
   }
-  // Group is full → "Open in split": replace the target cell.
-  return reduceReplaceCell(grid, target.cellId, sessionId);
+
+  if (insertAt === null) return grid;
+
+  const cells = targetGroup.cells.slice();
+  cells.splice(insertAt, 0, newCell);
+  const newGroups = grid.groups.slice();
+  newGroups[loc.groupIndex] = { ...targetGroup, cells };
+  return { ...grid, groups: newGroups, focusedCellId: newCell.id };
+}
+
+/**
+ * Compute the drop halves a cell should expose to the overlay. The rules:
+ *   - Cell in a full (2-cell) group → ['full'] (replace only).
+ *   - Initial single-cell grid → ['right', 'bottom'] (orientation picker).
+ *   - Cell in a 1-cell group with another group present → sandwich along the
+ *     secondary axis. The anchor cell (groups[0].cells[0]) only exposes the
+ *     "after" half so the dragged session can never displace it.
+ */
+function getValidDropHalves(grid: SessionGrid, cellId: CellId): DropHalf[] {
+  const loc = findCell(grid, cellId);
+  if (!loc) return [];
+  const group = grid.groups[loc.groupIndex];
+  if (group.cells.length === 2) return ['full'];
+
+  const totalCells = getAllCells(grid).length;
+  if (totalCells === 1) return ['right', 'bottom'];
+
+  const isAnchor = isFirstCell(grid, cellId);
+  if (grid.primaryOrientation === 'vertical') {
+    return isAnchor ? ['bottom'] : ['top', 'bottom'];
+  }
+  return isAnchor ? ['right'] : ['left', 'right'];
 }
 
 function reduceReplaceCell(
@@ -300,6 +346,35 @@ function rewriteFirstCellSession(
   };
 }
 
+/**
+ * Collapse the abnormal "1 group with 2 cells" state into the equivalent
+ * "2 groups with 1 cell each" state, flipping `primaryOrientation` so the
+ * pixel layout is preserved. Without this, dropping on a 2-cell group's cell
+ * is forced to "Open here" replace because `getValidDropHalves` reports
+ * `['full']` for any cell in a full group — leaving the user unable to
+ * grow the layout to a 3-cell shape from a single column / single row.
+ *
+ * Reachable today via close-then-collapse (e.g. start with [A]|[B], stack
+ * C below A → [A,C]|[B], then close B → [A,C] in a single group).
+ */
+function normalizeGrid(grid: SessionGrid): SessionGrid {
+  if (grid.groups.length !== 1 || grid.groups[0].cells.length !== 2) {
+    return grid;
+  }
+  const onlyGroup = grid.groups[0];
+  const [c0, c1] = onlyGroup.cells;
+  return {
+    ...grid,
+    primaryOrientation:
+      grid.primaryOrientation === 'vertical' ? 'horizontal' : 'vertical',
+    groups: [
+      { cells: [c0], splitRatio: DEFAULT_RATIO },
+      { cells: [c1], splitRatio: DEFAULT_RATIO },
+    ],
+    splitRatio: onlyGroup.splitRatio,
+  };
+}
+
 function reduceRemoveSession(
   grid: SessionGrid,
   sessionId: SessionId
@@ -363,13 +438,17 @@ export const useSessionGridStore = create<SessionGridState>()(
       grid: emptyGrid(''),
 
       setFirstCellSession: (sessionId) =>
-        set((s) => ({ grid: reduceSetFirstCellSession(s.grid, sessionId) })),
+        set((s) => ({
+          grid: normalizeGrid(reduceSetFirstCellSession(s.grid, sessionId)),
+        })),
 
       splitFromPill: (sessionId, target) =>
-        set((s) => ({ grid: reduceSplitFromPill(s.grid, sessionId, target) })),
+        set((s) => ({
+          grid: normalizeGrid(reduceSplitFromPill(s.grid, sessionId, target)),
+        })),
 
       closeCell: (cellId) =>
-        set((s) => ({ grid: reduceCloseCell(s.grid, cellId) })),
+        set((s) => ({ grid: normalizeGrid(reduceCloseCell(s.grid, cellId)) })),
 
       focusCell: (cellId) =>
         set((s) => {
@@ -393,7 +472,9 @@ export const useSessionGridStore = create<SessionGridState>()(
         }),
 
       removeSession: (sessionId) =>
-        set((s) => ({ grid: reduceRemoveSession(s.grid, sessionId) })),
+        set((s) => ({
+          grid: normalizeGrid(reduceRemoveSession(s.grid, sessionId)),
+        })),
     }),
     {
       name: 'vk-session-grid',
@@ -408,12 +489,12 @@ export const useSessionGridStore = create<SessionGridState>()(
         // Repair: ensure focusedCellId points to a real cell.
         const allCells = grid.groups.flatMap((g) => g.cells);
         const focusValid = allCells.some((c) => c.id === grid.focusedCellId);
-        return {
-          ...currentState,
-          grid: focusValid
-            ? grid
-            : { ...grid, focusedCellId: allCells[0]?.id ?? '' },
-        };
+        const repaired = focusValid
+          ? grid
+          : { ...grid, focusedCellId: allCells[0]?.id ?? '' };
+        // Self-heal any persisted "1 group, 2 cells" abnormal state so users
+        // returning from an older build land in the normalized shape.
+        return { ...currentState, grid: normalizeGrid(repaired) };
       },
     }
   )
@@ -446,6 +527,8 @@ export const useSessionInGrid = (sessionId: SessionId): boolean =>
 export const useFirstCellSessionId = (): SessionId =>
   useSessionGridStore((s) => s.grid.groups[0]?.cells[0]?.sessionId ?? '');
 
+export { getValidDropHalves };
+
 // Re-export pure reducers for unit testing.
 export const __testing = {
   emptyGrid,
@@ -453,7 +536,9 @@ export const __testing = {
   reduceSplitFromPill,
   reduceCloseCell,
   reduceRemoveSession,
+  normalizeGrid,
   findCell,
   findCellBySessionId,
   getAllCells,
+  getValidDropHalves,
 };

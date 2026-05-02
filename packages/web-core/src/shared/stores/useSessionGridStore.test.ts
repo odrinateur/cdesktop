@@ -7,7 +7,9 @@ const {
   reduceSplitFromPill,
   reduceCloseCell,
   reduceRemoveSession,
+  normalizeGrid,
   getAllCells,
+  getValidDropHalves,
 } = __testing;
 
 describe('reduceSetFirstCellSession', () => {
@@ -110,6 +112,43 @@ describe('reduceSplitFromPill', () => {
     expect(next.groups[1].cells[0].sessionId).toBe('E');
   });
 
+  it('half=top inserts the new cell before the target in its group', () => {
+    let g = emptyGrid('A');
+    g = reduceSplitFromPill(g, 'B', {
+      cellId: g.groups[0].cells[0].id,
+      half: 'right',
+    });
+    // Drop C with half=top onto B (the right column's only cell).
+    const bCellId = g.groups[1].cells[0].id;
+    const next = reduceSplitFromPill(g, 'C', {
+      cellId: bCellId,
+      half: 'top',
+    });
+    expect(next.groups[1].cells).toHaveLength(2);
+    expect(next.groups[1].cells[0].sessionId).toBe('C');
+    expect(next.groups[1].cells[1].sessionId).toBe('B');
+  });
+
+  it('half=full replaces the target cell unconditionally', () => {
+    let g = emptyGrid('A');
+    g = reduceSplitFromPill(g, 'B', {
+      cellId: g.groups[0].cells[0].id,
+      half: 'right',
+    });
+    g = reduceSplitFromPill(g, 'C', {
+      cellId: g.groups[1].cells[0].id,
+      half: 'top',
+    });
+    // Drop D with half=full onto B (now in a 2-cell group).
+    const bCellId = g.groups[1].cells[1].id;
+    const next = reduceSplitFromPill(g, 'D', {
+      cellId: bCellId,
+      half: 'full',
+    });
+    expect(getAllCells(next)).toHaveLength(3);
+    expect(next.groups[1].cells[1].sessionId).toBe('D');
+  });
+
   it('drag of an already-mounted session is a no-op', () => {
     let g = emptyGrid('A');
     g = reduceSplitFromPill(g, 'B', {
@@ -202,6 +241,93 @@ describe('reduceCloseCell', () => {
     const cCellId = g.groups[0].cells[1].id;
     const next = reduceCloseCell(g, cCellId);
     expect(next.groups[1].splitRatio).toBeCloseTo(0.7);
+  });
+});
+
+describe('normalizeGrid', () => {
+  it('splits a vertical-primary single group of 2 cells into two horizontal-primary groups (preserves visual)', () => {
+    // Build [A,C]|[B] then close B → reducer leaves [A,C] in a single group
+    // with vertical primary; normalize must convert to 2 horizontal-primary
+    // groups so right/left drop zones become available again.
+    let g = emptyGrid('A');
+    g = reduceSplitFromPill(g, 'B', {
+      cellId: g.groups[0].cells[0].id,
+      half: 'right',
+    });
+    g = reduceSplitFromPill(g, 'C', {
+      cellId: g.groups[0].cells[0].id,
+      half: 'bottom',
+    });
+    const bCellId = g.groups[1].cells[0].id;
+    const collapsed = reduceCloseCell(g, bCellId);
+    expect(collapsed.groups).toHaveLength(1);
+    expect(collapsed.groups[0].cells).toHaveLength(2);
+    expect(collapsed.primaryOrientation).toBe('vertical');
+
+    const normalized = normalizeGrid(collapsed);
+    expect(normalized.primaryOrientation).toBe('horizontal');
+    expect(normalized.groups).toHaveLength(2);
+    expect(normalized.groups[0].cells).toHaveLength(1);
+    expect(normalized.groups[1].cells).toHaveLength(1);
+    expect(normalized.groups[0].cells[0].sessionId).toBe('A');
+    expect(normalized.groups[1].cells[0].sessionId).toBe('C');
+  });
+
+  it('is a no-op when the grid is already in a normal shape', () => {
+    const g = emptyGrid('A');
+    expect(normalizeGrid(g)).toBe(g);
+  });
+});
+
+describe('getValidDropHalves', () => {
+  it('initial single cell offers right + bottom for orientation pick', () => {
+    const g = emptyGrid('A');
+    const halves = getValidDropHalves(g, g.groups[0].cells[0].id);
+    expect(halves).toEqual(['right', 'bottom']);
+  });
+
+  it('vertical 2-column 1-cell layout: anchor offers bottom, sibling offers top + bottom', () => {
+    let g = emptyGrid('A');
+    g = reduceSplitFromPill(g, 'B', {
+      cellId: g.groups[0].cells[0].id,
+      half: 'right',
+    });
+    expect(getValidDropHalves(g, g.groups[0].cells[0].id)).toEqual(['bottom']);
+    expect(getValidDropHalves(g, g.groups[1].cells[0].id)).toEqual([
+      'top',
+      'bottom',
+    ]);
+  });
+
+  it('horizontal 2-row 1-cell layout: anchor offers right, sibling offers left + right', () => {
+    let g = emptyGrid('A');
+    g = reduceSplitFromPill(g, 'B', {
+      cellId: g.groups[0].cells[0].id,
+      half: 'bottom',
+    });
+    expect(getValidDropHalves(g, g.groups[0].cells[0].id)).toEqual(['right']);
+    expect(getValidDropHalves(g, g.groups[1].cells[0].id)).toEqual([
+      'left',
+      'right',
+    ]);
+  });
+
+  it('cell in a 2-cell group only offers full (Open here)', () => {
+    // Build [A, X] | [B]: a 3-cell vertical-primary layout with the left
+    // group full. The first split goes to a *new group*, so we need a
+    // second drop on an existing cell to reach a 2-cell group.
+    let g = emptyGrid('A');
+    g = reduceSplitFromPill(g, 'B', {
+      cellId: g.groups[0].cells[0].id,
+      half: 'right',
+    });
+    g = reduceSplitFromPill(g, 'X', {
+      cellId: g.groups[0].cells[0].id,
+      half: 'bottom',
+    });
+    expect(g.groups[0].cells).toHaveLength(2);
+    expect(getValidDropHalves(g, g.groups[0].cells[0].id)).toEqual(['full']);
+    expect(getValidDropHalves(g, g.groups[0].cells[1].id)).toEqual(['full']);
   });
 });
 
