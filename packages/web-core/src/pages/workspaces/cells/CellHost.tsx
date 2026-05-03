@@ -302,7 +302,7 @@ function CellHostInner({
                 cover preview/git/etc. on the right. Right padding leaves
                 room for the cell-level toolbar (close + panel-menu) when
                 the chat panel is full-width (no right panels open). */}
-            <div className="absolute top-2 left-3 right-[80px] z-20 overflow-hidden">
+            <div className="absolute top-2 left-5 right-0 z-20 overflow-hidden">
               <NavbarBreadcrumbSlot />
             </div>
           </Panel>
@@ -316,18 +316,23 @@ function CellHostInner({
           <Panel
             id="right-main"
             minSize="20%"
-            className="min-w-0 h-full overflow-hidden"
+            className="min-w-0 h-full overflow-hidden p-0.5"
           >
             <PanelLayout
               workspaceId={workspaceId}
               renderPanel={renderPanel}
               renderPanelHeader={renderPanelHeader}
+              isFirstCell={isFirstCell}
             />
           </Panel>
         )}
       </Group>
 
-      <div className="absolute top-2 right-3 z-20 flex items-center gap-1">
+      {/* Visual order (left → right): close-panel X (in PanelHost header)
+          · toggle-panels (PanelMenu) · close-cell X. PanelMenu sits in the
+          middle so the two X buttons can't be confused for one another. */}
+      <div className="absolute top-2 right-3 z-20 flex items-center gap-0">
+        <PanelMenu workspaceId={workspaceId} />
         {!isFirstCell && onClose && (
           <button
             type="button"
@@ -341,7 +346,6 @@ function CellHostInner({
             <X className="h-4 w-4" />
           </button>
         )}
-        <PanelMenu workspaceId={workspaceId} />
       </div>
 
       <CellDropOverlay cellId={cellId} />
