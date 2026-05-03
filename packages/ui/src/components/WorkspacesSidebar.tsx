@@ -133,16 +133,20 @@ export interface WorkspacesSidebarProps {
       }
     | undefined;
   /**
-   * Called when a pill is dropped onto the Pinned section. The consumer
-   * is expected to mutate the workspace to `pinned: true`.
+   * Called when a pill is dropped onto the Pinned section at a specific
+   * slot. The consumer is expected to atomically reorder the pinned set
+   * to exactly `orderedIds`. Workspaces not in the list are unpinned;
+   * new ids are pinned.
    */
-  onPinDrop?: (workspaceId: string) => void;
+  onReorderPins?: (orderedIds: string[]) => void;
   /**
    * Fired during a pill drag whenever the cursor enters / leaves the
    * Pinned section. Lets the consumer drive a "release to unpin"
    * indicator while a pinned pill is being dragged outside the section.
    */
   onPinAreaHover?: (over: boolean) => void;
+  /** Workspace id currently being dragged (drives pin reorder UI). */
+  draggingWorkspaceId?: string | null;
   /**
    * Set of workspace ids currently open in any cell of the session grid.
    * Each pill in this set gets a background; the *focused* one (matched by
@@ -310,79 +314,223 @@ function NewSessionRow({ onAddWorkspace }: { onAddWorkspace?: () => void }) {
   );
 }
 
+/** Pixel height of an expanded drop slot (must accommodate one pill + gap). */
+const PINNED_SLOT_OPEN_HEIGHT = 52;
+
 function PinnedSection({
   pinnedWorkspaces,
   selectedWorkspaceId,
   onSelectWorkspace,
   onOpenWorkspaceActions,
   getWorkspaceDragProps,
-  onPinDrop,
+  onReorderPins,
   onPinAreaHover,
   openInGridWorkspaceIds,
+  draggingWorkspaceId,
 }: {
   pinnedWorkspaces: WorkspacesSidebarWorkspace[];
   selectedWorkspaceId: string | null;
   onSelectWorkspace: (id: string) => void;
   onOpenWorkspaceActions: (workspaceId: string) => void;
   getWorkspaceDragProps?: WorkspacesSidebarProps['getWorkspaceDragProps'];
-  onPinDrop?: WorkspacesSidebarProps['onPinDrop'];
+  onReorderPins?: WorkspacesSidebarProps['onReorderPins'];
   onPinAreaHover?: WorkspacesSidebarProps['onPinAreaHover'];
   openInGridWorkspaceIds?: ReadonlySet<string>;
+  draggingWorkspaceId?: string | null;
 }) {
   const { t } = useTranslation('common');
-  const [isDragOver, setIsDragOver] = useState(false);
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    if (!onPinDrop) return;
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
+  const pillRefs = useRef<Array<HTMLDivElement | null>>([]);
+
+  const sourceIndex = useMemo(() => {
+    if (!draggingWorkspaceId) return -1;
+    return pinnedWorkspaces.findIndex((w) => w.id === draggingWorkspaceId);
+  }, [draggingWorkspaceId, pinnedWorkspaces]);
+
+  const computeNewOrder = useCallback(
+    (slotIdx: number): string[] | null => {
+      if (!draggingWorkspaceId) return null;
+      const filtered = pinnedWorkspaces
+        .filter((w) => w.id !== draggingWorkspaceId)
+        .map((w) => w.id);
+      // Slots are between original positions; if source was before slotIdx,
+      // its removal shifts the effective insertion point one earlier.
+      const insertAt =
+        sourceIndex !== -1 && slotIdx > sourceIndex ? slotIdx - 1 : slotIdx;
+      const next = [...filtered];
+      next.splice(insertAt, 0, draggingWorkspaceId);
+      const current = pinnedWorkspaces.map((w) => w.id);
+      if (
+        next.length === current.length &&
+        next.every((id, i) => id === current[i])
+      ) {
+        return null;
+      }
+      return next;
+    },
+    [draggingWorkspaceId, pinnedWorkspaces, sourceIndex]
+  );
+
+  // dropIndex equal to sourceIndex or sourceIndex+1 means "leave it where it
+  // was" — don't render a visual gap there (it'd confuse the user).
+  const showGapAt = useCallback(
+    (slotIdx: number): boolean => {
+      if (dropIndex !== slotIdx) return false;
+      if (sourceIndex === -1) return true; // external drag (always informative)
+      return slotIdx !== sourceIndex && slotIdx !== sourceIndex + 1;
+    },
+    [dropIndex, sourceIndex]
+  );
+
+  const handleSectionDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    if (!onReorderPins || !draggingWorkspaceId) return;
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    setIsDragOver(true);
+    // Compute the insertion index from cursor Y vs each pill's vertical midpoint.
+    let idx = pinnedWorkspaces.length;
+    for (let i = 0; i < pinnedWorkspaces.length; i++) {
+      const rect = pillRefs.current[i]?.getBoundingClientRect();
+      if (!rect) continue;
+      if (e.clientY < rect.top + rect.height / 2) {
+        idx = i;
+        break;
+      }
+    }
+    setDropIndex(idx);
     onPinAreaHover?.(true);
   };
-  const handleDragLeave = () => {
-    setIsDragOver(false);
+
+  const handleSectionDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+    setDropIndex(null);
     onPinAreaHover?.(false);
   };
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    if (!onPinDrop) return;
+
+  const handleSectionDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    if (!onReorderPins || !draggingWorkspaceId) return;
     e.preventDefault();
-    setIsDragOver(false);
-    onPinAreaHover?.(false);
-    const id = e.dataTransfer.getData('application/x-vibe-pill');
-    if (id) onPinDrop(id);
+    const slotIdx = dropIndex ?? pinnedWorkspaces.length;
+    // Always emit (even on no-op self-drop) so the consumer can mark
+    // "dropped in pin section" and prevent the source's onDragEnd from
+    // interpreting the release as an unpin.
+    const newOrder =
+      computeNewOrder(slotIdx) ?? pinnedWorkspaces.map((w) => w.id);
+    setDropIndex(null);
+    // Don't call onPinAreaHover(false) here: the source pill's onDragEnd
+    // (which fires right after) calls setDragging(null) and that resets
+    // isOverDropTarget. Calling false here would briefly flash the
+    // "release to unpin" indicator between drop and dragend.
+    onReorderPins(newOrder);
   };
+
+  // Empty pinned list: the section becomes a single drop target while a drag
+  // is in progress; otherwise just show the empty-state hint.
+  if (pinnedWorkspaces.length === 0) {
+    if (!draggingWorkspaceId) {
+      return (
+        <div className="flex flex-col">
+          <div className="px-double py-half">
+            <span className="text-sm text-low opacity-60">
+              {t('sidebar.pinned.sectionHeader', { defaultValue: 'Pinned' })}
+            </span>
+          </div>
+          <p className="px-double py-half text-sm text-low opacity-60">
+            {t('sidebar.pinned.emptyHint', {
+              defaultValue: 'Pin sessions from their menu to keep them here.',
+            })}
+          </p>
+        </div>
+      );
+    }
+    return (
+      <div
+        className="flex flex-col"
+        onDragOver={handleSectionDragOver}
+        onDragLeave={handleSectionDragLeave}
+        onDrop={handleSectionDrop}
+      >
+        <div className="px-double py-half">
+          <span className="text-sm text-low opacity-60">
+            {t('sidebar.pinned.sectionHeader', { defaultValue: 'Pinned' })}
+          </span>
+        </div>
+        <div
+          className="px-double py-half text-sm text-low opacity-60 rounded-md transition-colors"
+          style={{
+            backgroundColor:
+              dropIndex !== null ? 'rgba(59, 130, 246, 0.1)' : undefined,
+            minHeight: PINNED_SLOT_OPEN_HEIGHT,
+          }}
+        >
+          {t('sidebar.pinned.dropHint', { defaultValue: 'Drop here to pin' })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
-      className={cn(
-        'flex flex-col rounded-md transition-colors',
-        isDragOver && 'bg-blue-500/10 ring-2 ring-inset ring-blue-500/40'
-      )}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
+      className="flex flex-col"
+      onDragOver={handleSectionDragOver}
+      onDragLeave={handleSectionDragLeave}
+      onDrop={handleSectionDrop}
     >
       <div className="px-double py-half">
         <span className="text-sm text-low opacity-60">
           {t('sidebar.pinned.sectionHeader', { defaultValue: 'Pinned' })}
         </span>
       </div>
-      {pinnedWorkspaces.length > 0 ? (
-        <div className="flex flex-col gap-[2px]">
-          <WorkspaceList
-            workspaces={pinnedWorkspaces}
-            selectedWorkspaceId={selectedWorkspaceId}
-            onSelectWorkspace={onSelectWorkspace}
-            onOpenWorkspaceActions={onOpenWorkspaceActions}
-            getWorkspaceDragProps={getWorkspaceDragProps}
-            openInGridWorkspaceIds={openInGridWorkspaceIds}
-          />
-        </div>
-      ) : (
-        <p className="px-double py-half text-sm text-low opacity-60">
-          {t('sidebar.pinned.emptyHint', {
-            defaultValue: 'Pin sessions from their menu to keep them here.',
-          })}
-        </p>
-      )}
+      <div className="flex flex-col">
+        {pinnedWorkspaces.map((workspace, i) => {
+          const isSource = i === sourceIndex;
+          return (
+            <div key={workspace.id}>
+              <div
+                className="transition-[height] duration-150 ease-out"
+                style={{ height: showGapAt(i) ? PINNED_SLOT_OPEN_HEIGHT : 0 }}
+              />
+              <div
+                ref={(el) => {
+                  pillRefs.current[i] = el;
+                }}
+                className="transition-opacity duration-150"
+                style={{ opacity: isSource ? 0.3 : 1 }}
+              >
+                <WorkspaceSummary
+                  name={workspace.name}
+                  workspaceId={workspace.id}
+                  filesChanged={workspace.filesChanged}
+                  linesAdded={workspace.linesAdded}
+                  linesRemoved={workspace.linesRemoved}
+                  isActive={selectedWorkspaceId === workspace.id}
+                  isOpenInGrid={openInGridWorkspaceIds?.has(workspace.id)}
+                  isRunning={workspace.isRunning}
+                  isPinned={workspace.isPinned}
+                  hasPendingApproval={workspace.hasPendingApproval}
+                  hasRunningDevServer={workspace.hasRunningDevServer}
+                  hasUnseenActivity={workspace.hasUnseenActivity}
+                  latestProcessCompletedAt={workspace.latestProcessCompletedAt}
+                  latestProcessStatus={workspace.latestProcessStatus}
+                  prStatus={workspace.prStatus}
+                  summary
+                  onOpenWorkspaceActions={onOpenWorkspaceActions}
+                  onClick={() => onSelectWorkspace(workspace.id)}
+                  {...getWorkspaceDragProps?.(workspace.id)}
+                />
+              </div>
+              <div style={{ height: 2 }} />
+            </div>
+          );
+        })}
+        <div
+          className="transition-[height] duration-150 ease-out"
+          style={{
+            height: showGapAt(pinnedWorkspaces.length)
+              ? PINNED_SLOT_OPEN_HEIGHT
+              : 0,
+          }}
+        />
+      </div>
     </div>
   );
 }
@@ -415,8 +563,9 @@ export function WorkspacesSidebar({
   resolvedTheme,
   onToggleTheme,
   getWorkspaceDragProps,
-  onPinDrop,
+  onReorderPins,
   onPinAreaHover,
+  draggingWorkspaceId,
   openInGridWorkspaceIds,
   topActions,
   bottomActions,
@@ -746,8 +895,9 @@ export function WorkspacesSidebar({
               onSelectWorkspace={onSelectWorkspace}
               onOpenWorkspaceActions={handleOpenWorkspaceActions}
               getWorkspaceDragProps={getWorkspaceDragProps}
-              onPinDrop={onPinDrop}
+              onReorderPins={onReorderPins}
               onPinAreaHover={onPinAreaHover}
+              draggingWorkspaceId={draggingWorkspaceId}
               openInGridWorkspaceIds={openInGridWorkspaceIds}
             />
             {folderGroups.map((group) => (

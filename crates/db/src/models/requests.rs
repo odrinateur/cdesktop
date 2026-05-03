@@ -61,3 +61,11 @@ pub struct UpdateWorkspace {
 pub struct UpdateSession {
     pub name: Option<String>,
 }
+
+/// Atomic reorder of the pinned-workspace list. The provided `ordered_ids`
+/// becomes the complete pinned set in the given order; workspaces not in the
+/// list are unpinned.
+#[derive(Debug, Serialize, Deserialize, TS)]
+pub struct ReorderPinsRequest {
+    pub ordered_ids: Vec<Uuid>,
+}
