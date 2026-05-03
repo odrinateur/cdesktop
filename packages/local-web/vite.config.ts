@@ -87,7 +87,7 @@ export default defineConfig({
   plugins: [
     tanstackRouter({
       target: "react",
-      autoCodeSplitting: false,
+      autoCodeSplitting: true,
     }),
     react({
       babel: {
@@ -142,6 +142,7 @@ export default defineConfig({
     open: process.env.VITE_OPEN === 'true',
     allowedHosts: [
       '.trycloudflare.com', // allow all cloudflared tunnels
+      '10.126.127.4',
     ],
   },
   optimizeDeps: {
