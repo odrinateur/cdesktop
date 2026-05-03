@@ -30,6 +30,8 @@ export interface SidebarWorkspace {
   linesRemoved?: number;
   isRunning?: boolean;
   isPinned?: boolean;
+  /** Position in pinned list (0 = top). undefined if not pinned. */
+  pinOrder?: number;
   isArchived?: boolean;
   hasPendingApproval?: boolean;
   hasRunningDevServer?: boolean;
@@ -77,6 +79,7 @@ function toSidebarWorkspace(
     // Real data from stream
     isRunning: ws.is_running,
     isPinned: ws.pinned,
+    pinOrder: ws.pin_order != null ? Number(ws.pin_order) : undefined,
     isArchived: ws.archived,
     // Additional data from summary
     hasPendingApproval: summary?.has_pending_approval,
@@ -204,11 +207,15 @@ export function useWorkspaces(): UseWorkspacesResult {
     if (!activeData?.workspaces) return [];
     return Object.values(activeData.workspaces)
       .sort((a, b) => {
-        // First sort by pinned (pinned first)
+        // Pinned first, ordered by pin_order ASC; unpinned by created_at DESC.
         if (a.pinned !== b.pinned) {
           return a.pinned ? -1 : 1;
         }
-        // Then by created_at (newest first)
+        if (a.pinned && b.pinned) {
+          const ao = a.pin_order != null ? Number(a.pin_order) : 0;
+          const bo = b.pin_order != null ? Number(b.pin_order) : 0;
+          return ao - bo;
+        }
         return (
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
@@ -220,11 +227,15 @@ export function useWorkspaces(): UseWorkspacesResult {
     if (!archivedData?.workspaces) return [];
     return Object.values(archivedData.workspaces)
       .sort((a, b) => {
-        // First sort by pinned (pinned first)
+        // Pinned first, ordered by pin_order ASC; unpinned by created_at DESC.
         if (a.pinned !== b.pinned) {
           return a.pinned ? -1 : 1;
         }
-        // Then by created_at (newest first)
+        if (a.pinned && b.pinned) {
+          const ao = a.pin_order != null ? Number(a.pin_order) : 0;
+          const bo = b.pin_order != null ? Number(b.pin_order) : 0;
+          return ao - bo;
+        }
         return (
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );

@@ -1,5 +1,8 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { usePillDragStore } from '@/shared/stores/usePillDragStore';
+import {
+  usePillDragStore,
+  useDraggingWorkspaceId,
+} from '@/shared/stores/usePillDragStore';
 import { useSessionGridStore } from '@/shared/stores/useSessionGridStore';
 import { useParams } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
@@ -65,7 +68,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@vibe/ui/components/Dialog';
-import { FolderIcon, GitPullRequestIcon, XIcon } from '@phosphor-icons/react';
+import {
+  ArrowClockwiseIcon,
+  FolderIcon,
+  GitPullRequestIcon,
+  XIcon,
+} from '@phosphor-icons/react';
 import { useRemoteCloudHostsAppBarModel } from '@/shared/hooks/useRemoteCloudHosts';
 
 // Fixed UUID for the universal workspace draft (same as in useCreateModeState.ts)
@@ -266,13 +274,54 @@ export function WorkspacesSidebarContainer({
 }: WorkspacesSidebarContainerProps) {
   const {
     workspaceId: selectedWorkspaceId,
-    activeWorkspaces,
+    activeWorkspaces: rawActiveWorkspaces,
     archivedWorkspaces,
     isWorkspacesListLoading,
     isCreateMode,
     selectWorkspace,
     navigateToCreate,
   } = useWorkspaceContext();
+
+  // Optimistic pinned order: applied immediately on drop so the user sees
+  // the new order without waiting for the API round-trip. Cleared by an
+  // effect once the server data converges.
+  const [optimisticPinnedOrder, setOptimisticPinnedOrder] = useState<
+    string[] | null
+  >(null);
+
+  const activeWorkspaces = useMemo(() => {
+    if (!optimisticPinnedOrder) return rawActiveWorkspaces;
+    const orderMap = new Map(
+      optimisticPinnedOrder.map((id, i) => [id, i] as const)
+    );
+    return rawActiveWorkspaces.map((w) => {
+      const optIdx = orderMap.get(w.id);
+      if (optIdx !== undefined) {
+        return { ...w, isPinned: true, pinOrder: optIdx };
+      }
+      // Workspaces not in the optimistic list are unpinned by definition.
+      if (w.isPinned) {
+        return { ...w, isPinned: false, pinOrder: undefined };
+      }
+      return w;
+    });
+  }, [rawActiveWorkspaces, optimisticPinnedOrder]);
+
+  // Drop the optimistic overlay once the WS stream / summary refetch reflects
+  // the same pinned order on the server.
+  useEffect(() => {
+    if (!optimisticPinnedOrder) return;
+    const serverOrder = rawActiveWorkspaces
+      .filter((w) => w.isPinned)
+      .sort((a, b) => (a.pinOrder ?? 0) - (b.pinOrder ?? 0))
+      .map((w) => w.id);
+    if (
+      serverOrder.length === optimisticPinnedOrder.length &&
+      serverOrder.every((id, i) => id === optimisticPinnedOrder[i])
+    ) {
+      setOptimisticPinnedOrder(null);
+    }
+  }, [rawActiveWorkspaces, optimisticPinnedOrder]);
 
   const isMobile = useIsMobile();
   const { hosts: remoteCloudHosts } = useRemoteCloudHostsAppBarModel();
@@ -425,6 +474,13 @@ export function WorkspacesSidebarContainer({
         // Always keep pinned workspaces at the top.
         if (a.isPinned !== b.isPinned) {
           return a.isPinned ? -1 : 1;
+        }
+
+        // Within the pinned set, honor user-defined pin_order.
+        if (a.isPinned && b.isPinned) {
+          const ao = a.pinOrder ?? 0;
+          const bo = b.pinOrder ?? 0;
+          if (ao !== bo) return ao - bo;
         }
 
         const aTimestamp = getWorkspaceSortTimestamp(a, workspaceSort.sortBy);
@@ -631,14 +687,20 @@ export function WorkspacesSidebarContainer({
   // unpins the workspace. Triggered by onDragEnd below.
   const handleUnpin = useCallback(
     async (workspaceId: string) => {
+      // Snap UI: pill leaves the pinned section immediately.
+      const newOrder = pinnedWorkspaces
+        .filter((w) => w.id !== workspaceId)
+        .map((w) => w.id);
+      setOptimisticPinnedOrder(newOrder);
       try {
         await workspacesApi.update(workspaceId, { pinned: false });
         queryClient.invalidateQueries({ queryKey: workspaceSummaryKeys.all });
       } catch (err) {
         console.warn('Unpin via drag failed', err);
+        setOptimisticPinnedOrder(null);
       }
     },
-    [queryClient]
+    [pinnedWorkspaces, queryClient]
   );
 
   // Make every pill a drag source. The grid's per-cell drop overlay reads
@@ -697,22 +759,41 @@ export function WorkspacesSidebarContainer({
     [grid]
   );
 
-  // Drop on the Pinned section pins the workspace. Backend has no pin-order
-  // field today so the drop position is ignored. Setting droppedInPinSection
-  // synchronously here prevents the source pill's onDragEnd (which fires
-  // *after* this handler) from interpreting the release as "unpin".
-  const handlePinDrop = useCallback(
-    async (workspaceId: string) => {
-      usePillDragStore.getState().setDroppedInPinSection(true);
+  // Drop on a pinned-section slot atomically rewrites the pinned set to
+  // the given order. Setting droppedInPinSection synchronously prevents
+  // the source pill's onDragEnd (which fires *after* this handler) from
+  // interpreting the release as "unpin". Skip the network round-trip when
+  // the order is unchanged (e.g. drop on own slot).
+  const handleReorderPins = useCallback(
+    async (orderedIds: string[]) => {
+      // Clear the drag store now (instead of waiting for onDragEnd): when an
+      // unpinned pill becomes pinned, the optimistic projection moves it into
+      // the PinnedSection on the next render — which can unmount the original
+      // source element before its onDragEnd fires, leaving draggingWorkspaceId
+      // stuck and the freshly-pinned pill incorrectly dimmed as the source.
+      usePillDragStore.getState().setDragging(null);
+
+      // Compare against the order PinnedSection actually rendered.
+      const displayed = pinnedWorkspaces.map((w) => w.id);
+      const unchanged =
+        displayed.length === orderedIds.length &&
+        displayed.every((id, i) => id === orderedIds[i]);
+      if (unchanged) return;
+      // Snap UI to the new order immediately so the user doesn't wait for
+      // the network round-trip. Cleared once server data converges.
+      setOptimisticPinnedOrder(orderedIds);
       try {
-        await workspacesApi.update(workspaceId, { pinned: true });
+        await workspacesApi.reorderPins(orderedIds);
         queryClient.invalidateQueries({ queryKey: workspaceSummaryKeys.all });
       } catch (err) {
-        console.warn('Pin via drag failed', err);
+        console.warn('Reorder pins failed', err);
+        setOptimisticPinnedOrder(null);
       }
     },
-    [queryClient]
+    [pinnedWorkspaces, queryClient]
   );
+
+  const draggingWorkspaceId = useDraggingWorkspaceId();
 
   // Action items lifted from the now-hidden top navbar.
   // Top of sidebar: full left group (sidebar toggle).
@@ -770,46 +851,62 @@ export function WorkspacesSidebarContainer({
 
   return (
     <>
-    <WorkspacesSidebar
-      workspaces={paginatedActiveWorkspaces}
-      totalWorkspacesCount={activeWorkspaces.length}
-      archivedWorkspaces={paginatedArchivedWorkspaces}
-      isLoading={isWorkspacesListLoading}
-      selectedWorkspaceId={focusedSessionId ?? selectedWorkspaceId ?? null}
-      onSelectWorkspace={handleSelectWorkspace}
-      onAddWorkspace={handleAddWorkspace}
-      isCreateMode={isCreateMode}
-      draftTitle={persistedDraftTitle}
-      onSelectCreate={navigateToCreate}
-      showArchive={showArchive}
-      onShowArchiveChange={setShowArchive}
-      layoutMode={layoutMode}
-      onToggleLayoutMode={toggleLayoutMode}
-      enableFlatGrouping={enableFlatGrouping}
-      enableAccordionGrouping={enableAccordionGrouping}
-      folderGroups={folderGroups}
-      pinnedWorkspaces={pinnedWorkspaces}
-      onLoadMore={handleLoadMore}
-      hasMoreWorkspaces={hasMoreWorkspaces && !isSearching}
-      onOpenWorkspaceActions={handleOpenWorkspaceActions}
-      persistKeys={sidebarPersistKeys}
-      activeRemoteHost={activeRemoteHost}
-      onOpenRemoteHostSettings={handleOpenRemoteHostSettings}
-      resolvedTheme={resolvedTheme}
-      onToggleTheme={handleToggleTheme}
-      getWorkspaceDragProps={getWorkspaceDragProps}
-      onPinDrop={handlePinDrop}
-      onPinAreaHover={handlePinAreaHover}
-      openInGridWorkspaceIds={openInGridWorkspaceIds}
-      topActions={
-        <>
-          {topActions}
-          <NavbarSidebarSearchSlot />
-        </>
-      }
-      bottomActions={bottomActions.length > 0 ? <>{bottomActions}</> : undefined}
-    />
-    <UnpinDragIndicator />
+      <WorkspacesSidebar
+        workspaces={paginatedActiveWorkspaces}
+        totalWorkspacesCount={activeWorkspaces.length}
+        archivedWorkspaces={paginatedArchivedWorkspaces}
+        isLoading={isWorkspacesListLoading}
+        selectedWorkspaceId={focusedSessionId ?? selectedWorkspaceId ?? null}
+        onSelectWorkspace={handleSelectWorkspace}
+        onAddWorkspace={handleAddWorkspace}
+        isCreateMode={isCreateMode}
+        draftTitle={persistedDraftTitle}
+        onSelectCreate={navigateToCreate}
+        showArchive={showArchive}
+        onShowArchiveChange={setShowArchive}
+        layoutMode={layoutMode}
+        onToggleLayoutMode={toggleLayoutMode}
+        enableFlatGrouping={enableFlatGrouping}
+        enableAccordionGrouping={enableAccordionGrouping}
+        folderGroups={folderGroups}
+        pinnedWorkspaces={pinnedWorkspaces}
+        onLoadMore={handleLoadMore}
+        hasMoreWorkspaces={hasMoreWorkspaces && !isSearching}
+        onOpenWorkspaceActions={handleOpenWorkspaceActions}
+        persistKeys={sidebarPersistKeys}
+        activeRemoteHost={activeRemoteHost}
+        onOpenRemoteHostSettings={handleOpenRemoteHostSettings}
+        resolvedTheme={resolvedTheme}
+        onToggleTheme={handleToggleTheme}
+        getWorkspaceDragProps={getWorkspaceDragProps}
+        onReorderPins={handleReorderPins}
+        onPinAreaHover={handlePinAreaHover}
+        draggingWorkspaceId={draggingWorkspaceId}
+        openInGridWorkspaceIds={openInGridWorkspaceIds}
+        topActions={
+          <>
+            {topActions}
+            <NavbarSidebarSearchSlot />
+          </>
+        }
+        bottomActions={
+          <>
+            {bottomActions}
+            <IconButton
+              icon={ArrowClockwiseIcon}
+              onClick={() => {
+                setOptimisticPinnedOrder(null);
+                queryClient.invalidateQueries({
+                  queryKey: workspaceSummaryKeys.all,
+                });
+              }}
+              aria-label="Refresh sessions (dev)"
+              title="Refresh sessions (dev) — drops local state and refetches"
+            />
+          </>
+        }
+      />
+      <UnpinDragIndicator />
     </>
   );
 }

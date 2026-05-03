@@ -191,3 +191,12 @@ pub async fn mark_seen(
     CodingAgentTurn::mark_seen_by_workspace_id(pool, workspace.id).await?;
     Ok(ResponseJson(ApiResponse::success(())))
 }
+
+pub async fn reorder_pins(
+    State(deployment): State<DeploymentImpl>,
+    Json(request): Json<db::models::requests::ReorderPinsRequest>,
+) -> Result<ResponseJson<ApiResponse<()>>, ApiError> {
+    let pool = &deployment.db().pool;
+    Workspace::reorder_pins(pool, &request.ordered_ids).await?;
+    Ok(ResponseJson(ApiResponse::success(())))
+}

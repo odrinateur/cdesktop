@@ -51,7 +51,10 @@ pub struct Workspace {
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub archived: bool,
+    /// Derived from `pin_order IS NOT NULL`. Always populated by SELECTs.
     pub pinned: bool,
+    /// Position in the pinned list (0 = top). NULL for unpinned workspaces.
+    pub pin_order: Option<i64>,
     pub name: Option<String>,
     pub worktree_deleted: bool,
     pub use_worktree: bool,
@@ -120,7 +123,8 @@ impl Workspace {
                           created_at AS "created_at!: DateTime<Utc>",
                           updated_at AS "updated_at!: DateTime<Utc>",
                           archived AS "archived!: bool",
-                          pinned AS "pinned!: bool",
+                          (pin_order IS NOT NULL) AS "pinned!: bool",
+                          pin_order AS "pin_order: i64",
                           name,
                           worktree_deleted AS "worktree_deleted!: bool",
                           use_worktree AS "use_worktree!: bool"
@@ -223,7 +227,8 @@ impl Workspace {
                        created_at        AS "created_at!: DateTime<Utc>",
                        updated_at        AS "updated_at!: DateTime<Utc>",
                        archived          AS "archived!: bool",
-                       pinned            AS "pinned!: bool",
+                       (pin_order IS NOT NULL) AS "pinned!: bool",
+                       pin_order         AS "pin_order: i64",
                        name,
                        worktree_deleted  AS "worktree_deleted!: bool",
                        use_worktree      AS "use_worktree!: bool"
@@ -246,7 +251,8 @@ impl Workspace {
                        created_at        AS "created_at!: DateTime<Utc>",
                        updated_at        AS "updated_at!: DateTime<Utc>",
                        archived          AS "archived!: bool",
-                       pinned            AS "pinned!: bool",
+                       (pin_order IS NOT NULL) AS "pinned!: bool",
+                       pin_order         AS "pin_order: i64",
                        name,
                        worktree_deleted  AS "worktree_deleted!: bool",
                        use_worktree      AS "use_worktree!: bool"
@@ -290,7 +296,8 @@ impl Workspace {
                 w.created_at as "created_at!: DateTime<Utc>",
                 w.updated_at as "updated_at!: DateTime<Utc>",
                 w.archived as "archived!: bool",
-                w.pinned as "pinned!: bool",
+                (w.pin_order IS NOT NULL) as "pinned!: bool",
+                w.pin_order as "pin_order: i64",
                 w.name,
                 w.worktree_deleted as "worktree_deleted!: bool",
                 w.use_worktree as "use_worktree!: bool"
@@ -341,7 +348,7 @@ impl Workspace {
             Workspace,
             r#"INSERT INTO workspaces (id, task_id, container_ref, branch, setup_completed_at, name, use_worktree)
                VALUES ($1, $2, $3, $4, $5, $6, $7)
-               RETURNING id as "id!: Uuid", task_id as "task_id: Uuid", container_ref, branch, setup_completed_at as "setup_completed_at: DateTime<Utc>", created_at as "created_at!: DateTime<Utc>", updated_at as "updated_at!: DateTime<Utc>", archived as "archived!: bool", pinned as "pinned!: bool", name, worktree_deleted as "worktree_deleted!: bool", use_worktree as "use_worktree!: bool""#,
+               RETURNING id as "id!: Uuid", task_id as "task_id: Uuid", container_ref, branch, setup_completed_at as "setup_completed_at: DateTime<Utc>", created_at as "created_at!: DateTime<Utc>", updated_at as "updated_at!: DateTime<Utc>", archived as "archived!: bool", (pin_order IS NOT NULL) as "pinned!: bool", pin_order as "pin_order: i64", name, worktree_deleted as "worktree_deleted!: bool", use_worktree as "use_worktree!: bool""#,
             id,
             Option::<Uuid>::None,
             Option::<String>::None,
@@ -430,6 +437,8 @@ impl Workspace {
 
     /// Update workspace fields. Only non-None values will be updated.
     /// For `name`, pass `Some("")` to clear the name, `Some("foo")` to set it, or `None` to leave unchanged.
+    /// For `pinned`: `Some(true)` appends to the end of the pinned list (pin_order = MAX+1) if
+    /// not already pinned; `Some(false)` clears pin_order and renumbers remaining pinned rows.
     pub async fn update(
         pool: &SqlitePool,
         workspace_id: Uuid,
@@ -441,22 +450,96 @@ impl Workspace {
         let name_value = name.filter(|s| !s.is_empty());
         let name_provided = name.is_some();
 
+        let mut tx = pool.begin().await?;
+
         sqlx::query!(
             r#"UPDATE workspaces SET
                 archived = COALESCE($1, archived),
-                pinned = COALESCE($2, pinned),
-                name = CASE WHEN $3 THEN $4 ELSE name END,
+                name = CASE WHEN $2 THEN $3 ELSE name END,
                 updated_at = datetime('now', 'subsec')
-            WHERE id = $5"#,
+            WHERE id = $4"#,
             archived,
-            pinned,
             name_provided,
             name_value,
             workspace_id
         )
-        .execute(pool)
+        .execute(&mut *tx)
+        .await?;
+
+        if let Some(should_pin) = pinned {
+            if should_pin {
+                // Pin: append to end if not already pinned.
+                sqlx::query!(
+                    r#"UPDATE workspaces
+                       SET pin_order = COALESCE(
+                           (SELECT MAX(pin_order) + 1 FROM workspaces WHERE pin_order IS NOT NULL),
+                           0
+                       )
+                       WHERE id = $1 AND pin_order IS NULL"#,
+                    workspace_id
+                )
+                .execute(&mut *tx)
+                .await?;
+            } else {
+                // Unpin: clear pin_order, then close the gap by renumbering remaining pinned rows.
+                sqlx::query!(
+                    "UPDATE workspaces SET pin_order = NULL WHERE id = $1",
+                    workspace_id
+                )
+                .execute(&mut *tx)
+                .await?;
+                Self::compact_pin_order(&mut tx).await?;
+            }
+        }
+
+        tx.commit().await
+    }
+
+    /// Renumber pinned workspaces to close gaps (pin_order = 0..N-1 by current order).
+    async fn compact_pin_order(
+        tx: &mut sqlx::Transaction<'_, sqlx::Sqlite>,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query!(
+            r#"UPDATE workspaces
+               SET pin_order = sub.rn - 1
+               FROM (
+                   SELECT id, ROW_NUMBER() OVER (ORDER BY pin_order ASC) AS rn
+                   FROM workspaces
+                   WHERE pin_order IS NOT NULL
+               ) sub
+               WHERE workspaces.id = sub.id"#
+        )
+        .execute(&mut **tx)
         .await?;
         Ok(())
+    }
+
+    /// Atomically set the pinned set to exactly `ordered_ids` in the given order.
+    /// Workspaces not in the list have their pin_order cleared. Workspaces in the
+    /// list get pin_order = their position in the list. Unknown ids are skipped
+    /// silently; pin_order is compacted afterwards to keep the sequence contiguous.
+    pub async fn reorder_pins(pool: &SqlitePool, ordered_ids: &[Uuid]) -> Result<(), sqlx::Error> {
+        let mut tx = pool.begin().await?;
+
+        sqlx::query!("UPDATE workspaces SET pin_order = NULL WHERE pin_order IS NOT NULL")
+            .execute(&mut *tx)
+            .await?;
+
+        for (idx, id) in ordered_ids.iter().enumerate() {
+            let position = idx as i64;
+            sqlx::query!(
+                "UPDATE workspaces SET pin_order = $1 WHERE id = $2",
+                position,
+                id
+            )
+            .execute(&mut *tx)
+            .await?;
+        }
+
+        // Re-compact: if any input ids didn't match a row, the sequence has gaps.
+        Self::compact_pin_order(&mut tx).await?;
+
+        tx.commit().await
     }
 
     pub async fn get_first_user_message(
@@ -536,7 +619,8 @@ impl Workspace {
                 w.created_at AS "created_at!: DateTime<Utc>",
                 w.updated_at AS "updated_at!: DateTime<Utc>",
                 w.archived AS "archived!: bool",
-                w.pinned AS "pinned!: bool",
+                (w.pin_order IS NOT NULL) AS "pinned!: bool",
+                w.pin_order AS "pin_order: i64",
                 w.name,
                 w.worktree_deleted AS "worktree_deleted!: bool",
                 w.use_worktree AS "use_worktree!: bool",
@@ -580,6 +664,7 @@ impl Workspace {
                     updated_at: rec.updated_at,
                     archived: rec.archived,
                     pinned: rec.pinned,
+                    pin_order: rec.pin_order,
                     name: rec.name,
                     worktree_deleted: rec.worktree_deleted,
                     use_worktree: rec.use_worktree,
@@ -632,7 +717,8 @@ impl Workspace {
                 w.created_at AS "created_at!: DateTime<Utc>",
                 w.updated_at AS "updated_at!: DateTime<Utc>",
                 w.archived AS "archived!: bool",
-                w.pinned AS "pinned!: bool",
+                (w.pin_order IS NOT NULL) AS "pinned!: bool",
+                w.pin_order AS "pin_order: i64",
                 w.name,
                 w.worktree_deleted AS "worktree_deleted!: bool",
                 w.use_worktree AS "use_worktree!: bool",
@@ -679,6 +765,7 @@ impl Workspace {
                 updated_at: rec.updated_at,
                 archived: rec.archived,
                 pinned: rec.pinned,
+                pin_order: rec.pin_order,
                 name: rec.name,
                 worktree_deleted: rec.worktree_deleted,
                 use_worktree: rec.use_worktree,

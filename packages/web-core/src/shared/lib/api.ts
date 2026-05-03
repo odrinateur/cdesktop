@@ -435,6 +435,14 @@ export const workspacesApi = {
     return handleApiResponse<Workspace>(response);
   },
 
+  reorderPins: async (orderedIds: string[]): Promise<void> => {
+    const response = await makeRequest(`/api/workspaces/reorder-pins`, {
+      method: 'POST',
+      body: JSON.stringify({ ordered_ids: orderedIds }),
+    });
+    return handleApiResponse<void>(response);
+  },
+
   /** Get workspace with latest session */
   getWithSession: async (
     workspaceId: string

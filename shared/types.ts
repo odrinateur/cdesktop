@@ -152,9 +152,25 @@ export type CreateScratch = { payload: ScratchPayload, };
 
 export type UpdateScratch = { payload: ScratchPayload, };
 
-export type Workspace = { id: string, task_id: string | null, container_ref: string | null, branch: string, setup_completed_at: string | null, created_at: string, updated_at: string, archived: boolean, pinned: boolean, name: string | null, worktree_deleted: boolean, use_worktree: boolean, };
+export type Workspace = { id: string, task_id: string | null, container_ref: string | null, branch: string, setup_completed_at: string | null, created_at: string, updated_at: string, archived: boolean, 
+/**
+ * Derived from `pin_order IS NOT NULL`. Always populated by SELECTs.
+ */
+pinned: boolean, 
+/**
+ * Position in the pinned list (0 = top). NULL for unpinned workspaces.
+ */
+pin_order: bigint | null, name: string | null, worktree_deleted: boolean, use_worktree: boolean, };
 
-export type WorkspaceWithStatus = { is_running: boolean, is_errored: boolean, id: string, task_id: string | null, container_ref: string | null, branch: string, setup_completed_at: string | null, created_at: string, updated_at: string, archived: boolean, pinned: boolean, name: string | null, worktree_deleted: boolean, use_worktree: boolean, };
+export type WorkspaceWithStatus = { is_running: boolean, is_errored: boolean, id: string, task_id: string | null, container_ref: string | null, branch: string, setup_completed_at: string | null, created_at: string, updated_at: string, archived: boolean, 
+/**
+ * Derived from `pin_order IS NOT NULL`. Always populated by SELECTs.
+ */
+pinned: boolean, 
+/**
+ * Position in the pinned list (0 = top). NULL for unpinned workspaces.
+ */
+pin_order: bigint | null, name: string | null, worktree_deleted: boolean, use_worktree: boolean, };
 
 export type Session = { id: string, workspace_id: string, name: string | null, executor: string | null, agent_working_dir: string | null, created_at: string, updated_at: string, };
 
@@ -433,6 +449,8 @@ export type RepoBranchStatus = { repo_id: string, repo_name: string, commits_beh
 export type UpdateWorkspace = { archived: boolean | null, pinned: boolean | null, name: string | null, };
 
 export type UpdateSession = { name: string | null, };
+
+export type ReorderPinsRequest = { ordered_ids: Array<string>, };
 
 export type WorkspaceSummaryRequest = { archived: boolean, };
 

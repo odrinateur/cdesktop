@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT  id                AS \"id!: Uuid\",\n                       task_id           AS \"task_id: Uuid\",\n                       container_ref,\n                       branch,\n                       setup_completed_at AS \"setup_completed_at: DateTime<Utc>\",\n                       created_at        AS \"created_at!: DateTime<Utc>\",\n                       updated_at        AS \"updated_at!: DateTime<Utc>\",\n                       archived          AS \"archived!: bool\",\n                       pinned            AS \"pinned!: bool\",\n                       name,\n                       worktree_deleted  AS \"worktree_deleted!: bool\",\n                       use_worktree      AS \"use_worktree!: bool\"\n               FROM    workspaces\n               WHERE   id = $1",
+  "query": "INSERT INTO workspaces (id, task_id, container_ref, branch, setup_completed_at, name, use_worktree)\n               VALUES ($1, $2, $3, $4, $5, $6, $7)\n               RETURNING id as \"id!: Uuid\", task_id as \"task_id: Uuid\", container_ref, branch, setup_completed_at as \"setup_completed_at: DateTime<Utc>\", created_at as \"created_at!: DateTime<Utc>\", updated_at as \"updated_at!: DateTime<Utc>\", archived as \"archived!: bool\", (pin_order IS NOT NULL) as \"pinned!: bool\", pin_order as \"pin_order: i64\", name, worktree_deleted as \"worktree_deleted!: bool\", use_worktree as \"use_worktree!: bool\"",
   "describe": {
     "columns": [
       {
@@ -49,23 +49,28 @@
         "type_info": "Integer"
       },
       {
-        "name": "name",
+        "name": "pin_order: i64",
         "ordinal": 9,
+        "type_info": "Integer"
+      },
+      {
+        "name": "name",
+        "ordinal": 10,
         "type_info": "Text"
       },
       {
         "name": "worktree_deleted!: bool",
-        "ordinal": 10,
+        "ordinal": 11,
         "type_info": "Bool"
       },
       {
         "name": "use_worktree!: bool",
-        "ordinal": 11,
+        "ordinal": 12,
         "type_info": "Bool"
       }
     ],
     "parameters": {
-      "Right": 1
+      "Right": 7
     },
     "nullable": [
       true,
@@ -78,9 +83,10 @@
       false,
       false,
       true,
+      true,
       false,
       false
     ]
   },
-  "hash": "f49c76427c1ecb25967f49cddddecfda5640789a3b9a0e3b225a372bcb77216d"
+  "hash": "be4e2cc15d6338e3b6125b309ddd46ac797b4a274b71ac88a797de7d1e78c99b"
 }
