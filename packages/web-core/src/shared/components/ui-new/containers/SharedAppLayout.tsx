@@ -312,9 +312,7 @@ export function SharedAppLayout() {
                 SHOW_CLOUD_APPBAR ? 'grid-cols-[auto_1fr]' : 'grid-cols-1',
                 // Top navbar is hidden (sidebar carries its actions); when
                 // visible, banner gets an auto row above the 1fr content row.
-                showCloudShutdownBanner
-                  ? 'grid-rows-[auto_1fr]'
-                  : 'grid-rows-1'
+                showCloudShutdownBanner ? 'grid-rows-[auto_1fr]' : 'grid-rows-1'
               )
         )}
       >

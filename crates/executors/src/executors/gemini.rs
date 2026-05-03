@@ -224,7 +224,10 @@ impl StandardCodingAgentExecutor for Gemini {
                     },
                 ],
                 default_model: Some("gemini-3-pro-preview".to_string()),
-                permissions: vec![PermissionPolicy::BypassPermissions, PermissionPolicy::Supervised],
+                permissions: vec![
+                    PermissionPolicy::BypassPermissions,
+                    PermissionPolicy::Supervised,
+                ],
                 ..Default::default()
             },
             ..Default::default()

@@ -377,7 +377,10 @@ fn default_discovered_options() -> crate::executor_discovery::ExecutorDiscovered
             models: vec![],
             default_model: None,
             agents: vec![],
-            permissions: vec![PermissionPolicy::BypassPermissions, PermissionPolicy::Supervised],
+            permissions: vec![
+                PermissionPolicy::BypassPermissions,
+                PermissionPolicy::Supervised,
+            ],
         },
         slash_commands: hardcoded_slash_commands(),
         loading_models: false,
