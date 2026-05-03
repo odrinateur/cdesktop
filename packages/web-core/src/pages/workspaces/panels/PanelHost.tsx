@@ -12,6 +12,10 @@ type Props = {
   // When true, reserve room on the right for the floating PanelMenu trigger
   // by shifting the close button left.
   reserveMenuSpace?: boolean;
+  // When true, the cell overlay also has a close-cell X to the right of the
+  // PanelMenu — push the in-header close button further left so it doesn't
+  // sit underneath the floating PanelMenu (which is now in the middle).
+  reserveCloseCellSpace?: boolean;
   className?: string;
 };
 
@@ -21,6 +25,7 @@ export function PanelHost({
   children,
   headerExtras,
   reserveMenuSpace,
+  reserveCloseCellSpace,
   className,
 }: Props) {
   const descriptor = PANEL_CATALOG[panelId];
@@ -44,7 +49,9 @@ export function PanelHost({
             onClick={() => onClose(panelId)}
             className={cn(
               'inline-flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground',
-              reserveMenuSpace && 'mr-6'
+              reserveCloseCellSpace
+                ? 'mr-[3.75rem]'
+                : reserveMenuSpace && 'mr-8'
             )}
           >
             <X className="h-4 w-4" />

@@ -16,6 +16,12 @@ type Props = {
   renderPanel: PanelRenderer;
   renderPanelHeader?: PanelHeaderRenderer;
   className?: string;
+  /**
+   * When false, the cell overlay has a close-cell X button to the right of
+   * its PanelMenu — the rightmost panel's in-header close X needs more left
+   * margin to stay clear of the floating menu.
+   */
+  isFirstCell?: boolean;
 };
 
 export function PanelLayout({
@@ -23,6 +29,7 @@ export function PanelLayout({
   renderPanel,
   renderPanelHeader,
   className,
+  isFirstCell,
 }: Props) {
   const { columns, closePanel, setColumnSplitRatio } =
     useWorkspacePanelLayout(workspaceId);
@@ -68,6 +75,7 @@ export function PanelLayout({
               renderPanelHeader={renderPanelHeader}
               onClose={closePanel}
               onSplitChange={setColumnSplitRatio}
+              isFirstCell={isFirstCell}
             />
           </Panel>
         </Fragment>
@@ -85,6 +93,7 @@ type ColumnProps = {
   renderPanelHeader?: PanelHeaderRenderer;
   onClose: (panelId: PanelId) => void;
   onSplitChange: (columnIdx: number, ratio: number) => void;
+  isFirstCell?: boolean;
 };
 
 function PanelColumnContent({
@@ -96,7 +105,9 @@ function PanelColumnContent({
   renderPanelHeader,
   onClose,
   onSplitChange,
+  isFirstCell,
 }: ColumnProps) {
+  const reserveCloseCellSpace = isRightmost && !isFirstCell;
   const handleLayoutChange = useCallback(
     (layout: Layout) => {
       const top = layout[`row-${columnIdx}-0`];
@@ -113,12 +124,13 @@ function PanelColumnContent({
   if (panels.length === 1) {
     const id = panels[0]!;
     return (
-      <div className="h-full w-full p-1">
+      <div className="h-full w-full p-0.5">
         <PanelHost
           panelId={id}
           onClose={onClose}
           headerExtras={renderPanelHeader?.(id)}
           reserveMenuSpace={isRightmost}
+          reserveCloseCellSpace={reserveCloseCellSpace}
         >
           {renderPanel(id)}
         </PanelHost>
@@ -142,12 +154,13 @@ function PanelColumnContent({
       onLayoutChange={handleLayoutChange}
     >
       <Panel id={`row-${columnIdx}-0`} minSize="15%" className="min-h-0 w-full">
-        <div className="h-full w-full p-1">
+        <div className="h-full w-full p-0.5">
           <PanelHost
             panelId={topId!}
             onClose={onClose}
             headerExtras={renderPanelHeader?.(topId!)}
             reserveMenuSpace={isRightmost}
+            reserveCloseCellSpace={reserveCloseCellSpace}
           >
             {renderPanel(topId!)}
           </PanelHost>
@@ -158,7 +171,7 @@ function PanelColumnContent({
         orientation="horizontal"
       />
       <Panel id={`row-${columnIdx}-1`} minSize="15%" className="min-h-0 w-full">
-        <div className="h-full w-full p-1">
+        <div className="h-full w-full p-0.5">
           <PanelHost
             panelId={bottomId!}
             onClose={onClose}

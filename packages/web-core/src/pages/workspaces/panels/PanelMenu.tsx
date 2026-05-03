@@ -1,4 +1,4 @@
-import { Check, PanelRight } from 'lucide-react';
+import { Check, ChevronDown, PanelRight } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,11 +24,12 @@ export function PanelMenu({ workspaceId, className }: Props) {
           type="button"
           aria-label="Open panel menu"
           className={cn(
-            'inline-flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground',
+            'inline-flex h-7 items-center justify-center gap-0.5 rounded px-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground',
             className
           )}
         >
           <PanelRight className="h-4 w-4" />
+          <ChevronDown className="h-2.5 w-2.5" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[12rem]">
