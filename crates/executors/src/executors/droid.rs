@@ -148,7 +148,9 @@ impl StandardCodingAgentExecutor for Droid {
         }
         if let Some(permission_policy) = executor_config.permission_policy.clone() {
             self.autonomy = match permission_policy {
-                crate::model_selector::PermissionPolicy::BypassPermissions => Autonomy::SkipPermissionsUnsafe,
+                crate::model_selector::PermissionPolicy::BypassPermissions => {
+                    Autonomy::SkipPermissionsUnsafe
+                }
                 crate::model_selector::PermissionPolicy::Supervised
                 | crate::model_selector::PermissionPolicy::Plan
                 | crate::model_selector::PermissionPolicy::AcceptEdits

@@ -224,7 +224,10 @@ impl StandardCodingAgentExecutor for Copilot {
                     reasoning_options: vec![],
                 })
                 .collect(),
-                permissions: vec![PermissionPolicy::BypassPermissions, PermissionPolicy::Supervised],
+                permissions: vec![
+                    PermissionPolicy::BypassPermissions,
+                    PermissionPolicy::Supervised,
+                ],
                 ..Default::default()
             },
             ..Default::default()
