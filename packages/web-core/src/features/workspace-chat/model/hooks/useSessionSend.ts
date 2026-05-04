@@ -14,6 +14,8 @@ interface UseSessionSendOptions {
   onSelectSession?: (sessionId: string) => void;
   /** Unified executor config (executor + variant + overrides) */
   executorConfig?: ExecutorConfig | null;
+  /** Provider ID selected via the per-message provider-model picker */
+  selectedProviderId?: string | null;
 }
 
 interface UseSessionSendResult {
@@ -42,6 +44,7 @@ export function useSessionSend({
   isNewSessionMode,
   onSelectSession,
   executorConfig,
+  selectedProviderId,
 }: UseSessionSendOptions): UseSessionSendResult {
   const { mutateAsync: createSession, isPending: isCreatingSession } =
     useCreateSession();
@@ -91,6 +94,7 @@ export function useSessionSend({
             retry_process_id: null,
             force_when_dirty: null,
             perform_git_reset: null,
+            selected_provider_id: selectedProviderId ?? undefined,
           });
           return true;
         } catch (e: unknown) {
@@ -109,6 +113,7 @@ export function useSessionSend({
       createSession,
       onSelectSession,
       executorConfig,
+      selectedProviderId,
     ]
   );
 

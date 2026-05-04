@@ -5,7 +5,10 @@ use axum::{
     routing::{delete, get, post, put},
 };
 use db::{
-    models::provider::{CreateProvider, Provider, ProviderError, UpdateProvider},
+    models::{
+        coding_agent_turn::{CodingAgentTurn, RecentModelProviderPair},
+        provider::{CreateProvider, Provider, ProviderError, UpdateProvider},
+    },
     provider_catalog::{CatalogPreset, load_catalog},
 };
 use deployment::Deployment;
@@ -32,6 +35,7 @@ impl From<ProviderError> for ApiError {
 pub fn router(deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
     Router::new()
         .route("/providers/catalog", get(get_catalog))
+        .route("/providers/recents", get(get_recents))
         .route("/providers", get(list_providers))
         .route("/providers", post(create_provider))
         .route("/providers/:id", get(get_provider))
@@ -43,6 +47,16 @@ pub fn router(deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
 
 pub async fn get_catalog() -> ResponseJson<ApiResponse<&'static [CatalogPreset]>> {
     ResponseJson(ApiResponse::success(load_catalog().presets.as_slice()))
+}
+
+pub async fn get_recents(
+    State(deployment): State<DeploymentImpl>,
+) -> Result<ResponseJson<ApiResponse<Vec<RecentModelProviderPair>>>, ApiError> {
+    let pool = &deployment.db().pool;
+    let pairs = CodingAgentTurn::recent_model_provider_pairs(pool, 5)
+        .await
+        .map_err(ApiError::Database)?;
+    Ok(ResponseJson(ApiResponse::success(pairs)))
 }
 
 pub async fn list_providers(

@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT\n                cat.execution_process_id as \"execution_process_id!: Uuid\",\n                cat.selected_model_id as \"model_id!\",\n                cat.selected_provider_id as \"provider_id!\"\n               FROM coding_agent_turns cat\n               JOIN execution_processes ep ON cat.execution_process_id = ep.id\n               WHERE ep.session_id = $1\n                 AND cat.selected_model_id IS NOT NULL\n                 AND cat.selected_provider_id IS NOT NULL\n               ORDER BY cat.created_at ASC",
+  "describe": {
+    "columns": [
+      {
+        "name": "execution_process_id!: Uuid",
+        "ordinal": 0,
+        "type_info": "Blob"
+      },
+      {
+        "name": "model_id!",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "provider_id!",
+        "ordinal": 2,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "4a87b3f81eff6d7083fad42931abd702a2d8cf37726e2e12dd5059f290070d43"
+}

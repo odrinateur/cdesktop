@@ -4,6 +4,19 @@ use sqlx::{FromRow, SqlitePool};
 use ts_rs::TS;
 use uuid::Uuid;
 
+#[derive(Debug, Clone, Serialize, Deserialize, TS, FromRow)]
+pub struct RecentModelProviderPair {
+    pub model_id: String,
+    pub provider_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS, FromRow)]
+pub struct TurnSelection {
+    pub execution_process_id: Uuid,
+    pub model_id: String,
+    pub provider_id: String,
+}
+
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, TS)]
 pub struct CodingAgentTurn {
     pub id: Uuid,
@@ -124,6 +137,29 @@ impl CodingAgentTurn {
         )
         .fetch_one(pool)
         .await
+    }
+
+    /// Record which (model, provider) pair was selected for this turn.
+    /// Called after turn creation when the picker has made a selection.
+    pub async fn update_selected_model_provider(
+        pool: &SqlitePool,
+        execution_process_id: Uuid,
+        model_id: &str,
+        provider_id: &str,
+    ) -> Result<(), sqlx::Error> {
+        let now = Utc::now();
+        sqlx::query!(
+            r#"UPDATE coding_agent_turns
+               SET selected_model_id = $1, selected_provider_id = $2, updated_at = $3
+               WHERE execution_process_id = $4"#,
+            model_id,
+            provider_id,
+            now,
+            execution_process_id
+        )
+        .execute(pool)
+        .await?;
+        Ok(())
     }
 
     /// Update coding agent turn with agent session ID
@@ -251,5 +287,52 @@ impl CodingAgentTurn {
         .await?;
 
         Ok(result.into_iter().collect())
+    }
+
+    /// Return (execution_process_id, model_id, provider_id) for all turns in a session
+    /// that have model/provider selections set, ordered by creation time.
+    pub async fn turn_selections_for_session(
+        pool: &SqlitePool,
+        session_id: Uuid,
+    ) -> Result<Vec<TurnSelection>, sqlx::Error> {
+        sqlx::query_as!(
+            TurnSelection,
+            r#"SELECT
+                cat.execution_process_id as "execution_process_id!: Uuid",
+                cat.selected_model_id as "model_id!",
+                cat.selected_provider_id as "provider_id!"
+               FROM coding_agent_turns cat
+               JOIN execution_processes ep ON cat.execution_process_id = ep.id
+               WHERE ep.session_id = $1
+                 AND cat.selected_model_id IS NOT NULL
+                 AND cat.selected_provider_id IS NOT NULL
+               ORDER BY cat.created_at ASC"#,
+            session_id
+        )
+        .fetch_all(pool)
+        .await
+    }
+
+    /// Return the most recent N distinct (model_id, provider_id) pairs across all sessions,
+    /// ordered by most-recently-used first. NULL pairs (turns sent before Phase 6) are excluded.
+    pub async fn recent_model_provider_pairs(
+        pool: &SqlitePool,
+        limit: i64,
+    ) -> Result<Vec<RecentModelProviderPair>, sqlx::Error> {
+        sqlx::query_as!(
+            RecentModelProviderPair,
+            r#"SELECT
+                selected_model_id as "model_id!",
+                selected_provider_id as "provider_id!"
+               FROM coding_agent_turns
+               WHERE selected_model_id IS NOT NULL
+                 AND selected_provider_id IS NOT NULL
+               GROUP BY selected_model_id, selected_provider_id
+               ORDER BY MAX(created_at) DESC
+               LIMIT $1"#,
+            limit
+        )
+        .fetch_all(pool)
+        .await
     }
 }

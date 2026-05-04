@@ -340,6 +340,10 @@ selected_provider_id?: string, };
 
 export type Provider = { id: string, name: string, kind: AiProviderKind, agentKind: string, presetId: string | null, enabled: boolean, env: { [key in string]?: string }, extraArgs: Array<string>, haikuModel: string | null, enabledModels: Array<EnabledModel>, createdAt: string, updatedAt: string, };
 
+export type RecentModelProviderPair = { model_id: string, provider_id: string, };
+
+export type TurnSelection = { execution_process_id: string, model_id: string, provider_id: string, };
+
 export type AiProviderKind = "default" | "preset" | "custom";
 
 export type EnabledModel = { id: string, displayName: string, ownedBy: string | null, };

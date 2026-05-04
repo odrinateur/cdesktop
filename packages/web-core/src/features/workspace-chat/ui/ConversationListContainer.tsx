@@ -15,6 +15,11 @@ import {
   findPreviousUserMessageIndex,
   type ConversationRow,
 } from '../model/conversation-row-model';
+import {
+  useTurnSelections,
+  buildSwitchMarkers,
+} from '@/shared/hooks/useTurnSelections';
+import { useProviders } from '@/shared/hooks/useProviders';
 import { deriveConversationEntries } from '../model/deriveConversationEntries';
 import { deriveConversationTimeline } from '../model/deriveConversationTimeline';
 import { useConversationVirtualizer } from '../model/useConversationVirtualizer';
@@ -67,6 +72,16 @@ const STREAMING_UNVIRTUALIZED_BUFFER_ROWS = 24;
 
 const SKELETON_ROW_WIDTHS = ['75%', '55%', '85%', '45%'];
 const SKELETON_ROW_HEIGHTS = ['64px', '48px', '80px', '40px'];
+
+function SwitchMarker({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-2 px-4 py-1 text-xs text-muted-foreground opacity-60">
+      <div className="flex-1 h-px bg-border" />
+      <span>{label}</span>
+      <div className="flex-1 h-px bg-border" />
+    </div>
+  );
+}
 
 function renderRowContent(
   entry: DisplayEntry,
@@ -165,6 +180,18 @@ export const ConversationList = forwardRef<
   const repos = reposProp;
   const resetAction = useResetProcess(attempt.id, attempt.session?.id);
   const conversationScopeKey = `${attempt.id}:${sessionScopeId ?? attempt.session?.id ?? 'new'}`;
+
+  // Switch markers for mid-thread model/provider changes (Phase 7)
+  const { data: turnSelections = [] } = useTurnSelections(attempt.session?.id);
+  const { data: providers = [] } = useProviders();
+  const providerNameMap = useMemo(
+    () => new Map(providers.map((p) => [p.id, p.name])),
+    [providers]
+  );
+  const switchMarkers = useMemo(
+    () => buildSwitchMarkers(turnSelections, providerNameMap),
+    [turnSelections, providerNameMap]
+  );
   const [filteredEntries, setFilteredEntries] = useState<DisplayEntry[]>([]);
   const [dataVersion, setDataVersion] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -868,6 +895,15 @@ export const ConversationList = forwardRef<
                       transform: `translateY(${virtualItem.start}px)`,
                     }}
                   >
+                    {switchMarkers.get(row.entry?.executionProcessId ?? '') && (
+                      <SwitchMarker
+                        label={
+                          switchMarkers.get(
+                            row.entry?.executionProcessId ?? ''
+                          )!
+                        }
+                      />
+                    )}
                     {renderRowContent(row.entry, attempt, resetAction, repos)}
                   </div>
                 );
@@ -883,6 +919,13 @@ export const ConversationList = forwardRef<
                 data-row-index={rowIndex}
                 data-semantic-key={row.semanticKey}
               >
+                {switchMarkers.get(row.entry?.executionProcessId ?? '') && (
+                  <SwitchMarker
+                    label={
+                      switchMarkers.get(row.entry?.executionProcessId ?? '')!
+                    }
+                  />
+                )}
                 {renderRowContent(row.entry, attempt, resetAction, repos)}
               </div>
             );
