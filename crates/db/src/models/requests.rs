@@ -42,6 +42,10 @@ pub struct CreateAndStartWorkspaceRequest {
     #[serde(default)]
     #[ts(optional)]
     pub use_worktree: Option<bool>,
+    /// Provider to route the first message through. None = ambient auth.
+    #[serde(default)]
+    #[ts(optional)]
+    pub selected_provider_id: Option<Uuid>,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]

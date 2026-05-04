@@ -18,6 +18,8 @@ import { SettingsDialog } from '@/shared/dialogs/settings/SettingsDialog';
 import { ComposerChipRow, useAutoAttachMostRecent } from './ComposerChipRow';
 import { LandingContextSection } from './LandingContextSection';
 import { ModelSelectorContainer } from '@/shared/components/ModelSelectorContainer';
+import { ProviderModelPicker } from '@/shared/components/ProviderModelPicker';
+import { useProviderModelStore } from '@/shared/stores/useProviderModelStore';
 
 interface CreateChatBoxContainerProps {
   onWorkspaceCreated: (workspaceId: string) => void;
@@ -49,6 +51,7 @@ export function CreateChatBoxContainer({
   useAutoAttachMostRecent();
 
   const { createWorkspace } = useCreateWorkspace();
+  const { selectedProviderId, setSelection } = useProviderModelStore();
   const hasSelectedRepos = repos.length > 0;
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
@@ -190,6 +193,7 @@ export function CreateChatBoxContainer({
         : null,
       attachment_ids: getAttachmentIds(),
       use_worktree: useWorktree,
+      selected_provider_id: selectedProviderId ?? undefined,
     };
     const linkToIssue = linkedIssue
       ? {
@@ -228,6 +232,7 @@ export function CreateChatBoxContainer({
     clearDraft,
     linkedIssue,
     useWorktree,
+    selectedProviderId,
   ]);
 
   // Determine error to display
@@ -301,17 +306,14 @@ export function CreateChatBoxContainer({
             repoId={repoId}
             modelSelector={
               effectiveExecutor ? (
-                <ModelSelectorContainer
-                  slot="right"
-                  agent={effectiveExecutor}
-                  workspaceId={undefined}
-                  onAdvancedSettings={handleCustomise}
-                  presets={variantOptions}
-                  selectedPreset={selectedVariant}
-                  onPresetSelect={handlePresetSelect}
-                  onOverrideChange={setExecutorOverrides}
-                  executorConfig={executorConfig}
-                  presetOptions={presetOptions}
+                <ProviderModelPicker
+                  onManageProviders={() =>
+                    SettingsDialog.show({ initialSection: 'providers' })
+                  }
+                  onSelect={(providerId, modelId) => {
+                    setSelection(providerId, modelId);
+                    setExecutorOverrides({ model_id: modelId });
+                  }}
                 />
               ) : undefined
             }

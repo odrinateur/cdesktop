@@ -224,8 +224,29 @@ pub async fn create_and_start_workspace(
         prompt,
         attachment_ids,
         use_worktree,
+        selected_provider_id,
     } = payload;
     let use_worktree = use_worktree.unwrap_or(true);
+
+    let pool = &deployment.db().pool;
+    let provider_env = if let Some(provider_id) = selected_provider_id {
+        let provider = db::models::provider::Provider::find_by_id(pool, provider_id)
+            .await
+            .map_err(|_| ApiError::BadRequest(format!("Provider '{provider_id}' not found")))?;
+        if !provider.enabled {
+            return Err(ApiError::BadRequest(format!(
+                "Provider '{}' is disabled",
+                provider.name
+            )));
+        }
+        let model_id = executor_config.model_id.as_deref().unwrap_or("");
+        let env = provider.build_spawn_env(model_id);
+        if env.is_empty() { None } else { Some(env) }
+    } else {
+        None
+    };
+    let selected_provider_id_str = selected_provider_id.map(|id| id.to_string());
+    let selected_model_id_str = executor_config.model_id.clone();
 
     let mut workspace_prompt = normalize_prompt(&prompt).ok_or_else(|| {
         ApiError::BadRequest(
@@ -348,7 +369,14 @@ pub async fn create_and_start_workspace(
 
     let execution_process = deployment
         .container()
-        .start_workspace(&workspace, executor_config.clone(), workspace_prompt)
+        .start_workspace(
+            &workspace,
+            executor_config.clone(),
+            workspace_prompt,
+            provider_env,
+            selected_provider_id_str,
+            selected_model_id_str,
+        )
         .await?;
 
     deployment

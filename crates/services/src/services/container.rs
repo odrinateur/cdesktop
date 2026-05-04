@@ -1068,6 +1068,9 @@ pub trait ContainerService {
         workspace: &Workspace,
         executor_config: ExecutorConfig,
         prompt: String,
+        provider_env: Option<HashMap<String, String>>,
+        selected_provider_id: Option<String>,
+        selected_model_id: Option<String>,
     ) -> Result<ExecutionProcess, ContainerError> {
         // Create container
         self.create(workspace).await?;
@@ -1107,14 +1110,20 @@ pub trait ContainerService {
             .filter(|dir| !dir.is_empty())
             .cloned();
 
-        let coding_action = ExecutorAction::new(
-            ExecutorActionType::CodingAgentInitialRequest(CodingAgentInitialRequest {
-                prompt,
-                executor_config: executor_config.clone(),
-                working_dir,
-            }),
-            None,
-        );
+        let coding_action = {
+            let mut a = ExecutorAction::new(
+                ExecutorActionType::CodingAgentInitialRequest(CodingAgentInitialRequest {
+                    prompt,
+                    executor_config: executor_config.clone(),
+                    working_dir,
+                }),
+                None,
+            );
+            if let Some(env) = provider_env {
+                a = a.with_provider_env(env);
+            }
+            a.with_provider_selection(selected_provider_id, selected_model_id)
+        };
 
         let execution_process = if repos_with_setup.is_empty() {
             // No setup to run (either no scripts configured, or worktree-disabled).

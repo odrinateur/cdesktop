@@ -941,7 +941,7 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
     [config?.send_message_shortcut, sessionId]
   );
 
-  const providerModelPicker = (
+  const modelSelectorNode = effectiveExecutor ? (
     <ProviderModelPicker
       onManageProviders={() =>
         SettingsDialog.show({ initialSection: 'providers' })
@@ -951,25 +951,6 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
         setExecutorOverrides({ model_id: modelId });
       }}
     />
-  );
-
-  const modelSelectorNode = effectiveExecutor ? (
-    <div className="flex items-center gap-1">
-      {providerModelPicker}
-      <ModelSelectorContainer
-        slot="right"
-        agent={effectiveExecutor}
-        workspaceId={workspaceId}
-        sessionId={sessionId}
-        onAdvancedSettings={handleCustomise}
-        presets={variantOptions}
-        selectedPreset={selectedVariant}
-        onPresetSelect={setSelectedVariant}
-        onOverrideChange={setExecutorOverrides}
-        executorConfig={executorConfig}
-        presetOptions={presetOptions}
-      />
-    </div>
   ) : undefined;
 
   const modelSelectorLeftNode = effectiveExecutor ? (
