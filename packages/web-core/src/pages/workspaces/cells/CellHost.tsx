@@ -259,7 +259,7 @@ function CellHostInner({
         onMouseDownCapture={handleMouseDownCapture}
         className={cn(
           'relative flex h-full transition-opacity',
-          !isFocused && 'opacity-85'
+          !isFocused && 'opacity-70'
         )}
       />
     );
@@ -270,7 +270,7 @@ function CellHostInner({
       onMouseDownCapture={handleMouseDownCapture}
       className={cn(
         'relative flex h-full transition-opacity',
-        !isFocused && 'opacity-85'
+        !isFocused && 'opacity-70'
       )}
     >
       <Group
@@ -299,10 +299,16 @@ function CellHostInner({
               onStartNewSession={startNewSession}
             />
             {/* Breadcrumb — overlay only on the chat panel so it does not
-                cover preview/git/etc. on the right. Right padding leaves
-                room for the cell-level toolbar (close + panel-menu) when
-                the chat panel is full-width (no right panels open). */}
-            <div className="absolute top-2 left-5 right-0 z-20 overflow-hidden">
+                cover preview/git/etc. on the right. When right-side panels
+                are open the breadcrumb can run flush to the chat panel's
+                right edge (the toolbar floats over the right panel area);
+                when chat is full-width, reserve room for the toolbar. */}
+            <div
+              className={cn(
+                'absolute top-2 left-5 z-20 overflow-hidden',
+                hasPanels ? 'right-0' : 'right-[80px]'
+              )}
+            >
               <NavbarBreadcrumbSlot />
             </div>
           </Panel>
