@@ -1252,6 +1252,30 @@ pub trait ContainerService {
                     .remove(&execution_process.id);
                 return Err(e.into());
             }
+
+            // Persist the per-message (model, provider) selection so the recents
+            // query and transcript markers work (§4/§6/§7).
+            if let (Some(model_id), Some(provider_id)) = (
+                executor_action.selected_model_id.as_deref(),
+                executor_action.selected_provider_id.as_deref(),
+            ) {
+                if !model_id.is_empty() && !provider_id.is_empty() {
+                    if let Err(e) = CodingAgentTurn::update_selected_model_provider(
+                        &self.db().pool,
+                        execution_process.id,
+                        model_id,
+                        provider_id,
+                    )
+                    .await
+                    {
+                        tracing::warn!(
+                            execution_process_id = %execution_process.id,
+                            error = %e,
+                            "failed to persist model/provider selection on turn"
+                        );
+                    }
+                }
+            }
         }
 
         if let Err(start_error) = self

@@ -269,10 +269,15 @@ pub async fn follow_up(
         None
     };
 
-    let action = if let Some(env) = provider_env {
-        ExecutorAction::new(action_type, None).with_provider_env(env)
-    } else {
-        ExecutorAction::new(action_type, None)
+    let selected_provider_id_str = payload.selected_provider_id.map(|id| id.to_string());
+    let selected_model_id_str = payload.executor_config.model_id.clone();
+
+    let action = {
+        let mut a = ExecutorAction::new(action_type, None);
+        if let Some(env) = provider_env {
+            a = a.with_provider_env(env);
+        }
+        a.with_provider_selection(selected_provider_id_str, selected_model_id_str)
     };
 
     let execution_process = deployment

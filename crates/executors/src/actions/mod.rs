@@ -36,12 +36,20 @@ pub enum ExecutorActionType {
 pub struct ExecutorAction {
     pub typ: ExecutorActionType,
     pub next_action: Option<Box<ExecutorAction>>,
-    /// Provider-resolved env vars to inject at spawn. Stored in DB (plaintext,
-    /// consistent with §5.2 posture) so next-action chains and queued messages
-    /// preserve the provider selection that was active when they were queued.
+    /// Provider-resolved env vars to inject at spawn. Stored in DB so
+    /// next-action chains and queued messages preserve the provider selection.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[ts(skip)]
     pub provider_env: Option<HashMap<String, String>>,
+    /// Provider ID selected for this message; persisted to coding_agent_turns
+    /// for recents query and transcript markers (§4/§6).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(skip)]
+    pub selected_provider_id: Option<String>,
+    /// Model ID selected for this message; persisted alongside provider_id.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(skip)]
+    pub selected_model_id: Option<String>,
 }
 
 impl ExecutorAction {
@@ -50,11 +58,23 @@ impl ExecutorAction {
             typ,
             next_action,
             provider_env: None,
+            selected_provider_id: None,
+            selected_model_id: None,
         }
     }
 
     pub fn with_provider_env(mut self, env: HashMap<String, String>) -> Self {
         self.provider_env = Some(env);
+        self
+    }
+
+    pub fn with_provider_selection(
+        mut self,
+        provider_id: Option<String>,
+        model_id: Option<String>,
+    ) -> Self {
+        self.selected_provider_id = provider_id;
+        self.selected_model_id = model_id;
         self
     }
     pub fn append_action(mut self, action: ExecutorAction) -> Self {
