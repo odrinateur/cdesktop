@@ -220,7 +220,7 @@ export const WorkspacesMainContainer = forwardRef<
       className="flex-1 min-h-0 overflow-hidden flex justify-center"
       onWheel={(e) => forwardWheelToScroller(e, conversationListRef)}
     >
-      <div className="w-chat max-w-full h-full px-[45px]">
+      <div className="w-chat max-w-full h-full px-[19px]">
         <RetryUiProvider workspaceId={workspaceWithSession.id}>
           <ConversationList
             key={entriesProviderKey}
