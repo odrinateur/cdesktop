@@ -1,17 +1,17 @@
 use std::collections::HashMap;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 const CATALOG_JSON: &str = include_str!("provider_catalog.json");
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProviderCatalog {
     pub schema_version: u32,
     pub cc_switch_source_sha: String,
     pub presets: Vec<CatalogPreset>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CatalogPreset {
     pub id: String,
     pub name: String,
