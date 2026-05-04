@@ -11,6 +11,12 @@ import {
   type SessionGroup,
   type CellId,
 } from '@/shared/stores/useSessionGridStore';
+import { ReviewProvider } from '@/shared/hooks/ReviewProvider';
+import { ChangesViewProvider } from '@/shared/hooks/ChangesViewProvider';
+import { CreateChatBoxContainer } from '@/shared/components/CreateChatBoxContainer';
+import { CreateModeProvider } from '@/features/create-mode/model/CreateModeProvider';
+import type { CreateModeInitialState } from '@/shared/types/createMode';
+import { cn } from '@/shared/lib/utils';
 import { CellHost } from './CellHost';
 import { ResizeHandle } from '../panels';
 
@@ -26,7 +32,28 @@ import { ResizeHandle } from '../panels';
  *   synchronized: dragging one in-group handle mirrors the same ratio onto
  *   the other group via the imperative ref.
  */
-export function SessionGrid() {
+export function SessionGrid({
+  createInFirstCell,
+  onWorkspaceCreated,
+  createModeProviderKey,
+  createModeInitialState,
+}: {
+  /**
+   * When true, the anchor cell (group 0, cell 0) renders the
+   * CreateChatBoxContainer instead of its workspace's CellHost — used so
+   * that "New Session" can land inside the existing grid instead of
+   * tearing it down for a full-page create form.
+   */
+  createInFirstCell?: boolean;
+  onWorkspaceCreated?: (workspaceId: string) => void;
+  /**
+   * `key` to pass to the inner `CreateModeProvider` so it remounts when
+   * the create-mode seed changes (matches the wrapping done at the page
+   * level for the full-screen create form).
+   */
+  createModeProviderKey?: string;
+  createModeInitialState?: CreateModeInitialState | null;
+} = {}) {
   const grid = useSessionGrid();
 
   if (!grid.groups[0]?.cells[0]?.sessionId) {
@@ -79,6 +106,10 @@ export function SessionGrid() {
             groupIndex={index}
             isLastGroup={isLast}
             primaryOrientation={grid.primaryOrientation}
+            createInFirstCell={createInFirstCell}
+            onWorkspaceCreated={onWorkspaceCreated}
+            createModeProviderKey={createModeProviderKey}
+            createModeInitialState={createModeInitialState}
           />
         );
       })}
@@ -92,12 +123,20 @@ function PrimaryGroupSlot({
   groupIndex,
   isLastGroup,
   primaryOrientation,
+  createInFirstCell,
+  onWorkspaceCreated,
+  createModeProviderKey,
+  createModeInitialState,
 }: {
   id: string;
   group: SessionGroup;
   groupIndex: number;
   isLastGroup: boolean;
   primaryOrientation: 'vertical' | 'horizontal';
+  createInFirstCell?: boolean;
+  onWorkspaceCreated?: (workspaceId: string) => void;
+  createModeProviderKey?: string;
+  createModeInitialState?: CreateModeInitialState | null;
 }) {
   return (
     <>
@@ -106,6 +145,10 @@ function PrimaryGroupSlot({
           group={group}
           groupIndex={groupIndex}
           primaryOrientation={primaryOrientation}
+          createInFirstCell={createInFirstCell}
+          onWorkspaceCreated={onWorkspaceCreated}
+          createModeProviderKey={createModeProviderKey}
+          createModeInitialState={createModeInitialState}
         />
       </Panel>
       {!isLastGroup && (
@@ -125,10 +168,18 @@ function GroupBody({
   group,
   groupIndex,
   primaryOrientation,
+  createInFirstCell,
+  onWorkspaceCreated,
+  createModeProviderKey,
+  createModeInitialState,
 }: {
   group: SessionGroup;
   groupIndex: number;
   primaryOrientation: 'vertical' | 'horizontal';
+  createInFirstCell?: boolean;
+  onWorkspaceCreated?: (workspaceId: string) => void;
+  createModeProviderKey?: string;
+  createModeInitialState?: CreateModeInitialState | null;
 }) {
   const focusedCellId = useSessionGridStore((s) => s.grid.focusedCellId);
   const otherGroupCellCount = useSessionGridStore(
@@ -211,13 +262,25 @@ function GroupBody({
         minSize="20%"
         className="min-w-0 min-h-0 overflow-hidden"
       >
-        <CellWrapper
-          cell={group.cells[0]}
-          isFirstCell={isAnchor(0)}
-          isFocused={focusedCellId === group.cells[0].id}
-          onFocus={() => focusCell(group.cells[0].id)}
-          onClose={isAnchor(0) ? undefined : () => closeCell(group.cells[0].id)}
-        />
+        {isAnchor(0) && createInFirstCell && onWorkspaceCreated ? (
+          <CreateCellHost
+            isFocused={focusedCellId === group.cells[0].id}
+            onFocus={() => focusCell(group.cells[0].id)}
+            onWorkspaceCreated={onWorkspaceCreated}
+            providerKey={createModeProviderKey}
+            initialState={createModeInitialState}
+          />
+        ) : (
+          <CellWrapper
+            cell={group.cells[0]}
+            isFirstCell={isAnchor(0)}
+            isFocused={focusedCellId === group.cells[0].id}
+            onFocus={() => focusCell(group.cells[0].id)}
+            onClose={
+              isAnchor(0) ? undefined : () => closeCell(group.cells[0].id)
+            }
+          />
+        )}
       </Panel>
       {group.cells.length === 2 && (
         <>
@@ -270,5 +333,46 @@ function CellWrapper({
       onFocus={onFocus}
       onClose={onClose}
     />
+  );
+}
+
+/**
+ * Stand-in for CellHost in the anchor slot when the user is creating a new
+ * workspace from inside the grid (e.g. clicked "New Session" while ≥2 cells
+ * exist). Mounts the same providers CellHost would, minus WorkspaceProvider
+ * (no workspaceId yet) — the surrounding layout already provides
+ * CreateModeProvider.
+ */
+function CreateCellHost({
+  isFocused,
+  onFocus,
+  onWorkspaceCreated,
+  providerKey,
+  initialState,
+}: {
+  isFocused: boolean;
+  onFocus: () => void;
+  onWorkspaceCreated: (workspaceId: string) => void;
+  providerKey?: string;
+  initialState?: CreateModeInitialState | null;
+}) {
+  return (
+    <div
+      onMouseDownCapture={() => {
+        if (!isFocused) onFocus();
+      }}
+      className={cn(
+        'relative flex h-full transition-opacity',
+        !isFocused && 'opacity-70'
+      )}
+    >
+      <CreateModeProvider key={providerKey} initialState={initialState ?? null}>
+        <ReviewProvider workspaceId={undefined}>
+          <ChangesViewProvider>
+            <CreateChatBoxContainer onWorkspaceCreated={onWorkspaceCreated} />
+          </ChangesViewProvider>
+        </ReviewProvider>
+      </CreateModeProvider>
+    </div>
   );
 }
