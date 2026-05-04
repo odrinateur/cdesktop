@@ -161,7 +161,7 @@ export function ProviderModelPicker({
           {/* Default provider (if enabled and has models) */}
           {!search &&
             grouped
-              .filter((g) => g.provider.kind === 'default')
+              .filter((g) => g.provider.kind === 'Default')
               .map((g) => (
                 <ProviderGroup
                   key={g.provider.id}
@@ -174,7 +174,7 @@ export function ProviderModelPicker({
 
           {/* Other providers */}
           {grouped
-            .filter((g) => search || g.provider.kind !== 'default')
+            .filter((g) => search || g.provider.kind !== 'Default')
             .map((g) => (
               <ProviderGroup
                 key={g.provider.id}

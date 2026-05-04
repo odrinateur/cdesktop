@@ -26,6 +26,24 @@ pub struct CatalogPreset {
     pub endpoint_candidates: Option<Vec<String>>,
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn catalog_loads() {
+        let catalog = load_catalog();
+        assert!(
+            !catalog.presets.is_empty(),
+            "catalog must have at least one preset"
+        );
+        assert!(
+            !catalog.cc_switch_source_sha.is_empty(),
+            "catalog must have a SHA pin"
+        );
+    }
+}
+
 pub fn load_catalog() -> &'static ProviderCatalog {
     use std::sync::OnceLock;
     static CATALOG: OnceLock<ProviderCatalog> = OnceLock::new();

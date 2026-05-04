@@ -57,7 +57,7 @@ export function ProvidersSettingsSection() {
   };
 
   const handleDelete = async (provider: Provider) => {
-    if (provider.kind === 'default') return;
+    if (provider.kind === 'Default') return;
     if (!confirm(`Delete provider "${provider.name}"?`)) return;
     await deleteProvider.mutateAsync(provider.id);
     if (selectedId === provider.id) setSelectedId(null);
@@ -145,7 +145,7 @@ export function ProvidersSettingsSection() {
           <>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-medium">{selected.name}</h3>
-              {selected.kind !== 'default' && (
+              {selected.kind !== 'Default' && (
                 <button
                   onClick={() => handleDelete(selected)}
                   className="text-xs text-destructive hover:underline"

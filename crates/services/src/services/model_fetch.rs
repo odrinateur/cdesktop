@@ -31,6 +31,8 @@ const ERROR_BODY_MAX_CHARS: usize = 512;
 
 /// Compat suffixes stripped from base URL when building candidate endpoints.
 /// Listed longest-first so longer matches take priority.
+/// Compat suffixes from cc-switch model_fetch.rs (parity maintained for consistent
+/// candidate generation). Listed longest-first so longer matches take priority.
 const KNOWN_COMPAT_SUFFIXES: &[&str] = &[
     "/api/claudecode",
     "/api/anthropic",
@@ -40,7 +42,6 @@ const KNOWN_COMPAT_SUFFIXES: &[&str] = &[
     "/anthropic",
     "/step_plan",
     "/coding",
-    "/claude",
 ];
 
 /// Fetch available models from the provider's endpoint.

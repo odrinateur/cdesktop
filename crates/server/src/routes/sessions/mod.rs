@@ -251,25 +251,20 @@ pub async fn follow_up(
 
     // Build provider env if a provider was selected for this message.
     let provider_env = if let Some(provider_id) = payload.selected_provider_id {
-        match Provider::find_by_id(pool, provider_id).await {
-            Ok(provider) if provider.enabled => {
-                let model_id = payload
-                    .executor_config
-                    .model_id
-                    .as_deref()
-                    .unwrap_or_default();
-                let env = provider.build_spawn_env(model_id);
-                if env.is_empty() { None } else { Some(env) }
-            }
-            Ok(_) => {
-                tracing::warn!(provider_id = %provider_id, "selected provider is disabled, skipping env injection");
-                None
-            }
-            Err(e) => {
-                tracing::warn!(provider_id = %provider_id, error = %e, "failed to load selected provider, skipping env injection");
-                None
-            }
+        let provider = Provider::find_by_id(pool, provider_id)
+            .await
+            .map_err(|_| ApiError::BadRequest(format!("Provider '{provider_id}' not found")))?;
+
+        if !provider.enabled {
+            return Err(ApiError::BadRequest(format!(
+                "Provider '{}' is disabled",
+                provider.name
+            )));
         }
+
+        let model_id = payload.executor_config.model_id.as_deref().unwrap_or("");
+        let env = provider.build_spawn_env(model_id);
+        if env.is_empty() { None } else { Some(env) }
     } else {
         None
     };

@@ -116,7 +116,7 @@ fn generate_types_content() -> String {
         db::models::provider::Provider::decl(),
         db::models::coding_agent_turn::RecentModelProviderPair::decl(),
         db::models::coding_agent_turn::TurnSelection::decl(),
-        db::models::provider::ProviderKind::decl(), // TS name: AiProviderKind
+        db::models::provider::AiProviderKind::decl(),
         db::models::provider::EnabledModel::decl(),
         db::models::provider::CreateProvider::decl(),
         db::models::provider::UpdateProvider::decl(),

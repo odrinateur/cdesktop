@@ -338,19 +338,19 @@ create_new_branch?: boolean,
  */
 selected_provider_id?: string, };
 
-export type Provider = { id: string, name: string, kind: AiProviderKind, agentKind: string, presetId: string | null, enabled: boolean, env: { [key in string]?: string }, extraArgs: Array<string>, haikuModel: string | null, enabledModels: Array<EnabledModel>, createdAt: string, updatedAt: string, };
+export type Provider = { id: string, name: string, kind: AiProviderKind, agentKind: string, presetId: string | null, enabled: boolean, env: { [key in string]?: string }, extraArgs: Array<string>, haikuModel: string | null, enabledModels: Array<EnabledModel>, createdAt: Date, updatedAt: Date, };
 
 export type RecentModelProviderPair = { model_id: string, provider_id: string, };
 
 export type TurnSelection = { execution_process_id: string, model_id: string, provider_id: string, };
 
-export type AiProviderKind = "default" | "preset" | "custom";
+export type AiProviderKind = "Default" | "Preset" | "Custom";
 
 export type EnabledModel = { id: string, displayName: string, ownedBy: string | null, };
 
 export type CreateProvider = { name: string, kind: AiProviderKind, agentKind: string | null, presetId: string | null, env: { [key in string]?: string }, extraArgs: Array<string>, haikuModel: string | null, enabledModels: Array<EnabledModel>, };
 
-export type UpdateProvider = { name: string | null, presetId: string | null, enabled: boolean | null, env: { [key in string]?: string } | null, extraArgs: Array<string> | null, haikuModel: string | null, enabledModels: Array<EnabledModel> | null, };
+export type UpdateProvider = { name: string, presetId: string | null, enabled: boolean, env: { [key in string]?: string }, extraArgs: Array<string>, haikuModel: string | null, enabledModels: Array<EnabledModel>, };
 
 export type ResetProcessRequest = { process_id: string, force_when_dirty: boolean | null, perform_git_reset: boolean | null, };
 

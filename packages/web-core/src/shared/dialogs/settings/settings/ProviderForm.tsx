@@ -110,7 +110,7 @@ export function ProviderForm({
   });
 
   const isCreate = !provider;
-  const isDefault = provider?.kind === 'default';
+  const isDefault = provider?.kind === 'Default';
 
   const [selectedPresetId, setSelectedPresetId] = useState<string | null>(
     provider?.presetId ?? null
@@ -244,7 +244,7 @@ export function ProviderForm({
       const data: CreateProvider | UpdateProvider = isCreate
         ? {
             name,
-            kind: selectedPresetId ? 'preset' : 'custom',
+            kind: selectedPresetId ? 'Preset' : 'Custom',
             agentKind: 'CLAUDE_CODE',
             presetId: selectedPresetId,
             env,

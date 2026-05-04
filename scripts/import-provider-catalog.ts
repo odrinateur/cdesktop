@@ -114,7 +114,7 @@ const nameToPreset = new Map(
   (allPresets as RawPreset[]).map((p) => [p.name, p])
 );
 
-const sha = execSync("git rev-parse --short HEAD", { cwd: CC_SWITCH_DIR })
+const sha = execSync("git rev-parse HEAD", { cwd: CC_SWITCH_DIR })
   .toString()
   .trim();
 
