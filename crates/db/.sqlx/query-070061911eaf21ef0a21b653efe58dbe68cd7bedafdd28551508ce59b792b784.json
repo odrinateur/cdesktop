@@ -1,0 +1,86 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO providers (\n                id, name, kind, agent_kind, preset_id, enabled,\n                env, extra_args, haiku_model, enabled_models\n               )\n               VALUES ($1, $2, $3, $4, $5, 1, $6, $7, $8, $9)\n               RETURNING\n                id, name, kind, agent_kind, preset_id,\n                enabled as \"enabled!: bool\",\n                env, extra_args, haiku_model, enabled_models,\n                created_at as \"created_at!: DateTime<Utc>\",\n                updated_at as \"updated_at!: DateTime<Utc>\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "kind",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "agent_kind",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "preset_id",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "enabled!: bool",
+        "ordinal": 5,
+        "type_info": "Integer"
+      },
+      {
+        "name": "env",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "extra_args",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "haiku_model",
+        "ordinal": 8,
+        "type_info": "Text"
+      },
+      {
+        "name": "enabled_models",
+        "ordinal": 9,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at!: DateTime<Utc>",
+        "ordinal": 10,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at!: DateTime<Utc>",
+        "ordinal": 11,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 9
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "070061911eaf21ef0a21b653efe58dbe68cd7bedafdd28551508ce59b792b784"
+}
