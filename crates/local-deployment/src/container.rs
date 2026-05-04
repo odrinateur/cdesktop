@@ -1382,6 +1382,12 @@ impl ContainerService for LocalContainerService {
         env.insert("VK_WORKSPACE_ID", workspace.id.to_string());
         env.insert("VK_WORKSPACE_BRANCH", &workspace.branch);
 
+        // Provider env — injected after base env so provider vars take precedence.
+        if let Some(provider_env) = &executor_action.provider_env {
+            tracing::debug!(keys = ?provider_env.keys().collect::<Vec<_>>(), "injecting provider env");
+            env.merge(provider_env);
+        }
+
         // Create the child and stream, add to execution tracker with timeout
         let mut spawned = tokio::time::timeout(
             Duration::from_secs(30),

@@ -188,8 +188,7 @@ function GroupBody({
   const innerOrientation =
     primaryOrientation === 'vertical' ? 'vertical' : 'horizontal';
 
-  const isAnchor = (cellIndex: number) =>
-    groupIndex === 0 && cellIndex === 0;
+  const isAnchor = (cellIndex: number) => groupIndex === 0 && cellIndex === 0;
 
   const innerDefault: Layout =
     group.cells.length === 2
@@ -217,9 +216,7 @@ function GroupBody({
           isFirstCell={isAnchor(0)}
           isFocused={focusedCellId === group.cells[0].id}
           onFocus={() => focusCell(group.cells[0].id)}
-          onClose={
-            isAnchor(0) ? undefined : () => closeCell(group.cells[0].id)
-          }
+          onClose={isAnchor(0) ? undefined : () => closeCell(group.cells[0].id)}
         />
       </Panel>
       {group.cells.length === 2 && (

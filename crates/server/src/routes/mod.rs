@@ -20,6 +20,7 @@ pub mod host_relay;
 pub mod oauth;
 pub mod organizations;
 pub mod preview;
+pub mod providers;
 pub mod relay_auth;
 pub mod releases;
 pub mod remote;
@@ -51,6 +52,7 @@ pub fn router(deployment: DeploymentImpl) -> IntoMakeService<Router> {
         .merge(search::router(&deployment))
         .merge(preview::api_router())
         .merge(releases::router())
+        .merge(providers::router(&deployment))
         .merge(sessions::router(&deployment))
         .merge(terminal::router())
         .route("/ssh-session", get(ssh_session::ssh_session_ws))

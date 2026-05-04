@@ -113,6 +113,11 @@ fn generate_types_content() -> String {
         relay_types::RefreshRelaySigningSessionRequest::decl(),
         relay_types::RefreshRelaySigningSessionResponse::decl(),
         server::routes::sessions::CreateFollowUpAttempt::decl(),
+        db::models::provider::Provider::decl(),
+        db::models::provider::ProviderKind::decl(), // TS name: AiProviderKind
+        db::models::provider::EnabledModel::decl(),
+        db::models::provider::CreateProvider::decl(),
+        db::models::provider::UpdateProvider::decl(),
         server::routes::sessions::ResetProcessRequest::decl(),
         server::routes::workspaces::git::ChangeTargetBranchRequest::decl(),
         server::routes::workspaces::git::ChangeTargetBranchResponse::decl(),

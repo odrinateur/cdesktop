@@ -11,6 +11,7 @@ use axum::{
 use db::models::{
     coding_agent_turn::CodingAgentTurn,
     execution_process::{ExecutionProcess, ExecutionProcessRunReason},
+    provider::Provider,
     requests::UpdateSession,
     scratch::{Scratch, ScratchType},
     session::{CreateSession, Session, SessionError},
@@ -120,6 +121,10 @@ pub struct CreateFollowUpAttempt {
     #[serde(default)]
     #[ts(optional)]
     pub create_new_branch: Option<bool>,
+    /// Provider to route this message through. None = use Default (ambient auth).
+    #[serde(default)]
+    #[ts(optional)]
+    pub selected_provider_id: Option<Uuid>,
 }
 
 #[derive(Debug, Deserialize, TS)]
@@ -244,7 +249,36 @@ pub async fn follow_up(
         )
     };
 
-    let action = ExecutorAction::new(action_type, None);
+    // Build provider env if a provider was selected for this message.
+    let provider_env = if let Some(provider_id) = payload.selected_provider_id {
+        match Provider::find_by_id(pool, provider_id).await {
+            Ok(provider) if provider.enabled => {
+                let model_id = payload
+                    .executor_config
+                    .model_id
+                    .as_deref()
+                    .unwrap_or_default();
+                let env = provider.build_spawn_env(model_id);
+                if env.is_empty() { None } else { Some(env) }
+            }
+            Ok(_) => {
+                tracing::warn!(provider_id = %provider_id, "selected provider is disabled, skipping env injection");
+                None
+            }
+            Err(e) => {
+                tracing::warn!(provider_id = %provider_id, error = %e, "failed to load selected provider, skipping env injection");
+                None
+            }
+        }
+    } else {
+        None
+    };
+
+    let action = if let Some(env) = provider_env {
+        ExecutorAction::new(action_type, None).with_provider_env(env)
+    } else {
+        ExecutorAction::new(action_type, None)
+    };
 
     let execution_process = deployment
         .container()

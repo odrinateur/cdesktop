@@ -332,7 +332,21 @@ branch?: string,
 /**
  * When `true` with `branch`, runs `git checkout -b <branch>` (create new branch).
  */
-create_new_branch?: boolean, };
+create_new_branch?: boolean, 
+/**
+ * Provider to route this message through. None = use Default (ambient auth).
+ */
+selected_provider_id?: string, };
+
+export type Provider = { id: string, name: string, kind: ProviderKind, agentKind: string, presetId: string | null, enabled: boolean, env: { [key in string]?: string }, extraArgs: Array<string>, haikuModel: string | null, enabledModels: Array<EnabledModel>, createdAt: string, updatedAt: string, };
+
+export type ProviderKind = "default" | "preset" | "custom";
+
+export type EnabledModel = { id: string, displayName: string, ownedBy: string | null, };
+
+export type CreateProvider = { name: string, kind: ProviderKind, agentKind: string | null, presetId: string | null, env: { [key in string]?: string }, extraArgs: Array<string>, haikuModel: string | null, enabledModels: Array<EnabledModel>, };
+
+export type UpdateProvider = { name: string | null, presetId: string | null, enabled: boolean | null, env: { [key in string]?: string } | null, extraArgs: Array<string> | null, haikuModel: string | null, enabledModels: Array<EnabledModel> | null, };
 
 export type ResetProcessRequest = { process_id: string, force_when_dirty: boolean | null, perform_git_reset: boolean | null, };
 
