@@ -9,7 +9,7 @@ use axum::{
     routing::{get, post},
 };
 use db::models::{
-    coding_agent_turn::CodingAgentTurn,
+    coding_agent_turn::{CodingAgentTurn, TurnSelection},
     execution_process::{ExecutionProcess, ExecutionProcessRunReason},
     provider::Provider,
     requests::UpdateSession,
@@ -304,6 +304,17 @@ pub async fn follow_up(
     Ok(ResponseJson(ApiResponse::success(execution_process)))
 }
 
+pub async fn get_turn_selections(
+    Extension(session): Extension<Session>,
+    State(deployment): State<DeploymentImpl>,
+) -> Result<ResponseJson<ApiResponse<Vec<TurnSelection>>>, ApiError> {
+    let pool = &deployment.db().pool;
+    let selections = CodingAgentTurn::turn_selections_for_session(pool, session.id)
+        .await
+        .map_err(ApiError::Database)?;
+    Ok(ResponseJson(ApiResponse::success(selections)))
+}
+
 pub async fn reset_process(
     Extension(session): Extension<Session>,
     State(deployment): State<DeploymentImpl>,
@@ -394,6 +405,7 @@ pub fn router(deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
     let session_id_router = Router::new()
         .route("/", get(get_session).put(update_session))
         .route("/follow-up", post(follow_up))
+        .route("/turn-selections", get(get_turn_selections))
         .route("/reset", post(reset_process))
         .route("/setup", post(run_setup_script))
         .route("/review", post(review::start_review))

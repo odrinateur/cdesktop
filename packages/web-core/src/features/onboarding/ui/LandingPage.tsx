@@ -9,6 +9,7 @@ import {
 import {
   BookOpenIcon,
   BirdIcon,
+  CaretDownIcon,
   CheckIcon,
   CowIcon,
   DeviceMobileIcon,
@@ -21,6 +22,8 @@ import {
   WaveformIcon,
   type Icon,
 } from '@phosphor-icons/react';
+import { ProviderForm } from '@/shared/dialogs/settings/settings/ProviderForm';
+import { useCreateProvider } from '@/shared/hooks/useProviders';
 import type { IconProps } from '@phosphor-icons/react';
 import { usePostHog } from 'posthog-js/react';
 import { siDiscord } from 'simple-icons';
@@ -135,6 +138,52 @@ const REMOTE_ONBOARDING_EVENTS = {
 function randomDefaultSoundFile(): SoundFile {
   const randomIndex = Math.floor(Math.random() * SOUND_OPTIONS.length);
   return SOUND_OPTIONS[randomIndex]?.value ?? SoundFile.COW_MOOING;
+}
+
+function OnboardingProviderSection() {
+  const [expanded, setExpanded] = useState(false);
+  const [added, setAdded] = useState(false);
+  const createProvider = useCreateProvider();
+
+  if (added) {
+    return (
+      <div className="border-t border-border px-double py-base flex items-center gap-2 text-sm text-low">
+        <CheckIcon className="text-brand" weight="bold" />
+        Provider added. You can manage providers in Settings → Providers.
+      </div>
+    );
+  }
+
+  return (
+    <div className="border-t border-border">
+      <button
+        onClick={() => setExpanded((v) => !v)}
+        className="w-full flex items-center justify-between px-double py-base text-sm hover:bg-muted"
+      >
+        <span className="text-low">Add a provider (optional)</span>
+        <CaretDownIcon
+          className={cn(
+            'text-low transition-transform',
+            expanded && 'rotate-180'
+          )}
+        />
+      </button>
+      {expanded && (
+        <div className="px-double pb-double">
+          <ProviderForm
+            onSave={async (data) => {
+              await createProvider.mutateAsync(
+                data as import('shared/types').CreateProvider
+              );
+              setAdded(true);
+            }}
+            onCancel={() => setExpanded(false)}
+            saveLabel="Add provider"
+          />
+        </div>
+      )}
+    </div>
+  );
 }
 
 function resolveTheme(theme: ThemeMode): 'light' | 'dark' {
@@ -546,6 +595,9 @@ export function LandingPage() {
             </section>
           </div>
         </div>
+
+        {/* Providers section */}
+        <OnboardingProviderSection />
 
         {/* Footer */}
         <div className="shrink-0 border-t border-border p-double pt-base flex items-center justify-between gap-base">

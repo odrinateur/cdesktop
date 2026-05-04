@@ -48,6 +48,8 @@ import {
   type SessionChatBoxEditorRenderProps,
 } from '@vibe/ui/components/SessionChatBox';
 import { ModelSelectorContainer } from '@/shared/components/ModelSelectorContainer';
+import { ProviderModelPicker } from '@/shared/components/ProviderModelPicker';
+import { useProviderModelStore } from '@/shared/stores/useProviderModelStore';
 import { useWorkspacePanelLayout } from '@/shared/stores/useUiPreferencesStore';
 import { useInspectModeStore } from '../model/store/useInspectModeStore';
 import { Actions } from '@/shared/actions';
@@ -487,6 +489,8 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
   } = useSessionQueueInteraction({ sessionId });
 
   // Send actions
+  const { selectedProviderId, setSelection } = useProviderModelStore();
+
   const {
     send,
     isSending,
@@ -498,6 +502,7 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
     isNewSessionMode,
     onSelectSession,
     executorConfig,
+    selectedProviderId,
   });
 
   const handleSend = useCallback(async () => {
@@ -936,20 +941,35 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
     [config?.send_message_shortcut, sessionId]
   );
 
-  const modelSelectorNode = effectiveExecutor ? (
-    <ModelSelectorContainer
-      slot="right"
-      agent={effectiveExecutor}
-      workspaceId={workspaceId}
-      sessionId={sessionId}
-      onAdvancedSettings={handleCustomise}
-      presets={variantOptions}
-      selectedPreset={selectedVariant}
-      onPresetSelect={setSelectedVariant}
-      onOverrideChange={setExecutorOverrides}
-      executorConfig={executorConfig}
-      presetOptions={presetOptions}
+  const providerModelPicker = (
+    <ProviderModelPicker
+      onManageProviders={() =>
+        SettingsDialog.show({ initialSection: 'providers' })
+      }
+      onSelect={(providerId, modelId) => {
+        setSelection(providerId, modelId);
+        setExecutorOverrides({ model_id: modelId });
+      }}
     />
+  );
+
+  const modelSelectorNode = effectiveExecutor ? (
+    <div className="flex items-center gap-1">
+      {providerModelPicker}
+      <ModelSelectorContainer
+        slot="right"
+        agent={effectiveExecutor}
+        workspaceId={workspaceId}
+        sessionId={sessionId}
+        onAdvancedSettings={handleCustomise}
+        presets={variantOptions}
+        selectedPreset={selectedVariant}
+        onPresetSelect={setSelectedVariant}
+        onOverrideChange={setExecutorOverrides}
+        executorConfig={executorConfig}
+        presetOptions={presetOptions}
+      />
+    </div>
   ) : undefined;
 
   const modelSelectorLeftNode = effectiveExecutor ? (

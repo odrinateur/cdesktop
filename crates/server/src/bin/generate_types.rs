@@ -114,6 +114,8 @@ fn generate_types_content() -> String {
         relay_types::RefreshRelaySigningSessionResponse::decl(),
         server::routes::sessions::CreateFollowUpAttempt::decl(),
         db::models::provider::Provider::decl(),
+        db::models::coding_agent_turn::RecentModelProviderPair::decl(),
+        db::models::coding_agent_turn::TurnSelection::decl(),
         db::models::provider::ProviderKind::decl(), // TS name: AiProviderKind
         db::models::provider::EnabledModel::decl(),
         db::models::provider::CreateProvider::decl(),

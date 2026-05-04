@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT\n                selected_model_id as \"model_id!\",\n                selected_provider_id as \"provider_id!\"\n               FROM coding_agent_turns\n               WHERE selected_model_id IS NOT NULL\n                 AND selected_provider_id IS NOT NULL\n               GROUP BY selected_model_id, selected_provider_id\n               ORDER BY MAX(created_at) DESC\n               LIMIT $1",
+  "describe": {
+    "columns": [
+      {
+        "name": "model_id!",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "provider_id!",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      true
+    ]
+  },
+  "hash": "2bd086d7738cceffd434823bb73ab980e8357b7a9d98bf458c6b9abacba6b12a"
+}
