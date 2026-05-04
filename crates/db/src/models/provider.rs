@@ -11,6 +11,7 @@ pub const DEFAULT_PROVIDER_ID: &str = "00000000-0000-0000-0000-000000000001";
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(rename = "AiProviderKind")]
 pub enum ProviderKind {
     Default,
     Preset,
@@ -125,9 +126,10 @@ impl TryFrom<ProviderRow> for Provider {
 
     fn try_from(r: ProviderRow) -> Result<Self, ProviderError> {
         Ok(Provider {
-            id: r.id.parse().map_err(|_| {
-                ProviderError::InvalidKind(format!("invalid UUID: {}", r.id))
-            })?,
+            id: r
+                .id
+                .parse()
+                .map_err(|_| ProviderError::InvalidKind(format!("invalid UUID: {}", r.id)))?,
             name: r.name,
             kind: r.kind.parse()?,
             agent_kind: r.agent_kind,
@@ -243,8 +245,7 @@ impl Provider {
             existing.preset_id
         };
         let enabled = data.enabled.unwrap_or(existing.enabled);
-        let env_str =
-            serde_json::to_string(data.env.as_ref().unwrap_or(&existing.env))?;
+        let env_str = serde_json::to_string(data.env.as_ref().unwrap_or(&existing.env))?;
         let extra_args_str =
             serde_json::to_string(data.extra_args.as_ref().unwrap_or(&existing.extra_args))?;
         let haiku_model = if data.haiku_model.is_some() {
@@ -253,7 +254,9 @@ impl Provider {
             existing.haiku_model
         };
         let enabled_models_str = serde_json::to_string(
-            data.enabled_models.as_ref().unwrap_or(&existing.enabled_models),
+            data.enabled_models
+                .as_ref()
+                .unwrap_or(&existing.enabled_models),
         )?;
 
         let row = sqlx::query_as!(
@@ -298,5 +301,44 @@ impl Provider {
 
     pub fn is_default(&self) -> bool {
         self.kind == ProviderKind::Default
+    }
+
+    /// Build the env map to inject at process spawn time for a given selected model.
+    ///
+    /// For the Default provider (ambient auth) this returns an empty map —
+    /// no env injection needed.
+    ///
+    /// For Preset/Custom providers:
+    /// - Strips ANTHROPIC_MODEL / ANTHROPIC_DEFAULT_SONNET_MODEL / ANTHROPIC_DEFAULT_OPUS_MODEL
+    ///   (§6.1 normalization — these conflict with the per-message --model flag)
+    /// - Moves ANTHROPIC_DEFAULT_HAIKU_MODEL to the haiku_model field value
+    ///   (or falls back to the selected model id if haiku_model is None)
+    /// - Injects CLAUDE_CODE_SUBAGENT_MODEL = selected model id
+    pub fn build_spawn_env(&self, model_id: &str) -> HashMap<String, String> {
+        if self.kind == ProviderKind::Default {
+            return HashMap::new();
+        }
+
+        let mut env = self.env.clone();
+
+        // §6.1: strip keys that conflict with per-message model selection
+        env.remove("ANTHROPIC_MODEL");
+        env.remove("ANTHROPIC_DEFAULT_SONNET_MODEL");
+        env.remove("ANTHROPIC_DEFAULT_OPUS_MODEL");
+        // haiku_model lives in its own field; remove from env to avoid duplication
+        env.remove("ANTHROPIC_DEFAULT_HAIKU_MODEL");
+
+        // Inject per-message model into both subagent and haiku slots
+        env.insert(
+            "CLAUDE_CODE_SUBAGENT_MODEL".to_string(),
+            model_id.to_string(),
+        );
+        let haiku = self.haiku_model.as_deref().unwrap_or(model_id);
+        env.insert(
+            "ANTHROPIC_DEFAULT_HAIKU_MODEL".to_string(),
+            haiku.to_string(),
+        );
+
+        env
     }
 }

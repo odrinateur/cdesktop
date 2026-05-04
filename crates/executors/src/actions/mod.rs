@@ -1,4 +1,4 @@
-use std::{path::Path, sync::Arc};
+use std::{collections::HashMap, path::Path, sync::Arc};
 
 use async_trait::async_trait;
 use enum_dispatch::enum_dispatch;
@@ -36,11 +36,25 @@ pub enum ExecutorActionType {
 pub struct ExecutorAction {
     pub typ: ExecutorActionType,
     pub next_action: Option<Box<ExecutorAction>>,
+    /// Provider-resolved env vars to inject at spawn. Skipped in serialization
+    /// (not stored in DB); computed fresh from selected_provider_id at request time.
+    #[serde(skip)]
+    #[ts(skip)]
+    pub provider_env: Option<HashMap<String, String>>,
 }
 
 impl ExecutorAction {
     pub fn new(typ: ExecutorActionType, next_action: Option<Box<ExecutorAction>>) -> Self {
-        Self { typ, next_action }
+        Self {
+            typ,
+            next_action,
+            provider_env: None,
+        }
+    }
+
+    pub fn with_provider_env(mut self, env: HashMap<String, String>) -> Self {
+        self.provider_env = Some(env);
+        self
     }
     pub fn append_action(mut self, action: ExecutorAction) -> Self {
         if let Some(next) = self.next_action {
