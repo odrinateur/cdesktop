@@ -40,7 +40,7 @@ export const PROVIDERS_QUERY_KEY = ['providers'] as const;
 export function useProviders() {
   return useQuery({
     queryKey: PROVIDERS_QUERY_KEY,
-    queryFn: () => request<Provider[]>('/providers'),
+    queryFn: () => request<Provider[]>('/api/providers'),
   });
 }
 
@@ -48,7 +48,7 @@ export function useCreateProvider() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateProvider) =>
-      request<Provider>('/providers', {
+      request<Provider>('/api/providers', {
         method: 'POST',
         body: JSON.stringify(data),
       }),
@@ -61,7 +61,7 @@ export function useUpdateProvider() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateProvider }) =>
-      request<Provider>(`/providers/${id}`, {
+      request<Provider>(`/api/providers/${id}`, {
         method: 'PUT',
         body: JSON.stringify(data),
       }),
@@ -74,7 +74,7 @@ export function useDeleteProvider() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) =>
-      request<void>(`/providers/${id}`, { method: 'DELETE' }),
+      request<void>(`/api/providers/${id}`, { method: 'DELETE' }),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: PROVIDERS_QUERY_KEY }),
   });
@@ -82,11 +82,8 @@ export function useDeleteProvider() {
 
 export function useFetchProviderModels() {
   return useMutation({
-    mutationFn: ({
-      providerId,
-      ...body
-    }: FetchModelsRequest & { providerId: string }) =>
-      request<FetchModelsResponse>(`/providers/${providerId}/fetch-models`, {
+    mutationFn: (body: FetchModelsRequest) =>
+      request<FetchModelsResponse>('/api/providers/fetch-models', {
         method: 'POST',
         body: JSON.stringify(body),
       }),

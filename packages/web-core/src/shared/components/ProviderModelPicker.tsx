@@ -33,7 +33,7 @@ export function ProviderModelPicker({
   const { data: recents = [] } = useQuery({
     queryKey: ['providers', 'recents'],
     queryFn: async () => {
-      const res = await makeLocalApiRequest('/providers/recents');
+      const res = await makeLocalApiRequest('/api/providers/recents');
       const body = await res.json();
       return body.data as RecentPair[];
     },

@@ -1,11 +1,8 @@
 import { useState } from 'react';
-import {
-  PlusIcon,
-  ToggleLeftIcon,
-  ToggleRightIcon,
-} from '@phosphor-icons/react';
+import { PlusIcon } from '@phosphor-icons/react';
 import type { Provider, CreateProvider, UpdateProvider } from 'shared/types';
 import { cn } from '@/shared/lib/utils';
+import { Switch } from '@vibe/ui/components/Switch';
 import {
   useProviders,
   useCreateProvider,
@@ -86,36 +83,27 @@ export function ProvidersSettingsSection() {
           <ul className="flex-1 overflow-y-auto py-1">
             {providers.map((provider) => (
               <li key={provider.id}>
-                <button
-                  onClick={() => setSelectedId(provider.id)}
+                <div
                   className={cn(
-                    'w-full flex items-center justify-between px-3 py-2 text-sm text-left hover:bg-muted',
+                    'w-full flex items-center justify-between gap-2 px-3 py-2 text-sm hover:bg-muted',
                     selectedId === provider.id && 'bg-muted font-medium'
                   )}
                 >
-                  <span
+                  <button
+                    onClick={() => setSelectedId(provider.id)}
                     className={cn(
-                      'truncate',
+                      'flex-1 truncate text-left',
                       !provider.enabled && 'text-muted-foreground'
                     )}
                   >
                     {provider.name}
-                  </span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggleEnabled(provider);
-                    }}
-                    className="ml-1 flex-shrink-0 text-muted-foreground hover:text-foreground"
-                    title={provider.enabled ? 'Disable' : 'Enable'}
-                  >
-                    {provider.enabled ? (
-                      <ToggleRightIcon className="w-4 h-4 text-primary" />
-                    ) : (
-                      <ToggleLeftIcon className="w-4 h-4" />
-                    )}
                   </button>
-                </button>
+                  <Switch
+                    checked={provider.enabled}
+                    onCheckedChange={() => handleToggleEnabled(provider)}
+                    title={provider.enabled ? 'Disable' : 'Enable'}
+                  />
+                </div>
               </li>
             ))}
           </ul>
@@ -134,6 +122,7 @@ export function ProvidersSettingsSection() {
           <>
             <h3 className="font-medium mb-4">Add provider</h3>
             <ProviderForm
+              key="new"
               onSave={handleSaveNew}
               onCancel={() => setSelectedId(null)}
               saveLabel="Add provider"
@@ -155,6 +144,7 @@ export function ProvidersSettingsSection() {
               )}
             </div>
             <ProviderForm
+              key={selected.id}
               provider={selected}
               onSave={handleSaveExisting}
               saveLabel="Save"

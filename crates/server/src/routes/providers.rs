@@ -38,10 +38,10 @@ pub fn router(deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
         .route("/providers/recents", get(get_recents))
         .route("/providers", get(list_providers))
         .route("/providers", post(create_provider))
-        .route("/providers/:id", get(get_provider))
-        .route("/providers/:id", put(update_provider))
-        .route("/providers/:id", delete(delete_provider))
-        .route("/providers/:id/fetch-models", post(fetch_provider_models))
+        .route("/providers/{id}", get(get_provider))
+        .route("/providers/{id}", put(update_provider))
+        .route("/providers/{id}", delete(delete_provider))
+        .route("/providers/fetch-models", post(fetch_provider_models))
         .with_state(deployment.clone())
 }
 
@@ -118,7 +118,6 @@ pub struct FetchModelsResponse {
 }
 
 pub async fn fetch_provider_models(
-    Path(_id): Path<Uuid>,
     Json(body): Json<FetchModelsRequest>,
 ) -> Result<ResponseJson<ApiResponse<FetchModelsResponse>>, ApiError> {
     let models = fetch_models(&body.base_url, &body.api_key, body.models_url.as_deref())

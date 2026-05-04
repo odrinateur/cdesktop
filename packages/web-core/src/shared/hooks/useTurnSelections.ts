@@ -13,7 +13,7 @@ export function useTurnSelections(sessionId: string | undefined) {
     queryFn: async () => {
       if (!sessionId) return [];
       const res = await makeLocalApiRequest(
-        `/sessions/${sessionId}/turn-selections`
+        `/api/sessions/${sessionId}/turn-selections`
       );
       if (!res.ok) return [];
       const body = await res.json();

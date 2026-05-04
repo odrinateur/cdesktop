@@ -102,7 +102,7 @@ export function ProviderForm({
   const { data: catalog } = useQuery({
     queryKey: ['providers', 'catalog'],
     queryFn: async () => {
-      const res = await makeLocalApiRequest('/providers/catalog');
+      const res = await makeLocalApiRequest('/api/providers/catalog');
       const body = await res.json();
       return body.data as CatalogPreset[];
     },
@@ -131,6 +131,8 @@ export function ProviderForm({
   const [saving, setSaving] = useState(false);
   const [fetchingModels, setFetchingModels] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [fetchedModels, setFetchedModels] = useState<FetchedModel[]>([]);
+  const [fetchSearch, setFetchSearch] = useState('');
 
   useEffect(() => {
     if (!provider) return;
@@ -162,7 +164,7 @@ export function ProviderForm({
         extraEnv,
         haikuModel: pHaiku,
       } = normalizeCatalogPreset(preset);
-      if (!name || name === 'Custom') setName(preset.name);
+      setName(preset.name);
       setBaseUrl(pUrl);
       setApiKeyField(pField);
       setHaikuFollowMain(pHaiku == null);
@@ -173,7 +175,7 @@ export function ProviderForm({
           .join('\n')
       );
     },
-    [catalog, name]
+    [catalog]
   );
 
   const buildEnv = useCallback((): Record<string, string> => {
@@ -195,7 +197,7 @@ export function ProviderForm({
         ? catalog?.find((p) => p.id === selectedPresetId)
         : null;
       const res = await makeLocalApiRequest(
-        `/providers/${provider?.id ?? 'new'}/fetch-models`,
+        '/api/providers/fetch-models',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -209,13 +211,8 @@ export function ProviderForm({
       if (!res.ok) throw new Error(await res.text());
       const body = await res.json();
       const fetched: FetchedModel[] = body.data?.models ?? [];
-      setEnabledModels((prev) => {
-        const existingIds = new Set(prev.map((m) => m.id));
-        const added: EnabledModel[] = fetched
-          .filter((f) => !existingIds.has(f.id))
-          .map((f) => ({ id: f.id, displayName: f.id, ownedBy: f.owned_by }));
-        return [...prev, ...added];
-      });
+      setFetchedModels(fetched);
+      setFetchSearch('');
     } catch (e: unknown) {
       setFetchError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -418,7 +415,7 @@ export function ProviderForm({
             ))}
           </ul>
         )}
-        <div className="flex gap-2">
+        <div className="flex gap-2 mb-2">
           <InputBase
             value={manualModelId}
             onChange={setManualModelId}
@@ -433,6 +430,69 @@ export function ProviderForm({
             Add
           </button>
         </div>
+        {fetchedModels.length > 0 && (
+          <div className="border border-border rounded p-2 flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs text-low">
+                Fetched {fetchedModels.length} models. Check ones to enable:
+              </span>
+              <button
+                onClick={() => setFetchedModels([])}
+                className="text-low hover:text-high text-xs"
+              >
+                Clear
+              </button>
+            </div>
+            <InputBase
+              value={fetchSearch}
+              onChange={setFetchSearch}
+              placeholder="Search…"
+            />
+            <ul className="flex flex-col gap-0.5 max-h-56 overflow-y-auto">
+              {fetchedModels
+                .filter((m) =>
+                  fetchSearch
+                    ? m.id.toLowerCase().includes(fetchSearch.toLowerCase())
+                    : true
+                )
+                .slice(0, 200)
+                .map((m) => {
+                  const enabled = enabledModels.some((e) => e.id === m.id);
+                  return (
+                    <li
+                      key={m.id}
+                      className="flex items-center gap-2 text-xs px-2 py-1 rounded hover:bg-muted"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={enabled}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setEnabledModels((prev) => [
+                              ...prev,
+                              {
+                                id: m.id,
+                                displayName: m.id,
+                                ownedBy: m.owned_by,
+                              },
+                            ]);
+                          } else {
+                            setEnabledModels((prev) =>
+                              prev.filter((x) => x.id !== m.id)
+                            );
+                          }
+                        }}
+                      />
+                      <span className="font-mono">{m.id}</span>
+                      {m.owned_by && (
+                        <span className="text-low ml-auto">{m.owned_by}</span>
+                      )}
+                    </li>
+                  );
+                })}
+            </ul>
+          </div>
+        )}
       </SettingsCard>
 
       <div className="flex justify-end gap-2">
