@@ -36,9 +36,10 @@ pub enum ExecutorActionType {
 pub struct ExecutorAction {
     pub typ: ExecutorActionType,
     pub next_action: Option<Box<ExecutorAction>>,
-    /// Provider-resolved env vars to inject at spawn. Skipped in serialization
-    /// (not stored in DB); computed fresh from selected_provider_id at request time.
-    #[serde(skip)]
+    /// Provider-resolved env vars to inject at spawn. Stored in DB (plaintext,
+    /// consistent with §5.2 posture) so next-action chains and queued messages
+    /// preserve the provider selection that was active when they were queued.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     #[ts(skip)]
     pub provider_env: Option<HashMap<String, String>>,
 }

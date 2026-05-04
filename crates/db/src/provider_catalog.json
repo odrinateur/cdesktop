@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "cc_switch_source_sha": "72ab8a5c",
+  "cc_switch_source_sha": "72ab8a5cfdaa0161e83536f912a905eee26ea343",
   "note": "env values preserved verbatim. At preset instantiation: ANTHROPIC_MODEL / ANTHROPIC_DEFAULT_SONNET_MODEL / ANTHROPIC_DEFAULT_OPUS_MODEL stripped from env; ANTHROPIC_DEFAULT_HAIKU_MODEL migrated to haiku_model field.",
   "presets": [
     {

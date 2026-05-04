@@ -9,36 +9,41 @@ use uuid::Uuid;
 
 pub const DEFAULT_PROVIDER_ID: &str = "00000000-0000-0000-0000-000000000001";
 
+/// Kind of AI routing provider. PascalCase end-to-end (wire + DB CHECK constraint).
+/// Renamed in TypeScript to `AiProviderKind` to avoid collision with the git-host
+/// `ProviderKind` already in `shared/types.ts`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
 #[ts(rename = "AiProviderKind")]
-pub enum ProviderKind {
+pub enum AiProviderKind {
     Default,
     Preset,
     Custom,
 }
 
-impl std::fmt::Display for ProviderKind {
+impl std::fmt::Display for AiProviderKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ProviderKind::Default => write!(f, "Default"),
-            ProviderKind::Preset => write!(f, "Preset"),
-            ProviderKind::Custom => write!(f, "Custom"),
+            AiProviderKind::Default => write!(f, "Default"),
+            AiProviderKind::Preset => write!(f, "Preset"),
+            AiProviderKind::Custom => write!(f, "Custom"),
         }
     }
 }
 
-impl std::str::FromStr for ProviderKind {
+impl std::str::FromStr for AiProviderKind {
     type Err = ProviderError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "Default" => Ok(ProviderKind::Default),
-            "Preset" => Ok(ProviderKind::Preset),
-            "Custom" => Ok(ProviderKind::Custom),
+            "Default" => Ok(AiProviderKind::Default),
+            "Preset" => Ok(AiProviderKind::Preset),
+            "Custom" => Ok(AiProviderKind::Custom),
             _ => Err(ProviderError::InvalidKind(s.to_string())),
         }
     }
 }
+
+// Keep a type alias so call sites that used `ProviderKind` still compile.
+pub type ProviderKind = AiProviderKind;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -53,7 +58,7 @@ pub struct EnabledModel {
 pub struct Provider {
     pub id: Uuid,
     pub name: String,
-    pub kind: ProviderKind,
+    pub kind: AiProviderKind,
     pub agent_kind: String,
     pub preset_id: Option<String>,
     pub enabled: bool,
@@ -61,7 +66,9 @@ pub struct Provider {
     pub extra_args: Vec<String>,
     pub haiku_model: Option<String>,
     pub enabled_models: Vec<EnabledModel>,
+    #[ts(type = "Date")]
     pub created_at: DateTime<Utc>,
+    #[ts(type = "Date")]
     pub updated_at: DateTime<Utc>,
 }
 
@@ -69,7 +76,7 @@ pub struct Provider {
 #[serde(rename_all = "camelCase")]
 pub struct CreateProvider {
     pub name: String,
-    pub kind: ProviderKind,
+    pub kind: AiProviderKind,
     pub agent_kind: Option<String>,
     pub preset_id: Option<String>,
     pub env: HashMap<String, String>,
@@ -78,16 +85,21 @@ pub struct CreateProvider {
     pub enabled_models: Vec<EnabledModel>,
 }
 
+/// All fields required; the frontend form always has the full provider state.
+/// Pass `None` for nullable fields to clear them (e.g. `haiku_model: null` to
+/// switch to "Follow main model"). Pass `true`/`false` for `enabled`.
+///
+/// Note: `kind` is intentionally absent — kind is sticky once set (§3.1).
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateProvider {
-    pub name: Option<String>,
+    pub name: String,
     pub preset_id: Option<String>,
-    pub enabled: Option<bool>,
-    pub env: Option<HashMap<String, String>>,
-    pub extra_args: Option<Vec<String>>,
+    pub enabled: bool,
+    pub env: HashMap<String, String>,
+    pub extra_args: Vec<String>,
     pub haiku_model: Option<String>,
-    pub enabled_models: Option<Vec<EnabledModel>>,
+    pub enabled_models: Vec<EnabledModel>,
 }
 
 #[derive(Debug, Error)]
@@ -98,6 +110,8 @@ pub enum ProviderError {
     NotFound,
     #[error("Invalid provider kind: {0}")]
     InvalidKind(String),
+    #[error("Invalid UUID: {0}")]
+    InvalidUuid(String),
     #[error("JSON error: {0}")]
     Json(#[from] serde_json::Error),
     #[error("Cannot delete the Default provider")]
@@ -129,7 +143,7 @@ impl TryFrom<ProviderRow> for Provider {
             id: r
                 .id
                 .parse()
-                .map_err(|_| ProviderError::InvalidKind(format!("invalid UUID: {}", r.id)))?,
+                .map_err(|_| ProviderError::InvalidUuid(r.id.clone()))?,
             name: r.name,
             kind: r.kind.parse()?,
             agent_kind: r.agent_kind,
@@ -235,29 +249,10 @@ impl Provider {
         id: Uuid,
         data: &UpdateProvider,
     ) -> Result<Self, ProviderError> {
-        let existing = Self::find_by_id(pool, id).await?;
         let id_str = id.to_string();
-
-        let name = data.name.clone().unwrap_or(existing.name);
-        let preset_id = if data.preset_id.is_some() {
-            data.preset_id.clone()
-        } else {
-            existing.preset_id
-        };
-        let enabled = data.enabled.unwrap_or(existing.enabled);
-        let env_str = serde_json::to_string(data.env.as_ref().unwrap_or(&existing.env))?;
-        let extra_args_str =
-            serde_json::to_string(data.extra_args.as_ref().unwrap_or(&existing.extra_args))?;
-        let haiku_model = if data.haiku_model.is_some() {
-            data.haiku_model.clone()
-        } else {
-            existing.haiku_model
-        };
-        let enabled_models_str = serde_json::to_string(
-            data.enabled_models
-                .as_ref()
-                .unwrap_or(&existing.enabled_models),
-        )?;
+        let env_str = serde_json::to_string(&data.env)?;
+        let extra_args_str = serde_json::to_string(&data.extra_args)?;
+        let enabled_models_str = serde_json::to_string(&data.enabled_models)?;
 
         let row = sqlx::query_as!(
             ProviderRow,
@@ -272,12 +267,12 @@ impl Provider {
                 env, extra_args, haiku_model, enabled_models,
                 created_at as "created_at!: DateTime<Utc>",
                 updated_at as "updated_at!: DateTime<Utc>""#,
-            name,
-            preset_id,
-            enabled,
+            data.name,
+            data.preset_id,
+            data.enabled,
             env_str,
             extra_args_str,
-            haiku_model,
+            data.haiku_model,
             enabled_models_str,
             id_str,
         )
@@ -300,7 +295,7 @@ impl Provider {
     }
 
     pub fn is_default(&self) -> bool {
-        self.kind == ProviderKind::Default
+        self.kind == AiProviderKind::Default
     }
 
     /// Build the env map to inject at process spawn time for a given selected model.
@@ -311,11 +306,11 @@ impl Provider {
     /// For Preset/Custom providers:
     /// - Strips ANTHROPIC_MODEL / ANTHROPIC_DEFAULT_SONNET_MODEL / ANTHROPIC_DEFAULT_OPUS_MODEL
     ///   (§6.1 normalization — these conflict with the per-message --model flag)
-    /// - Moves ANTHROPIC_DEFAULT_HAIKU_MODEL to the haiku_model field value
-    ///   (or falls back to the selected model id if haiku_model is None)
-    /// - Injects CLAUDE_CODE_SUBAGENT_MODEL = selected model id
+    /// - Injects ANTHROPIC_DEFAULT_HAIKU_MODEL from haiku_model field, or follows model_id
+    ///   if haiku_model is None and model_id is non-empty
+    /// - Injects CLAUDE_CODE_SUBAGENT_MODEL = model_id (if non-empty)
     pub fn build_spawn_env(&self, model_id: &str) -> HashMap<String, String> {
-        if self.kind == ProviderKind::Default {
+        if self.kind == AiProviderKind::Default {
             return HashMap::new();
         }
 
@@ -325,19 +320,28 @@ impl Provider {
         env.remove("ANTHROPIC_MODEL");
         env.remove("ANTHROPIC_DEFAULT_SONNET_MODEL");
         env.remove("ANTHROPIC_DEFAULT_OPUS_MODEL");
-        // haiku_model lives in its own field; remove from env to avoid duplication
+        // haiku_model lives in its own field
         env.remove("ANTHROPIC_DEFAULT_HAIKU_MODEL");
 
-        // Inject per-message model into both subagent and haiku slots
-        env.insert(
-            "CLAUDE_CODE_SUBAGENT_MODEL".to_string(),
-            model_id.to_string(),
-        );
-        let haiku = self.haiku_model.as_deref().unwrap_or(model_id);
-        env.insert(
-            "ANTHROPIC_DEFAULT_HAIKU_MODEL".to_string(),
-            haiku.to_string(),
-        );
+        // Only inject model-specific vars when a model is selected
+        if !model_id.is_empty() {
+            env.insert(
+                "CLAUDE_CODE_SUBAGENT_MODEL".to_string(),
+                model_id.to_string(),
+            );
+        }
+
+        // Haiku: use preset value if set, else follow main model (if any)
+        let haiku = self.haiku_model.as_deref().or_else(|| {
+            if model_id.is_empty() {
+                None
+            } else {
+                Some(model_id)
+            }
+        });
+        if let Some(h) = haiku {
+            env.insert("ANTHROPIC_DEFAULT_HAIKU_MODEL".to_string(), h.to_string());
+        }
 
         env
     }

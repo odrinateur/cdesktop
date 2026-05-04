@@ -94,6 +94,9 @@ pub struct ExecutionEnv {
     pub repo_context: RepoContext,
     pub commit_reminder: bool,
     pub commit_reminder_prompt: String,
+    /// Provider-selected env vars. Applied last in `apply_to_command`, after
+    /// profile/cmd env, so per-message provider selection takes highest precedence.
+    pub provider_vars: HashMap<String, String>,
 }
 
 impl ExecutionEnv {
@@ -107,6 +110,7 @@ impl ExecutionEnv {
             repo_context,
             commit_reminder,
             commit_reminder_prompt,
+            provider_vars: HashMap::new(),
         }
     }
 
@@ -136,9 +140,14 @@ impl ExecutionEnv {
         }
     }
 
-    /// Apply all environment variables to a Command
+    /// Apply all environment variables to a Command.
+    /// `provider_vars` are applied last so per-message provider selection
+    /// overrides any profile defaults.
     pub fn apply_to_command(&self, command: &mut Command) {
         for (key, value) in &self.vars {
+            command.env(key, value);
+        }
+        for (key, value) in &self.provider_vars {
             command.env(key, value);
         }
     }

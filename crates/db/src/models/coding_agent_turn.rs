@@ -23,9 +23,13 @@ pub struct CodingAgentTurn {
     pub execution_process_id: Uuid,
     pub agent_session_id: Option<String>,
     pub agent_message_id: Option<String>,
-    pub prompt: Option<String>,  // The prompt sent to the executor
-    pub summary: Option<String>, // Final assistant message/summary
-    pub seen: bool,              // Whether user has viewed this turn
+    pub prompt: Option<String>,
+    pub summary: Option<String>,
+    pub seen: bool,
+    /// Model selected via the per-message provider-model picker (§4/§11 phase 6).
+    pub selected_model_id: Option<String>,
+    /// Provider selected via the per-message picker, stored as UUID string.
+    pub selected_provider_id: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -84,6 +88,8 @@ impl CodingAgentTurn {
                 prompt,
                 summary,
                 seen as "seen!: bool",
+                selected_model_id,
+                selected_provider_id,
                 created_at as "created_at!: DateTime<Utc>",
                 updated_at as "updated_at!: DateTime<Utc>"
                FROM coding_agent_turns
@@ -123,6 +129,8 @@ impl CodingAgentTurn {
                 prompt,
                 summary,
                 seen as "seen!: bool",
+                selected_model_id,
+                selected_provider_id,
                 created_at as "created_at!: DateTime<Utc>",
                 updated_at as "updated_at!: DateTime<Utc>""#,
             id,

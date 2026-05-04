@@ -1382,10 +1382,11 @@ impl ContainerService for LocalContainerService {
         env.insert("VK_WORKSPACE_ID", workspace.id.to_string());
         env.insert("VK_WORKSPACE_BRANCH", &workspace.branch);
 
-        // Provider env — injected after base env so provider vars take precedence.
+        // Provider env goes into provider_vars so it overrides profile/cmd env
+        // (applied last in ExecutionEnv::apply_to_command — highest precedence).
         if let Some(provider_env) = &executor_action.provider_env {
             tracing::debug!(keys = ?provider_env.keys().collect::<Vec<_>>(), "injecting provider env");
-            env.merge(provider_env);
+            env.provider_vars = provider_env.clone();
         }
 
         // Create the child and stream, add to execution tracker with timeout
