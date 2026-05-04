@@ -48,19 +48,21 @@ function resolveLocalDestinationFromPath(path: string): AppDestination | null {
       const hostId = getPathParam(routeParams, 'hostId');
       return hostId ? { kind: 'workspaces', hostId } : null;
     }
-    case '/_app/workspaces_/create':
-      return { kind: 'workspaces-create' };
-    case '/_app/hosts/$hostId/workspaces_/create': {
-      const hostId = getPathParam(routeParams, 'hostId');
-      return hostId ? { kind: 'workspaces-create', hostId } : null;
-    }
     case '/_app/workspaces_/$workspaceId': {
       const workspaceId = getPathParam(routeParams, 'workspaceId');
+      // "create" is a sentinel — same route component as a real workspace
+      // so the SessionGrid (and its sibling cells) stay mounted across the
+      // toggle. The fullscreen create form vs inline-in-first-cell decision
+      // happens further down in WorkspacesLayout based on cell count.
+      if (workspaceId === 'create') return { kind: 'workspaces-create' };
       return workspaceId ? { kind: 'workspace', workspaceId } : null;
     }
     case '/_app/hosts/$hostId/workspaces_/$workspaceId': {
       const hostId = getPathParam(routeParams, 'hostId');
       const workspaceId = getPathParam(routeParams, 'workspaceId');
+      if (workspaceId === 'create') {
+        return hostId ? { kind: 'workspaces-create', hostId } : null;
+      }
       return hostId && workspaceId
         ? { kind: 'workspace', hostId, workspaceId }
         : null;
@@ -196,13 +198,19 @@ function destinationToLocalTarget(
       }
       return { to: '/workspaces' } as const;
     case 'workspaces-create':
+      // Use the $workspaceId template with the "create" sentinel so this
+      // resolves to the same React route as a real workspace — preserves
+      // the SessionGrid (and its sibling cells) across the toggle.
       if (effectiveHostId) {
         return {
-          to: '/hosts/$hostId/workspaces/create',
-          params: { hostId: effectiveHostId },
+          to: '/hosts/$hostId/workspaces/$workspaceId',
+          params: { hostId: effectiveHostId, workspaceId: 'create' },
         } as const;
       }
-      return { to: '/workspaces/create' } as const;
+      return {
+        to: '/workspaces/$workspaceId',
+        params: { workspaceId: 'create' },
+      } as const;
     case 'workspace':
       if (effectiveHostId) {
         return {

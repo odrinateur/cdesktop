@@ -40,7 +40,12 @@ export function WorkspaceProvider({
   children,
   workspaceId: workspaceIdProp,
 }: WorkspaceProviderProps) {
-  const { workspaceId: workspaceIdFromRoute } = useParams({ strict: false });
+  const { workspaceId: rawWorkspaceIdFromRoute } = useParams({ strict: false });
+  // "create" is the create-mode sentinel served by the $workspaceId route —
+  // treat it as no workspace so downstream queries / effects see the same
+  // shape they would on /workspaces/create.
+  const workspaceIdFromRoute =
+    rawWorkspaceIdFromRoute === 'create' ? undefined : rawWorkspaceIdFromRoute;
   const workspaceId = workspaceIdProp ?? workspaceIdFromRoute;
   const outer = useContext(WorkspaceContext);
 

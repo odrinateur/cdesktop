@@ -741,23 +741,31 @@ export function WorkspacesSidebarContainer({
   // - openInGridWorkspaceIds = every cell's sessionId (gives pill background)
   // - focusedSessionId       = the focused cell's sessionId (gives bright + bold)
   const grid = useSessionGridStore((s) => s.grid);
-  const openInGridWorkspaceIds = useMemo(
-    () =>
-      new Set(
-        grid.groups
-          .flatMap((g) => g.cells)
-          .map((c) => c.sessionId)
-          .filter(Boolean)
-      ),
-    [grid]
-  );
-  const focusedSessionId = useMemo(
-    () =>
+  const openInGridWorkspaceIds = useMemo(() => {
+    const anchorId = grid.groups[0]?.cells[0]?.id;
+    return new Set(
       grid.groups
         .flatMap((g) => g.cells)
-        .find((c) => c.id === grid.focusedCellId)?.sessionId ?? null,
-    [grid]
-  );
+        // In create mode the anchor cell hosts the new-session form rather
+        // than its previous workspace — exclude that workspace's id from the
+        // "open in grid" pill set so it doesn't keep its lit background.
+        .filter((c) => !(isCreateMode && c.id === anchorId))
+        .map((c) => c.sessionId)
+        .filter(Boolean)
+    );
+  }, [grid, isCreateMode]);
+  const focusedSessionId = useMemo(() => {
+    // In create mode the anchor cell renders the new-session form, not its
+    // previous workspace — don't highlight that workspace just because it's
+    // still parked in the cell's sessionId.
+    const anchorId = grid.groups[0]?.cells[0]?.id;
+    if (isCreateMode && grid.focusedCellId === anchorId) return null;
+    return (
+      grid.groups
+        .flatMap((g) => g.cells)
+        .find((c) => c.id === grid.focusedCellId)?.sessionId ?? null
+    );
+  }, [grid, isCreateMode]);
 
   // Drop on a pinned-section slot atomically rewrites the pinned set to
   // the given order. Setting droppedInPinSection synchronously prevents
