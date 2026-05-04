@@ -338,13 +338,13 @@ create_new_branch?: boolean,
  */
 selected_provider_id?: string, };
 
-export type Provider = { id: string, name: string, kind: ProviderKind, agentKind: string, presetId: string | null, enabled: boolean, env: { [key in string]?: string }, extraArgs: Array<string>, haikuModel: string | null, enabledModels: Array<EnabledModel>, createdAt: string, updatedAt: string, };
+export type Provider = { id: string, name: string, kind: AiProviderKind, agentKind: string, presetId: string | null, enabled: boolean, env: { [key in string]?: string }, extraArgs: Array<string>, haikuModel: string | null, enabledModels: Array<EnabledModel>, createdAt: string, updatedAt: string, };
 
-export type ProviderKind = "default" | "preset" | "custom";
+export type AiProviderKind = "default" | "preset" | "custom";
 
 export type EnabledModel = { id: string, displayName: string, ownedBy: string | null, };
 
-export type CreateProvider = { name: string, kind: ProviderKind, agentKind: string | null, presetId: string | null, env: { [key in string]?: string }, extraArgs: Array<string>, haikuModel: string | null, enabledModels: Array<EnabledModel>, };
+export type CreateProvider = { name: string, kind: AiProviderKind, agentKind: string | null, presetId: string | null, env: { [key in string]?: string }, extraArgs: Array<string>, haikuModel: string | null, enabledModels: Array<EnabledModel>, };
 
 export type UpdateProvider = { name: string | null, presetId: string | null, enabled: boolean | null, env: { [key in string]?: string } | null, extraArgs: Array<string> | null, haikuModel: string | null, enabledModels: Array<EnabledModel> | null, };
 

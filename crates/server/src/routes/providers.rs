@@ -4,7 +4,10 @@ use axum::{
     response::Json as ResponseJson,
     routing::{delete, get, post, put},
 };
-use db::models::provider::{CreateProvider, Provider, ProviderError, UpdateProvider};
+use db::{
+    models::provider::{CreateProvider, Provider, ProviderError, UpdateProvider},
+    provider_catalog::{CatalogPreset, load_catalog},
+};
 use deployment::Deployment;
 use serde::{Deserialize, Serialize};
 use services::services::model_fetch::{FetchedModel, fetch_models};
@@ -28,6 +31,7 @@ impl From<ProviderError> for ApiError {
 
 pub fn router(deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
     Router::new()
+        .route("/providers/catalog", get(get_catalog))
         .route("/providers", get(list_providers))
         .route("/providers", post(create_provider))
         .route("/providers/:id", get(get_provider))
@@ -35,6 +39,10 @@ pub fn router(deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
         .route("/providers/:id", delete(delete_provider))
         .route("/providers/:id/fetch-models", post(fetch_provider_models))
         .with_state(deployment.clone())
+}
+
+pub async fn get_catalog() -> ResponseJson<ApiResponse<&'static [CatalogPreset]>> {
+    ResponseJson(ApiResponse::success(load_catalog().presets.as_slice()))
 }
 
 pub async fn list_providers(
