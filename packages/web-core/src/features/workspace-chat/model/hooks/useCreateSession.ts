@@ -12,6 +12,7 @@ interface CreateSessionParams {
   workspaceId: string;
   prompt: string;
   executorConfig: ExecutorConfig;
+  selectedProviderId?: string | null;
 }
 
 /**
@@ -27,6 +28,7 @@ export function useCreateSession() {
       workspaceId,
       prompt,
       executorConfig,
+      selectedProviderId,
     }: CreateSessionParams): Promise<Session> => {
       const session = await sessionsApi.create({
         workspace_id: workspaceId,
@@ -38,6 +40,7 @@ export function useCreateSession() {
         retry_process_id: null,
         force_when_dirty: null,
         perform_git_reset: null,
+        selected_provider_id: selectedProviderId ?? undefined,
       };
       await sessionsApi.followUp(session.id, body);
 

@@ -73,6 +73,18 @@ const STREAMING_UNVIRTUALIZED_BUFFER_ROWS = 24;
 const SKELETON_ROW_WIDTHS = ['75%', '55%', '85%', '45%'];
 const SKELETON_ROW_HEIGHTS = ['64px', '48px', '80px', '40px'];
 
+/** True only for the user-message row — the natural turn boundary where the
+ *  model-switch marker should appear. All other rows in the same execution
+ *  process (tool-use, assistant message, etc.) share the same executionProcessId
+ *  and must NOT emit a duplicate marker. */
+function isUserMessageEntry(entry: DisplayEntry): boolean {
+  return (
+    entry.type === 'NORMALIZED_ENTRY' &&
+    (entry as { content?: { entry_type?: { type?: string } } }).content
+      ?.entry_type?.type === 'user_message'
+  );
+}
+
 function SwitchMarker({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-2 px-4 py-1 text-xs text-muted-foreground opacity-60">
@@ -895,15 +907,17 @@ export const ConversationList = forwardRef<
                       transform: `translateY(${virtualItem.start}px)`,
                     }}
                   >
-                    {switchMarkers.get(row.entry?.executionProcessId ?? '') && (
-                      <SwitchMarker
-                        label={
-                          switchMarkers.get(
-                            row.entry?.executionProcessId ?? ''
-                          )!
-                        }
-                      />
-                    )}
+                    {row.entry &&
+                      isUserMessageEntry(row.entry) &&
+                      switchMarkers.get(row.entry.executionProcessId ?? '') && (
+                        <SwitchMarker
+                          label={
+                            switchMarkers.get(
+                              row.entry.executionProcessId ?? ''
+                            )!
+                          }
+                        />
+                      )}
                     {renderRowContent(row.entry, attempt, resetAction, repos)}
                   </div>
                 );

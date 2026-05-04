@@ -73,6 +73,7 @@ export function useSessionSend({
             workspaceId,
             prompt: trimmed,
             executorConfig,
+            selectedProviderId,
           });
           onSelectSession?.(session.id);
           return true;
