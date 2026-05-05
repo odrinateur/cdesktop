@@ -406,6 +406,7 @@ export function GeneralSettingsSection() {
           </>
         )}
 
+        {/* HIDDEN: Auto-install VS Code extension checkbox
         {(draft?.editor.editor_type === EditorType.VS_CODE ||
           draft?.editor.editor_type === EditorType.VS_CODE_INSIDERS ||
           draft?.editor.editor_type === EditorType.CURSOR) && (
@@ -415,7 +416,7 @@ export function GeneralSettingsSection() {
             description={t(
               'settings.general.editor.autoInstallExtension.helper'
             )}
-            checked={draft?.editor.auto_install_extension ?? true}
+            checked={draft?.editor.auto_install_extension ?? false}
             onChange={(checked) =>
               updateDraft({
                 editor: {
@@ -426,9 +427,10 @@ export function GeneralSettingsSection() {
             }
           />
         )}
+        */}
       </SettingsCard>
 
-      {/* Default Coding Agent */}
+      {/* HIDDEN: Default Coding Agent section
       <SettingsCard
         title={t('settings.general.taskExecution.title')}
         description={t('settings.general.taskExecution.description')}
@@ -524,6 +526,7 @@ export function GeneralSettingsSection() {
           </div>
         </SettingsField>
       </SettingsCard>
+      */}
 
       {/* Git */}
       <SettingsCard
@@ -650,7 +653,7 @@ export function GeneralSettingsSection() {
           id="commit-reminder"
           label={t('settings.general.commits.reminder.label')}
           description={t('settings.general.commits.reminder.helper')}
-          checked={draft?.commit_reminder_enabled ?? true}
+          checked={draft?.commit_reminder_enabled ?? false}
           onChange={(checked) =>
             updateDraft({ commit_reminder_enabled: checked })
           }
@@ -814,7 +817,7 @@ export function GeneralSettingsSection() {
         <TagManager />
       </SettingsCard>
 
-      {/* Safety */}
+      {/* HIDDEN: Safety & Disclaimers section
       <SettingsCard
         title={t('settings.general.safety.title')}
         description={t('settings.general.safety.description')}
@@ -835,6 +838,7 @@ export function GeneralSettingsSection() {
           />
         </div>
       </SettingsCard>
+      */}
 
       <SettingsSaveBar
         show={hasUnsavedChanges}

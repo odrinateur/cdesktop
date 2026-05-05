@@ -346,7 +346,7 @@ export function McpSettingsSection() {
               />
             </SettingsField>
 
-            {/* Preconfigured servers */}
+            {/* HIDDEN: Popular Servers (preconfigured) section
             {mcpConfig?.preconfigured &&
               typeof mcpConfig.preconfigured === 'object' &&
               Object.keys(servers).length > 0 && (
@@ -411,6 +411,7 @@ export function McpSettingsSection() {
                   </div>
                 </div>
               )}
+            */}
           </>
         )}
       </SettingsCard>

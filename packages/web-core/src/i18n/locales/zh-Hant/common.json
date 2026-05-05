@@ -47,7 +47,7 @@
       "todoOperation": "{{operation}} 待辦事項"
     },
     "subagent": {
-      "defaultType": "子代理"
+      "defaultType": "子智能体"
     },
     "loadingEarlierMessages": "正在載入先前的訊息"
   },
@@ -236,7 +236,7 @@
     },
     "sessions": {
       "title": "多工作階段",
-      "content": "在單一工作階段內建立多個代理對話工作階段，包括與不同代理的工作階段。這可以幫助您繞過對話限制，或在單獨的執行緒中啟動審查代理。"
+      "content": "在單一工作階段內建立多個智能体對話工作階段，包括與不同智能体的工作階段。這可以幫助您繞過對話限制，或在單獨的執行緒中啟動審查智能体。"
     },
     "preview": {
       "title": "預覽變更",
@@ -244,7 +244,7 @@
     },
     "diffs": {
       "title": "差異和評論",
-      "content": "重新設計的差異面板包含變更的檔案樹。直接在差異上評論以向代理提供回饋，當您的工作階段連結到 PR 時還可以檢視 GitHub 評論。"
+      "content": "重新設計的差異面板包含變更的檔案樹。直接在差異上評論以向智能体提供回饋，當您的工作階段連結到 PR 時還可以檢視 GitHub 評論。"
     },
     "classicUi": {
       "title": "返回經典介面",
@@ -344,7 +344,7 @@
     "missingRepo": "所選儲存庫已無法使用。",
     "noTagsOrFiles": "找不到標籤或檔案",
     "createTag": "建立新標籤",
-    "noCommands": "此代理沒有可用的指令。",
+    "noCommands": "此智能体沒有可用的指令。",
     "loadingCommands": "正在載入指令…",
     "discoveringCommands": "正在探索指令…"
   },
@@ -532,7 +532,7 @@
     "permissionPlan": "計畫模式",
     "permissionAcceptEdits": "接受編輯",
     "permissionBypass": "略過權限",
-    "agent": "代理",
+    "agent": "智能体",
     "default": "預設",
     "model": "模型"
   },
@@ -565,7 +565,7 @@
     "kanban": {
       "tooltip": "登入以查看專案",
       "title": "看板",
-      "description": "登入以使用看板管理您的編碼代理。"
+      "description": "登入以使用看板管理您的編碼智能体。"
     }
   },
   "errors": {
@@ -573,7 +573,7 @@
   },
   "personal": "Personal",
   "askQuestion": {
-    "title": "代理正在提問",
+    "title": "智能体正在提問",
     "selectMultiple": "多選",
     "confirmSelection": "確認選擇",
     "submitting": "正在提交回答...",

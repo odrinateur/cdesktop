@@ -98,7 +98,7 @@
     "processId": "程序 ID：{{id}}",
     "deleted": "已刪除",
     "deletedTooltip": "因復原而刪除：時間軸已回復到檢查點，後續執行已移除",
-    "agent": "代理：",
+    "agent": "智能体：",
     "exit": "退出：{{code}}",
     "started": "開始：{{date}}",
     "completed": "完成：{{date}}",
@@ -227,11 +227,11 @@
   },
   "startReviewDialog": {
     "title": "開始審查",
-    "description": "請求編碼代理審查您的變更並提供反饋。",
+    "description": "請求編碼智能体審查您的變更並提供反饋。",
     "additionalInstructions": "附加說明（可選）",
     "reviewComments": "審查評論（{{count}}）",
     "includeGitContext": "包含 Git 上下文",
-    "includeGitContextDescription": "告訴代理如何查看此分支上的所有變更",
+    "includeGitContextDescription": "告訴智能体如何查看此分支上的所有變更",
     "newSession": "新工作階段",
     "sessionName": "審查"
   },
@@ -242,7 +242,7 @@
   "resolveConflicts": {
     "dialog": {
       "title": "解決衝突",
-      "description": "偵測到衝突。選擇您希望代理如何解決它們。",
+      "description": "偵測到衝突。選擇您希望智能体如何解決它們。",
       "newSession": "新工作階段",
       "resolve": "解決衝突",
       "resolving": "開始中...",
@@ -276,7 +276,7 @@
     "loadingBranches": "載入分支中...",
     "selectBaseBranch": "選擇基底分支",
     "draftLabel": "建立為草稿",
-    "autoGenerateLabel": "請求 AI 代理產生更好的 PR 描述",
+    "autoGenerateLabel": "請求 AI 智能体產生更好的 PR 描述",
     "creating": "建立中...",
     "createButton": "建立 PR",
     "errors": {
@@ -339,8 +339,8 @@
       "andLaterProcesses_one": "及後續 {{count}} 個程序",
       "andLaterProcesses_other": "及後續 {{count}} 個程序",
       "fromHistory": "從歷史紀錄中刪除。",
-      "codingAgentRuns_one": "{{count}} 次編碼代理執行",
-      "codingAgentRuns_other": "{{count}} 次編碼代理執行",
+      "codingAgentRuns_one": "{{count}} 次編碼智能体執行",
+      "codingAgentRuns_other": "{{count}} 次編碼智能体執行",
       "scriptProcesses_one": "{{count}} 個腳本程序",
       "scriptProcesses_other": "{{count}} 個腳本程序",
       "setupCleanupBreakdown": "({{setup}} 個設定，{{cleanup}} 個清理)",
@@ -422,9 +422,9 @@
     },
     "scriptPlaceholder": {
       "setupTitle": "設定腳本",
-      "setupDescription": "未配置設定腳本。設定腳本在程式碼代理啟動前執行。",
+      "setupDescription": "未配置設定腳本。設定腳本在程式碼智能体啟動前執行。",
       "cleanupTitle": "清理腳本",
-      "cleanupDescription": "未配置清理腳本。清理腳本在程式碼代理完成後執行。",
+      "cleanupDescription": "未配置清理腳本。清理腳本在程式碼智能体完成後執行。",
       "configure": "設定"
     },
     "unableToRenderDiff": "無法顯示差異。",

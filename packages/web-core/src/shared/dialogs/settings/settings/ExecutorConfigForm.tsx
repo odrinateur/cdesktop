@@ -21,6 +21,22 @@ interface ExecutorConfigFormProps {
 
 import schemas from 'virtual:executor-schemas';
 
+// Fields hidden from the rendered schema per executor. Saved values are
+// preserved (we filter at render time, not in the data). To re-show a field,
+// remove its name from the array.
+const HIDDEN_FIELDS_BY_EXECUTOR: Partial<Record<BaseCodingAgent, string[]>> = {
+  [BaseCodingAgent.CLAUDE_CODE]: [
+    'claude_code_router',
+    'plan',
+    'approvals',
+    'permission_mode_override',
+    'model',
+    'effort',
+    'dangerously_skip_permissions',
+    'disable_api_key',
+  ],
+};
+
 export function ExecutorConfigForm({
   executor,
   value,
@@ -31,14 +47,25 @@ export function ExecutorConfigForm({
   saving = false,
   isDirty = false,
 }: ExecutorConfigFormProps) {
-  const { t } = useTranslation('settings');
+  const { t, i18n } = useTranslation('settings');
   const [formData, setFormData] = useState<unknown>(value || {});
   const [validationErrors, setValidationErrors] = useState<
     RJSFValidationError[]
   >([]);
 
   const schema = useMemo(() => {
-    return schemas[executor];
+    const base = schemas[executor];
+    if (!base) return base;
+    const hidden = HIDDEN_FIELDS_BY_EXECUTOR[executor];
+    if (!hidden || hidden.length === 0) return base;
+    const next = { ...base };
+    if (next.properties) {
+      next.properties = { ...next.properties };
+      for (const key of hidden) {
+        delete next.properties[key];
+      }
+    }
+    return next;
   }, [executor]);
 
   // Custom handler for env field updates
@@ -56,14 +83,27 @@ export function ExecutorConfigForm({
     [formData, onChange]
   );
 
-  const uiSchema = useMemo(
-    () => ({
-      env: {
-        'ui:field': 'KeyValueField',
-      },
-    }),
-    []
-  );
+  const uiSchema = useMemo(() => {
+    const ui: Record<string, Record<string, unknown>> = {
+      env: { 'ui:field': 'KeyValueField' },
+    };
+    const props = (schema as { properties?: Record<string, unknown> } | undefined)
+      ?.properties;
+    if (props) {
+      for (const fieldName of Object.keys(props)) {
+        const titleKey = `settings.agents.fields.${fieldName}.title`;
+        const descKey = `settings.agents.fields.${fieldName}.description`;
+        const fieldUi = (ui[fieldName] = ui[fieldName] || {});
+        if (i18n.exists(titleKey, { ns: 'settings' })) {
+          fieldUi['ui:title'] = t(titleKey);
+        }
+        if (i18n.exists(descKey, { ns: 'settings' })) {
+          fieldUi['ui:description'] = t(descKey);
+        }
+      }
+    }
+    return ui;
+  }, [schema, t, i18n]);
 
   // Pass the env update handler via formContext
   const formContext = useMemo(
