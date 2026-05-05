@@ -28,7 +28,7 @@ import { repoApi } from '@/shared/lib/api';
 import { FolderPickerDialog } from '@/shared/dialogs/shared/FolderPickerDialog';
 
 const chipClassName =
-  'inline-flex items-center gap-half rounded-md bg-[#1e1e1e] px-base py-half ' +
+  'inline-flex items-center gap-half rounded-md bg-secondary px-base py-half ' +
   'min-h-7 text-sm text-normal hover:bg-panel ' +
   'disabled:cursor-not-allowed disabled:opacity-50 ' +
   'focus:outline-none focus-visible:ring-1 focus-visible:ring-brand';

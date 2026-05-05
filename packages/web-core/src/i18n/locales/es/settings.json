@@ -411,7 +411,8 @@
         "cancel": "Cancelar",
         "defaultDescription": "El proveedor predeterminado usa tu autenticación actual de Claude (claude login). No requiere configuración."
       },
-      "defaultProviderName": "Predeterminado"
+      "defaultProviderName": "Predeterminado",
+      "turnSwitchMarker": "↳ cambiado a {{model}} vía {{provider}}"
     },
     "mcp": {
       "title": "Configuración de Servidor MCP",

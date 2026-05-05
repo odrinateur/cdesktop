@@ -29,7 +29,8 @@ export function useTurnSelections(sessionId: string | undefined) {
  *  from the previous turn. */
 export function buildSwitchMarkers(
   selections: TurnSelection[],
-  providers: Map<string, string> // provider_id -> name
+  providers: Map<string, string>, // provider_id -> display name
+  format: (modelId: string, providerName: string) => string
 ): Map<string, string> {
   const markers = new Map<string, string>();
   for (let i = 1; i < selections.length; i++) {
@@ -40,10 +41,7 @@ export function buildSwitchMarkers(
       curr.provider_id !== prev.provider_id
     ) {
       const providerName = providers.get(curr.provider_id) ?? curr.provider_id;
-      markers.set(
-        curr.execution_process_id,
-        `↳ switched to ${curr.model_id} via ${providerName}`
-      );
+      markers.set(curr.execution_process_id, format(curr.model_id, providerName));
     }
   }
   return markers;

@@ -411,7 +411,8 @@
         "cancel": "取消",
         "defaultDescription": "默认服务商使用您现有的 Claude 认证（claude login）。无需额外配置。"
       },
-      "defaultProviderName": "默认"
+      "defaultProviderName": "默认",
+      "turnSwitchMarker": "↳ 切换到 {{model}} ({{provider}})"
     },
     "mcp": {
       "title": "MCP 服务器配置",

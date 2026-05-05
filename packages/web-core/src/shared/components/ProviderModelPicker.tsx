@@ -126,7 +126,8 @@ export function ProviderModelPicker({
   );
   const displayName = selectedModel?.displayName ?? selectedModelId ?? '';
   const contextMatch = displayName.match(/^(.*) \((\d+M) context\)$/);
-  const namePart = contextMatch ? contextMatch[1] : displayName;
+  const rawName = contextMatch ? contextMatch[1] : displayName;
+  const namePart = rawName.includes('/') ? rawName.split('/').slice(1).join('/') : rawName;
   const contextSuffix = contextMatch ? contextMatch[2] : null;
   const effortLabel = selectedReasoningId
     ? t(`settings.providers.effort.${selectedReasoningId}`)
@@ -160,7 +161,7 @@ export function ProviderModelPicker({
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-1 px-2 py-1 text-xs rounded border border-border hover:bg-muted max-w-64 truncate">
+        <button className="flex items-center gap-half bg-secondary border border-border rounded-sm px-base py-half text-sm h-cta hover:bg-muted max-w-64 min-w-0 focus:outline-none focus-visible:ring-1 focus-visible:ring-brand">
           <span className="truncate">{triggerLabel}</span>
         </button>
       </DropdownMenuTrigger>

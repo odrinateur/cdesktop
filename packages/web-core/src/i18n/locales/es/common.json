@@ -344,7 +344,9 @@
     "missingRepo": "El repositorio seleccionado ya no está disponible.",
     "noTagsOrFiles": "No se encontraron etiquetas ni archivos",
     "createTag": "Crear nueva etiqueta",
-    "noCommands": "No hay comandos disponibles para este agente."
+    "noCommands": "No hay comandos disponibles para este agente.",
+    "loadingCommands": "Cargando comandos…",
+    "discoveringCommands": "Descubriendo comandos…"
   },
   "kanban": {
     "noVisibleStatuses": "Todos los estados están ocultos. Usa la configuración de visualización o cambia a otra pestaña para ver los problemas.",
@@ -504,6 +506,21 @@
       "recentsEmpty": "Sin carpetas recientes",
       "removeFolderAction": "Quitar",
       "worktreeChip": "Worktree"
+    },
+    "placeholder": {
+      "typeForCommands": "Escribe / para comandos"
+    },
+    "landing": {
+      "welcomeBack": "Bienvenido de nuevo",
+      "recentSessions": "Sesiones recientes",
+      "sessionsAwaitingInput_one": "{{count}} sesión esperando entrada",
+      "sessionsAwaitingInput_other": "{{count}} sesiones esperando entrada",
+      "whatToWorkOn": "¿En qué te gustaría trabajar?",
+      "status": {
+        "awaitingInput": "Esperando entrada",
+        "running": "En ejecución",
+        "failed": "Fallido"
+      }
     }
   },
   "modelSelector": {
@@ -592,6 +609,14 @@
     "theme": {
       "dark": "oscuro",
       "light": "claro"
+    }
+  },
+  "time": {
+    "short": {
+      "now": "ahora",
+      "minutes": "{{count}}min",
+      "hours": "{{count}}h",
+      "days": "{{count}}d"
     }
   }
 }

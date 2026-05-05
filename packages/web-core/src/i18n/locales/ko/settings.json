@@ -411,7 +411,8 @@
         "cancel": "취소",
         "defaultDescription": "기본 제공자는 현재 Claude 인증(claude login)을 사용합니다. 별도 설정이 필요하지 않습니다."
       },
-      "defaultProviderName": "기본"
+      "defaultProviderName": "기본",
+      "turnSwitchMarker": "↳ {{provider}}을(를) 통해 {{model}}(으)로 전환"
     },
     "mcp": {
       "title": "MCP 서버 구성",

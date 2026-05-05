@@ -411,7 +411,8 @@
         "cancel": "キャンセル",
         "defaultDescription": "デフォルトのプロバイダーは、現在の Claude 認証 (claude login) を使用します。設定は不要です。"
       },
-      "defaultProviderName": "デフォルト"
+      "defaultProviderName": "デフォルト",
+      "turnSwitchMarker": "↳ {{provider}} 経由で {{model}} に切り替え"
     },
     "mcp": {
       "title": "MCPサーバー設定",

@@ -31,9 +31,19 @@ export function formatRelativeTime(dateString: string): string {
 
 /**
  * Compact variant of formatRelativeTime without the "ago" suffix
- * (e.g., "now", "5m", "2h", "3d").
+ * (e.g., "now", "5m", "2h", "3d"). Accepts a translator so the unit
+ * abbreviations are localised — the keys live under `time.short.*` in
+ * the common namespace.
  */
-export function formatRelativeTimeShort(dateString: string): string {
+type TFunction = (
+  key: string,
+  options?: { count?: number; defaultValue?: string }
+) => string;
+
+export function formatRelativeTimeShort(
+  dateString: string,
+  t: TFunction
+): string {
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -42,8 +52,19 @@ export function formatRelativeTimeShort(dateString: string): string {
   const diffHours = Math.floor(diffMins / 60);
   const diffDays = Math.floor(diffHours / 24);
 
-  if (diffSecs < 60) return 'now';
-  if (diffMins < 60) return `${diffMins}m`;
-  if (diffHours < 24) return `${diffHours}h`;
-  return `${diffDays}d`;
+  if (diffSecs < 60) return t('time.short.now', { defaultValue: 'now' });
+  if (diffMins < 60)
+    return t('time.short.minutes', {
+      count: diffMins,
+      defaultValue: `${diffMins}m`,
+    });
+  if (diffHours < 24)
+    return t('time.short.hours', {
+      count: diffHours,
+      defaultValue: `${diffHours}h`,
+    });
+  return t('time.short.days', {
+    count: diffDays,
+    defaultValue: `${diffDays}d`,
+  });
 }

@@ -49,7 +49,12 @@ import {
 } from '@vibe/ui/components/SessionChatBox';
 import { ModelSelectorContainer } from '@/shared/components/ModelSelectorContainer';
 import { ProviderModelPicker } from '@/shared/components/ProviderModelPicker';
-import { useWorkspacePickerSelection } from '@/shared/hooks/useWorkspacePickerSelection';
+import {
+  useWorkspacePickerSelection,
+  writeLastUsed,
+  resolveDefaultSelection,
+} from '@/shared/hooks/useWorkspacePickerSelection';
+import { useProviders } from '@/shared/hooks/useProviders';
 import { useWorkspacePanelLayout } from '@/shared/stores/useUiPreferencesStore';
 import { useInspectModeStore } from '../model/store/useInspectModeStore';
 import { Actions } from '@/shared/actions';
@@ -498,6 +503,28 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
     setPreferredEffort,
   } = useWorkspacePickerSelection(workspaceId);
 
+  // Legacy / never-picked sessions: seed from last-used (or hardcoded fallback)
+  // so the pill matches what will actually run on send.
+  const { data: providers = [] } = useProviders();
+  useEffect(() => {
+    if (selectedProviderId || selectedModelId) return;
+    const resolved = resolveDefaultSelection(providers);
+    if (!resolved) return;
+    setSelection(resolved.providerId, resolved.modelId, resolved.reasoningId);
+    setPreferredEffort(resolved.preferredEffortId);
+    setExecutorOverrides({
+      model_id: resolved.modelId,
+      reasoning_id: resolved.reasoningId ?? null,
+    });
+  }, [
+    providers,
+    selectedProviderId,
+    selectedModelId,
+    setSelection,
+    setPreferredEffort,
+    setExecutorOverrides,
+  ]);
+
   const {
     send,
     isSending,
@@ -521,6 +548,13 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
 
     const success = await send(prompt);
     if (success) {
+      if (selectedProviderId && selectedModelId) {
+        writeLastUsed({
+          providerId: selectedProviderId,
+          modelId: selectedModelId,
+          preferredEffortId,
+        });
+      }
       cancelDebouncedSave();
       setLocalMessage('');
       clearUploadedAttachments();
@@ -545,6 +579,9 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
     isNewSessionMode,
     clearDraft,
     reviewContext,
+    selectedProviderId,
+    selectedModelId,
+    preferredEffortId,
   ]);
 
   // Track previous process count for queue refresh

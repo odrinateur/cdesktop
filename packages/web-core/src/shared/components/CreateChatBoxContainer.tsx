@@ -1,5 +1,6 @@
-import { useMemo, useCallback, useState } from 'react';
+import { useEffect, useMemo, useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { useTranslation } from 'react-i18next';
 import { useCreateMode } from '@/features/create-mode/model/useCreateMode';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
 import WYSIWYGEditor from '@/shared/components/WYSIWYGEditor';
@@ -22,7 +23,10 @@ import { ProviderModelPicker } from '@/shared/components/ProviderModelPicker';
 import {
   useWorkspacePickerSelection,
   seedWorkspacePicker,
+  writeLastUsed,
+  resolveDefaultSelection,
 } from '@/shared/hooks/useWorkspacePickerSelection';
+import { useProviders } from '@/shared/hooks/useProviders';
 
 interface CreateChatBoxContainerProps {
   onWorkspaceCreated: (workspaceId: string) => void;
@@ -31,6 +35,7 @@ interface CreateChatBoxContainerProps {
 export function CreateChatBoxContainer({
   onWorkspaceCreated,
 }: CreateChatBoxContainerProps) {
+  const { t } = useTranslation('common');
   const { profiles, config } = useUserSystem();
   const {
     repos,
@@ -54,6 +59,7 @@ export function CreateChatBoxContainer({
   useAutoAttachMostRecent();
 
   const { createWorkspace } = useCreateWorkspace();
+  const { data: providers = [] } = useProviders();
   const {
     selectedProviderId,
     selectedModelId,
@@ -119,6 +125,27 @@ export function CreateChatBoxContainer({
     configExecutorProfile: config?.executor_profile,
     onPersist: (cfg) => setDraftConfig(cfg),
   });
+
+  // Auto-seed the new-session picker from last-used (or hardcoded fallback)
+  // so the pill reflects what will actually be sent on first message.
+  useEffect(() => {
+    if (selectedProviderId || selectedModelId) return;
+    const resolved = resolveDefaultSelection(providers);
+    if (!resolved) return;
+    setSelection(resolved.providerId, resolved.modelId, resolved.reasoningId);
+    setPreferredEffort(resolved.preferredEffortId);
+    setExecutorOverrides({
+      model_id: resolved.modelId,
+      reasoning_id: resolved.reasoningId ?? null,
+    });
+  }, [
+    providers,
+    selectedProviderId,
+    selectedModelId,
+    setSelection,
+    setPreferredEffort,
+    setExecutorOverrides,
+  ]);
 
   const repoId = repos.length === 1 ? repos[0]?.id : undefined;
 
@@ -218,6 +245,13 @@ export function CreateChatBoxContainer({
     });
 
     if (result.workspace) {
+      if (selectedProviderId && selectedModelId) {
+        writeLastUsed({
+          providerId: selectedProviderId,
+          modelId: selectedModelId,
+          preferredEffortId,
+        });
+      }
       seedWorkspacePicker(result.workspace.id);
       onWorkspaceCreated(result.workspace.id);
     }
@@ -244,6 +278,8 @@ export function CreateChatBoxContainer({
     linkedIssue,
     useWorktree,
     selectedProviderId,
+    selectedModelId,
+    preferredEffortId,
   ]);
 
   // Determine error to display
@@ -265,107 +301,115 @@ export function CreateChatBoxContainer({
   }
 
   return (
-    <div className="relative flex flex-1 flex-col bg-primary h-full">
-      <div className="flex flex-1 flex-col px-[24px] pb-[12px]">
-        <div className="mx-auto flex w-chat max-w-full flex-col gap-base pt-[18vh]">
-          <LandingContextSection />
+    <div className="relative flex flex-1 flex-col bg-primary h-full min-w-0">
+      <div className="flex flex-1 flex-col pb-[12px] min-w-0">
+        <div className="flex justify-center pt-[18vh]">
+          <div className="w-chat max-w-full px-[35px]">
+            <div className="flex flex-col gap-base">
+              <LandingContextSection />
+            </div>
+          </div>
         </div>
-        <div className="mx-auto mt-auto flex w-chat max-w-full justify-center @container">
-          <CreateChatBox
-            editor={{
-              value: message,
-              onChange: setMessage,
-            }}
-            renderEditor={({
-              value,
-              onChange,
-              onCmdEnter,
-              disabled,
-              repoIds,
-              repoId,
-              executor,
-              onPasteFiles,
-              localAttachments,
-            }) => (
-              <WYSIWYGEditor
-                placeholder="Type / for commands"
-                value={value}
-                onChange={onChange}
-                onCmdEnter={onCmdEnter}
-                disabled={disabled}
-                className="min-h-double max-h-[10rem] overflow-y-auto"
-                repoIds={repoIds}
-                repoId={repoId}
-                executor={executor}
-                autoFocus
-                onPasteFiles={onPasteFiles}
-                localAttachments={localAttachments}
-                sendShortcut={config?.send_message_shortcut}
-              />
-            )}
-            onSend={handleSubmit}
-            isSending={createWorkspace.isPending}
-            disabled={!hasSelectedRepos}
-            executor={{
-              selected: effectiveExecutor,
-              options: executorOptions,
-              onChange: handleExecutorChange,
-            }}
-            formatExecutorLabel={toPrettyCase}
-            error={displayError}
-            repoIds={repos.map((r) => r.id)}
-            repoId={repoId}
-            modelSelector={
-              effectiveExecutor ? (
-                <ProviderModelPicker
-                  selectedProviderId={selectedProviderId}
-                  selectedModelId={selectedModelId}
-                  selectedReasoningId={selectedReasoningId}
-                  preferredEffortId={preferredEffortId}
-                  onManageProviders={() =>
-                    SettingsDialog.show({ initialSection: 'providers' })
-                  }
-                  onSelectionChange={(providerId, modelId, reasoningId) => {
-                    setSelection(providerId, modelId, reasoningId);
-                    setExecutorOverrides({
-                      model_id: modelId,
-                      reasoning_id: reasoningId ?? null,
-                    });
-                  }}
-                  onPreferredEffortChange={setPreferredEffort}
+        <div className="mt-auto flex justify-center @container">
+          <div className="w-chat max-w-full px-[35px]">
+            <CreateChatBox
+              editor={{
+                value: message,
+                onChange: setMessage,
+              }}
+              renderEditor={({
+                value,
+                onChange,
+                onCmdEnter,
+                disabled,
+                repoIds,
+                repoId,
+                executor,
+                onPasteFiles,
+                localAttachments,
+              }) => (
+                <WYSIWYGEditor
+                  placeholder={t('createMode.placeholder.typeForCommands')}
+                  value={value}
+                  onChange={onChange}
+                  onCmdEnter={onCmdEnter}
+                  disabled={disabled}
+                  className="min-h-double max-h-[10rem] overflow-y-auto"
+                  repoIds={repoIds}
+                  repoId={repoId}
+                  executor={executor}
+                  autoFocus
+                  onPasteFiles={onPasteFiles}
+                  localAttachments={localAttachments}
+                  sendShortcut={config?.send_message_shortcut}
                 />
-              ) : undefined
-            }
-            modelSelectorLeft={
-              effectiveExecutor ? (
-                <ModelSelectorContainer
-                  slot="left"
-                  agent={effectiveExecutor}
-                  workspaceId={undefined}
-                  onAdvancedSettings={handleCustomise}
-                  presets={variantOptions}
-                  selectedPreset={selectedVariant}
-                  onPresetSelect={handlePresetSelect}
-                  onOverrideChange={setExecutorOverrides}
-                  executorConfig={executorConfig}
-                  presetOptions={presetOptions}
-                />
-              ) : undefined
-            }
-            onPasteFiles={uploadFiles}
-            localAttachments={localAttachments}
-            dropzone={{ getRootProps, getInputProps, isDragActive }}
-            chipRow={<ComposerChipRow disabled={createWorkspace.isPending} />}
-            linkedIssue={
-              linkedIssue?.simpleId
-                ? {
-                    simpleId: linkedIssue.simpleId,
-                    title: linkedIssue.title ?? '',
-                    onRemove: clearLinkedIssue,
-                  }
-                : null
-            }
-          />
+              )}
+              onSend={handleSubmit}
+              isSending={createWorkspace.isPending}
+              disabled={!hasSelectedRepos}
+              executor={{
+                selected: effectiveExecutor,
+                options: executorOptions,
+                onChange: handleExecutorChange,
+              }}
+              formatExecutorLabel={toPrettyCase}
+              error={displayError}
+              repoIds={repos.map((r) => r.id)}
+              repoId={repoId}
+              modelSelector={
+                effectiveExecutor ? (
+                  <ProviderModelPicker
+                    selectedProviderId={selectedProviderId}
+                    selectedModelId={selectedModelId}
+                    selectedReasoningId={selectedReasoningId}
+                    preferredEffortId={preferredEffortId}
+                    onManageProviders={() =>
+                      SettingsDialog.show({ initialSection: 'providers' })
+                    }
+                    onSelectionChange={(providerId, modelId, reasoningId) => {
+                      setSelection(providerId, modelId, reasoningId);
+                      setExecutorOverrides({
+                        model_id: modelId,
+                        reasoning_id: reasoningId ?? null,
+                      });
+                    }}
+                    onPreferredEffortChange={setPreferredEffort}
+                  />
+                ) : undefined
+              }
+              modelSelectorLeft={
+                effectiveExecutor ? (
+                  <ModelSelectorContainer
+                    slot="left"
+                    agent={effectiveExecutor}
+                    workspaceId={undefined}
+                    onAdvancedSettings={handleCustomise}
+                    presets={variantOptions}
+                    selectedPreset={selectedVariant}
+                    onPresetSelect={handlePresetSelect}
+                    onOverrideChange={setExecutorOverrides}
+                    executorConfig={executorConfig}
+                    presetOptions={presetOptions}
+                  />
+                ) : undefined
+              }
+              onPasteFiles={uploadFiles}
+              localAttachments={localAttachments}
+              dropzone={{ getRootProps, getInputProps, isDragActive }}
+              chipRow={
+                <ComposerChipRow disabled={createWorkspace.isPending} />
+              }
+              linkedIssue={
+                linkedIssue?.simpleId
+                  ? {
+                      simpleId: linkedIssue.simpleId,
+                      title: linkedIssue.title ?? '',
+                      onRemove: clearLinkedIssue,
+                    }
+                  : null
+              }
+            />
+          </div>
         </div>
       </div>
     </div>

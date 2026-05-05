@@ -362,7 +362,7 @@ function CreateCellHost({
         if (!isFocused) onFocus();
       }}
       className={cn(
-        'relative flex h-full transition-opacity',
+        'relative flex h-full w-full min-w-0 overflow-hidden transition-opacity',
         !isFocused && 'opacity-70'
       )}
     >
