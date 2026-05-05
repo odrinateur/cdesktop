@@ -618,5 +618,14 @@
       "hours": "{{count}}時",
       "days": "{{count}}天"
     }
+  },
+  "panels": {
+    "changes": "變更",
+    "logs": "日誌",
+    "preview": "預覽",
+    "git": "Git",
+    "terminal": "終端機",
+    "openPanelMenu": "開啟面板選單",
+    "closePanel": "關閉 {{panel}} 面板"
   }
 }

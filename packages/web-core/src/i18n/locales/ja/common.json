@@ -618,5 +618,14 @@
       "hours": "{{count}}時間",
       "days": "{{count}}日"
     }
+  },
+  "panels": {
+    "changes": "変更",
+    "logs": "ログ",
+    "preview": "プレビュー",
+    "git": "Git",
+    "terminal": "ターミナル",
+    "openPanelMenu": "パネルメニューを開く",
+    "closePanel": "{{panel}} パネルを閉じる"
   }
 }

@@ -1,4 +1,5 @@
 import { Check, ChevronDown, PanelRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +16,7 @@ type Props = {
 };
 
 export function PanelMenu({ workspaceId, className }: Props) {
+  const { t } = useTranslation('common');
   const { openPanels, togglePanel } = useWorkspacePanelLayout(workspaceId);
 
   return (
@@ -22,7 +24,7 @@ export function PanelMenu({ workspaceId, className }: Props) {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          aria-label="Open panel menu"
+          aria-label={t('panels.openPanelMenu')}
           className={cn(
             'inline-flex h-7 items-center justify-center gap-0.5 rounded px-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground',
             className
@@ -34,7 +36,7 @@ export function PanelMenu({ workspaceId, className }: Props) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[12rem]">
         {PANEL_MENU_ORDER.map((id) => {
-          const { label, icon: Icon } = PANEL_CATALOG[id];
+          const { labelKey, icon: Icon } = PANEL_CATALOG[id];
           const isOpen = openPanels.has(id);
           return (
             <DropdownMenuItem
@@ -46,7 +48,7 @@ export function PanelMenu({ workspaceId, className }: Props) {
               className="pr-2"
             >
               <Icon className="h-4 w-4 text-muted-foreground" />
-              <span className="flex-1">{label}</span>
+              <span className="flex-1">{t(labelKey)}</span>
               <Check
                 className={cn(
                   'h-4 w-4 ml-2 shrink-0',
