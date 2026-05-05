@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PlusIcon } from '@phosphor-icons/react';
 import type { Provider, CreateProvider, UpdateProvider } from 'shared/types';
 import { cn } from '@/shared/lib/utils';
@@ -12,6 +13,7 @@ import {
 import { ProviderForm } from './ProviderForm';
 
 export function ProvidersSettingsSection() {
+  const { t } = useTranslation('settings');
   const { data: providers = [], isLoading } = useProviders();
   const createProvider = useCreateProvider();
   const updateProvider = useUpdateProvider();
@@ -55,7 +57,10 @@ export function ProvidersSettingsSection() {
 
   const handleDelete = async (provider: Provider) => {
     if (provider.kind === 'Default') return;
-    if (!confirm(`Delete provider "${provider.name}"?`)) return;
+    if (
+      !confirm(t('settings.providers.section.deleteConfirm', { name: provider.name }))
+    )
+      return;
     await deleteProvider.mutateAsync(provider.id);
     if (selectedId === provider.id) setSelectedId(null);
   };
@@ -66,19 +71,21 @@ export function ProvidersSettingsSection() {
       <div className="w-52 flex-shrink-0 border-r border-border flex flex-col">
         <div className="flex items-center justify-between px-3 py-2 border-b border-border">
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            Providers
+            {t('settings.providers.section.sidebarTitle')}
           </span>
           <button
             onClick={() => setSelectedId('new')}
             className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
-            title="Add provider"
+            title={t('settings.providers.section.addProvider')}
           >
             <PlusIcon className="w-4 h-4" />
           </button>
         </div>
 
         {isLoading ? (
-          <div className="p-3 text-xs text-muted-foreground">Loading…</div>
+          <div className="p-3 text-xs text-muted-foreground">
+            {t('settings.providers.section.loading')}
+          </div>
         ) : (
           <ul className="flex-1 overflow-y-auto py-1">
             {providers.map((provider) => (
@@ -96,12 +103,18 @@ export function ProvidersSettingsSection() {
                       !provider.enabled && 'text-muted-foreground'
                     )}
                   >
-                    {provider.name}
+                    {provider.kind === 'Default'
+                      ? t('settings.providers.defaultProviderName')
+                      : provider.name}
                   </button>
                   <Switch
                     checked={provider.enabled}
                     onCheckedChange={() => handleToggleEnabled(provider)}
-                    title={provider.enabled ? 'Disable' : 'Enable'}
+                    title={
+                      provider.enabled
+                        ? t('settings.providers.section.disable')
+                        : t('settings.providers.section.enable')
+                    }
                   />
                 </div>
               </li>
@@ -114,18 +127,20 @@ export function ProvidersSettingsSection() {
       <div className="flex-1 overflow-y-auto p-4">
         {selectedId === null && (
           <div className="text-sm text-muted-foreground">
-            Select a provider to edit, or click + to add one.
+            {t('settings.providers.section.emptyHint')}
           </div>
         )}
 
         {selectedId === 'new' && (
           <>
-            <h3 className="font-medium mb-4">Add provider</h3>
+            <h3 className="font-medium mb-4">
+              {t('settings.providers.section.addProviderTitle')}
+            </h3>
             <ProviderForm
               key="new"
               onSave={handleSaveNew}
               onCancel={() => setSelectedId(null)}
-              saveLabel="Add provider"
+              saveLabel={t('settings.providers.section.addProvider')}
             />
           </>
         )}
@@ -133,13 +148,17 @@ export function ProvidersSettingsSection() {
         {selectedId && selectedId !== 'new' && selected && (
           <>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium">{selected.name}</h3>
+              <h3 className="font-medium">
+                {selected.kind === 'Default'
+                  ? t('settings.providers.defaultProviderName')
+                  : selected.name}
+              </h3>
               {selected.kind !== 'Default' && (
                 <button
                   onClick={() => handleDelete(selected)}
                   className="text-xs text-destructive hover:underline"
                 >
-                  Delete
+                  {t('settings.providers.section.delete')}
                 </button>
               )}
             </div>
@@ -147,7 +166,7 @@ export function ProvidersSettingsSection() {
               key={selected.id}
               provider={selected}
               onSave={handleSaveExisting}
-              saveLabel="Save"
+              saveLabel={t('settings.providers.section.saveLabel')}
             />
           </>
         )}

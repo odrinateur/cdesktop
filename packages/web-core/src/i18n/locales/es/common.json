@@ -495,6 +495,15 @@
       "setupHint": "Consejo: Configura los scripts de instalación para este repositorio en Ajustes → Repositorios",
       "setupHintDismiss": "Cerrar",
       "setupHintLink": "Configure in Settings"
+    },
+    "composerChips": {
+      "addFolderMenuItem": "Agregar carpeta",
+      "openFolder": "Abrir carpeta…",
+      "pickBranch": "Seleccionar rama",
+      "pickFolderPlaceholder": "Selecciona una carpeta…",
+      "recentsEmpty": "Sin carpetas recientes",
+      "removeFolderAction": "Quitar",
+      "worktreeChip": "Worktree"
     }
   },
   "modelSelector": {
@@ -553,5 +562,36 @@
     "submitting": "Enviando respuestas...",
     "answeredCount": "Respondió {{count}} pregunta",
     "answeredCount_other": "Respondió {{count}} preguntas"
+  },
+  "sidebar": {
+    "footer": {
+      "themeToggle": {
+        "aria": "Cambiar a modo {{mode}}"
+      }
+    },
+    "hideSidebar": {
+      "aria": "Ocultar barra lateral"
+    },
+    "kebab": {
+      "pin": "Fijar sesión",
+      "unpin": "Desfijar sesión"
+    },
+    "newSession": "Nueva sesión",
+    "pinned": {
+      "emptyHint": "Fija sesiones desde su menú para mantenerlas aquí.",
+      "sectionHeader": "Fijados"
+    },
+    "search": {
+      "collapse": {
+        "aria": "Cerrar búsqueda"
+      },
+      "open": {
+        "aria": "Buscar sesiones"
+      }
+    },
+    "theme": {
+      "dark": "oscuro",
+      "light": "claro"
+    }
   }
 }

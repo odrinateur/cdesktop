@@ -495,6 +495,15 @@
       "setupHint": "Astuce : Configurez les scripts d'installation pour ce dépôt dans Paramètres → Dépôts",
       "setupHintDismiss": "Fermer",
       "setupHintLink": "Configure in Settings"
+    },
+    "composerChips": {
+      "addFolderMenuItem": "Ajouter un dossier",
+      "openFolder": "Ouvrir un dossier…",
+      "pickBranch": "Choisir une branche",
+      "pickFolderPlaceholder": "Choisissez un dossier…",
+      "recentsEmpty": "Aucun dossier récent",
+      "removeFolderAction": "Retirer",
+      "worktreeChip": "Worktree"
     }
   },
   "modelSelector": {
@@ -553,5 +562,36 @@
     "submitting": "Envoi des réponses...",
     "answeredCount": "Répondu à {{count}} question",
     "answeredCount_other": "Répondu à {{count}} questions"
+  },
+  "sidebar": {
+    "footer": {
+      "themeToggle": {
+        "aria": "Passer en mode {{mode}}"
+      }
+    },
+    "hideSidebar": {
+      "aria": "Masquer la barre latérale"
+    },
+    "kebab": {
+      "pin": "Épingler la session",
+      "unpin": "Désépingler la session"
+    },
+    "newSession": "Nouvelle session",
+    "pinned": {
+      "emptyHint": "Épinglez des sessions depuis leur menu pour les garder ici.",
+      "sectionHeader": "Épinglés"
+    },
+    "search": {
+      "collapse": {
+        "aria": "Fermer la recherche"
+      },
+      "open": {
+        "aria": "Rechercher des sessions"
+      }
+    },
+    "theme": {
+      "dark": "sombre",
+      "light": "clair"
+    }
   }
 }

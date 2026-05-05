@@ -32,7 +32,9 @@
         "machineSettings": "Machine Settings",
         "accountSettings": "Account Settings",
         "pairOtherMachines": "Pair other machines",
-        "selectHost": "Select host"
+        "selectHost": "Select host",
+        "providers": "プロバイダー",
+        "providersDesc": "AI プロバイダーのルーティングとモデル選択"
       }
     },
     "general": {
@@ -348,6 +350,68 @@
         "title": "設定を削除しますか？",
         "description": "「{{configName}}」を{{executorType}}エグゼキューターから完全に削除します。この操作は元に戻せません。"
       }
+    },
+    "providers": {
+      "picker": {
+        "triggerPlaceholder": "モデル ▾",
+        "searchPlaceholder": "モデルを検索…",
+        "recentlyUsed": "最近使用",
+        "noProvidersEnabled": "有効なプロバイダーがありません",
+        "noModelsMatch": "一致するモデルがありません",
+        "effort": "推論レベル",
+        "effortTooltip": "{{label}} 推論",
+        "manageProviders": "プロバイダーを管理 →"
+      },
+      "effort": {
+        "low": "低",
+        "medium": "中",
+        "high": "高",
+        "xhigh": "最高",
+        "max": "最大",
+        "lowShort": "低",
+        "mediumShort": "中",
+        "highShort": "高",
+        "xhighShort": "最高",
+        "maxShort": "最大"
+      },
+      "section": {
+        "sidebarTitle": "プロバイダー",
+        "addProvider": "プロバイダーを追加",
+        "addProviderTitle": "プロバイダーを追加",
+        "saveLabel": "保存",
+        "loading": "読み込み中…",
+        "enable": "有効化",
+        "disable": "無効化",
+        "delete": "削除",
+        "deleteConfirm": "プロバイダー「{{name}}」を削除しますか？",
+        "emptyHint": "編集するプロバイダーを選択するか、+ をクリックして新規追加してください。"
+      },
+      "form": {
+        "selectPreset": "プリセットを選択",
+        "custom": "カスタム",
+        "providerDetails": "プロバイダー詳細",
+        "name": "名前",
+        "namePlaceholder": "マイプロバイダー",
+        "baseUrl": "ベース URL",
+        "baseUrlPlaceholder": "https://api.example.com",
+        "apiKey": "API キー",
+        "apiKeyPlaceholder": "sk-…",
+        "backgroundTaskModel": "バックグラウンドタスク用モデル",
+        "followMainModel": "メインモデルに従う",
+        "haikuModelPlaceholder": "例: claude-haiku-4-5-20251001",
+        "extraEnv": "追加の環境変数 (詳細設定)",
+        "envPlaceholder": "KEY=value\nANOTHER_KEY=value",
+        "models": "モデル",
+        "fetchFromEndpoint": "エンドポイントから取得",
+        "fetchedCount": "{{count}} 個のモデルを取得しました。有効化するモデルを選択:",
+        "search": "検索…",
+        "clear": "クリア",
+        "manualPlaceholder": "モデル ID を手動で入力…",
+        "add": "追加",
+        "cancel": "キャンセル",
+        "defaultDescription": "デフォルトのプロバイダーは、現在の Claude 認証 (claude login) を使用します。設定は不要です。"
+      },
+      "defaultProviderName": "デフォルト"
     },
     "mcp": {
       "title": "MCPサーバー設定",

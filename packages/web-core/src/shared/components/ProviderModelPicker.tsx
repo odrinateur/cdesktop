@@ -1,9 +1,13 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MagnifyingGlassIcon, GearIcon } from '@phosphor-icons/react';
 import { useQuery } from '@tanstack/react-query';
 import { makeLocalApiRequest } from '@/shared/lib/localApiTransport';
 import { useProviders } from '@/shared/hooks/useProviders';
-import { useProviderModelStore } from '@/shared/stores/useProviderModelStore';
+import {
+  inferReasoningOptions,
+  clampEffortToModel,
+} from '@/shared/lib/reasoningCapability';
 import type { Provider } from 'shared/types';
 import { cn } from '@/shared/lib/utils';
 import {
@@ -18,16 +22,29 @@ interface RecentPair {
 }
 
 interface ProviderModelPickerProps {
+  selectedProviderId: string | null;
+  selectedModelId: string | null;
+  selectedReasoningId: string | null;
+  preferredEffortId: string | null;
   onManageProviders: () => void;
-  // Called when a (model, provider) pair is selected
-  onSelect: (providerId: string, modelId: string) => void;
+  onSelectionChange: (
+    providerId: string,
+    modelId: string,
+    reasoningId: string | null
+  ) => void;
+  onPreferredEffortChange: (effortId: string | null) => void;
 }
 
 export function ProviderModelPicker({
+  selectedProviderId,
+  selectedModelId,
+  selectedReasoningId,
+  preferredEffortId,
   onManageProviders,
-  onSelect,
+  onSelectionChange,
+  onPreferredEffortChange,
 }: ProviderModelPickerProps) {
-  const { selectedProviderId, selectedModelId } = useProviderModelStore();
+  const { t } = useTranslation('settings');
   const { data: providers = [] } = useProviders();
 
   const { data: recents = [] } = useQuery({
@@ -40,8 +57,8 @@ export function ProviderModelPicker({
   });
 
   const [search, setSearch] = useState('');
+  const [open, setOpen] = useState(false);
 
-  // Build flat list of (provider, model) leaf items for search
   const allItems = useMemo(() => {
     const items: {
       provider: Provider;
@@ -67,7 +84,6 @@ export function ProviderModelPicker({
     return items;
   }, [providers, search]);
 
-  // Group by provider
   const grouped = useMemo(() => {
     const map = new Map<
       string,
@@ -84,7 +100,6 @@ export function ProviderModelPicker({
     return [...map.values()];
   }, [allItems]);
 
-  // Resolve recents display info
   const recentItems = useMemo(() => {
     return recents
       .map((r) => {
@@ -101,64 +116,96 @@ export function ProviderModelPicker({
   }, [recents, providers]);
 
   const selectedProvider = providers.find((p) => p.id === selectedProviderId);
-  const label =
-    selectedModelId && selectedProvider
-      ? `${selectedModelId} · ${selectedProvider.name}`
-      : 'Model ▾';
+  const currentReasoningOptions = useMemo<string[]>(
+    () => (selectedModelId ? inferReasoningOptions(selectedModelId) : []),
+    [selectedModelId]
+  );
 
-  const handleSelect = (providerId: string, modelId: string) => {
-    useProviderModelStore.getState().setSelection(providerId, modelId);
-    onSelect(providerId, modelId);
+  const selectedModel = selectedProvider?.enabledModels?.find(
+    (m) => m.id === selectedModelId
+  );
+  const displayName = selectedModel?.displayName ?? selectedModelId ?? '';
+  const contextMatch = displayName.match(/^(.*) \((\d+M) context\)$/);
+  const namePart = contextMatch ? contextMatch[1] : displayName;
+  const contextSuffix = contextMatch ? contextMatch[2] : null;
+  const effortLabel = selectedReasoningId
+    ? t(`settings.providers.effort.${selectedReasoningId}`)
+    : null;
+  const triggerLabel =
+    selectedModelId && selectedProvider ? (
+      <>
+        {namePart}
+        {contextSuffix && <span className="text-low"> {contextSuffix}</span>}
+        {effortLabel && (
+          <span className="text-low"> · {effortLabel}</span>
+        )}
+      </>
+    ) : (
+      <>{t('settings.providers.picker.triggerPlaceholder')}</>
+    );
+
+  const selectModel = (providerId: string, modelId: string) => {
+    const opts = inferReasoningOptions(modelId);
+    const reasoning = clampEffortToModel(preferredEffortId, opts);
+    onSelectionChange(providerId, modelId, reasoning);
+  };
+
+  const selectEffort = (effortId: string) => {
+    onPreferredEffortChange(effortId);
+    if (!selectedProviderId || !selectedModelId) return;
+    const reasoning = clampEffortToModel(effortId, currentReasoningOptions);
+    onSelectionChange(selectedProviderId, selectedModelId, reasoning);
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-1 px-2 py-1 text-xs rounded border border-border hover:bg-muted max-w-48 truncate">
-          <span className="truncate">{label}</span>
+        <button className="flex items-center gap-1 px-2 py-1 text-xs rounded border border-border hover:bg-muted max-w-64 truncate">
+          <span className="truncate">{triggerLabel}</span>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
         className="w-72 p-0 overflow-hidden flex flex-col"
       >
-        {/* Search */}
         <div className="flex items-center gap-2 px-2 py-1.5 border-b border-border">
           <MagnifyingGlassIcon className="w-3.5 h-3.5 text-low flex-shrink-0" />
           <input
             autoFocus
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search models…"
+            placeholder={t('settings.providers.picker.searchPlaceholder')}
             className="flex-1 text-xs bg-transparent outline-none"
           />
         </div>
 
-        <div className="overflow-y-auto max-h-64">
-          {/* Recently used */}
+        <div className="overflow-y-auto max-h-72">
           {!search && recentItems.length > 0 && (
             <div>
               <div className="px-2 py-1 text-xs font-medium text-low">
-                Recently used
+                {t('settings.providers.picker.recentlyUsed')}
               </div>
               {recentItems.map((item) => (
                 <ModelRow
                   key={`${item.provider.id}::${item.modelId}`}
                   modelId={item.modelId}
                   displayName={item.displayName}
-                  providerName={item.provider.name}
+                  providerName={
+                    item.provider.kind === 'Default'
+                      ? t('settings.providers.defaultProviderName')
+                      : item.provider.name
+                  }
                   isSelected={
                     item.provider.id === selectedProviderId &&
                     item.modelId === selectedModelId
                   }
-                  onClick={() => handleSelect(item.provider.id, item.modelId)}
+                  onClick={() => selectModel(item.provider.id, item.modelId)}
                 />
               ))}
               <div className="border-t border-border my-1" />
             </div>
           )}
 
-          {/* Default provider (if enabled and has models) */}
           {!search &&
             grouped
               .filter((g) => g.provider.kind === 'Default')
@@ -168,11 +215,10 @@ export function ProviderModelPicker({
                   group={g}
                   selectedProviderId={selectedProviderId}
                   selectedModelId={selectedModelId}
-                  onSelect={handleSelect}
+                  onSelect={selectModel}
                 />
               ))}
 
-          {/* Other providers */}
           {grouped
             .filter((g) => search || g.provider.kind !== 'Default')
             .map((g) => (
@@ -181,27 +227,56 @@ export function ProviderModelPicker({
                 group={g}
                 selectedProviderId={selectedProviderId}
                 selectedModelId={selectedModelId}
-                onSelect={handleSelect}
+                onSelect={selectModel}
               />
             ))}
 
           {allItems.length === 0 && (
             <div className="px-2 py-3 text-xs text-low text-center">
               {providers.filter((p) => p.enabled).length === 0
-                ? 'No providers enabled'
-                : 'No models match'}
+                ? t('settings.providers.picker.noProvidersEnabled')
+                : t('settings.providers.picker.noModelsMatch')}
             </div>
           )}
         </div>
 
-        {/* Footer */}
+        {currentReasoningOptions.length > 0 && (
+          <div className="border-t border-border px-2 py-1.5 flex items-center gap-2">
+            <span className="text-[10px] text-low uppercase tracking-wide flex-shrink-0">
+              {t('settings.providers.picker.effort')}
+            </span>
+            <div className="flex items-center gap-0.5 flex-1 justify-end">
+              {currentReasoningOptions.map((id) => (
+                <button
+                  key={id}
+                  onClick={() => selectEffort(id)}
+                  title={t('settings.providers.picker.effortTooltip', {
+                    label: t(`settings.providers.effort.${id}`),
+                  })}
+                  className={cn(
+                    'px-1.5 py-0.5 text-[10px] rounded border border-border/60',
+                    selectedReasoningId === id
+                      ? 'bg-brand text-white border-brand'
+                      : 'text-low hover:bg-secondary hover:text-high'
+                  )}
+                >
+                  {t(`settings.providers.effort.${id}Short`)}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="border-t border-border">
           <button
-            onClick={onManageProviders}
+            onClick={() => {
+              setOpen(false);
+              onManageProviders();
+            }}
             className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-low hover:text-high hover:bg-muted"
           >
             <GearIcon className="w-3.5 h-3.5" />
-            Manage providers →
+            {t('settings.providers.picker.manageProviders')}
           </button>
         </div>
       </DropdownMenuContent>
@@ -223,23 +298,30 @@ function ProviderGroup({
   selectedModelId: string | null;
   onSelect: (providerId: string, modelId: string) => void;
 }) {
+  const { t } = useTranslation('settings');
+  const providerLabel =
+    group.provider.kind === 'Default'
+      ? t('settings.providers.defaultProviderName')
+      : group.provider.name;
   return (
     <div>
       <div className="px-2 py-1 text-xs font-medium text-low">
-        {group.provider.name}
+        {providerLabel}
       </div>
-      {group.models.map((m) => (
-        <ModelRow
-          key={m.modelId}
-          modelId={m.modelId}
-          displayName={m.displayName}
-          isSelected={
-            group.provider.id === selectedProviderId &&
-            m.modelId === selectedModelId
-          }
-          onClick={() => onSelect(group.provider.id, m.modelId)}
-        />
-      ))}
+      {group.models.map((m) => {
+        const isSelected =
+          group.provider.id === selectedProviderId &&
+          m.modelId === selectedModelId;
+        return (
+          <ModelRow
+            key={m.modelId}
+            modelId={m.modelId}
+            displayName={m.displayName}
+            isSelected={isSelected}
+            onClick={() => onSelect(group.provider.id, m.modelId)}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -261,7 +343,7 @@ function ModelRow({
     <button
       onClick={onClick}
       className={cn(
-        'w-full flex items-start justify-between gap-2 px-4 py-1.5 text-xs hover:bg-muted text-left',
+        'w-full flex items-start justify-between gap-2 px-3 py-1.5 text-xs hover:bg-muted text-left',
         isSelected && 'bg-muted font-medium'
       )}
     >

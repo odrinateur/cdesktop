@@ -32,7 +32,9 @@
         "machineSettings": "Machine Settings",
         "accountSettings": "Account Settings",
         "pairOtherMachines": "Pair other machines",
-        "selectHost": "Select host"
+        "selectHost": "Select host",
+        "providers": "Proveedores",
+        "providersDesc": "Enrutamiento de proveedores de IA y selección de modelo"
       }
     },
     "general": {
@@ -348,6 +350,68 @@
         "title": "¿Eliminar configuración?",
         "description": "Esto eliminará permanentemente \"{{configName}}\" del ejecutor {{executorType}}. Esta acción no se puede deshacer."
       }
+    },
+    "providers": {
+      "picker": {
+        "triggerPlaceholder": "Modelo ▾",
+        "searchPlaceholder": "Buscar modelos…",
+        "recentlyUsed": "Usados recientemente",
+        "noProvidersEnabled": "Sin proveedores habilitados",
+        "noModelsMatch": "Sin modelos coincidentes",
+        "effort": "Esfuerzo",
+        "effortTooltip": "Esfuerzo {{label}}",
+        "manageProviders": "Administrar proveedores →"
+      },
+      "effort": {
+        "low": "Bajo",
+        "medium": "Medio",
+        "high": "Alto",
+        "xhigh": "Muy alto",
+        "max": "Máximo",
+        "lowShort": "Bajo",
+        "mediumShort": "Med",
+        "highShort": "Alto",
+        "xhighShort": "M.Alto",
+        "maxShort": "Máx"
+      },
+      "section": {
+        "sidebarTitle": "Proveedores",
+        "addProvider": "Agregar proveedor",
+        "addProviderTitle": "Agregar proveedor",
+        "saveLabel": "Guardar",
+        "loading": "Cargando…",
+        "enable": "Habilitar",
+        "disable": "Deshabilitar",
+        "delete": "Eliminar",
+        "deleteConfirm": "¿Eliminar el proveedor \"{{name}}\"?",
+        "emptyHint": "Selecciona un proveedor para editar, o haz clic en + para agregar uno."
+      },
+      "form": {
+        "selectPreset": "Selecciona un preset",
+        "custom": "Personalizado",
+        "providerDetails": "Detalles del proveedor",
+        "name": "Nombre",
+        "namePlaceholder": "Mi proveedor",
+        "baseUrl": "URL base",
+        "baseUrlPlaceholder": "https://api.example.com",
+        "apiKey": "Clave API",
+        "apiKeyPlaceholder": "sk-…",
+        "backgroundTaskModel": "Modelo para tareas en segundo plano",
+        "followMainModel": "Seguir el modelo principal",
+        "haikuModelPlaceholder": "ej. claude-haiku-4-5-20251001",
+        "extraEnv": "Variables de entorno adicionales (Avanzado)",
+        "envPlaceholder": "KEY=value\nANOTHER_KEY=value",
+        "models": "Modelos",
+        "fetchFromEndpoint": "Obtener desde el endpoint",
+        "fetchedCount": "Obtenidos {{count}} modelos. Marca los que quieres habilitar:",
+        "search": "Buscar…",
+        "clear": "Limpiar",
+        "manualPlaceholder": "Escribe un ID de modelo manualmente…",
+        "add": "Agregar",
+        "cancel": "Cancelar",
+        "defaultDescription": "El proveedor predeterminado usa tu autenticación actual de Claude (claude login). No requiere configuración."
+      },
+      "defaultProviderName": "Predeterminado"
     },
     "mcp": {
       "title": "Configuración de Servidor MCP",

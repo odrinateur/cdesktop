@@ -271,6 +271,15 @@ impl ClaudeCode {
     }
 }
 
+/// Canonical Claude CLI model shorthand ids and display names.
+/// Single source of truth, also consumed by the Default provider in db.
+pub const DEFAULT_MODEL_IDS: &[(&str, &str)] = &[
+    ("opus", "Opus"),
+    ("opus[1m]", "Opus (1M context)"),
+    ("sonnet", "Sonnet"),
+    ("haiku", "Haiku"),
+];
+
 fn default_discovered_options() -> crate::executor_discovery::ExecutorDiscoveredOptions {
     use crate::{
         executor_discovery::ExecutorDiscoveredOptions,
@@ -285,24 +294,20 @@ fn default_discovered_options() -> crate::executor_discovery::ExecutorDiscovered
     ExecutorDiscoveredOptions {
         model_selector: ModelSelectorConfig {
             providers: vec![],
-            models: [
-                ("opus", "Opus"),
-                ("opus[1m]", "Opus (1M context)"),
-                ("sonnet", "Sonnet"),
-                ("haiku", "Haiku"),
-            ]
-            .into_iter()
-            .map(|(id, name)| ModelInfo {
-                id: id.to_string(),
-                name: name.to_string(),
-                provider_id: None,
-                reasoning_options: if supports_effort(id) {
-                    effort_options.clone()
-                } else {
-                    vec![]
-                },
-            })
-            .collect(),
+            models: DEFAULT_MODEL_IDS
+                .iter()
+                .copied()
+                .map(|(id, name)| ModelInfo {
+                    id: id.to_string(),
+                    name: name.to_string(),
+                    provider_id: None,
+                    reasoning_options: if supports_effort(id) {
+                        effort_options.clone()
+                    } else {
+                        vec![]
+                    },
+                })
+                .collect(),
             default_model: Some("opus".to_string()),
             agents: vec![],
             permissions: vec![

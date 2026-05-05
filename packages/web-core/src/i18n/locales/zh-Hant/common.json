@@ -495,6 +495,15 @@
       "setupHint": "提示：在設定 → 儲存庫中為此儲存庫設定安裝腳本",
       "setupHintDismiss": "關閉",
       "setupHintLink": "Configure in Settings"
+    },
+    "composerChips": {
+      "addFolderMenuItem": "新增資料夾",
+      "openFolder": "開啟資料夾…",
+      "pickBranch": "選擇分支",
+      "pickFolderPlaceholder": "選擇資料夾…",
+      "recentsEmpty": "沒有最近的資料夾",
+      "removeFolderAction": "移除",
+      "worktreeChip": "Worktree"
     }
   },
   "modelSelector": {
@@ -553,5 +562,36 @@
     "submitting": "正在提交回答...",
     "answeredCount": "已回答{{count}}個問題",
     "answeredCount_other": "已回答{{count}}個問題"
+  },
+  "sidebar": {
+    "footer": {
+      "themeToggle": {
+        "aria": "切換為{{mode}}模式"
+      }
+    },
+    "hideSidebar": {
+      "aria": "隱藏側邊欄"
+    },
+    "kebab": {
+      "pin": "釘選會話",
+      "unpin": "取消釘選會話"
+    },
+    "newSession": "新增會話",
+    "pinned": {
+      "emptyHint": "從會話選單釘選即可保留於此。",
+      "sectionHeader": "已釘選"
+    },
+    "search": {
+      "collapse": {
+        "aria": "關閉搜尋"
+      },
+      "open": {
+        "aria": "搜尋會話"
+      }
+    },
+    "theme": {
+      "dark": "深色",
+      "light": "淺色"
+    }
   }
 }

@@ -32,7 +32,9 @@
         "machineSettings": "Machine Settings",
         "accountSettings": "Account Settings",
         "pairOtherMachines": "Pair other machines",
-        "selectHost": "Select host"
+        "selectHost": "Select host",
+        "providers": "服务商",
+        "providersDesc": "AI 服务商路由和模型选择"
       }
     },
     "general": {
@@ -348,6 +350,68 @@
         "title": "删除配置？",
         "description": "这将从 {{executorType}} 执行器中永久删除\"{{configName}}\"。此操作无法撤销。"
       }
+    },
+    "providers": {
+      "picker": {
+        "triggerPlaceholder": "模型 ▾",
+        "searchPlaceholder": "搜索模型…",
+        "recentlyUsed": "最近使用",
+        "noProvidersEnabled": "没有启用的服务商",
+        "noModelsMatch": "没有匹配的模型",
+        "effort": "思考深度",
+        "effortTooltip": "{{label}} 强度",
+        "manageProviders": "管理服务商 →"
+      },
+      "effort": {
+        "low": "低",
+        "medium": "中",
+        "high": "高",
+        "xhigh": "极高",
+        "max": "最高",
+        "lowShort": "低",
+        "mediumShort": "中",
+        "highShort": "高",
+        "xhighShort": "极高",
+        "maxShort": "最高"
+      },
+      "section": {
+        "sidebarTitle": "服务商",
+        "addProvider": "新增服务商",
+        "addProviderTitle": "新增服务商",
+        "saveLabel": "保存",
+        "loading": "加载中…",
+        "enable": "启用",
+        "disable": "停用",
+        "delete": "删除",
+        "deleteConfirm": "确定要删除服务商\"{{name}}\"吗？",
+        "emptyHint": "选择要编辑的服务商，或点击 + 新增。"
+      },
+      "form": {
+        "selectPreset": "选择预设组合",
+        "custom": "自定义",
+        "providerDetails": "服务商详情",
+        "name": "名称",
+        "namePlaceholder": "我的服务商",
+        "baseUrl": "Base URL",
+        "baseUrlPlaceholder": "https://api.example.com",
+        "apiKey": "API 密钥",
+        "apiKeyPlaceholder": "sk-…",
+        "backgroundTaskModel": "后台任务模型",
+        "followMainModel": "跟随主模型",
+        "haikuModelPlaceholder": "例如 claude-haiku-4-5-20251001",
+        "extraEnv": "额外环境变量（高级）",
+        "envPlaceholder": "KEY=value\nANOTHER_KEY=value",
+        "models": "模型",
+        "fetchFromEndpoint": "从端点获取",
+        "fetchedCount": "已获取 {{count}} 个模型。勾选要启用的：",
+        "search": "搜索…",
+        "clear": "清除",
+        "manualPlaceholder": "手动输入模型 ID…",
+        "add": "新增",
+        "cancel": "取消",
+        "defaultDescription": "默认服务商使用您现有的 Claude 认证（claude login）。无需额外配置。"
+      },
+      "defaultProviderName": "默认"
     },
     "mcp": {
       "title": "MCP 服务器配置",

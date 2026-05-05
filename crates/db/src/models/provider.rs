@@ -139,20 +139,35 @@ impl TryFrom<ProviderRow> for Provider {
     type Error = ProviderError;
 
     fn try_from(r: ProviderRow) -> Result<Self, ProviderError> {
+        let kind: AiProviderKind = r.kind.parse()?;
+        let mut enabled_models: Vec<EnabledModel> = serde_json::from_str(&r.enabled_models)?;
+        // Default provider has no DB-stored model list; synthesize it from the
+        // Claude executor's canonical alias list at read time, so updates ship
+        // with the binary instead of needing a migration.
+        if matches!(kind, AiProviderKind::Default) && enabled_models.is_empty() {
+            enabled_models = executors::executors::claude::DEFAULT_MODEL_IDS
+                .iter()
+                .map(|(id, name)| EnabledModel {
+                    id: (*id).to_string(),
+                    display_name: (*name).to_string(),
+                    owned_by: Some("anthropic".to_string()),
+                })
+                .collect();
+        }
         Ok(Provider {
             id: r
                 .id
                 .parse()
                 .map_err(|_| ProviderError::InvalidUuid(r.id.clone()))?,
             name: r.name,
-            kind: r.kind.parse()?,
+            kind,
             agent_kind: r.agent_kind,
             preset_id: r.preset_id,
             enabled: r.enabled,
             env: serde_json::from_str(&r.env)?,
             extra_args: serde_json::from_str(&r.extra_args)?,
             haiku_model: r.haiku_model,
-            enabled_models: serde_json::from_str(&r.enabled_models)?,
+            enabled_models,
             created_at: r.created_at,
             updated_at: r.updated_at,
         })
