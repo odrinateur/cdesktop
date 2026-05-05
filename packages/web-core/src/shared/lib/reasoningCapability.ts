@@ -6,7 +6,7 @@ const THREE = FIVE.slice(0, 3);
  * Heuristic: which effort levels to surface for a given model id.
  * Returns ordered effort ids; consumers translate labels via i18n.
  * - haiku → none
- * - opus | sonnet → 5 levels (low → max)
+ * - opus | sonnet | deepseek-v4 → 5 levels (low → max)
  * - gpt-5* → 4 levels (low → xhigh)
  * - everything else → 3 levels (low/med/high)
  */
@@ -14,6 +14,7 @@ export function inferReasoningOptions(modelId: string): string[] {
   const id = modelId.toLowerCase();
   if (id.includes('haiku')) return [];
   if (id.includes('opus') || id.includes('sonnet')) return FIVE;
+  if (id.includes('deepseek-v4')) return FIVE;
   if (id.includes('gpt-5')) return FOUR;
   return THREE;
 }

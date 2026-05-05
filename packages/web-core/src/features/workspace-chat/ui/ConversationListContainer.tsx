@@ -15,11 +15,11 @@ import {
   findPreviousUserMessageIndex,
   type ConversationRow,
 } from '../model/conversation-row-model';
-import {
-  useTurnSelections,
-  buildSwitchMarkers,
-} from '@/shared/hooks/useTurnSelections';
-import { useProviders } from '@/shared/hooks/useProviders';
+// import {
+//   useTurnSelections,
+//   buildSwitchMarkers,
+// } from '@/shared/hooks/useTurnSelections';
+// import { useProviders } from '@/shared/hooks/useProviders';
 import { deriveConversationEntries } from '../model/deriveConversationEntries';
 import { deriveConversationTimeline } from '../model/deriveConversationTimeline';
 import { useConversationVirtualizer } from '../model/useConversationVirtualizer';
@@ -193,32 +193,36 @@ export const ConversationList = forwardRef<
   const resetAction = useResetProcess(attempt.id, attempt.session?.id);
   const conversationScopeKey = `${attempt.id}:${sessionScopeId ?? attempt.session?.id ?? 'new'}`;
 
-  // Switch markers for mid-thread model/provider changes (Phase 7)
-  const { data: turnSelections = [] } = useTurnSelections(attempt.session?.id);
-  const { data: providers = [] } = useProviders();
-  const { t: tSettings } = useTranslation('settings');
-  const providerNameMap = useMemo(
-    () =>
-      new Map(
-        providers.map((p) => [
-          p.id,
-          p.kind === 'Default'
-            ? tSettings('settings.providers.defaultProviderName')
-            : p.name,
-        ])
-      ),
-    [providers, tSettings]
-  );
-  const switchMarkers = useMemo(
-    () =>
-      buildSwitchMarkers(turnSelections, providerNameMap, (modelId, providerName) =>
-        tSettings('settings.providers.turnSwitchMarker', {
-          model: modelId,
-          provider: providerName,
-        })
-      ),
-    [turnSelections, providerNameMap, tSettings]
-  );
+  // Switch dividers for mid-thread model/provider changes are temporarily
+  // disabled — render sites at the bottom of this file receive an empty map,
+  // so nothing renders. Re-enable by uncommenting the imports above and the
+  // block below.
+  const switchMarkers = useMemo(() => new Map<string, string>(), []);
+  // const { data: turnSelections = [] } = useTurnSelections(attempt.session?.id);
+  // const { data: providers = [] } = useProviders();
+  // const { t: tSettings } = useTranslation('settings');
+  // const providerNameMap = useMemo(
+  //   () =>
+  //     new Map(
+  //       providers.map((p) => [
+  //         p.id,
+  //         p.kind === 'Default'
+  //           ? tSettings('settings.providers.defaultProviderName')
+  //           : p.name,
+  //       ])
+  //     ),
+  //   [providers, tSettings]
+  // );
+  // const switchMarkers = useMemo(
+  //   () =>
+  //     buildSwitchMarkers(turnSelections, providerNameMap, (modelId, providerName) =>
+  //       tSettings('settings.providers.turnSwitchMarker', {
+  //         model: modelId,
+  //         provider: providerName,
+  //       })
+  //     ),
+  //   [turnSelections, providerNameMap, tSettings]
+  // );
   const [filteredEntries, setFilteredEntries] = useState<DisplayEntry[]>([]);
   const [dataVersion, setDataVersion] = useState(0);
   const [loading, setLoading] = useState(true);
