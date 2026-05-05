@@ -2,16 +2,12 @@ import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   PlusIcon,
   ArrowLeftIcon,
-  ArchiveIcon,
   StackIcon,
   SpinnerIcon,
   CaretDownIcon,
-  SunIcon,
-  MoonIcon,
 } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/cn';
-import { IconButton } from './IconButton';
 import { WorkspaceSummary } from './WorkspaceSummary';
 import type { AppBarHostStatus } from './AppBar';
 import {
@@ -121,9 +117,6 @@ export interface WorkspacesSidebarProps {
     status: AppBarHostStatus;
   } | null;
   onOpenRemoteHostSettings?: () => void;
-  /** Theme toggle wiring (footer, bottom-right). */
-  resolvedTheme?: 'light' | 'dark';
-  onToggleTheme?: () => void;
   /** Per-pill drag props (HTML5). Returning undefined disables drag for that pill. */
   getWorkspaceDragProps?: (workspaceId: string) =>
     | {
@@ -560,8 +553,6 @@ export function WorkspacesSidebar({
   persistKeys = DEFAULT_PERSIST_KEYS,
   activeRemoteHost = null,
   onOpenRemoteHostSettings,
-  resolvedTheme,
-  onToggleTheme,
   getWorkspaceDragProps,
   onReorderPins,
   onPinAreaHover,
@@ -628,19 +619,6 @@ export function WorkspacesSidebar({
       : layoutMode === 'flat' && enableFlatGrouping
         ? 'flat'
         : 'folder';
-
-  const themeAriaLabel = t(
-    'common:sidebar.footer.themeToggle.aria',
-    resolvedTheme === 'dark'
-      ? {
-          defaultValue: 'Switch to light mode',
-          mode: t('common:sidebar.theme.light', { defaultValue: 'light' }),
-        }
-      : {
-          defaultValue: 'Switch to dark mode',
-          mode: t('common:sidebar.theme.dark', { defaultValue: 'dark' }),
-        }
-  );
 
   return (
     <div className="w-full h-full bg-[#fdfdfc] dark:bg-secondary flex flex-col rounded-2xl border border-[#d4d4d4] dark:border-[#1e1e1e] overflow-hidden pt-base">
@@ -915,38 +893,20 @@ export function WorkspacesSidebar({
         )}
       </div>
 
-      {/* Footer: archive toggle (icon only) + bottom actions + theme toggle */}
+      {/* Footer: back-to-active arrow when in archive view + bottom actions (control panel) */}
       <div className="p-double flex items-center gap-base">
-        <button
-          onClick={() => onShowArchiveChange?.(!showArchive)}
-          aria-label={
-            showArchive
-              ? t('common:workspaces.backToActive')
-              : t('common:workspaces.viewArchive')
-          }
-          title={
-            showArchive
-              ? t('common:workspaces.backToActive')
-              : t('common:workspaces.viewArchive')
-          }
-          className="inline-flex h-7 w-7 items-center justify-center rounded text-low hover:text-normal hover:bg-tertiary/60 transition-colors"
-        >
-          {showArchive ? (
+        {showArchive && (
+          <button
+            onClick={() => onShowArchiveChange?.(false)}
+            aria-label={t('common:workspaces.backToActive')}
+            title={t('common:workspaces.backToActive')}
+            className="inline-flex h-7 w-7 items-center justify-center rounded text-low hover:text-normal hover:bg-tertiary/60 transition-colors"
+          >
             <ArrowLeftIcon className="size-icon-xs" />
-          ) : (
-            <ArchiveIcon className="size-icon-xs" />
-          )}
-        </button>
-        {bottomActions}
+          </button>
+        )}
         <div className="ml-auto flex items-center gap-base">
-          {onToggleTheme && (
-            <IconButton
-              icon={resolvedTheme === 'dark' ? SunIcon : MoonIcon}
-              onClick={onToggleTheme}
-              aria-label={themeAriaLabel}
-              title={themeAriaLabel}
-            />
-          )}
+          {bottomActions}
         </div>
       </div>
     </div>

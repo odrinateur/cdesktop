@@ -609,6 +609,17 @@
     "theme": {
       "dark": "暗色",
       "light": "亮色"
+    },
+    "controlPanel": {
+      "openMenu": "打开控制面板",
+      "theme": {
+        "label": "主题",
+        "light": "亮色",
+        "dark": "暗色",
+        "system": "跟随系统"
+      },
+      "settings": "设置",
+      "viewArchive": "查看归档"
     }
   },
   "time": {

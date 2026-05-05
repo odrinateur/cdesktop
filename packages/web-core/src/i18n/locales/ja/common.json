@@ -609,6 +609,17 @@
     "theme": {
       "dark": "ダーク",
       "light": "ライト"
+    },
+    "controlPanel": {
+      "openMenu": "コントロールパネルを開く",
+      "theme": {
+        "label": "テーマ",
+        "light": "ライト",
+        "dark": "ダーク",
+        "system": "システムに合わせる"
+      },
+      "settings": "設定",
+      "viewArchive": "アーカイブを表示"
     }
   },
   "time": {
