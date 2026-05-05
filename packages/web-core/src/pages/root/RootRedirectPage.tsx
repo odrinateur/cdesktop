@@ -17,10 +17,10 @@ export function RootRedirectPage() {
 
     let isActive = true;
     void (async () => {
-      if (!config.remote_onboarding_acknowledged) {
-        appNavigation.goToOnboarding({ replace: true });
-        return;
-      }
+      // if (!config.remote_onboarding_acknowledged) {
+      //   appNavigation.goToOnboarding({ replace: true });
+      //   return;
+      // }
 
       if (loginStatus?.status !== 'loggedin') {
         appNavigation.goToWorkspacesCreate({ replace: true });
