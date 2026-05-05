@@ -1,5 +1,6 @@
 // SDK submodules
 pub mod client;
+pub mod onboarding;
 pub mod protocol;
 pub mod slash_commands;
 pub mod types;
@@ -661,6 +662,8 @@ impl ClaudeCode {
         command_parts: CommandParts,
         env: &ExecutionEnv,
     ) -> Result<SpawnedChild, ExecutorError> {
+        onboarding::ensure_completed();
+
         let (program_path, mut args) = command_parts.into_resolved().await?;
         let combined_prompt = self.append_prompt.combine_prompt(prompt);
 
