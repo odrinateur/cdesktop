@@ -1112,6 +1112,7 @@ impl ClaudeLogProcessor {
                 // TODO: Add proper ToolResult support to NormalizedEntry when the type system supports it
                 None
             }
+            ClaudeContentItem::RedactedThinking { .. } => None,
         }
     }
 
@@ -1512,6 +1513,7 @@ impl ClaudeLogProcessor {
                             }
                         }
                         ClaudeContentItem::ToolResult { .. } => {}
+                        ClaudeContentItem::RedactedThinking { .. } => {}
                     }
                 }
             }
@@ -2480,6 +2482,13 @@ pub enum ClaudeContentItem {
     Text { text: String },
     #[serde(rename = "thinking")]
     Thinking { thinking: String },
+    /// Opaque encrypted reasoning preserved across turns; not user-visible.
+    /// Emitted by OpenRouter and some Anthropic-routed reasoning models.
+    #[serde(rename = "redacted_thinking")]
+    RedactedThinking {
+        #[serde(default)]
+        data: String,
+    },
     #[serde(rename = "tool_use")]
     ToolUse {
         id: String,
