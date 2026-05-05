@@ -617,10 +617,13 @@ export const ConversationList = forwardRef<
   // Determine if there are entries to show placeholders
   const hasEntries = conversationRows.length > 0;
 
-  // Show placeholders only if script not configured AND not already run AND first turn
+  // Setup/cleanup scripts only run when the workspace uses a worktree
+  // (container.rs skips them otherwise); hide the placeholders in
+  // worktree-disabled mode and for non-git repos where worktree is forced off.
   const showSetupPlaceholder =
-    !hasSetupScript && !hasSetupScriptRun && hasEntries;
+    attempt.use_worktree && !hasSetupScript && !hasSetupScriptRun && hasEntries;
   const showCleanupPlaceholder =
+    attempt.use_worktree &&
     !hasCleanupScript &&
     !hasCleanupScriptRun &&
     !hasRunningProcess &&
