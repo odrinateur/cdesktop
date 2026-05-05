@@ -19,7 +19,10 @@ import { ComposerChipRow, useAutoAttachMostRecent } from './ComposerChipRow';
 import { LandingContextSection } from './LandingContextSection';
 import { ModelSelectorContainer } from '@/shared/components/ModelSelectorContainer';
 import { ProviderModelPicker } from '@/shared/components/ProviderModelPicker';
-import { useProviderModelStore } from '@/shared/stores/useProviderModelStore';
+import {
+  useWorkspacePickerSelection,
+  seedWorkspacePicker,
+} from '@/shared/hooks/useWorkspacePickerSelection';
 
 interface CreateChatBoxContainerProps {
   onWorkspaceCreated: (workspaceId: string) => void;
@@ -51,7 +54,14 @@ export function CreateChatBoxContainer({
   useAutoAttachMostRecent();
 
   const { createWorkspace } = useCreateWorkspace();
-  const { selectedProviderId, setSelection } = useProviderModelStore();
+  const {
+    selectedProviderId,
+    selectedModelId,
+    selectedReasoningId,
+    preferredEffortId,
+    setSelection,
+    setPreferredEffort,
+  } = useWorkspacePickerSelection(undefined);
   const hasSelectedRepos = repos.length > 0;
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
@@ -208,6 +218,7 @@ export function CreateChatBoxContainer({
     });
 
     if (result.workspace) {
+      seedWorkspacePicker(result.workspace.id);
       onWorkspaceCreated(result.workspace.id);
     }
 
@@ -307,13 +318,21 @@ export function CreateChatBoxContainer({
             modelSelector={
               effectiveExecutor ? (
                 <ProviderModelPicker
+                  selectedProviderId={selectedProviderId}
+                  selectedModelId={selectedModelId}
+                  selectedReasoningId={selectedReasoningId}
+                  preferredEffortId={preferredEffortId}
                   onManageProviders={() =>
                     SettingsDialog.show({ initialSection: 'providers' })
                   }
-                  onSelect={(providerId, modelId) => {
-                    setSelection(providerId, modelId);
-                    setExecutorOverrides({ model_id: modelId });
+                  onSelectionChange={(providerId, modelId, reasoningId) => {
+                    setSelection(providerId, modelId, reasoningId);
+                    setExecutorOverrides({
+                      model_id: modelId,
+                      reasoning_id: reasoningId ?? null,
+                    });
                   }}
+                  onPreferredEffortChange={setPreferredEffort}
                 />
               ) : undefined
             }

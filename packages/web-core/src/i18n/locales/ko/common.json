@@ -495,6 +495,15 @@
       "setupHint": "팁: 이 저장소의 설정 스크립트를 설정 → 저장소에서 구성하세요",
       "setupHintDismiss": "닫기",
       "setupHintLink": "Configure in Settings"
+    },
+    "composerChips": {
+      "addFolderMenuItem": "폴더 추가",
+      "openFolder": "폴더 열기…",
+      "pickBranch": "브랜치 선택",
+      "pickFolderPlaceholder": "폴더를 선택하세요…",
+      "recentsEmpty": "최근 폴더가 없습니다",
+      "removeFolderAction": "제거",
+      "worktreeChip": "Worktree"
     }
   },
   "modelSelector": {
@@ -553,5 +562,36 @@
     "submitting": "답변 제출 중...",
     "answeredCount": "{{count}}개의 질문에 답변함",
     "answeredCount_other": "{{count}}개의 질문에 답변함"
+  },
+  "sidebar": {
+    "footer": {
+      "themeToggle": {
+        "aria": "{{mode}} 모드로 전환"
+      }
+    },
+    "hideSidebar": {
+      "aria": "사이드바 숨기기"
+    },
+    "kebab": {
+      "pin": "세션 고정",
+      "unpin": "세션 고정 해제"
+    },
+    "newSession": "새 세션",
+    "pinned": {
+      "emptyHint": "각 세션 메뉴에서 고정하면 여기에 표시됩니다.",
+      "sectionHeader": "고정됨"
+    },
+    "search": {
+      "collapse": {
+        "aria": "검색 닫기"
+      },
+      "open": {
+        "aria": "세션 검색"
+      }
+    },
+    "theme": {
+      "dark": "다크",
+      "light": "라이트"
+    }
   }
 }

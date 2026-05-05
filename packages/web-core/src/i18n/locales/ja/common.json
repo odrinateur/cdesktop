@@ -495,6 +495,15 @@
       "setupHint": "ヒント: このリポジトリのセットアップスクリプトは設定 → リポジトリで構成できます",
       "setupHintDismiss": "閉じる",
       "setupHintLink": "Configure in Settings"
+    },
+    "composerChips": {
+      "addFolderMenuItem": "フォルダを追加",
+      "openFolder": "フォルダを開く…",
+      "pickBranch": "ブランチを選択",
+      "pickFolderPlaceholder": "フォルダを選択…",
+      "recentsEmpty": "最近のフォルダはありません",
+      "removeFolderAction": "削除",
+      "worktreeChip": "Worktree"
     }
   },
   "modelSelector": {
@@ -553,5 +562,36 @@
     "submitting": "回答を送信中...",
     "answeredCount": "{{count}}件の質問に回答済み",
     "answeredCount_other": "{{count}}件の質問に回答済み"
+  },
+  "sidebar": {
+    "footer": {
+      "themeToggle": {
+        "aria": "{{mode}} モードに切り替え"
+      }
+    },
+    "hideSidebar": {
+      "aria": "サイドバーを隠す"
+    },
+    "kebab": {
+      "pin": "セッションをピン留め",
+      "unpin": "セッションのピン留めを外す"
+    },
+    "newSession": "新規セッション",
+    "pinned": {
+      "emptyHint": "各セッションのメニューからピン留めすると、ここに表示されます。",
+      "sectionHeader": "ピン留め"
+    },
+    "search": {
+      "collapse": {
+        "aria": "検索を閉じる"
+      },
+      "open": {
+        "aria": "セッションを検索"
+      }
+    },
+    "theme": {
+      "dark": "ダーク",
+      "light": "ライト"
+    }
   }
 }

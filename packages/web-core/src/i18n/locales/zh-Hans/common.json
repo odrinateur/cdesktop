@@ -495,6 +495,15 @@
       "setupHint": "提示：在设置 → 仓库中为此仓库配置设置脚本",
       "setupHintDismiss": "关闭",
       "setupHintLink": "Configure in Settings"
+    },
+    "composerChips": {
+      "addFolderMenuItem": "添加文件夹",
+      "openFolder": "打开文件夹…",
+      "pickBranch": "选择分支",
+      "pickFolderPlaceholder": "选择一个文件夹…",
+      "recentsEmpty": "没有最近的文件夹",
+      "removeFolderAction": "移除",
+      "worktreeChip": "Worktree"
     }
   },
   "modelSelector": {
@@ -553,5 +562,36 @@
     "submitting": "正在提交回答...",
     "answeredCount": "已回答{{count}}个问题",
     "answeredCount_other": "已回答{{count}}个问题"
+  },
+  "sidebar": {
+    "footer": {
+      "themeToggle": {
+        "aria": "切换到{{mode}}模式"
+      }
+    },
+    "hideSidebar": {
+      "aria": "隐藏侧边栏"
+    },
+    "kebab": {
+      "pin": "固定会话",
+      "unpin": "取消固定会话"
+    },
+    "newSession": "新建会话",
+    "pinned": {
+      "emptyHint": "从会话菜单中固定它们以保留在此处。",
+      "sectionHeader": "已固定"
+    },
+    "search": {
+      "collapse": {
+        "aria": "关闭搜索"
+      },
+      "open": {
+        "aria": "搜索会话"
+      }
+    },
+    "theme": {
+      "dark": "暗色",
+      "light": "亮色"
+    }
   }
 }

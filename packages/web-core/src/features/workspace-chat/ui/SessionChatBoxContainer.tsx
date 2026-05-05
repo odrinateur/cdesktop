@@ -49,7 +49,7 @@ import {
 } from '@vibe/ui/components/SessionChatBox';
 import { ModelSelectorContainer } from '@/shared/components/ModelSelectorContainer';
 import { ProviderModelPicker } from '@/shared/components/ProviderModelPicker';
-import { useProviderModelStore } from '@/shared/stores/useProviderModelStore';
+import { useWorkspacePickerSelection } from '@/shared/hooks/useWorkspacePickerSelection';
 import { useWorkspacePanelLayout } from '@/shared/stores/useUiPreferencesStore';
 import { useInspectModeStore } from '../model/store/useInspectModeStore';
 import { Actions } from '@/shared/actions';
@@ -489,7 +489,14 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
   } = useSessionQueueInteraction({ sessionId });
 
   // Send actions
-  const { selectedProviderId, setSelection } = useProviderModelStore();
+  const {
+    selectedProviderId,
+    selectedModelId,
+    selectedReasoningId,
+    preferredEffortId,
+    setSelection,
+    setPreferredEffort,
+  } = useWorkspacePickerSelection(workspaceId);
 
   const {
     send,
@@ -943,13 +950,21 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
 
   const modelSelectorNode = effectiveExecutor ? (
     <ProviderModelPicker
+      selectedProviderId={selectedProviderId}
+      selectedModelId={selectedModelId}
+      selectedReasoningId={selectedReasoningId}
+      preferredEffortId={preferredEffortId}
       onManageProviders={() =>
         SettingsDialog.show({ initialSection: 'providers' })
       }
-      onSelect={(providerId, modelId) => {
-        setSelection(providerId, modelId);
-        setExecutorOverrides({ model_id: modelId });
+      onSelectionChange={(providerId, modelId, reasoningId) => {
+        setSelection(providerId, modelId, reasoningId);
+        setExecutorOverrides({
+          model_id: modelId,
+          reasoning_id: reasoningId ?? null,
+        });
       }}
+      onPreferredEffortChange={setPreferredEffort}
     />
   ) : undefined;
 

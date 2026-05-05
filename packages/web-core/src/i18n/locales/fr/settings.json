@@ -32,7 +32,9 @@
         "machineSettings": "Machine Settings",
         "accountSettings": "Account Settings",
         "pairOtherMachines": "Pair other machines",
-        "selectHost": "Select host"
+        "selectHost": "Select host",
+        "providers": "Fournisseurs",
+        "providersDesc": "Routage des fournisseurs IA et sélection du modèle"
       }
     },
     "general": {
@@ -348,6 +350,68 @@
         "title": "Supprimer la configuration ?",
         "description": "Cela supprimera définitivement \"{{configName}}\" de l'exécuteur {{executorType}}. Cette action est irréversible."
       }
+    },
+    "providers": {
+      "picker": {
+        "triggerPlaceholder": "Modèle ▾",
+        "searchPlaceholder": "Rechercher des modèles…",
+        "recentlyUsed": "Récemment utilisés",
+        "noProvidersEnabled": "Aucun fournisseur activé",
+        "noModelsMatch": "Aucun modèle correspondant",
+        "effort": "Effort",
+        "effortTooltip": "Effort {{label}}",
+        "manageProviders": "Gérer les fournisseurs →"
+      },
+      "effort": {
+        "low": "Faible",
+        "medium": "Moyen",
+        "high": "Élevé",
+        "xhigh": "Très élevé",
+        "max": "Maximum",
+        "lowShort": "Faible",
+        "mediumShort": "Moyen",
+        "highShort": "Élevé",
+        "xhighShort": "T.Élevé",
+        "maxShort": "Max"
+      },
+      "section": {
+        "sidebarTitle": "Fournisseurs",
+        "addProvider": "Ajouter un fournisseur",
+        "addProviderTitle": "Ajouter un fournisseur",
+        "saveLabel": "Enregistrer",
+        "loading": "Chargement…",
+        "enable": "Activer",
+        "disable": "Désactiver",
+        "delete": "Supprimer",
+        "deleteConfirm": "Supprimer le fournisseur « {{name}} » ?",
+        "emptyHint": "Sélectionnez un fournisseur à modifier, ou cliquez sur + pour en ajouter un."
+      },
+      "form": {
+        "selectPreset": "Sélectionner un préréglage",
+        "custom": "Personnalisé",
+        "providerDetails": "Détails du fournisseur",
+        "name": "Nom",
+        "namePlaceholder": "Mon fournisseur",
+        "baseUrl": "URL de base",
+        "baseUrlPlaceholder": "https://api.example.com",
+        "apiKey": "Clé API",
+        "apiKeyPlaceholder": "sk-…",
+        "backgroundTaskModel": "Modèle pour tâches en arrière-plan",
+        "followMainModel": "Suivre le modèle principal",
+        "haikuModelPlaceholder": "ex. claude-haiku-4-5-20251001",
+        "extraEnv": "Variables d'environnement supplémentaires (Avancé)",
+        "envPlaceholder": "KEY=value\nANOTHER_KEY=value",
+        "models": "Modèles",
+        "fetchFromEndpoint": "Récupérer depuis l'endpoint",
+        "fetchedCount": "{{count}} modèles récupérés. Cochez ceux à activer :",
+        "search": "Rechercher…",
+        "clear": "Effacer",
+        "manualPlaceholder": "Saisir un ID de modèle manuellement…",
+        "add": "Ajouter",
+        "cancel": "Annuler",
+        "defaultDescription": "Le fournisseur par défaut utilise votre authentification Claude actuelle (claude login). Aucune configuration nécessaire."
+      },
+      "defaultProviderName": "Par défaut"
     },
     "mcp": {
       "title": "Configuration des serveurs MCP",

@@ -403,7 +403,9 @@
       "edit": "编辑消息",
       "scrollToPreviousMessage": "Go to previous message",
       "reset": "重置",
-      "resetTooltip": "重置到此时点"
+      "resetTooltip": "重置到此时点",
+      "copied": "已复制",
+      "copy": "复制"
     },
     "approval": {
       "conflictWarning": "冲突文件需要手动解决",

@@ -403,7 +403,9 @@
       "edit": "Editar mensaje",
       "scrollToPreviousMessage": "Go to previous message",
       "reset": "Restablecer",
-      "resetTooltip": "Restablecer a este punto"
+      "resetTooltip": "Restablecer a este punto",
+      "copied": "Copiado",
+      "copy": "Copiar"
     },
     "approval": {
       "conflictWarning": "Los archivos en conflicto necesitan resolución manual",

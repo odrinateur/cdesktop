@@ -359,6 +359,68 @@
         "description": "This will permanently remove \"{{configName}}\" from the {{executorType}} executor. You can't undo this action."
       }
     },
+    "providers": {
+      "picker": {
+        "triggerPlaceholder": "Model ▾",
+        "searchPlaceholder": "Search models…",
+        "recentlyUsed": "Recently used",
+        "noProvidersEnabled": "No providers enabled",
+        "noModelsMatch": "No models match",
+        "effort": "Effort",
+        "effortTooltip": "{{label}} effort",
+        "manageProviders": "Manage providers →"
+      },
+      "effort": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High",
+        "xhigh": "Extra High",
+        "max": "Max",
+        "lowShort": "Low",
+        "mediumShort": "Med",
+        "highShort": "High",
+        "xhighShort": "XHigh",
+        "maxShort": "Max"
+      },
+      "section": {
+        "sidebarTitle": "Providers",
+        "addProvider": "Add provider",
+        "addProviderTitle": "Add provider",
+        "saveLabel": "Save",
+        "loading": "Loading…",
+        "enable": "Enable",
+        "disable": "Disable",
+        "delete": "Delete",
+        "deleteConfirm": "Delete provider \"{{name}}\"?",
+        "emptyHint": "Select a provider to edit, or click + to add one."
+      },
+      "form": {
+        "selectPreset": "Select a preset",
+        "custom": "Custom",
+        "providerDetails": "Provider details",
+        "name": "Name",
+        "namePlaceholder": "My Provider",
+        "baseUrl": "Base URL",
+        "baseUrlPlaceholder": "https://api.example.com",
+        "apiKey": "API key",
+        "apiKeyPlaceholder": "sk-…",
+        "backgroundTaskModel": "Background task model",
+        "followMainModel": "Follow main model",
+        "haikuModelPlaceholder": "e.g. claude-haiku-4-5-20251001",
+        "extraEnv": "Extra env (Advanced)",
+        "envPlaceholder": "KEY=value\nANOTHER_KEY=value",
+        "models": "Models",
+        "fetchFromEndpoint": "Fetch from endpoint",
+        "fetchedCount": "Fetched {{count}} models. Check ones to enable:",
+        "search": "Search…",
+        "clear": "Clear",
+        "manualPlaceholder": "Type a model id manually…",
+        "add": "Add",
+        "cancel": "Cancel",
+        "defaultDescription": "Default provider uses your ambient Claude auth (claude login). No configuration needed."
+      },
+      "defaultProviderName": "Default"
+    },
     "mcp": {
       "title": "MCP Server Configuration",
       "description": "Configure Model Context Protocol servers to extend coding agent capabilities with custom tools and resources.",

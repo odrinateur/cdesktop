@@ -32,7 +32,9 @@
         "machineSettings": "Machine Settings",
         "accountSettings": "Account Settings",
         "pairOtherMachines": "Pair other machines",
-        "selectHost": "Select host"
+        "selectHost": "Select host",
+        "providers": "제공자",
+        "providersDesc": "AI 제공자 라우팅 및 모델 선택"
       }
     },
     "general": {
@@ -348,6 +350,68 @@
         "title": "구성을 삭제하시겠습니까?",
         "description": "{{executorType}} 실행자에서 \"{{configName}}\"을(를) 영구적으로 삭제합니다. 이 작업은 되돌릴 수 없습니다."
       }
+    },
+    "providers": {
+      "picker": {
+        "triggerPlaceholder": "모델 ▾",
+        "searchPlaceholder": "모델 검색…",
+        "recentlyUsed": "최근 사용",
+        "noProvidersEnabled": "활성화된 제공자가 없습니다",
+        "noModelsMatch": "일치하는 모델이 없습니다",
+        "effort": "추론 강도",
+        "effortTooltip": "{{label}} 강도",
+        "manageProviders": "제공자 관리 →"
+      },
+      "effort": {
+        "low": "낮음",
+        "medium": "중간",
+        "high": "높음",
+        "xhigh": "최상",
+        "max": "최대",
+        "lowShort": "낮음",
+        "mediumShort": "중간",
+        "highShort": "높음",
+        "xhighShort": "최상",
+        "maxShort": "최대"
+      },
+      "section": {
+        "sidebarTitle": "제공자",
+        "addProvider": "제공자 추가",
+        "addProviderTitle": "제공자 추가",
+        "saveLabel": "저장",
+        "loading": "불러오는 중…",
+        "enable": "활성화",
+        "disable": "비활성화",
+        "delete": "삭제",
+        "deleteConfirm": "제공자 \"{{name}}\"을(를) 삭제하시겠습니까?",
+        "emptyHint": "편집할 제공자를 선택하거나 + 를 클릭하여 추가하세요."
+      },
+      "form": {
+        "selectPreset": "프리셋 선택",
+        "custom": "사용자 정의",
+        "providerDetails": "제공자 정보",
+        "name": "이름",
+        "namePlaceholder": "내 제공자",
+        "baseUrl": "Base URL",
+        "baseUrlPlaceholder": "https://api.example.com",
+        "apiKey": "API 키",
+        "apiKeyPlaceholder": "sk-…",
+        "backgroundTaskModel": "백그라운드 작업 모델",
+        "followMainModel": "기본 모델 따르기",
+        "haikuModelPlaceholder": "예: claude-haiku-4-5-20251001",
+        "extraEnv": "추가 환경 변수 (고급)",
+        "envPlaceholder": "KEY=value\nANOTHER_KEY=value",
+        "models": "모델",
+        "fetchFromEndpoint": "엔드포인트에서 가져오기",
+        "fetchedCount": "{{count}}개의 모델을 가져왔습니다. 활성화할 항목을 선택하세요:",
+        "search": "검색…",
+        "clear": "지우기",
+        "manualPlaceholder": "모델 ID를 수동으로 입력…",
+        "add": "추가",
+        "cancel": "취소",
+        "defaultDescription": "기본 제공자는 현재 Claude 인증(claude login)을 사용합니다. 별도 설정이 필요하지 않습니다."
+      },
+      "defaultProviderName": "기본"
     },
     "mcp": {
       "title": "MCP 서버 구성",

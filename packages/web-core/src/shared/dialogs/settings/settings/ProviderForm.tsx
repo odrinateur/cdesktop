@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   PlusIcon,
   TrashIcon,
@@ -97,8 +98,10 @@ export function ProviderForm({
   provider,
   onSave,
   onCancel,
-  saveLabel = 'Save',
+  saveLabel,
 }: ProviderFormProps) {
+  const { t } = useTranslation('settings');
+  const resolvedSaveLabel = saveLabel ?? t('settings.providers.section.saveLabel');
   const { data: catalog } = useQuery({
     queryKey: ['providers', 'catalog'],
     queryFn: async () => {
@@ -267,9 +270,7 @@ export function ProviderForm({
   if (isDefault) {
     return (
       <div className="p-4 text-sm text-muted-foreground">
-        Default provider uses your ambient Claude auth (
-        <code>claude login</code>
-        ). No configuration needed.
+        {t('settings.providers.form.defaultDescription')}
       </div>
     );
   }
@@ -277,7 +278,7 @@ export function ProviderForm({
   return (
     <div className="flex flex-col gap-6">
       {isCreate && catalog && (
-        <SettingsCard title="Select a preset">
+        <SettingsCard title={t('settings.providers.form.selectPreset')}>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto">
             {catalog.map((preset) => (
               <button
@@ -307,33 +308,33 @@ export function ProviderForm({
               )}
             >
               <PlusIcon className="w-4 h-4" />
-              <span>Custom</span>
+              <span>{t('settings.providers.form.custom')}</span>
             </button>
           </div>
         </SettingsCard>
       )}
 
-      <SettingsCard title="Provider details">
-        <SettingsField label="Name">
+      <SettingsCard title={t('settings.providers.form.providerDetails')}>
+        <SettingsField label={t('settings.providers.form.name')}>
           <InputBase
             value={name}
             onChange={setName}
-            placeholder="My Provider"
+            placeholder={t('settings.providers.form.namePlaceholder')}
           />
         </SettingsField>
-        <SettingsField label="Base URL">
+        <SettingsField label={t('settings.providers.form.baseUrl')}>
           <InputBase
             value={baseUrl}
             onChange={setBaseUrl}
-            placeholder="https://api.example.com"
+            placeholder={t('settings.providers.form.baseUrlPlaceholder')}
           />
         </SettingsField>
-        <SettingsField label="API key">
+        <SettingsField label={t('settings.providers.form.apiKey')}>
           <InputBase
             type="password"
             value={apiKey}
             onChange={setApiKey}
-            placeholder="sk-…"
+            placeholder={t('settings.providers.form.apiKeyPlaceholder')}
           />
           <div className="flex gap-2 mt-1">
             {(['ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_API_KEY'] as const).map(
@@ -354,36 +355,36 @@ export function ProviderForm({
             )}
           </div>
         </SettingsField>
-        <SettingsField label="Background task model">
+        <SettingsField label={t('settings.providers.form.backgroundTaskModel')}>
           <label className="flex items-center gap-2 text-sm">
             <input
               type="checkbox"
               checked={haikuFollowMain}
               onChange={(e) => setHaikuFollowMain(e.target.checked)}
             />
-            Follow main model
+            {t('settings.providers.form.followMainModel')}
           </label>
           {!haikuFollowMain && (
             <InputBase
               value={haikuModel}
               onChange={setHaikuModel}
-              placeholder="e.g. claude-haiku-4-5-20251001"
+              placeholder={t('settings.providers.form.haikuModelPlaceholder')}
               className="mt-1"
             />
           )}
         </SettingsField>
-        <SettingsField label="Extra env (Advanced)">
+        <SettingsField label={t('settings.providers.form.extraEnv')}>
           <SettingsTextarea
             value={extraEnvText}
             onChange={setExtraEnvText}
-            placeholder={'KEY=value\nANOTHER_KEY=value'}
+            placeholder={t('settings.providers.form.envPlaceholder')}
             monospace
             rows={3}
           />
         </SettingsField>
       </SettingsCard>
 
-      <SettingsCard title="Models">
+      <SettingsCard title={t('settings.providers.form.models')}>
         <div className="flex gap-2 mb-2">
           <button
             onClick={handleFetchModels}
@@ -393,7 +394,7 @@ export function ProviderForm({
             <ArrowClockwiseIcon
               className={cn('w-3 h-3', fetchingModels && 'animate-spin')}
             />
-            Fetch from endpoint
+            {t('settings.providers.form.fetchFromEndpoint')}
           </button>
         </div>
         {fetchError && <p className="text-xs text-error mb-2">{fetchError}</p>}
@@ -419,7 +420,7 @@ export function ProviderForm({
           <InputBase
             value={manualModelId}
             onChange={setManualModelId}
-            placeholder="Type a model id manually…"
+            placeholder={t('settings.providers.form.manualPlaceholder')}
             className="flex-1"
           />
           <button
@@ -427,26 +428,28 @@ export function ProviderForm({
             disabled={!manualModelId.trim()}
             className="px-2 py-1 rounded border border-border text-xs hover:bg-muted disabled:opacity-50"
           >
-            Add
+            {t('settings.providers.form.add')}
           </button>
         </div>
         {fetchedModels.length > 0 && (
           <div className="border border-border rounded p-2 flex flex-col gap-2">
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs text-low">
-                Fetched {fetchedModels.length} models. Check ones to enable:
+                {t('settings.providers.form.fetchedCount', {
+                  count: fetchedModels.length,
+                })}
               </span>
               <button
                 onClick={() => setFetchedModels([])}
                 className="text-low hover:text-high text-xs"
               >
-                Clear
+                {t('settings.providers.form.clear')}
               </button>
             </div>
             <InputBase
               value={fetchSearch}
               onChange={setFetchSearch}
-              placeholder="Search…"
+              placeholder={t('settings.providers.form.search')}
             />
             <ul className="flex flex-col gap-0.5 max-h-56 overflow-y-auto">
               {fetchedModels
@@ -501,7 +504,7 @@ export function ProviderForm({
             onClick={onCancel}
             className="px-3 py-1.5 text-sm rounded border border-border hover:bg-muted"
           >
-            Cancel
+            {t('settings.providers.form.cancel')}
           </button>
         )}
         <button
@@ -514,7 +517,7 @@ export function ProviderForm({
           ) : (
             <CheckIcon className="w-3 h-3" />
           )}
-          {saveLabel}
+          {resolvedSaveLabel}
         </button>
       </div>
     </div>
