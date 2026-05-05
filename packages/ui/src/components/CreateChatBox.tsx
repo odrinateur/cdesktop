@@ -278,7 +278,7 @@ export function CreateChatBox<TExecutor extends string = string>({
             disabled={!canSend}
             aria-label={t('tasks:conversation.workspace.create')}
             title={t('tasks:conversation.workspace.create')}
-            className="text-[hsl(0_0%_30%)] hover:text-normal disabled:cursor-not-allowed disabled:hover:text-[hsl(0_0%_30%)]"
+            className="block leading-none text-[hsl(0_0%_30%)] hover:text-normal disabled:cursor-not-allowed disabled:hover:text-[hsl(0_0%_30%)]"
           >
             <ArrowBendDownLeftIcon
               weight="bold"

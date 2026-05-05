@@ -344,7 +344,9 @@
     "missingRepo": "선택한 저장소를 더 이상 사용할 수 없습니다.",
     "noTagsOrFiles": "태그 또는 파일을 찾을 수 없습니다",
     "createTag": "새 태그 만들기",
-    "noCommands": "이 에이전트에 사용 가능한 명령어가 없습니다."
+    "noCommands": "이 에이전트에 사용 가능한 명령어가 없습니다.",
+    "loadingCommands": "명령어 불러오는 중…",
+    "discoveringCommands": "명령어 검색 중…"
   },
   "kanban": {
     "noVisibleStatuses": "모든 상태가 숨겨져 있습니다. 표시 설정을 사용하거나 다른 탭으로 전환하여 이슈를 확인하세요.",
@@ -504,6 +506,21 @@
       "recentsEmpty": "최근 폴더가 없습니다",
       "removeFolderAction": "제거",
       "worktreeChip": "Worktree"
+    },
+    "placeholder": {
+      "typeForCommands": "/를 입력하여 명령어 사용"
+    },
+    "landing": {
+      "welcomeBack": "다시 오신 것을 환영합니다",
+      "recentSessions": "최근 세션",
+      "sessionsAwaitingInput_one": "{{count}}개의 세션이 입력을 기다리고 있습니다",
+      "sessionsAwaitingInput_other": "{{count}}개의 세션이 입력을 기다리고 있습니다",
+      "whatToWorkOn": "무엇을 작업하시겠습니까?",
+      "status": {
+        "awaitingInput": "입력 대기 중",
+        "running": "실행 중",
+        "failed": "실패"
+      }
     }
   },
   "modelSelector": {
@@ -592,6 +609,14 @@
     "theme": {
       "dark": "다크",
       "light": "라이트"
+    }
+  },
+  "time": {
+    "short": {
+      "now": "지금",
+      "minutes": "{{count}}분",
+      "hours": "{{count}}시간",
+      "days": "{{count}}일"
     }
   }
 }

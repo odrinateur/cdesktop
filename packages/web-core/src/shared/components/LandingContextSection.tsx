@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { CaretRightIcon } from '@phosphor-icons/react';
+import { useTranslation } from 'react-i18next';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
 import {
   useWorkspaces,
@@ -9,30 +10,26 @@ import { formatRelativeTimeShort } from '@/shared/lib/date';
 
 const RECENT_LIMIT = 8;
 
-function formatSubhead(attentionCount: number): string {
-  if (attentionCount === 0) return 'Recent sessions';
-  return attentionCount === 1
-    ? '1 session awaiting input'
-    : `${attentionCount} sessions awaiting input`;
-}
-
 type StatusTag = {
   label: string;
   textClass: string;
   dotClass: string;
 };
 
-function getStatusTag(workspace: SidebarWorkspace): StatusTag | null {
+function getStatusTag(
+  workspace: SidebarWorkspace,
+  t: (key: string) => string
+): StatusTag | null {
   if (workspace.hasPendingApproval) {
     return {
-      label: 'Awaiting input',
+      label: t('createMode.landing.status.awaitingInput'),
       textClass: 'text-amber-400',
       dotClass: 'bg-amber-400',
     };
   }
   if (workspace.isRunning) {
     return {
-      label: 'Running',
+      label: t('createMode.landing.status.running'),
       textClass: 'text-blue-400',
       dotClass: 'bg-blue-400',
     };
@@ -42,7 +39,7 @@ function getStatusTag(workspace: SidebarWorkspace): StatusTag | null {
     workspace.latestProcessStatus === 'killed'
   ) {
     return {
-      label: 'Failed',
+      label: t('createMode.landing.status.failed'),
       textClass: 'text-error',
       dotClass: 'bg-error',
     };
@@ -51,6 +48,7 @@ function getStatusTag(workspace: SidebarWorkspace): StatusTag | null {
 }
 
 export function LandingContextSection() {
+  const { t } = useTranslation('common');
   const appNavigation = useAppNavigation();
   const { workspaces } = useWorkspaces();
 
@@ -71,23 +69,30 @@ export function LandingContextSection() {
 
   const hasRecent = recentWorkspaces.length > 0;
 
+  const subhead =
+    attentionCount === 0
+      ? t('createMode.landing.recentSessions')
+      : t('createMode.landing.sessionsAwaitingInput', {
+          count: attentionCount,
+        });
+
   return (
     <div className="flex flex-col gap-base">
       <h1 className="text-3xl font-medium tracking-tight text-high">
-        Welcome back
+        {t('createMode.landing.welcomeBack')}
       </h1>
       {hasRecent ? (
         <>
-          <p className="text-sm text-low">{formatSubhead(attentionCount)}</p>
+          <p className="text-sm text-low">{subhead}</p>
           <ul className="flex flex-col gap-[0.375rem]">
             {recentWorkspaces.map((workspace) => {
-              const status = getStatusTag(workspace);
+              const status = getStatusTag(workspace, t);
               return (
-                <li key={workspace.id}>
+                <li key={workspace.id} className="min-w-0">
                   <button
                     type="button"
                     onClick={() => appNavigation.goToWorkspace(workspace.id)}
-                    className="group flex w-full min-w-0 items-center gap-base rounded-md bg-secondary px-double py-base text-left text-sm text-normal hover:bg-panel"
+                    className="group flex w-full min-w-0 items-center gap-base overflow-hidden rounded-md bg-secondary px-double py-base text-left text-sm text-normal hover:bg-panel"
                   >
                     {status && (
                       <span className="flex shrink-0 items-center gap-1">
@@ -106,12 +111,12 @@ export function LandingContextSection() {
                       {workspace.name}
                     </span>
                     {workspace.branch && (
-                      <span className="shrink-0 text-xs text-neutral-500">
+                      <span className="min-w-0 max-w-[10ch] truncate text-xs text-neutral-500">
                         {workspace.branch}
                       </span>
                     )}
                     <span className="shrink-0 text-xs text-neutral-500">
-                      {formatRelativeTimeShort(workspace.updatedAt)}
+                      {formatRelativeTimeShort(workspace.updatedAt, t)}
                     </span>
                     <CaretRightIcon
                       className="size-icon-xs shrink-0 text-neutral-600 group-hover:text-neutral-400"
@@ -124,7 +129,9 @@ export function LandingContextSection() {
           </ul>
         </>
       ) : (
-        <p className="text-sm text-low">What would you like to work on?</p>
+        <p className="text-sm text-low">
+          {t('createMode.landing.whatToWorkOn')}
+        </p>
       )}
     </div>
   );

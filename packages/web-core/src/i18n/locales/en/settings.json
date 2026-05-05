@@ -419,7 +419,8 @@
         "cancel": "Cancel",
         "defaultDescription": "Default provider uses your ambient Claude auth (claude login). No configuration needed."
       },
-      "defaultProviderName": "Default"
+      "defaultProviderName": "Default",
+      "turnSwitchMarker": "↳ switched to {{model}} via {{provider}}"
     },
     "mcp": {
       "title": "MCP Server Configuration",

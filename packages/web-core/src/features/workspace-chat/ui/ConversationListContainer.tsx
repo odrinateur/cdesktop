@@ -196,13 +196,28 @@ export const ConversationList = forwardRef<
   // Switch markers for mid-thread model/provider changes (Phase 7)
   const { data: turnSelections = [] } = useTurnSelections(attempt.session?.id);
   const { data: providers = [] } = useProviders();
+  const { t: tSettings } = useTranslation('settings');
   const providerNameMap = useMemo(
-    () => new Map(providers.map((p) => [p.id, p.name])),
-    [providers]
+    () =>
+      new Map(
+        providers.map((p) => [
+          p.id,
+          p.kind === 'Default'
+            ? tSettings('settings.providers.defaultProviderName')
+            : p.name,
+        ])
+      ),
+    [providers, tSettings]
   );
   const switchMarkers = useMemo(
-    () => buildSwitchMarkers(turnSelections, providerNameMap),
-    [turnSelections, providerNameMap]
+    () =>
+      buildSwitchMarkers(turnSelections, providerNameMap, (modelId, providerName) =>
+        tSettings('settings.providers.turnSwitchMarker', {
+          model: modelId,
+          provider: providerName,
+        })
+      ),
+    [turnSelections, providerNameMap, tSettings]
   );
   const [filteredEntries, setFilteredEntries] = useState<DisplayEntry[]>([]);
   const [dataVersion, setDataVersion] = useState(0);

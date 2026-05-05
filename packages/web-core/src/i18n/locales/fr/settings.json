@@ -411,7 +411,8 @@
         "cancel": "Annuler",
         "defaultDescription": "Le fournisseur par défaut utilise votre authentification Claude actuelle (claude login). Aucune configuration nécessaire."
       },
-      "defaultProviderName": "Par défaut"
+      "defaultProviderName": "Par défaut",
+      "turnSwitchMarker": "↳ basculé vers {{model}} via {{provider}}"
     },
     "mcp": {
       "title": "Configuration des serveurs MCP",

@@ -389,7 +389,9 @@
     "missingRepo": "Selected repo is no longer available.",
     "noTagsOrFiles": "No tags or files found",
     "createTag": "Create new tag",
-    "noCommands": "No commands available for this agent."
+    "noCommands": "No commands available for this agent.",
+    "loadingCommands": "Loading commands…",
+    "discoveringCommands": "Discovering commands…"
   },
   "kanban": {
     "noVisibleStatuses": "All statuses are hidden. Use display settings or switch to another tab to view issues.",
@@ -549,6 +551,21 @@
       "addFolderMenuItem": "Add folder",
       "removeFolderAction": "Remove",
       "worktreeChip": "Worktree"
+    },
+    "placeholder": {
+      "typeForCommands": "Type / for commands"
+    },
+    "landing": {
+      "welcomeBack": "Welcome back",
+      "recentSessions": "Recent sessions",
+      "sessionsAwaitingInput_one": "{{count}} session awaiting input",
+      "sessionsAwaitingInput_other": "{{count}} sessions awaiting input",
+      "whatToWorkOn": "What would you like to work on?",
+      "status": {
+        "awaitingInput": "Awaiting input",
+        "running": "Running",
+        "failed": "Failed"
+      }
     }
   },
   "modelSelector": {
@@ -593,5 +610,13 @@
     "submitting": "Submitting answers...",
     "answeredCount": "Answered {{count}} question",
     "answeredCount_other": "Answered {{count}} questions"
+  },
+  "time": {
+    "short": {
+      "now": "now",
+      "minutes": "{{count}}m",
+      "hours": "{{count}}h",
+      "days": "{{count}}d"
+    }
   }
 }

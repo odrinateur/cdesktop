@@ -315,14 +315,22 @@ export function SessionChatBox<TExecutor extends string = string>({
     editor.value.trim().length === 0;
 
   const placeholder = isInFeedbackMode
-    ? 'Provide feedback for the plan...'
+    ? t('common:createMode.placeholder.feedbackForPlan', {
+        defaultValue: 'Provide feedback for the plan...',
+      })
     : isInEditMode
-      ? 'Edit your message...'
+      ? t('common:createMode.placeholder.editMessage', {
+          defaultValue: 'Edit your message...',
+        })
       : isInApprovalMode
-        ? 'Provide feedback to request changes...'
+        ? t('common:createMode.placeholder.feedbackForRequestChanges', {
+            defaultValue: 'Provide feedback to request changes...',
+          })
         : isInAskQuestionMode
-          ? 'Type a different answer...'
-          : 'Type / for commands';
+          ? t('common:createMode.placeholder.typeDifferentAnswer', {
+              defaultValue: 'Type a different answer...',
+            })
+          : t('common:createMode.placeholder.typeForCommands');
 
   // Cmd+Enter handler
   const handleCmdEnter = () => {

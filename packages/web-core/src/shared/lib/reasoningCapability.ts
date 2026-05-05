@@ -20,17 +20,21 @@ export function inferReasoningOptions(modelId: string): string[] {
 
 const ORDER = ['low', 'medium', 'high', 'xhigh', 'max'];
 
+export const DEFAULT_EFFORT = 'high';
+
 /**
  * Clamp a remembered effort preference to what a given model offers.
+ * Falls back to DEFAULT_EFFORT when no preference is set.
  */
 export function clampEffortToModel(
   preferred: string | null,
   options: string[]
 ): string | null {
-  if (!preferred || options.length === 0) return null;
-  if (options.includes(preferred)) return preferred;
-  const targetRank = ORDER.indexOf(preferred);
-  if (targetRank === -1) return null;
+  if (options.length === 0) return null;
+  const target = preferred ?? DEFAULT_EFFORT;
+  if (options.includes(target)) return target;
+  const targetRank = ORDER.indexOf(target);
+  if (targetRank === -1) return options[0];
   let bestRank = -1;
   let best: string | null = null;
   for (const id of options) {

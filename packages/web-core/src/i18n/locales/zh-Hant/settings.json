@@ -411,7 +411,8 @@
         "cancel": "取消",
         "defaultDescription": "預設服務商使用您現有的 Claude 認證（claude login）。無需額外設定。"
       },
-      "defaultProviderName": "預設"
+      "defaultProviderName": "預設",
+      "turnSwitchMarker": "↳ 切換到 {{model}} ({{provider}})"
     },
     "mcp": {
       "title": "MCP 伺服器設定",

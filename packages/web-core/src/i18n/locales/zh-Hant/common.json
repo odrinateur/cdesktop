@@ -344,7 +344,9 @@
     "missingRepo": "所選儲存庫已無法使用。",
     "noTagsOrFiles": "找不到標籤或檔案",
     "createTag": "建立新標籤",
-    "noCommands": "此代理沒有可用的指令。"
+    "noCommands": "此代理沒有可用的指令。",
+    "loadingCommands": "正在載入指令…",
+    "discoveringCommands": "正在探索指令…"
   },
   "kanban": {
     "noVisibleStatuses": "所有狀態已隱藏。請使用顯示設定或切換到其他標籤頁查看問題。",
@@ -504,6 +506,21 @@
       "recentsEmpty": "沒有最近的資料夾",
       "removeFolderAction": "移除",
       "worktreeChip": "Worktree"
+    },
+    "placeholder": {
+      "typeForCommands": "輸入 / 查看指令"
+    },
+    "landing": {
+      "welcomeBack": "歡迎回來",
+      "recentSessions": "最近的工作階段",
+      "sessionsAwaitingInput_one": "{{count}} 個工作階段等待輸入",
+      "sessionsAwaitingInput_other": "{{count}} 個工作階段等待輸入",
+      "whatToWorkOn": "你想要做什麼？",
+      "status": {
+        "awaitingInput": "等待輸入",
+        "running": "執行中",
+        "failed": "失敗"
+      }
     }
   },
   "modelSelector": {
@@ -592,6 +609,14 @@
     "theme": {
       "dark": "深色",
       "light": "淺色"
+    }
+  },
+  "time": {
+    "short": {
+      "now": "現在",
+      "minutes": "{{count}}分",
+      "hours": "{{count}}時",
+      "days": "{{count}}天"
     }
   }
 }
