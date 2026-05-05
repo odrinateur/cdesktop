@@ -17,8 +17,8 @@
         "generalDesc": "テーマ、通知、および設定",
         "projects": "プロジェクト",
         "projectsDesc": "プロジェクトリポジトリと設定",
-        "repos": "リポジトリ",
-        "reposDesc": "リポジトリスクリプトと設定",
+        "repos": "フォルダ",
+        "reposDesc": "フォルダスクリプトと設定",
         "agents": "エージェント",
         "agentsDesc": "コーディングエージェントの設定",
         "mcp": "MCPサーバー",
@@ -89,7 +89,7 @@
           "host": {
             "label": "リモートSSHホスト（オプション）",
             "placeholder": "例: ホスト名またはIPアドレス",
-            "helper": "Vibe Kanbanがリモートサーバーで実行されている場合に設定してください。設定すると、「エディターで開く」をクリックしたときに、ローカルコマンドを実行する代わりにSSH経由でエディターを開くURLが生成されます。"
+            "helper": "cdesktopがリモートサーバーで実行されている場合に設定してください。設定すると、「エディターで開く」をクリックしたときに、ローカルコマンドを実行する代わりにSSH経由でエディターを開くURLが生成されます。"
           },
           "user": {
             "label": "リモートSSHユーザー（オプション）",
@@ -99,7 +99,7 @@
         },
         "autoInstallExtension": {
           "label": "Auto-install VS Code Extension",
-          "helper": "Automatically install the Vibe Kanban extension when opening a project in VS Code or Cursor. This runs in the background and has no effect if the extension is already installed."
+          "helper": "Automatically install the cdesktop extension when opening a project in VS Code or Cursor. This runs in the background and has no effect if the extension is already installed."
         },
         "availability": {
           "checking": "利用可能性を確認中...",
@@ -219,7 +219,7 @@
       },
       "privacy": {
         "title": "プライバシー",
-        "description": "匿名の使用データを共有してVibe-Kanbanの改善にご協力ください。",
+        "description": "匿名の使用データを共有してcdesktopの改善にご協力ください。",
         "telemetry": {
           "label": "テレメトリを有効化",
           "helper": "アプリケーションの改善に役立つ匿名の使用イベント追跡を有効にします。プロンプトやプロジェクト情報は収集されません。"
@@ -349,6 +349,28 @@
       "deleteConfigDialog": {
         "title": "設定を削除しますか？",
         "description": "「{{configName}}」を{{executorType}}エグゼキューターから完全に削除します。この操作は元に戻せません。"
+      },
+      "fields": {
+        "append_prompt": {
+          "title": "プロンプトに追加",
+          "description": "プロンプトの末尾に追加されるテキスト。"
+        },
+        "agent": {
+          "title": "サブエージェント",
+          "description": "呼び出すサブエージェント名（任意）。"
+        },
+        "base_command_override": {
+          "title": "ベースコマンドの上書き",
+          "description": "ベースコマンドをカスタムコマンドで上書きします。"
+        },
+        "additional_params": {
+          "title": "追加パラメータ",
+          "description": "ベースコマンドに追加するパラメータ。"
+        },
+        "env": {
+          "title": "環境変数",
+          "description": "エグゼキューター実行時に設定する環境変数。"
+        }
       }
     },
     "providers": {
@@ -493,37 +515,37 @@
       }
     },
     "repos": {
-      "title": "リポジトリ設定",
-      "description": "このリポジトリがセッションで使用されるときに実行されるスクリプトを設定します。",
-      "loading": "リポジトリを読み込み中...",
-      "loadError": "リポジトリの読み込みに失敗しました。",
+      "title": "フォルダ設定",
+      "description": "このフォルダがセッションで使用されるときに実行されるスクリプトを設定します。",
+      "loading": "フォルダを読み込み中...",
+      "loadError": "フォルダの読み込みに失敗しました。",
       "addRepo": {
-        "button": "リポジトリを追加",
-        "dialogTitle": "Gitリポジトリを選択",
-        "dialogDescription": "登録する既存のgitリポジトリを選択してください。",
-        "error": "リポジトリの登録に失敗しました"
+        "button": "フォルダを追加",
+        "dialogTitle": "フォルダを選択",
+        "dialogDescription": "登録するフォルダを選択してください。Git フォルダはバージョン管理機能が有効になります。",
+        "error": "フォルダの登録に失敗しました"
       },
       "selector": {
-        "label": "リポジトリを選択",
-        "placeholder": "設定するリポジトリを選択",
-        "helper": "リポジトリを選択して、その設定を表示および編集します。",
-        "noRepos": "利用可能なリポジトリがありません"
+        "label": "フォルダを選択",
+        "placeholder": "設定するフォルダを選択",
+        "helper": "フォルダを選択して、その設定を表示および編集します。",
+        "noRepos": "利用可能なフォルダがありません"
       },
       "general": {
         "title": "一般設定",
-        "description": "リポジトリの基本情報を設定します。",
+        "description": "フォルダの基本情報を設定します。",
         "displayName": {
           "label": "表示名",
           "placeholder": "表示名を入力",
-          "helper": "このリポジトリのわかりやすい名前。"
+          "helper": "このフォルダのわかりやすい名前。"
         },
         "path": {
-          "label": "リポジトリパス"
+          "label": "フォルダパス"
         },
         "defaultWorkingDir": {
           "label": "デフォルト作業ディレクトリ",
           "placeholder": "例: packages/frontend",
-          "helper": "単一リポジトリセッションでコーディングエージェントが実行されるサブディレクトリ。セッション作成時に設定されます。リポジトリのルートを使用する場合は空のままにしてください。"
+          "helper": "コーディングエージェントが実行されるサブディレクトリ。セッション作成時に設定されます。フォルダのルートを使用する場合は空のままにしてください。"
         },
         "defaultTargetBranch": {
           "label": "デフォルトターゲットブランチ",
@@ -537,7 +559,7 @@
       },
       "scripts": {
         "title": "スクリプトと設定",
-        "description": "このリポジトリのセットアップ、クリーンアップスクリプト、およびコピーするファイルを設定します。これらのスクリプトは、リポジトリがどのセッションでも使用されるたびに実行されます。",
+        "description": "このフォルダのセットアップ、クリーンアップスクリプト、およびコピーするファイルを設定します。これらのスクリプトは、フォルダがどのセッションでも使用されるたびに実行されます。",
         "setup": {
           "label": "セットアップスクリプト",
           "helper": "このスクリプトはワークツリー内から、作成後かつコーディングエージェントの開始前に実行されます。依存関係のインストールや環境の準備などのセットアップタスクに使用してください。",
@@ -554,37 +576,37 @@
         },
         "copyFiles": {
           "label": "ファイルをコピー",
-          "helper": "元のリポジトリディレクトリからワークツリーにコピーするファイルのカンマ区切りリスト。.envなどの環境ファイルに役立ちます。gitignoreされていることを確認してください！",
+          "helper": "元のフォルダディレクトリからワークツリーにコピーするファイルのカンマ区切りリスト。.envなどの環境ファイルに役立ちます。gitignoreされていることを確認してください！",
           "placeholder": "ファイルパスまたはglobパターン（例：.env、config/*.json）"
         },
         "devServer": {
           "label": "開発サーバースクリプト",
-          "helper": "このリポジトリの開発サーバーを起動します。スクリプトはリポジトリのワークツリーディレクトリから実行されます。"
+          "helper": "このフォルダの開発サーバーを起動します。スクリプトはフォルダのワークツリーディレクトリから実行されます。"
         }
       },
       "linkedProjects": {
         "title": "リンクされたプロジェクト",
-        "description": "デフォルトのセッション設定でこのリポジトリを使用しているプロジェクト。",
+        "description": "デフォルトのセッション設定でこのフォルダを使用しているプロジェクト。",
         "loading": "プロジェクトを確認中…",
         "none": "リンクされたプロジェクトはありません"
       },
       "remove": {
-        "title": "リポジトリを削除",
-        "description": "このリポジトリをVibe Kanbanからリンク解除します。ディスク上のファイルは削除されません。",
+        "title": "フォルダを削除",
+        "description": "このフォルダをcdesktopからリンク解除します。ディスク上のファイルは削除されません。",
         "button": "削除",
-        "confirm": "リポジトリを削除",
+        "confirm": "フォルダを削除",
         "dialogTitle": "「{{name}}」を削除しますか？",
-        "dialogDescription": "リポジトリをVibe Kanbanからリンク解除します。ディスク上のファイルには影響しません。後で再度追加できます。",
-        "success": "リポジトリが正常に削除されました。",
-        "error": "リポジトリの削除に失敗しました。"
+        "dialogDescription": "フォルダをcdesktopからリンク解除します。ディスク上のファイルには影響しません。後で再度追加できます。",
+        "success": "フォルダが正常に削除されました。",
+        "error": "フォルダの削除に失敗しました。"
       },
       "save": {
-        "button": "リポジトリ設定を保存",
-        "success": "リポジトリ設定が正常に保存されました！",
-        "error": "リポジトリ設定の保存に失敗しました",
+        "button": "フォルダ設定を保存",
+        "success": "フォルダ設定が正常に保存されました！",
+        "error": "フォルダ設定の保存に失敗しました",
         "unsavedChanges": "未保存の変更があります",
         "discard": "破棄",
-        "confirmSwitch": "未保存の変更があります。本当にリポジトリを切り替えますか？変更は失われます。"
+        "confirmSwitch": "未保存の変更があります。本当にフォルダを切り替えますか？変更は失われます。"
       }
     },
     "relay": {

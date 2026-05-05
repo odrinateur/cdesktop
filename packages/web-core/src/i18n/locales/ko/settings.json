@@ -17,8 +17,8 @@
         "generalDesc": "테마, 알림 및 환경설정",
         "projects": "프로젝트",
         "projectsDesc": "프로젝트 저장소 및 구성",
-        "repos": "저장소",
-        "reposDesc": "저장소 스크립트 및 구성",
+        "repos": "폴더",
+        "reposDesc": "폴더 스크립트 및 구성",
         "agents": "에이전트",
         "agentsDesc": "코딩 에이전트 구성",
         "mcp": "MCP 서버",
@@ -89,7 +89,7 @@
           "host": {
             "label": "원격 SSH 호스트 (선택사항)",
             "placeholder": "예: 호스트 이름 또는 IP 주소",
-            "helper": "Vibe Kanban이 원격 서버에서 실행 중인 경우 설정하세요. 설정하면 \"에디터에서 열기\"를 클릭할 때 로컬 명령을 실행하는 대신 SSH를 통해 에디터를 여는 URL이 생성됩니다."
+            "helper": "cdesktop이 원격 서버에서 실행 중인 경우 설정하세요. 설정하면 \"에디터에서 열기\"를 클릭할 때 로컬 명령을 실행하는 대신 SSH를 통해 에디터를 여는 URL이 생성됩니다."
           },
           "user": {
             "label": "원격 SSH 사용자 (선택사항)",
@@ -99,7 +99,7 @@
         },
         "autoInstallExtension": {
           "label": "Auto-install VS Code Extension",
-          "helper": "Automatically install the Vibe Kanban extension when opening a project in VS Code or Cursor. This runs in the background and has no effect if the extension is already installed."
+          "helper": "Automatically install the cdesktop extension when opening a project in VS Code or Cursor. This runs in the background and has no effect if the extension is already installed."
         },
         "availability": {
           "checking": "사용 가능 여부 확인 중...",
@@ -219,7 +219,7 @@
       },
       "privacy": {
         "title": "개인정보 보호",
-        "description": "익명 사용 데이터를 공유하여 Vibe-Kanban 개선에 도움을 주세요.",
+        "description": "익명 사용 데이터를 공유하여 cdesktop 개선에 도움을 주세요.",
         "telemetry": {
           "label": "원격 분석 활성화",
           "helper": "애플리케이션 개선을 위한 익명 사용 이벤트 추적을 활성화합니다. 프롬프트나 프로젝트 정보는 수집되지 않습니다."
@@ -349,6 +349,28 @@
       "deleteConfigDialog": {
         "title": "구성을 삭제하시겠습니까?",
         "description": "{{executorType}} 실행자에서 \"{{configName}}\"을(를) 영구적으로 삭제합니다. 이 작업은 되돌릴 수 없습니다."
+      },
+      "fields": {
+        "append_prompt": {
+          "title": "프롬프트 추가",
+          "description": "프롬프트에 추가될 텍스트입니다."
+        },
+        "agent": {
+          "title": "서브 에이전트",
+          "description": "호출할 서브 에이전트 이름 (선택)."
+        },
+        "base_command_override": {
+          "title": "기본 명령 재정의",
+          "description": "기본 명령을 사용자 정의 명령으로 재정의합니다."
+        },
+        "additional_params": {
+          "title": "추가 매개변수",
+          "description": "기본 명령에 추가할 매개변수입니다."
+        },
+        "env": {
+          "title": "환경 변수",
+          "description": "실행기를 실행할 때 설정할 환경 변수입니다."
+        }
       }
     },
     "providers": {
@@ -493,37 +515,37 @@
       }
     },
     "repos": {
-      "title": "저장소 구성",
-      "description": "이 저장소가 세션에서 사용될 때 실행되는 스크립트를 구성합니다.",
-      "loading": "저장소 로딩 중...",
-      "loadError": "저장소를 불러오지 못했습니다.",
+      "title": "폴더 구성",
+      "description": "이 폴더가 세션에서 사용될 때 실행되는 스크립트를 구성합니다.",
+      "loading": "폴더 로딩 중...",
+      "loadError": "폴더를 불러오지 못했습니다.",
       "addRepo": {
-        "button": "저장소 추가",
-        "dialogTitle": "Git 저장소 선택",
-        "dialogDescription": "등록할 기존 git 저장소를 선택하세요.",
-        "error": "저장소 등록에 실패했습니다"
+        "button": "폴더 추가",
+        "dialogTitle": "폴더 선택",
+        "dialogDescription": "등록할 폴더를 선택하세요. Git 폴더는 버전 관리 기능이 활성화됩니다.",
+        "error": "폴더 등록에 실패했습니다"
       },
       "selector": {
-        "label": "저장소 선택",
-        "placeholder": "구성할 저장소를 선택하세요",
-        "helper": "저장소를 선택하여 구성을 보고 편집하세요.",
-        "noRepos": "사용 가능한 저장소가 없습니다"
+        "label": "폴더 선택",
+        "placeholder": "구성할 폴더를 선택하세요",
+        "helper": "폴더를 선택하여 구성을 보고 편집하세요.",
+        "noRepos": "사용 가능한 폴더가 없습니다"
       },
       "general": {
         "title": "일반 설정",
-        "description": "저장소 기본 정보를 구성합니다.",
+        "description": "폴더 기본 정보를 구성합니다.",
         "displayName": {
           "label": "표시 이름",
           "placeholder": "표시 이름 입력",
-          "helper": "이 저장소의 친숙한 이름입니다."
+          "helper": "이 폴더의 친숙한 이름입니다."
         },
         "path": {
-          "label": "저장소 경로"
+          "label": "폴더 경로"
         },
         "defaultWorkingDir": {
           "label": "기본 작업 디렉터리",
           "placeholder": "예: packages/frontend",
-          "helper": "단일 저장소 세션에서 코딩 에이전트가 실행되는 하위 디렉터리입니다. 세션 생성 시 설정됩니다. 저장소 루트를 사용하려면 비워 두세요."
+          "helper": "코딩 에이전트가 실행되는 하위 디렉터리입니다. 세션 생성 시 설정됩니다. 폴더 루트를 사용하려면 비워 두세요."
         },
         "defaultTargetBranch": {
           "label": "기본 대상 브랜치",
@@ -537,7 +559,7 @@
       },
       "scripts": {
         "title": "스크립트 및 구성",
-        "description": "이 저장소의 설정, 정리 스크립트 및 복사할 파일을 구성합니다. 이러한 스크립트는 저장소가 모든 세션에서 사용될 때마다 실행됩니다.",
+        "description": "이 폴더의 설정, 정리 스크립트 및 복사할 파일을 구성합니다. 이러한 스크립트는 폴더가 모든 세션에서 사용될 때마다 실행됩니다.",
         "setup": {
           "label": "설정 스크립트",
           "helper": "이 스크립트는 워크트리 내부에서 생성 후 코딩 에이전트가 시작되기 전에 실행됩니다. 종속성 설치 또는 환경 준비와 같은 설정 작업에 사용하세요.",
@@ -554,37 +576,37 @@
         },
         "copyFiles": {
           "label": "파일 복사",
-          "helper": "원래 저장소 디렉토리에서 워크트리로 복사할 파일의 쉼표로 구분된 목록입니다. .env와 같은 환경 파일에 유용합니다. gitignore되었는지 확인하세요!",
+          "helper": "원래 폴더 디렉토리에서 워크트리로 복사할 파일의 쉼표로 구분된 목록입니다. .env와 같은 환경 파일에 유용합니다. gitignore되었는지 확인하세요!",
           "placeholder": "파일 경로 또는 glob 패턴 (예: .env, config/*.json)"
         },
         "devServer": {
           "label": "개발 서버 스크립트",
-          "helper": "이 저장소의 개발 서버를 시작합니다. 스크립트는 저장소의 워크트리 디렉토리에서 실행됩니다."
+          "helper": "이 폴더의 개발 서버를 시작합니다. 스크립트는 폴더의 워크트리 디렉토리에서 실행됩니다."
         }
       },
       "linkedProjects": {
         "title": "연결된 프로젝트",
-        "description": "기본 세션 설정에서 이 저장소를 사용하는 프로젝트입니다.",
+        "description": "기본 세션 설정에서 이 폴더를 사용하는 프로젝트입니다.",
         "loading": "프로젝트 확인 중…",
         "none": "연결된 프로젝트가 없습니다"
       },
       "remove": {
-        "title": "저장소 제거",
-        "description": "이 저장소를 Vibe Kanban에서 연결 해제합니다. 디스크의 파일은 삭제되지 않습니다.",
+        "title": "폴더 제거",
+        "description": "이 폴더를 cdesktop에서 연결 해제합니다. 디스크의 파일은 삭제되지 않습니다.",
         "button": "제거",
-        "confirm": "저장소 제거",
+        "confirm": "폴더 제거",
         "dialogTitle": "\"{{name}}\"을(를) 제거하시겠습니까?",
-        "dialogDescription": "저장소를 Vibe Kanban에서 연결 해제합니다. 디스크의 파일은 영향을 받지 않습니다. 나중에 다시 추가할 수 있습니다.",
-        "success": "저장소가 성공적으로 제거되었습니다.",
-        "error": "저장소 제거에 실패했습니다."
+        "dialogDescription": "폴더를 cdesktop에서 연결 해제합니다. 디스크의 파일은 영향을 받지 않습니다. 나중에 다시 추가할 수 있습니다.",
+        "success": "폴더가 성공적으로 제거되었습니다.",
+        "error": "폴더 제거에 실패했습니다."
       },
       "save": {
-        "button": "저장소 설정 저장",
-        "success": "저장소 설정이 성공적으로 저장되었습니다!",
-        "error": "저장소 설정을 저장하지 못했습니다",
+        "button": "폴더 설정 저장",
+        "success": "폴더 설정이 성공적으로 저장되었습니다!",
+        "error": "폴더 설정을 저장하지 못했습니다",
         "unsavedChanges": "저장되지 않은 변경사항이 있습니다",
         "discard": "취소",
-        "confirmSwitch": "저장되지 않은 변경사항이 있습니다. 정말 저장소를 전환하시겠습니까? 변경사항이 손실됩니다."
+        "confirmSwitch": "저장되지 않은 변경사항이 있습니다. 정말 폴더를 전환하시겠습니까? 변경사항이 손실됩니다."
       }
     },
     "relay": {

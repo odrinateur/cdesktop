@@ -21,8 +21,8 @@
         "generalDesc": "Theme, notifications, and preferences",
         "projects": "Projects",
         "projectsDesc": "Project repositories and configuration",
-        "repos": "Repositories",
-        "reposDesc": "Repository scripts and configuration",
+        "repos": "Folders",
+        "reposDesc": "Folder scripts and configuration",
         "agents": "Agents",
         "agentsDesc": "Coding agent configurations",
         "providers": "Providers",
@@ -97,7 +97,7 @@
           "host": {
             "label": "Remote SSH Host (Optional)",
             "placeholder": "e.g., hostname or IP address",
-            "helper": "Set this if Vibe Kanban is running on a remote server. When set, clicking \"Open in Editor\" will generate a URL to open your editor via SSH instead of spawning a local command."
+            "helper": "Set this if cdesktop is running on a remote server. When set, clicking \"Open in Editor\" will generate a URL to open your editor via SSH instead of spawning a local command."
           },
           "user": {
             "label": "Remote SSH User (Optional)",
@@ -107,7 +107,7 @@
         },
         "autoInstallExtension": {
           "label": "Auto-install VS Code Extension",
-          "helper": "Automatically install the Vibe Kanban extension when opening a project in VS Code or Cursor. This runs in the background and has no effect if the extension is already installed."
+          "helper": "Automatically install the cdesktop extension when opening a project in VS Code or Cursor. This runs in the background and has no effect if the extension is already installed."
         },
         "availability": {
           "checking": "Checking availability...",
@@ -227,7 +227,7 @@
       },
       "privacy": {
         "title": "Privacy",
-        "description": "Help improve Vibe-Kanban by sharing anonymous usage data.",
+        "description": "Help improve cdesktop by sharing anonymous usage data.",
         "telemetry": {
           "label": "Enable Telemetry",
           "helper": "Enables anonymous usage events tracking to help improve the application. No prompts or project information are collected."
@@ -357,6 +357,28 @@
       "deleteConfigDialog": {
         "title": "Delete Configuration?",
         "description": "This will permanently remove \"{{configName}}\" from the {{executorType}} executor. You can't undo this action."
+      },
+      "fields": {
+        "append_prompt": {
+          "title": "Append Prompt",
+          "description": "Extra text appended to the prompt."
+        },
+        "agent": {
+          "title": "Sub-agent",
+          "description": "Sub-agent name to invoke (optional)."
+        },
+        "base_command_override": {
+          "title": "Base Command Override",
+          "description": "Override the base command with a custom command."
+        },
+        "additional_params": {
+          "title": "Additional Parameters",
+          "description": "Additional parameters appended to the base command."
+        },
+        "env": {
+          "title": "Environment Variables",
+          "description": "Environment variables set when running the executor."
+        }
       }
     },
     "providers": {
@@ -501,37 +523,37 @@
       }
     },
     "repos": {
-      "title": "Repository Configuration",
-      "description": "Configure scripts that run when this repository is used in sessions.",
-      "loading": "Loading repositories...",
-      "loadError": "Failed to load repositories.",
+      "title": "Folder Configuration",
+      "description": "Configure scripts that run when this folder is used in sessions.",
+      "loading": "Loading folders...",
+      "loadError": "Failed to load folders.",
       "addRepo": {
-        "button": "Add Repository",
-        "dialogTitle": "Select Git Repository",
-        "dialogDescription": "Choose an existing git repository to register.",
-        "error": "Failed to register repository"
+        "button": "Add Folder",
+        "dialogTitle": "Select Folder",
+        "dialogDescription": "Choose a folder to register. Git folders enable version control features.",
+        "error": "Failed to register folder"
       },
       "selector": {
-        "label": "Select Repository",
-        "placeholder": "Choose a repository to configure",
-        "helper": "Select a repository to view and edit its configuration.",
-        "noRepos": "No repositories available"
+        "label": "Select Folder",
+        "placeholder": "Choose a folder to configure",
+        "helper": "Select a folder to view and edit its configuration.",
+        "noRepos": "No folders available"
       },
       "general": {
         "title": "General Settings",
-        "description": "Configure basic repository information.",
+        "description": "Configure basic folder information.",
         "displayName": {
           "label": "Display Name",
           "placeholder": "Enter display name",
-          "helper": "A friendly name for this repository."
+          "helper": "A friendly name for this folder."
         },
         "path": {
-          "label": "Repository Path"
+          "label": "Folder Path"
         },
         "defaultWorkingDir": {
           "label": "Default Working Directory",
           "placeholder": "e.g., packages/frontend",
-          "helper": "Subdirectory relative to the repository root where the coding agent runs for single-repo sessions. Set when the session is created. Leave empty to use the repository root."
+          "helper": "Subdirectory relative to the folder root where the coding agent runs. Set when the session is created. Leave empty to use the folder root."
         },
         "defaultTargetBranch": {
           "label": "Default Target Branch",
@@ -545,7 +567,7 @@
       },
       "scripts": {
         "title": "Scripts & Configuration",
-        "description": "Configure dev server, setup, cleanup, and copy files for this repository. These scripts run whenever the repository is used in any session.",
+        "description": "Configure dev server, setup, cleanup, and copy files for this folder. These scripts run whenever the folder is used in any session.",
         "setup": {
           "label": "Setup Script",
           "helper": "This script runs from within the worktree after it's created and before the coding agent starts. Use it for setup tasks like installing dependencies or preparing the environment.",
@@ -562,37 +584,37 @@
         },
         "copyFiles": {
           "label": "Copy Files",
-          "helper": "Comma-separated list of files to copy from the original repository directory to the worktree. Useful for environment files like .env. Make sure these are gitignored!",
+          "helper": "Comma-separated list of files to copy from the original folder to the worktree. Useful for environment files like .env. Make sure these are gitignored!",
           "placeholder": "File paths or glob patterns (e.g., .env, config/*.json)"
         },
         "devServer": {
           "label": "Dev Server Script",
-          "helper": "Starts a development server for this repository. Scripts execute from within the repository's worktree directory."
+          "helper": "Starts a development server for this folder. Scripts execute from within the folder's worktree directory."
         }
       },
       "linkedProjects": {
         "title": "Linked Projects",
-        "description": "Projects that use this repository in their default session configuration.",
+        "description": "Projects that use this folder in their default session configuration.",
         "loading": "Checking projects…",
         "none": "No projects linked"
       },
       "remove": {
-        "title": "Remove Repository",
-        "description": "Unlink this repository from Vibe Kanban. Files on disk will not be deleted.",
+        "title": "Remove Folder",
+        "description": "Unlink this folder from cdesktop. Files on disk will not be deleted.",
         "button": "Remove",
-        "confirm": "Remove Repository",
+        "confirm": "Remove Folder",
         "dialogTitle": "Remove \"{{name}}\"?",
-        "dialogDescription": "This will unlink the repository from Vibe Kanban. Your files on disk will not be affected. You can re-add it later.",
-        "success": "Repository removed successfully.",
-        "error": "Failed to remove repository."
+        "dialogDescription": "This will unlink the folder from cdesktop. Your files on disk will not be affected. You can re-add it later.",
+        "success": "Folder removed successfully.",
+        "error": "Failed to remove folder."
       },
       "save": {
-        "button": "Save Repository Settings",
-        "success": "Repository settings saved successfully!",
-        "error": "Failed to save repository settings",
+        "button": "Save Folder Settings",
+        "success": "Folder settings saved successfully!",
+        "error": "Failed to save folder settings",
         "unsavedChanges": "You have unsaved changes",
         "discard": "Discard",
-        "confirmSwitch": "You have unsaved changes. Are you sure you want to switch repositories? Your changes will be lost."
+        "confirmSwitch": "You have unsaved changes. Are you sure you want to switch folders? Your changes will be lost."
       }
     },
     "relay": {

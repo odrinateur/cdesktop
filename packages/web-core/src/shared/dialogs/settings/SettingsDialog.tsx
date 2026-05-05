@@ -111,6 +111,7 @@ function SettingsDialogNavigation({
   return (
     <nav className="flex-1 p-2 flex flex-col gap-4 overflow-y-auto">
       <div className="space-y-2">
+        {/* HIDDEN: Machine Settings header + host picker
         <div className="px-3 pt-1">
           <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-low">
             {t('settings.layout.nav.machineSettings')}
@@ -134,10 +135,12 @@ function SettingsDialogNavigation({
             <p className="mt-2 px-1 text-xs text-low">{hostHint}</p>
           )}
         </div>
+        */}
         <div className="flex flex-col gap-1">
           {hostSections.map((section) => renderSectionButton(section.id))}
         </div>
       </div>
+      {/* HIDDEN: Account Settings header + tabs
       <div className="space-y-2">
         <div className="px-3 pt-1">
           <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-low">
@@ -148,6 +151,7 @@ function SettingsDialogNavigation({
           {universalSections.map((section) => renderSectionButton(section.id))}
         </div>
       </div>
+      */}
     </nav>
   );
 }

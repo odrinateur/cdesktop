@@ -18,7 +18,7 @@ fn default_pr_auto_description_enabled() -> bool {
 }
 
 fn default_commit_reminder_enabled() -> bool {
-    true
+    false
 }
 
 fn default_relay_enabled() -> bool {
@@ -94,7 +94,7 @@ impl Config {
             showcases: old_config.showcases,
             pr_auto_description_enabled: true,
             pr_auto_description_prompt: None,
-            commit_reminder_enabled: true,
+            commit_reminder_enabled: false,
             commit_reminder_prompt: None,
             send_message_shortcut: SendMessageShortcut::default(),
             relay_enabled: true,
@@ -150,7 +150,7 @@ impl Default for Config {
             showcases: ShowcaseState::default(),
             pr_auto_description_enabled: true,
             pr_auto_description_prompt: None,
-            commit_reminder_enabled: true,
+            commit_reminder_enabled: false,
             commit_reminder_prompt: None,
             send_message_shortcut: SendMessageShortcut::default(),
             relay_enabled: true,

@@ -17,10 +17,10 @@
         "generalDesc": "主题、通知和偏好设置",
         "projects": "项目",
         "projectsDesc": "项目仓库和配置",
-        "repos": "仓库",
-        "reposDesc": "仓库脚本和配置",
-        "agents": "代理",
-        "agentsDesc": "编码代理配置",
+        "repos": "文件夹",
+        "reposDesc": "文件夹脚本和配置",
+        "agents": "智能体",
+        "agentsDesc": "编码智能体配置",
         "mcp": "MCP 服务器",
         "mcpDesc": "模型上下文协议服务器",
         "organizations": "组织设置",
@@ -62,12 +62,12 @@
         }
       },
       "taskExecution": {
-        "title": "默认编码代理",
-        "description": "选择任务的默认编码代理。",
+        "title": "默认编码智能体",
+        "description": "选择任务的默认编码智能体。",
         "executor": {
-          "label": "默认代理配置",
+          "label": "默认智能体配置",
           "placeholder": "选择配置文件",
-          "helper": "选择创建任务尝试时使用的默认代理配置。"
+          "helper": "选择创建任务尝试时使用的默认智能体配置。"
         },
         "variant": "默认",
         "defaultLabel": "默认"
@@ -89,7 +89,7 @@
           "host": {
             "label": "远程 SSH 主机（可选）",
             "placeholder": "例如：主机名或 IP 地址",
-            "helper": "如果 Vibe Kanban 在远程服务器上运行，请设置此项。设置后，点击在编辑器中打开将生成 URL 以通过 SSH 打开编辑器，而不是执行本地命令。"
+            "helper": "如果 cdesktop 在远程服务器上运行，请设置此项。设置后，点击在编辑器中打开将生成 URL 以通过 SSH 打开编辑器，而不是执行本地命令。"
           },
           "user": {
             "label": "远程 SSH 用户（可选）",
@@ -99,7 +99,7 @@
         },
         "autoInstallExtension": {
           "label": "Auto-install VS Code Extension",
-          "helper": "Automatically install the Vibe Kanban extension when opening a project in VS Code or Cursor. This runs in the background and has no effect if the extension is already installed."
+          "helper": "Automatically install the cdesktop extension when opening a project in VS Code or Cursor. This runs in the background and has no effect if the extension is already installed."
         },
         "availability": {
           "checking": "检查可用性...",
@@ -174,11 +174,11 @@
         "description": "配置PR创建行为",
         "autoDescription": {
           "label": "默认自动生成PR描述",
-          "helper": "启用后，AI代理将在创建PR后自动更新标题和描述。"
+          "helper": "启用后，AI智能体将在创建PR后自动更新标题和描述。"
         },
         "customPrompt": {
           "useCustom": "使用自定义提示",
-          "helper": "生成PR描述时AI代理使用的自定义提示。使用{pr_number}和{pr_url}作为占位符。"
+          "helper": "生成PR描述时AI智能体使用的自定义提示。使用{pr_number}和{pr_url}作为占位符。"
         }
       },
       "commits": {
@@ -186,7 +186,7 @@
         "description": "配置任务尝试的提交行为",
         "reminder": {
           "label": "提交提醒",
-          "helper": "提示支持的代理在停止前提交更改。"
+          "helper": "提示支持的智能体在停止前提交更改。"
         },
         "customPrompt": {
           "useCustom": "使用自定义提示",
@@ -219,7 +219,7 @@
       },
       "privacy": {
         "title": "隐私",
-        "description": "通过共享匿名使用数据帮助改进 Vibe-Kanban。",
+        "description": "通过共享匿名使用数据帮助改进 cdesktop。",
         "telemetry": {
           "label": "启用遥测",
           "helper": "启用匿名使用事件跟踪以帮助改进应用程序。不会收集提示或项目信息。"
@@ -296,28 +296,28 @@
       }
     },
     "agents": {
-      "title": "编码代理配置",
-      "description": "使用不同的配置自定义编码代理的行为。",
-      "loading": "加载代理配置中...",
-      "selectAgent": "选择代理",
+      "title": "编码智能体配置",
+      "description": "使用不同的配置自定义编码智能体的行为。",
+      "loading": "加载智能体配置中...",
+      "selectAgent": "选择智能体",
       "save": {
-        "button": "保存代理配置",
+        "button": "保存智能体配置",
         "success": "✓ 执行器配置保存成功！",
         "unsavedChanges": "• 您有未保存的更改"
       },
       "availability": {
         "checking": "检查中...",
         "checkingAvailability": "正在检查可用性...",
-        "available": "代理可用",
-        "notFoundSimple": "未找到代理",
+        "available": "智能体可用",
+        "notFoundSimple": "未找到智能体",
         "loginDetected": "检测到最近使用",
-        "loginDetectedTooltip": "找到此代理的最近身份验证凭据",
+        "loginDetectedTooltip": "找到此智能体的最近身份验证凭据",
         "installationFound": "检测到以前使用",
-        "installationFoundTooltip": "找到代理配置。您可能需要登录才能使用它。"
+        "installationFoundTooltip": "找到智能体配置。您可能需要登录才能使用它。"
       },
       "editor": {
         "formLabel": "编辑 JSON",
-        "agentLabel": "代理",
+        "agentLabel": "智能体",
         "agentPlaceholder": "选择执行器类型",
         "configLabel": "配置",
         "configPlaceholder": "选择配置",
@@ -327,14 +327,14 @@
         "deleteText": "删除",
         "makeDefault": "设为默认",
         "isDefault": "默认",
-        "jsonLabel": "代理配置（JSON）",
+        "jsonLabel": "智能体配置（JSON）",
         "jsonPlaceholder": "加载配置文件中...",
         "jsonLoading": "加载中...",
         "pathLabel": "配置文件位置："
       },
       "errors": {
         "deleteFailed": "删除配置失败。请重试。",
-        "saveFailed": "保存代理配置失败。请重试。",
+        "saveFailed": "保存智能体配置失败。请重试。",
         "saveConfigFailed": "保存配置失败。请重试。",
         "schemaNotFound": "未找到执行器类型 {{executor}} 的架构"
       },
@@ -349,6 +349,28 @@
       "deleteConfigDialog": {
         "title": "删除配置？",
         "description": "这将从 {{executorType}} 执行器中永久删除\"{{configName}}\"。此操作无法撤销。"
+      },
+      "fields": {
+        "append_prompt": {
+          "title": "附加提示",
+          "description": "追加到提示末尾的文本。"
+        },
+        "agent": {
+          "title": "子智能体",
+          "description": "要调用的子智能体名称（可选）。"
+        },
+        "base_command_override": {
+          "title": "覆盖基础命令",
+          "description": "用自定义命令覆盖基础命令。"
+        },
+        "additional_params": {
+          "title": "附加参数",
+          "description": "附加到基础命令的额外参数。"
+        },
+        "env": {
+          "title": "环境变量",
+          "description": "运行执行器时设置的环境变量。"
+        }
       }
     },
     "providers": {
@@ -416,13 +438,13 @@
     },
     "mcp": {
       "title": "MCP 服务器配置",
-      "description": "配置模型上下文协议服务器，使用自定义工具和资源扩展编码代理功能。",
+      "description": "配置模型上下文协议服务器，使用自定义工具和资源扩展编码智能体功能。",
       "loading": "加载 MCP 配置中...",
       "applying": "应用配置中...",
       "labels": {
-        "agent": "代理",
+        "agent": "智能体",
         "agentPlaceholder": "选择执行器",
-        "agentHelper": "选择要为其配置 MCP 服务器的代理。",
+        "agentHelper": "选择要为其配置 MCP 服务器的智能体。",
         "serverConfig": "服务器配置（JSON）",
         "popularServers": "热门服务器",
         "serverHelper": "点击卡片将该 MCP 服务器插入到上面的 JSON 中。",
@@ -493,37 +515,37 @@
       }
     },
     "repos": {
-      "title": "仓库配置",
-      "description": "配置此仓库在会话中使用时运行的脚本。",
-      "loading": "加载仓库中...",
-      "loadError": "加载仓库失败。",
+      "title": "文件夹配置",
+      "description": "配置此文件夹在会话中使用时运行的脚本。",
+      "loading": "加载文件夹中...",
+      "loadError": "加载文件夹失败。",
       "addRepo": {
-        "button": "添加仓库",
-        "dialogTitle": "选择 Git 仓库",
-        "dialogDescription": "选择一个现有的 git 仓库进行注册。",
-        "error": "注册仓库失败"
+        "button": "添加文件夹",
+        "dialogTitle": "选择文件夹",
+        "dialogDescription": "选择要注册的文件夹。Git 文件夹将启用版本控制功能。",
+        "error": "注册文件夹失败"
       },
       "selector": {
-        "label": "选择仓库",
-        "placeholder": "选择要配置的仓库",
-        "helper": "选择仓库以查看和编辑其配置。",
-        "noRepos": "没有可用的仓库"
+        "label": "选择文件夹",
+        "placeholder": "选择要配置的文件夹",
+        "helper": "选择文件夹以查看和编辑其配置。",
+        "noRepos": "没有可用的文件夹"
       },
       "general": {
         "title": "常规设置",
-        "description": "配置仓库基本信息。",
+        "description": "配置文件夹基本信息。",
         "displayName": {
           "label": "显示名称",
           "placeholder": "输入显示名称",
-          "helper": "此仓库的友好名称。"
+          "helper": "此文件夹的友好名称。"
         },
         "path": {
-          "label": "仓库路径"
+          "label": "文件夹路径"
         },
         "defaultWorkingDir": {
           "label": "默认工作目录",
           "placeholder": "例如：packages/frontend",
-          "helper": "单仓库会话中编码代理运行的子目录。在创建会话时设置。留空则使用仓库根目录。"
+          "helper": "编码智能体运行的子目录。在创建会话时设置。留空则使用文件夹根目录。"
         },
         "defaultTargetBranch": {
           "label": "默认目标分支",
@@ -537,16 +559,16 @@
       },
       "scripts": {
         "title": "脚本和配置",
-        "description": "配置此仓库的设置脚本、清理脚本和要复制的文件。这些脚本在仓库用于任何会话时都会运行。",
+        "description": "配置此文件夹的设置脚本、清理脚本和要复制的文件。这些脚本在文件夹用于任何会话时都会运行。",
         "setup": {
           "label": "设置脚本",
-          "helper": "此脚本从工作树内部运行，在创建后、编码代理启动前执行。用于设置任务，如安装依赖项或准备环境。",
-          "parallelLabel": "与编码代理并行运行设置脚本",
-          "parallelHelper": "启用后，设置脚本将与编码代理同时运行，而不是等待设置完成后再启动。"
+          "helper": "此脚本从工作树内部运行，在创建后、编码智能体启动前执行。用于设置任务，如安装依赖项或准备环境。",
+          "parallelLabel": "与编码智能体并行运行设置脚本",
+          "parallelHelper": "启用后，设置脚本将与编码智能体同时运行，而不是等待设置完成后再启动。"
         },
         "cleanup": {
           "label": "清理脚本",
-          "helper": "此脚本从工作树内部运行，在编码代理执行后执行（仅在进行了更改时）。用于质量保证任务，如运行 linter、格式化程序、测试或其他验证步骤。"
+          "helper": "此脚本从工作树内部运行，在编码智能体执行后执行（仅在进行了更改时）。用于质量保证任务，如运行 linter、格式化程序、测试或其他验证步骤。"
         },
         "archive": {
           "label": "归档脚本",
@@ -554,37 +576,37 @@
         },
         "copyFiles": {
           "label": "复制文件",
-          "helper": "要从原始仓库目录复制到工作树的文件的逗号分隔列表。对 .env 等环境文件很有用。确保这些文件被 gitignore！",
+          "helper": "要从原始文件夹目录复制到工作树的文件的逗号分隔列表。对 .env 等环境文件很有用。确保这些文件被 gitignore！",
           "placeholder": "文件路径或 glob 模式（例如：.env、config/*.json）"
         },
         "devServer": {
           "label": "开发服务器脚本",
-          "helper": "为此仓库启动开发服务器。脚本从仓库的工作树目录执行。"
+          "helper": "为此文件夹启动开发服务器。脚本从文件夹的工作树目录执行。"
         }
       },
       "linkedProjects": {
         "title": "关联项目",
-        "description": "在默认会话配置中使用此仓库的项目。",
+        "description": "在默认会话配置中使用此文件夹的项目。",
         "loading": "正在检查项目…",
         "none": "没有关联的项目"
       },
       "remove": {
-        "title": "移除仓库",
-        "description": "从 Vibe Kanban 取消关联此仓库。磁盘上的文件不会被删除。",
+        "title": "移除文件夹",
+        "description": "从 cdesktop 取消关联此文件夹。磁盘上的文件不会被删除。",
         "button": "移除",
-        "confirm": "移除仓库",
+        "confirm": "移除文件夹",
         "dialogTitle": "移除「{{name}}」？",
-        "dialogDescription": "这将从 Vibe Kanban 取消关联此仓库。您磁盘上的文件不受影响。您可以稍后重新添加。",
-        "success": "仓库移除成功。",
-        "error": "移除仓库失败。"
+        "dialogDescription": "这将从 cdesktop 取消关联此文件夹。您磁盘上的文件不受影响。您可以稍后重新添加。",
+        "success": "文件夹移除成功。",
+        "error": "移除文件夹失败。"
       },
       "save": {
-        "button": "保存仓库设置",
-        "success": "仓库设置保存成功！",
-        "error": "保存仓库设置失败",
+        "button": "保存文件夹设置",
+        "success": "文件夹设置保存成功！",
+        "error": "保存文件夹设置失败",
         "unsavedChanges": "您有未保存的更改",
         "discard": "放弃",
-        "confirmSwitch": "您有未保存的更改。您确定要切换仓库吗？您的更改将丢失。"
+        "confirmSwitch": "您有未保存的更改。您确定要切换文件夹吗？您的更改将丢失。"
       }
     },
     "relay": {

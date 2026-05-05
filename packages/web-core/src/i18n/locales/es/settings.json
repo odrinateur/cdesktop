@@ -17,8 +17,8 @@
         "generalDesc": "Tema, notificaciones y preferencias",
         "projects": "Proyectos",
         "projectsDesc": "Repositorios de proyectos y configuración",
-        "repos": "Repositorios",
-        "reposDesc": "Scripts y configuración de repositorios",
+        "repos": "Carpetas",
+        "reposDesc": "Scripts y configuración de carpetas",
         "agents": "Agentes",
         "agentsDesc": "Configuraciones de agentes",
         "mcp": "Servidores MCP",
@@ -89,7 +89,7 @@
           "host": {
             "label": "Host SSH Remoto (Opcional)",
             "placeholder": "ej., nombre de host o dirección IP",
-            "helper": "Configura esto si Vibe Kanban se ejecuta en un servidor remoto. Cuando se establece, al hacer clic en \"Abrir en Editor\" se generará una URL para abrir tu editor a través de SSH en lugar de ejecutar un comando local."
+            "helper": "Configura esto si cdesktop se ejecuta en un servidor remoto. Cuando se establece, al hacer clic en \"Abrir en Editor\" se generará una URL para abrir tu editor a través de SSH en lugar de ejecutar un comando local."
           },
           "user": {
             "label": "Usuario SSH Remoto (Opcional)",
@@ -99,7 +99,7 @@
         },
         "autoInstallExtension": {
           "label": "Auto-install VS Code Extension",
-          "helper": "Automatically install the Vibe Kanban extension when opening a project in VS Code or Cursor. This runs in the background and has no effect if the extension is already installed."
+          "helper": "Automatically install the cdesktop extension when opening a project in VS Code or Cursor. This runs in the background and has no effect if the extension is already installed."
         },
         "availability": {
           "checking": "Verificando disponibilidad...",
@@ -219,7 +219,7 @@
       },
       "privacy": {
         "title": "Privacidad",
-        "description": "Ayuda a mejorar Vibe-Kanban compartiendo datos de uso anónimos.",
+        "description": "Ayuda a mejorar cdesktop compartiendo datos de uso anónimos.",
         "telemetry": {
           "label": "Habilitar Telemetría",
           "helper": "Habilita el seguimiento anónimo para ayudar a mejorar la aplicación. No se recopilan prompts ni información del proyecto."
@@ -349,6 +349,28 @@
       "deleteConfigDialog": {
         "title": "¿Eliminar configuración?",
         "description": "Esto eliminará permanentemente \"{{configName}}\" del ejecutor {{executorType}}. Esta acción no se puede deshacer."
+      },
+      "fields": {
+        "append_prompt": {
+          "title": "Añadir al prompt",
+          "description": "Texto adicional añadido al prompt."
+        },
+        "agent": {
+          "title": "Subagente",
+          "description": "Nombre del subagente a invocar (opcional)."
+        },
+        "base_command_override": {
+          "title": "Sobrescribir comando base",
+          "description": "Sobrescribir el comando base con un comando personalizado."
+        },
+        "additional_params": {
+          "title": "Parámetros adicionales",
+          "description": "Parámetros adicionales añadidos al comando base."
+        },
+        "env": {
+          "title": "Variables de entorno",
+          "description": "Variables de entorno establecidas al ejecutar el executor."
+        }
       }
     },
     "providers": {
@@ -493,37 +515,37 @@
       }
     },
     "repos": {
-      "title": "Configuración del Repositorio",
-      "description": "Configura los scripts que se ejecutan cuando este repositorio se usa en sesiones.",
-      "loading": "Cargando repositorios...",
-      "loadError": "Error al cargar repositorios.",
+      "title": "Configuración del Carpeta",
+      "description": "Configura los scripts que se ejecutan cuando este carpeta se usa en sesiones.",
+      "loading": "Cargando carpetas...",
+      "loadError": "Error al cargar carpetas.",
       "addRepo": {
-        "button": "Agregar Repositorio",
-        "dialogTitle": "Seleccionar Repositorio Git",
-        "dialogDescription": "Elige un repositorio git existente para registrar.",
-        "error": "Error al registrar el repositorio"
+        "button": "Agregar Carpeta",
+        "dialogTitle": "Seleccionar Carpeta",
+        "dialogDescription": "Elige una carpeta para registrar. Las carpetas Git habilitan funciones de control de versiones.",
+        "error": "Error al registrar el carpeta"
       },
       "selector": {
-        "label": "Seleccionar Repositorio",
-        "placeholder": "Elige un repositorio para configurar",
-        "helper": "Selecciona un repositorio para ver y editar su configuración.",
-        "noRepos": "No hay repositorios disponibles"
+        "label": "Seleccionar Carpeta",
+        "placeholder": "Elige un carpeta para configurar",
+        "helper": "Selecciona un carpeta para ver y editar su configuración.",
+        "noRepos": "No hay carpetas disponibles"
       },
       "general": {
         "title": "Configuración General",
-        "description": "Configura la información básica del repositorio.",
+        "description": "Configura la información básica del carpeta.",
         "displayName": {
           "label": "Nombre para Mostrar",
           "placeholder": "Ingresa el nombre para mostrar",
-          "helper": "Un nombre amigable para este repositorio."
+          "helper": "Un nombre amigable para este carpeta."
         },
         "path": {
-          "label": "Ruta del Repositorio"
+          "label": "Ruta del Carpeta"
         },
         "defaultWorkingDir": {
           "label": "Directorio de Trabajo Predeterminado",
           "placeholder": "ej., packages/frontend",
-          "helper": "Subdirectorio relativo a la raíz del repositorio donde se ejecuta el agente de codificación para sesiones de un solo repositorio. Se establece al crear la sesión. Déjelo vacío para usar la raíz del repositorio."
+          "helper": "Subdirectorio relativo a la raíz de la carpeta donde se ejecuta el agente de codificación. Se establece al crear la sesión. Déjelo vacío para usar la raíz de la carpeta."
         },
         "defaultTargetBranch": {
           "label": "Rama Objetivo Predeterminada",
@@ -537,7 +559,7 @@
       },
       "scripts": {
         "title": "Scripts y Configuración",
-        "description": "Configura los scripts de instalación, limpieza y archivos a copiar para este repositorio. Estos scripts se ejecutan cada vez que el repositorio se usa en cualquier sesión.",
+        "description": "Configura los scripts de instalación, limpieza y archivos a copiar para este carpeta. Estos scripts se ejecutan cada vez que el carpeta se usa en cualquier sesión.",
         "setup": {
           "label": "Script de Instalación",
           "helper": "Este script se ejecuta desde dentro del worktree después de crearse y antes de que comience el agente de codificación. Úsalo para tareas de configuración como instalar dependencias o preparar el entorno.",
@@ -554,37 +576,37 @@
         },
         "copyFiles": {
           "label": "Copiar Archivos",
-          "helper": "Lista separada por comas de archivos para copiar del directorio del repositorio original al worktree. Útil para archivos de entorno como .env. ¡Asegúrate de que estén en gitignore!",
+          "helper": "Lista separada por comas de archivos para copiar del directorio del carpeta original al worktree. Útil para archivos de entorno como .env. ¡Asegúrate de que estén en gitignore!",
           "placeholder": "Rutas de archivos o patrones glob (ej., .env, config/*.json)"
         },
         "devServer": {
           "label": "Script del Servidor de Desarrollo",
-          "helper": "Inicia un servidor de desarrollo para este repositorio. Los scripts se ejecutan desde el directorio worktree del repositorio."
+          "helper": "Inicia un servidor de desarrollo para este carpeta. Los scripts se ejecutan desde el directorio worktree del carpeta."
         }
       },
       "linkedProjects": {
         "title": "Proyectos Vinculados",
-        "description": "Proyectos que usan este repositorio en su configuración de sesión predeterminada.",
+        "description": "Proyectos que usan este carpeta en su configuración de sesión predeterminada.",
         "loading": "Verificando proyectos…",
         "none": "No hay proyectos vinculados"
       },
       "remove": {
-        "title": "Eliminar Repositorio",
-        "description": "Desvincular este repositorio de Vibe Kanban. Los archivos en disco no se eliminarán.",
+        "title": "Eliminar Carpeta",
+        "description": "Desvincular este carpeta de cdesktop. Los archivos en disco no se eliminarán.",
         "button": "Eliminar",
-        "confirm": "Eliminar Repositorio",
+        "confirm": "Eliminar Carpeta",
         "dialogTitle": "¿Eliminar \"{{name}}\"?",
-        "dialogDescription": "Esto desvinculará el repositorio de Vibe Kanban. Tus archivos en disco no se verán afectados. Puedes volver a agregarlo más tarde.",
-        "success": "Repositorio eliminado exitosamente.",
-        "error": "Error al eliminar el repositorio."
+        "dialogDescription": "Esto desvinculará el carpeta de cdesktop. Tus archivos en disco no se verán afectados. Puedes volver a agregarlo más tarde.",
+        "success": "Carpeta eliminado exitosamente.",
+        "error": "Error al eliminar el carpeta."
       },
       "save": {
-        "button": "Guardar Configuración del Repositorio",
-        "success": "¡Configuración del repositorio guardada exitosamente!",
-        "error": "Error al guardar la configuración del repositorio",
+        "button": "Guardar Configuración del Carpeta",
+        "success": "¡Configuración del carpeta guardada exitosamente!",
+        "error": "Error al guardar la configuración del carpeta",
         "unsavedChanges": "Tienes cambios sin guardar",
         "discard": "Descartar",
-        "confirmSwitch": "Tienes cambios sin guardar. ¿Estás seguro de que quieres cambiar de repositorio? Tus cambios se perderán."
+        "confirmSwitch": "Tienes cambios sin guardar. ¿Estás seguro de que quieres cambiar de carpeta? Tus cambios se perderán."
       }
     },
     "relay": {

@@ -98,7 +98,7 @@
     "processId": "进程 ID：{{id}}",
     "deleted": "已删除",
     "deletedTooltip": "因恢复而删除：时间轴已恢复到检查点，后续执行已被移除",
-    "agent": "代理：",
+    "agent": "智能体：",
     "exit": "退出：{{code}}",
     "started": "开始：{{date}}",
     "completed": "完成：{{date}}",
@@ -227,11 +227,11 @@
   },
   "startReviewDialog": {
     "title": "开始审查",
-    "description": "请求编码代理审查您的更改并提供反馈。",
+    "description": "请求编码智能体审查您的更改并提供反馈。",
     "additionalInstructions": "附加说明（可选）",
     "reviewComments": "审查评论（{{count}}）",
     "includeGitContext": "包含 Git 上下文",
-    "includeGitContextDescription": "告诉代理如何查看此分支上的所有更改",
+    "includeGitContextDescription": "告诉智能体如何查看此分支上的所有更改",
     "newSession": "新会话",
     "sessionName": "审查"
   },
@@ -242,7 +242,7 @@
   "resolveConflicts": {
     "dialog": {
       "title": "解决冲突",
-      "description": "检测到冲突。选择您希望代理如何解决它们。",
+      "description": "检测到冲突。选择您希望智能体如何解决它们。",
       "newSession": "新会话",
       "resolve": "解决冲突",
       "resolving": "开始中...",
@@ -276,7 +276,7 @@
     "loadingBranches": "加载分支中...",
     "selectBaseBranch": "选择基础分支",
     "draftLabel": "创建为草稿",
-    "autoGenerateLabel": "请求AI代理生成更好的PR描述",
+    "autoGenerateLabel": "请求AI智能体生成更好的PR描述",
     "creating": "创建中...",
     "createButton": "创建 PR",
     "errors": {
@@ -339,8 +339,8 @@
       "andLaterProcesses_one": "及后续 {{count}} 个进程",
       "andLaterProcesses_other": "及后续 {{count}} 个进程",
       "fromHistory": "从历史记录中删除。",
-      "codingAgentRuns_one": "{{count}} 个编程代理运行",
-      "codingAgentRuns_other": "{{count}} 个编程代理运行",
+      "codingAgentRuns_one": "{{count}} 个编程智能体运行",
+      "codingAgentRuns_other": "{{count}} 个编程智能体运行",
       "scriptProcesses_one": "{{count}} 个脚本进程",
       "scriptProcesses_other": "{{count}} 个脚本进程",
       "setupCleanupBreakdown": "({{setup}} 个设置，{{cleanup}} 个清理)",
@@ -446,9 +446,9 @@
     },
     "scriptPlaceholder": {
       "setupTitle": "设置脚本",
-      "setupDescription": "未配置设置脚本。设置脚本在编码代理启动前运行。",
+      "setupDescription": "未配置设置脚本。设置脚本在编码智能体启动前运行。",
       "cleanupTitle": "清理脚本",
-      "cleanupDescription": "未配置清理脚本。清理脚本在编码代理完成后运行。",
+      "cleanupDescription": "未配置清理脚本。清理脚本在编码智能体完成后运行。",
       "configure": "配置"
     },
     "executors": "执行器",

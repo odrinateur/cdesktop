@@ -17,10 +17,10 @@
         "generalDesc": "主題、通知與偏好設定",
         "projects": "專案",
         "projectsDesc": "專案儲存庫與設定",
-        "repos": "儲存庫",
-        "reposDesc": "儲存庫腳本與設定",
-        "agents": "代理",
-        "agentsDesc": "編碼代理設定",
+        "repos": "資料夾",
+        "reposDesc": "資料夾腳本與設定",
+        "agents": "智能体",
+        "agentsDesc": "編碼智能体設定",
         "mcp": "MCP 伺服器",
         "mcpDesc": "模型上下文協議伺服器",
         "organizations": "組織設定",
@@ -62,12 +62,12 @@
         }
       },
       "taskExecution": {
-        "title": "預設編碼代理",
-        "description": "選擇任務的預設編碼代理。",
+        "title": "預設編碼智能体",
+        "description": "選擇任務的預設編碼智能体。",
         "executor": {
-          "label": "預設代理設定檔",
+          "label": "預設智能体設定檔",
           "placeholder": "選擇設定檔",
-          "helper": "選擇建立任務嘗試時要使用的預設代理設定檔。"
+          "helper": "選擇建立任務嘗試時要使用的預設智能体設定檔。"
         },
         "variant": "預設",
         "defaultLabel": "預設"
@@ -89,7 +89,7 @@
           "host": {
             "label": "遠端 SSH 主機（選填）",
             "placeholder": "例如：主機名稱或 IP 位址",
-            "helper": "若 Vibe Kanban 在遠端伺服器上執行，請設定此項。設定後，點擊在編輯器中開啟將產生 URL 以透過 SSH 開啟編輯器，而非執行本機指令。"
+            "helper": "若 cdesktop 在遠端伺服器上執行，請設定此項。設定後，點擊在編輯器中開啟將產生 URL 以透過 SSH 開啟編輯器，而非執行本機指令。"
           },
           "user": {
             "label": "遠端 SSH 使用者（選填）",
@@ -99,7 +99,7 @@
         },
         "autoInstallExtension": {
           "label": "Auto-install VS Code Extension",
-          "helper": "Automatically install the Vibe Kanban extension when opening a project in VS Code or Cursor. This runs in the background and has no effect if the extension is already installed."
+          "helper": "Automatically install the cdesktop extension when opening a project in VS Code or Cursor. This runs in the background and has no effect if the extension is already installed."
         },
         "availability": {
           "checking": "檢查可用性...",
@@ -174,11 +174,11 @@
         "description": "設定 PR 建立行為",
         "autoDescription": {
           "label": "預設自動產生 PR 描述",
-          "helper": "啟用後，AI 代理會在建立 PR 後自動更新標題與描述。"
+          "helper": "啟用後，AI 智能体會在建立 PR 後自動更新標題與描述。"
         },
         "customPrompt": {
           "useCustom": "使用自訂提示",
-          "helper": "產生 PR 描述時 AI 代理使用的自訂提示。使用 {pr_number} 與 {pr_url} 作為佔位符。"
+          "helper": "產生 PR 描述時 AI 智能体使用的自訂提示。使用 {pr_number} 與 {pr_url} 作為佔位符。"
         }
       },
       "commits": {
@@ -186,7 +186,7 @@
         "description": "設定任務嘗試的提交行為",
         "reminder": {
           "label": "提交提醒",
-          "helper": "提示支援的代理在停止前提交變更。"
+          "helper": "提示支援的智能体在停止前提交變更。"
         },
         "customPrompt": {
           "useCustom": "使用自訂提示",
@@ -219,7 +219,7 @@
       },
       "privacy": {
         "title": "隱私",
-        "description": "透過分享匿名使用資料來協助改善 Vibe Kanban。",
+        "description": "透過分享匿名使用資料來協助改善 cdesktop。",
         "telemetry": {
           "label": "啟用遙測",
           "helper": "啟用匿名使用事件追蹤以協助改善應用程式。不會收集提示或專案資訊。"
@@ -296,28 +296,28 @@
       }
     },
     "agents": {
-      "title": "編碼代理設定",
-      "description": "使用不同設定自訂編碼代理的行為。",
-      "loading": "載入代理設定中...",
-      "selectAgent": "選擇代理",
+      "title": "編碼智能体設定",
+      "description": "使用不同設定自訂編碼智能体的行為。",
+      "loading": "載入智能体設定中...",
+      "selectAgent": "選擇智能体",
       "save": {
-        "button": "儲存代理設定",
+        "button": "儲存智能体設定",
         "success": "✓ 執行器設定儲存成功！",
         "unsavedChanges": "• 您有未儲存的變更"
       },
       "availability": {
         "checking": "檢查中...",
         "checkingAvailability": "正在檢查可用性...",
-        "available": "代理可用",
-        "notFoundSimple": "找不到代理",
+        "available": "智能体可用",
+        "notFoundSimple": "找不到智能体",
         "loginDetected": "偵測到最近使用",
-        "loginDetectedTooltip": "找到此代理的最近驗證憑證",
+        "loginDetectedTooltip": "找到此智能体的最近驗證憑證",
         "installationFound": "偵測到曾使用",
-        "installationFoundTooltip": "找到代理設定。您可能需要登入才能使用。"
+        "installationFoundTooltip": "找到智能体設定。您可能需要登入才能使用。"
       },
       "editor": {
         "formLabel": "編輯 JSON",
-        "agentLabel": "代理",
+        "agentLabel": "智能体",
         "agentPlaceholder": "選擇執行器類型",
         "configLabel": "設定",
         "configPlaceholder": "選擇設定",
@@ -327,14 +327,14 @@
         "deleteText": "刪除",
         "makeDefault": "設為預設",
         "isDefault": "預設",
-        "jsonLabel": "代理設定（JSON）",
+        "jsonLabel": "智能体設定（JSON）",
         "jsonPlaceholder": "載入設定檔中...",
         "jsonLoading": "載入中...",
         "pathLabel": "設定檔位置："
       },
       "errors": {
         "deleteFailed": "刪除設定失敗。請重試。",
-        "saveFailed": "儲存代理設定失敗。請重試。",
+        "saveFailed": "儲存智能体設定失敗。請重試。",
         "saveConfigFailed": "儲存設定失敗。請重試。",
         "schemaNotFound": "找不到執行器類型 {{executor}} 的結構描述"
       },
@@ -349,6 +349,28 @@
       "deleteConfigDialog": {
         "title": "刪除設定？",
         "description": "這將從 {{executorType}} 執行器中永久刪除「{{configName}}」。此操作無法復原。"
+      },
+      "fields": {
+        "append_prompt": {
+          "title": "附加提示",
+          "description": "附加到提示末尾的文字。"
+        },
+        "agent": {
+          "title": "子智能体",
+          "description": "要呼叫的子智能体名稱（選填）。"
+        },
+        "base_command_override": {
+          "title": "覆寫基礎指令",
+          "description": "以自訂指令覆寫基礎指令。"
+        },
+        "additional_params": {
+          "title": "額外參數",
+          "description": "附加到基礎指令的額外參數。"
+        },
+        "env": {
+          "title": "環境變數",
+          "description": "執行執行器時設定的環境變數。"
+        }
       }
     },
     "providers": {
@@ -416,13 +438,13 @@
     },
     "mcp": {
       "title": "MCP 伺服器設定",
-      "description": "設定模型上下文協議伺服器，使用自訂工具與資源擴充編碼代理功能。",
+      "description": "設定模型上下文協議伺服器，使用自訂工具與資源擴充編碼智能体功能。",
       "loading": "載入 MCP 設定中...",
       "applying": "套用設定中...",
       "labels": {
-        "agent": "代理",
+        "agent": "智能体",
         "agentPlaceholder": "選擇執行器",
-        "agentHelper": "選擇要設定 MCP 伺服器的代理。",
+        "agentHelper": "選擇要設定 MCP 伺服器的智能体。",
         "serverConfig": "伺服器設定（JSON）",
         "popularServers": "熱門伺服器",
         "serverHelper": "點擊卡片將該 MCP 伺服器插入到上方 JSON 中。",
@@ -493,37 +515,37 @@
       }
     },
     "repos": {
-      "title": "儲存庫設定",
-      "description": "設定此儲存庫在工作階段中使用時執行的腳本。",
-      "loading": "載入儲存庫中...",
-      "loadError": "載入儲存庫失敗。",
+      "title": "資料夾設定",
+      "description": "設定此資料夾在工作階段中使用時執行的腳本。",
+      "loading": "載入資料夾中...",
+      "loadError": "載入資料夾失敗。",
       "addRepo": {
-        "button": "新增儲存庫",
-        "dialogTitle": "選擇 Git 儲存庫",
-        "dialogDescription": "選擇一個現有的 git 儲存庫進行註冊。",
-        "error": "註冊儲存庫失敗"
+        "button": "新增資料夾",
+        "dialogTitle": "選擇資料夾",
+        "dialogDescription": "選擇要註冊的資料夾。Git 資料夾將啟用版本控制功能。",
+        "error": "註冊資料夾失敗"
       },
       "selector": {
-        "label": "選擇儲存庫",
-        "placeholder": "選擇要設定的儲存庫",
-        "helper": "選擇儲存庫以查看與編輯其設定。",
-        "noRepos": "沒有可用的儲存庫"
+        "label": "選擇資料夾",
+        "placeholder": "選擇要設定的資料夾",
+        "helper": "選擇資料夾以查看與編輯其設定。",
+        "noRepos": "沒有可用的資料夾"
       },
       "general": {
         "title": "一般設定",
-        "description": "設定基本儲存庫資訊。",
+        "description": "設定基本資料夾資訊。",
         "displayName": {
           "label": "顯示名稱",
           "placeholder": "輸入顯示名稱",
-          "helper": "此儲存庫的易讀名稱。"
+          "helper": "此資料夾的易讀名稱。"
         },
         "path": {
-          "label": "儲存庫路徑"
+          "label": "資料夾路徑"
         },
         "defaultWorkingDir": {
           "label": "預設工作目錄",
           "placeholder": "例如：packages/frontend",
-          "helper": "單儲存庫工作階段中程式碼代理執行的子目錄。在建立工作階段時設定。留空則使用儲存庫根目錄。"
+          "helper": "程式碼智能体執行的子目錄。在建立工作階段時設定。留空則使用資料夾根目錄。"
         },
         "defaultTargetBranch": {
           "label": "預設目標分支",
@@ -537,16 +559,16 @@
       },
       "scripts": {
         "title": "腳本與設定",
-        "description": "設定此儲存庫的設定腳本、清理腳本與要複製的檔案。這些腳本在儲存庫用於任何工作階段時執行。",
+        "description": "設定此資料夾的設定腳本、清理腳本與要複製的檔案。這些腳本在資料夾用於任何工作階段時執行。",
         "setup": {
           "label": "設定腳本",
-          "helper": "此腳本在工作樹內執行，於建立後、編碼代理啟動前執行。用於安裝相依套件或準備環境等設定工作。",
-          "parallelLabel": "與編碼代理平行執行設定腳本",
-          "parallelHelper": "啟用後，設定腳本將與編碼代理同時執行，而不是等待設定完成後再啟動。"
+          "helper": "此腳本在工作樹內執行，於建立後、編碼智能体啟動前執行。用於安裝相依套件或準備環境等設定工作。",
+          "parallelLabel": "與編碼智能体平行執行設定腳本",
+          "parallelHelper": "啟用後，設定腳本將與編碼智能体同時執行，而不是等待設定完成後再啟動。"
         },
         "cleanup": {
           "label": "清理腳本",
-          "helper": "此腳本在工作樹內執行，於編碼代理執行後（僅在有變更時）執行。用於品質保證工作，如執行 linter、格式化工具、測試或其他驗證步驟。"
+          "helper": "此腳本在工作樹內執行，於編碼智能体執行後（僅在有變更時）執行。用於品質保證工作，如執行 linter、格式化工具、測試或其他驗證步驟。"
         },
         "archive": {
           "label": "歸檔腳本",
@@ -554,37 +576,37 @@
         },
         "copyFiles": {
           "label": "複製檔案",
-          "helper": "要從原始儲存庫目錄複製到工作樹的檔案清單（以逗號分隔）。適合用於 .env 等環境檔案。請確保這些檔案已加入 gitignore！",
+          "helper": "要從原始資料夾目錄複製到工作樹的檔案清單（以逗號分隔）。適合用於 .env 等環境檔案。請確保這些檔案已加入 gitignore！",
           "placeholder": "檔案路徑或 glob 模式（例如：.env、config/*.json）"
         },
         "devServer": {
           "label": "開發伺服器腳本",
-          "helper": "啟動此儲存庫的開發伺服器。腳本會從儲存庫的工作樹目錄執行。"
+          "helper": "啟動此資料夾的開發伺服器。腳本會從資料夾的工作樹目錄執行。"
         }
       },
       "linkedProjects": {
         "title": "關聯專案",
-        "description": "在預設工作階段設定中使用此儲存庫的專案。",
+        "description": "在預設工作階段設定中使用此資料夾的專案。",
         "loading": "正在檢查專案…",
         "none": "沒有關聯的專案"
       },
       "remove": {
-        "title": "移除儲存庫",
-        "description": "從 Vibe Kanban 取消關聯此儲存庫。磁碟上的檔案不會被刪除。",
+        "title": "移除資料夾",
+        "description": "從 cdesktop 取消關聯此資料夾。磁碟上的檔案不會被刪除。",
         "button": "移除",
-        "confirm": "移除儲存庫",
+        "confirm": "移除資料夾",
         "dialogTitle": "移除「{{name}}」？",
-        "dialogDescription": "這將從 Vibe Kanban 取消關聯此儲存庫。您磁碟上的檔案不受影響。您可以稍後重新加入。",
-        "success": "儲存庫移除成功。",
-        "error": "移除儲存庫失敗。"
+        "dialogDescription": "這將從 cdesktop 取消關聯此資料夾。您磁碟上的檔案不受影響。您可以稍後重新加入。",
+        "success": "資料夾移除成功。",
+        "error": "移除資料夾失敗。"
       },
       "save": {
-        "button": "儲存儲存庫設定",
-        "success": "儲存庫設定儲存成功！",
-        "error": "儲存儲存庫設定失敗",
+        "button": "儲存資料夾設定",
+        "success": "資料夾設定儲存成功！",
+        "error": "儲存資料夾設定失敗",
         "unsavedChanges": "您有未儲存的變更",
         "discard": "放棄",
-        "confirmSwitch": "您有未儲存的變更。確定要切換儲存庫嗎？您的變更將會遺失。"
+        "confirmSwitch": "您有未儲存的變更。確定要切換資料夾嗎？您的變更將會遺失。"
       }
     },
     "relay": {

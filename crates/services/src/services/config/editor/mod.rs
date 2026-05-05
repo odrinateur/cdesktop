@@ -7,7 +7,7 @@ use thiserror::Error;
 use ts_rs::TS;
 
 fn default_auto_install_extension() -> bool {
-    true
+    false
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS, Error)]
@@ -67,7 +67,7 @@ impl Default for EditorConfig {
             custom_command: None,
             remote_ssh_host: None,
             remote_ssh_user: None,
-            auto_install_extension: true,
+            auto_install_extension: false,
         }
     }
 }
