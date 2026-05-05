@@ -618,5 +618,14 @@
       "hours": "{{count}}시간",
       "days": "{{count}}일"
     }
+  },
+  "panels": {
+    "changes": "변경 사항",
+    "logs": "로그",
+    "preview": "미리보기",
+    "git": "Git",
+    "terminal": "터미널",
+    "openPanelMenu": "패널 메뉴 열기",
+    "closePanel": "{{panel}} 패널 닫기"
   }
 }

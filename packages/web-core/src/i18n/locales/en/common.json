@@ -618,5 +618,14 @@
       "hours": "{{count}}h",
       "days": "{{count}}d"
     }
+  },
+  "panels": {
+    "changes": "Changes",
+    "logs": "Logs",
+    "preview": "Preview",
+    "git": "Git",
+    "terminal": "Terminal",
+    "openPanelMenu": "Open panel menu",
+    "closePanel": "Close {{panel}} panel"
   }
 }
