@@ -206,6 +206,17 @@
       "themeToggle": {
         "aria": "Switch to {{mode}} mode"
       }
+    },
+    "controlPanel": {
+      "openMenu": "Open control panel",
+      "theme": {
+        "label": "Theme",
+        "light": "Light",
+        "dark": "Dark",
+        "system": "Match system"
+      },
+      "settings": "Settings",
+      "viewArchive": "View archive"
     }
   },
   "sections": {

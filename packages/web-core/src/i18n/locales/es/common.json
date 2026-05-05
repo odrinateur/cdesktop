@@ -609,6 +609,17 @@
     "theme": {
       "dark": "oscuro",
       "light": "claro"
+    },
+    "controlPanel": {
+      "openMenu": "Abrir panel de control",
+      "theme": {
+        "label": "Tema",
+        "light": "Claro",
+        "dark": "Oscuro",
+        "system": "Coincidir con el sistema"
+      },
+      "settings": "Configuración",
+      "viewArchive": "Ver archivo"
     }
   },
   "time": {

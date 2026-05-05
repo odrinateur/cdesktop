@@ -609,6 +609,17 @@
     "theme": {
       "dark": "다크",
       "light": "라이트"
+    },
+    "controlPanel": {
+      "openMenu": "제어판 열기",
+      "theme": {
+        "label": "테마",
+        "light": "라이트",
+        "dark": "다크",
+        "system": "시스템에 맞춤"
+      },
+      "settings": "설정",
+      "viewArchive": "보관함 보기"
     }
   },
   "time": {

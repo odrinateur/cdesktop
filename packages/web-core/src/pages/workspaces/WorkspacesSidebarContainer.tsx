@@ -14,7 +14,7 @@ import { useWorkspaceContext } from '@/shared/hooks/useWorkspaceContext';
 import { useUserContext } from '@/shared/hooks/useUserContext';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
 import { useScratch } from '@/shared/hooks/useScratch';
-import { useTheme, getResolvedTheme } from '@/shared/hooks/useTheme';
+import { useTheme } from '@/shared/hooks/useTheme';
 import { ScratchType, type DraftWorkspaceData } from 'shared/types';
 import { splitMessageToTitleDescription } from '@/shared/lib/string';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
@@ -30,10 +30,11 @@ import type { Workspace } from '@/shared/hooks/useWorkspaces';
 import { CommandBarDialog } from '@/shared/dialogs/command-bar/CommandBarDialog';
 import { SettingsDialog } from '@/shared/dialogs/settings/SettingsDialog';
 import { NavbarSidebarSearchSlot } from '@/shared/components/ui-new/containers/NavbarSidebarSearchSlot';
+import { ControlPanelMenu } from './ControlPanelMenu';
 import { UnpinDragIndicator } from './UnpinDragIndicator';
 import { useActions } from '@/shared/hooks/useActions';
 import { useActionVisibilityContext } from '@/shared/hooks/useActionVisibilityContext';
-import { Actions, NavbarActionGroups } from '@/shared/actions';
+import { NavbarActionGroups } from '@/shared/actions';
 import {
   type ActionDefinition,
   type NavbarItem as ActionNavbarItem,
@@ -69,7 +70,7 @@ import {
   DialogTitle,
 } from '@vibe/ui/components/Dialog';
 import {
-  ArrowClockwiseIcon,
+  // ArrowClockwiseIcon, // re-enable when uncommenting the dev refresh button below
   FolderIcon,
   GitPullRequestIcon,
   XIcon,
@@ -371,16 +372,16 @@ export function WorkspacesSidebarContainer({
     return map;
   }, [remoteWorkspaces]);
 
-  // Theme toggle (footer)
+  // Theme (footer control panel — tri-state: light/dark/system).
   const { theme, setTheme } = useTheme();
   const { updateAndSaveConfig } = useUserSystem();
-  const resolvedTheme = getResolvedTheme(theme);
-  const handleToggleTheme = useCallback(() => {
-    const next =
-      getResolvedTheme(theme) === 'dark' ? ThemeMode.LIGHT : ThemeMode.DARK;
-    setTheme(next);
-    void updateAndSaveConfig({ theme: next });
-  }, [theme, setTheme, updateAndSaveConfig]);
+  const handleSetTheme = useCallback(
+    (next: ThemeMode) => {
+      setTheme(next);
+      void updateAndSaveConfig({ theme: next });
+    },
+    [setTheme, updateAndSaveConfig]
+  );
 
   // Pagination state for infinite scroll
   const [displayLimit, setDisplayLimit] = useState(PAGE_SIZE);
@@ -819,10 +820,6 @@ export function WorkspacesSidebarContainer({
     () => [...NavbarActionGroups.left],
     []
   );
-  const bottomActionItems: ActionNavbarItem[] = useMemo(
-    () => [Actions.OpenCommandBar, Actions.Settings],
-    []
-  );
 
   const renderActionItems = useCallback(
     (items: ActionNavbarItem[]) =>
@@ -855,7 +852,13 @@ export function WorkspacesSidebarContainer({
   );
 
   const topActions = renderActionItems(topActionItems);
-  const bottomActions = renderActionItems(bottomActionItems);
+
+  const handleOpenSettings = useCallback(() => {
+    void SettingsDialog.show();
+  }, []);
+  const handleViewArchive = useCallback(() => {
+    setShowArchive(true);
+  }, [setShowArchive]);
 
   return (
     <>
@@ -884,8 +887,6 @@ export function WorkspacesSidebarContainer({
         persistKeys={sidebarPersistKeys}
         activeRemoteHost={activeRemoteHost}
         onOpenRemoteHostSettings={handleOpenRemoteHostSettings}
-        resolvedTheme={resolvedTheme}
-        onToggleTheme={handleToggleTheme}
         getWorkspaceDragProps={getWorkspaceDragProps}
         onReorderPins={handleReorderPins}
         onPinAreaHover={handlePinAreaHover}
@@ -899,18 +900,32 @@ export function WorkspacesSidebarContainer({
         }
         bottomActions={
           <>
-            {bottomActions}
-            <IconButton
-              icon={ArrowClockwiseIcon}
-              onClick={() => {
-                setOptimisticPinnedOrder(null);
-                queryClient.invalidateQueries({
-                  queryKey: workspaceSummaryKeys.all,
-                });
-              }}
-              aria-label="Refresh sessions (dev)"
-              title="Refresh sessions (dev) — drops local state and refetches"
+            <ControlPanelMenu
+              theme={theme}
+              onSetTheme={handleSetTheme}
+              onOpenSettings={handleOpenSettings}
+              onViewArchive={handleViewArchive}
             />
+            {/*
+              Hidden: command bar + Settings buttons (Settings now lives in
+              the ControlPanelMenu; command palette is intentionally stripped
+              from the footer for now).
+
+              Hidden: dev "Refresh sessions" escape hatch — uncomment to
+              recover the local pinned-order reset + summary refetch button.
+
+              <IconButton
+                icon={ArrowClockwiseIcon}
+                onClick={() => {
+                  setOptimisticPinnedOrder(null);
+                  queryClient.invalidateQueries({
+                    queryKey: workspaceSummaryKeys.all,
+                  });
+                }}
+                aria-label="Refresh sessions (dev)"
+                title="Refresh sessions (dev) — drops local state and refetches"
+              />
+            */}
           </>
         }
       />
