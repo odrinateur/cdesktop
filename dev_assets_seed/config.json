@@ -1,19 +1,42 @@
 {
-  "theme": "light",
-  "executor": {
-    "type": "claude"
+  "config_version": "v8",
+  "theme": "DARK",
+  "executor_profile": {
+    "executor": "CLAUDE_CODE"
   },
   "disclaimer_acknowledged": true,
   "onboarding_acknowledged": true,
-  "sound_alerts": true,
-  "sound_file": "abstract-sound4",
-  "push_notifications": true,
+  "remote_onboarding_acknowledged": false,
+  "notifications": {
+    "sound_enabled": false,
+    "push_enabled": false,
+    "sound_file": "ABSTRACT_SOUND3"
+  },
   "editor": {
     "editor_type": "VS_CODE",
-    "custom_command": null
+    "custom_command": null,
+    "remote_ssh_host": null,
+    "remote_ssh_user": null,
+    "auto_install_extension": false
   },
   "github": {
-    "token": "",
+    "pat": null,
+    "oauth_token": null,
+    "username": null,
+    "primary_email": null,
     "default_pr_base": "main"
-  }
+  },
+  "analytics_enabled": true,
+  "workspace_dir": null,
+  "last_app_version": null,
+  "show_release_notes": false,
+  "git_branch_prefix": "cdt",
+  "showcases": {},
+  "pr_auto_description_enabled": true,
+  "pr_auto_description_prompt": null,
+  "commit_reminder_enabled": false,
+  "commit_reminder_prompt": null,
+  "send_message_shortcut": "Enter",
+  "relay_enabled": true,
+  "host_nickname": null
 }
