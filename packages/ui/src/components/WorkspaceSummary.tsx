@@ -96,15 +96,6 @@ export function WorkspaceSummary({
     onOpenWorkspaceActions(workspaceId);
   };
 
-  // Activate on Enter / Space — replaces the native <button> activation we
-  // gave up so HTML5 drag would stop racing the button mousedown in Chrome.
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      onClick?.();
-    }
-  };
-
   return (
     <div
       draggable={draggable}
@@ -119,12 +110,9 @@ export function WorkspaceSummary({
         className
       )}
     >
-      <div
-        role="button"
-        tabIndex={0}
+      <button
         onClick={onClick}
-        onKeyDown={handleKeyDown}
-        className="flex w-full cursor-pointer flex-col text-left px-base py-half text-normal transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+        className="flex w-full cursor-pointer flex-col text-left px-base py-half text-normal transition-all duration-150"
       >
         <div
           className={cn(
@@ -264,7 +252,7 @@ export function WorkspaceSummary({
             )}
           </div>
         )}
-      </div>
+      </button>
 
       {/* Right-side hover action - more options only */}
       {workspaceId && onOpenWorkspaceActions && (
