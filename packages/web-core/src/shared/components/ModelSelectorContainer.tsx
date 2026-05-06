@@ -11,8 +11,8 @@ import {
   WarningIcon,
   type Icon,
 } from '@phosphor-icons/react';
-import type { BaseCodingAgent, ExecutorConfig, ModelInfo } from 'shared/types';
-import { PermissionPolicy } from 'shared/types';
+import type { ExecutorConfig, ModelInfo } from 'shared/types';
+import { BaseCodingAgent, PermissionPolicy } from 'shared/types';
 import { toPrettyCase } from '@/shared/lib/string';
 import {
   getModelKey,
@@ -45,6 +45,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTriggerButton,
 } from '@vibe/ui/components/Dropdown';
+
+// Permissions are a hardcoded vec![…] in each executor's discover_options
+// (e.g. crates/executors/src/executors/claude.rs); they don't depend on
+// workdir or runtime state. Mirror Claude's list here so the picker
+// renders synchronously instead of waiting on the discovery WebSocket.
+// If the Rust list changes, update this too.
+const CLAUDE_PERMISSIONS: PermissionPolicy[] = [
+  PermissionPolicy.SUPERVISED,
+  PermissionPolicy.ACCEPT_EDITS,
+  PermissionPolicy.PLAN,
+  PermissionPolicy.AUTO_MODE,
+  PermissionPolicy.BYPASS_PERMISSIONS,
+];
 
 interface ModelSelectorContainerProps {
   agent: BaseCodingAgent | null;
@@ -248,10 +261,14 @@ export function ModelSelectorContainer({
       ? executorConfig.agent_id
       : (presetOptions?.agent_id ?? defaultAgentId);
 
-  const supportsPermissions = (config?.permissions.length ?? 0) > 0;
+  const availablePermissions =
+    agent === BaseCodingAgent.CLAUDE_CODE
+      ? CLAUDE_PERMISSIONS
+      : (config?.permissions ?? []);
+  const supportsPermissions = availablePermissions.length > 0;
 
   const basePermissionPolicy = supportsPermissions
-    ? (presetOptions?.permission_policy ?? config?.permissions[0] ?? null)
+    ? (presetOptions?.permission_policy ?? availablePermissions[0] ?? null)
     : null;
   const permissionPolicy = supportsPermissions
     ? (executorConfig?.permission_policy ?? basePermissionPolicy)
@@ -414,21 +431,14 @@ export function ModelSelectorContainer({
     ? toPrettyCase(resolvedPreset)
     : defaultLabel;
 
-  if (!config) {
-    return (
-      <>
-        <DropdownMenu>
-          <DropdownMenuTriggerButton size="sm" label={loadingLabel} disabled />
-        </DropdownMenu>
-      </>
-    );
-  }
-
-  const showModelSelector = loadingModels || config.models.length > 0;
-  const showDefaultOption = !config.default_model && config.models.length > 0;
-  const displaySelectedModel = showModelSelector
-    ? getSelectedModel(config.models, selectedProviderId, selectedModelId)
-    : null;
+  const showModelSelector =
+    !!config && (loadingModels || config.models.length > 0);
+  const showDefaultOption =
+    !!config && !config.default_model && config.models.length > 0;
+  const displaySelectedModel =
+    showModelSelector && config
+      ? getSelectedModel(config.models, selectedProviderId, selectedModelId)
+      : null;
   const reasoningLabel = displaySelectedModel
     ? getReasoningLabel(
         displaySelectedModel.reasoning_options,
@@ -450,7 +460,7 @@ export function ModelSelectorContainer({
   );
 
   const agentLabel = selectedAgentId
-    ? (config.agents.find((entry) => entry.id === selectedAgentId)?.label ??
+    ? (config?.agents.find((entry) => entry.id === selectedAgentId)?.label ??
       toPrettyCase(selectedAgentId))
     : defaultLabel;
 
@@ -494,7 +504,7 @@ export function ModelSelectorContainer({
     </DropdownMenu>
   );
 
-  const modelNode = showModelSelector ? (
+  const modelNode = showModelSelector && config ? (
     <ModelSelectorPopover
       isOpen={isOpen}
       onOpenChange={handleOpenChange}
@@ -525,7 +535,7 @@ export function ModelSelectorContainer({
   ) : null;
 
   const permissionNode =
-    permissionPolicy && config.permissions.length > 0 ? (
+    permissionPolicy && availablePermissions.length > 0 ? (
       <DropdownMenu>
         <DropdownMenuTriggerButton
           size="sm"
@@ -542,7 +552,7 @@ export function ModelSelectorContainer({
           <DropdownMenuLabel>
             {t('modelSelector.permissions')}
           </DropdownMenuLabel>
-          {config.permissions.map((policy) => {
+          {availablePermissions.map((policy) => {
             const meta = permissionMetaByPolicy[policy];
             return (
               <DropdownMenuItem
@@ -559,7 +569,7 @@ export function ModelSelectorContainer({
     ) : null;
 
   const agentNode =
-    config.agents.length > 0 ? (
+    config && config.agents.length > 0 ? (
       <DropdownMenu>
         <DropdownMenuTriggerButton size="sm" label={agentLabel} />
         <DropdownMenuContent align="start">
