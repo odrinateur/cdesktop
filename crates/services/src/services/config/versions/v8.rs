@@ -27,8 +27,8 @@ fn default_relay_enabled() -> bool {
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, TS, PartialEq, Eq)]
 pub enum SendMessageShortcut {
-    #[default]
     ModifierEnter,
+    #[default]
     Enter,
 }
 
@@ -75,9 +75,16 @@ impl Config {
         // Convert Option<bool> to bool: None or Some(true) become true, Some(false) stays false
         let analytics_enabled = old_config.analytics_enabled.unwrap_or(true);
 
+        // Migrate users on the upstream "System" default to cdesktop's Dark
+        // default; preserve any explicit Light/Dark choice.
+        let theme = match old_config.theme {
+            ThemeMode::System => ThemeMode::Dark,
+            other => other,
+        };
+
         Self {
             config_version: "v8".to_string(),
-            theme: old_config.theme,
+            theme,
             executor_profile: old_config.executor_profile,
             disclaimer_acknowledged: old_config.disclaimer_acknowledged,
             onboarding_acknowledged: old_config.onboarding_acknowledged,

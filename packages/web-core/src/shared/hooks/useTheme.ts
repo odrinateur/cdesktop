@@ -8,7 +8,7 @@ export type ThemeProviderState = {
 };
 
 const initialState: ThemeProviderState = {
-  theme: ThemeMode.SYSTEM,
+  theme: ThemeMode.DARK,
   setTheme: () => null,
 };
 
