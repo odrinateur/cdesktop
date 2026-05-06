@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useExecutionProcesses } from '@/shared/hooks/useExecutionProcesses';
 import type { ExecutionProcess } from 'shared/types';
 import {
   ExecutionProcessesContext,
   type ExecutionProcessesContextType,
 } from '@/shared/hooks/useExecutionProcessesContext';
+import { setSessionSnapshot } from '@/features/workspace-chat/model/sessionSnapshotCache';
 
 export const ExecutionProcessesProvider: React.FC<{
   sessionId?: string | undefined;
@@ -22,6 +23,15 @@ export const ExecutionProcessesProvider: React.FC<{
   const visible = useMemo(() => {
     return executionProcesses.filter((p) => !p.dropped);
   }, [executionProcesses]);
+
+  // Mirror the active session's process list into the snapshot cache so a
+  // subsequent switch back to this session can paint synchronously. Stores
+  // the full list (including dropped) — readers filter on consume.
+  useEffect(() => {
+    if (!sessionId) return;
+    if (isLoading) return;
+    setSessionSnapshot(sessionId, executionProcesses);
+  }, [sessionId, executionProcesses, isLoading]);
 
   const executionProcessesByIdVisible = useMemo(() => {
     const m: Record<string, ExecutionProcess> = {};
