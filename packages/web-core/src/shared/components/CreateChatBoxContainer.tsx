@@ -321,20 +321,24 @@ export function CreateChatBoxContainer({
                 value,
                 onChange,
                 onCmdEnter,
-                disabled,
                 repoIds,
                 repoId,
                 executor,
                 onPasteFiles,
                 localAttachments,
               }) => (
+                // Editor stays enabled even without repos selected so the
+                // user can start typing immediately. canSubmit / displayError
+                // gate the actual submit on hasSelectedRepos.
                 <WYSIWYGEditor
                   placeholder={t('createMode.placeholder.typeForCommands')}
                   value={value}
                   onChange={onChange}
                   onCmdEnter={onCmdEnter}
-                  disabled={disabled}
-                  className="min-h-double max-h-[10rem] overflow-y-auto"
+                  disabled={false}
+                  // !cursor-text overrides any inherited copy/drag cursor
+                  // from the surrounding dropzone wrapper on macOS.
+                  className="min-h-double max-h-[10rem] overflow-y-auto !cursor-text"
                   repoIds={repoIds}
                   repoId={repoId}
                   executor={executor}
