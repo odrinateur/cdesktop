@@ -45,8 +45,8 @@ echo "🔧 Using target directory: $CARGO_TARGET_DIR"
 # Remote/cloud features are not part of cdesktop v1 — leave these unset so
 # the backend uses its "remote disabled" code path. Set them only if you
 # deliberately want to wire a remote API endpoint.
-# export VK_SHARED_API_BASE="..."
-# export VITE_VK_SHARED_API_BASE="..."
+# export CDT_SHARED_API_BASE="..."
+# export VITE_CDT_SHARED_API_BASE="..."
 
 echo "🧹 Cleaning previous builds..."
 rm -rf npx-cli/dist

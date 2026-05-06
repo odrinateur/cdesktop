@@ -26,7 +26,7 @@ ElectricSQL (port 3000, internal)
 pnpm run remote:dev
 
 # Run desktop client against local server
-export VK_SHARED_API_BASE=http://localhost:3000
+export CDT_SHARED_API_BASE=http://localhost:3000
 pnpm run dev
 ```
 

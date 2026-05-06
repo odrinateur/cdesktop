@@ -232,8 +232,8 @@ pnpm --filter @vibe/remote-web dev
 caddy run --config Caddyfile.dev
 
 # Terminal 4 (optional) — Local desktop client
-VK_SHARED_API_BASE=https://$TS_HOSTNAME:3001 \
-VK_SHARED_RELAY_API_BASE=https://$TS_HOSTNAME:8443 \
+CDT_SHARED_API_BASE=https://$TS_HOSTNAME:3001 \
+CDT_SHARED_RELAY_API_BASE=https://$TS_HOSTNAME:8443 \
 pnpm run dev
 ```
 
@@ -282,8 +282,8 @@ pnpm --filter @vibe/remote-web dev
 caddy run --config Caddyfile.dev
 
 # Terminal 4 (optional) — Desktop client
-VK_SHARED_API_BASE=https://$TS_HOSTNAME:3001 \
-VK_SHARED_RELAY_API_BASE=https://$TS_HOSTNAME:8443 \
+CDT_SHARED_API_BASE=https://$TS_HOSTNAME:3001 \
+CDT_SHARED_RELAY_API_BASE=https://$TS_HOSTNAME:8443 \
 pnpm run dev
 
 # On phone
