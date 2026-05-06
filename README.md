@@ -15,15 +15,19 @@
   <a href="https://deepwiki.com/cdesktop-ai/cdesktop"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 </p> -->
 
+## Sponsors
+
+Want your logo featured here? [Get in touch.](mailto:onlylakehouse@163.com)
+
 ![](packages/public/vibe-kanban-screenshot-overview.png)
 
 ## Overview
 
 cdesktop is an open-source alternative to Anthropic's [Claude Code Desktop](https://code.claude.com/docs/en/desktop-quickstart). It's a local client for [Claude Code](https://www.anthropic.com/claude-code) that wraps the CLI as a child process and gives you a session-oriented UI in your browser, with your code, transcripts, and worktrees all kept on disk.
 
-The layout is modeled after the Code tab of Anthropic's official desktop app: a sessions sidebar, a transcript with an integrated terminal and diff viewer, and a right-side pane for plan, files, and app preview. Unlike the official app, cdesktop is local-only and provider-agnostic — no Chat tab, no Cowork tab, no cloud sessions; bring your own Anthropic key or point at any `ANTHROPIC_BASE_URL`-compatible endpoint.
+The layout is modeled after the Code tab of Anthropic's official desktop app: a sessions sidebar, a transcript with an integrated terminal and diff viewer, and a right-side pane for plan, files, and app preview. Unlike the official app, cdesktop is local-only and provider-agnostic — no Chat tab, no Cowork tab, no cloud sessions; pick a provider from the built-in catalog or wire up your own.
 
-- **Bring your own provider** — Anthropic out of the box, plus any `ANTHROPIC_BASE_URL`-compatible endpoint, with reasoning-effort controls per model
+- **Plug in any provider in one click** — 20+ built-in presets (OpenRouter, AWS Bedrock, DeepSeek, Kimi, ModelScope, MiniMax, Nvidia, …) or add a custom `ANTHROPIC_BASE_URL` endpoint; switch providers and tune reasoning effort per session
 - **Run sessions side by side** — split the workspace into up to 4 cells and drag any session into a new cell
 - **Switch between sessions instantly** — no reload between threads; transcripts stay where you left them
 - **Optional Git worktrees** — opt in per project for an isolated branch per session, or work directly in the folder; non-Git directories work too
@@ -105,7 +109,7 @@ The following environment variables can be configured at build time or runtime:
 | `MCP_HOST` | Runtime | Value of `HOST` | MCP server connection host (use `127.0.0.1` when `HOST=0.0.0.0` on Windows) |
 | `MCP_PORT` | Runtime | Value of `BACKEND_PORT` | MCP server connection port |
 | `DISABLE_WORKTREE_CLEANUP` | Runtime | Not set | Disable all git worktree cleanup including orphan and expired workspace cleanup (for debugging) |
-| `CDT_ALLOWED_ORIGINS` | Runtime | Not set | Comma-separated list of origins that are allowed to make backend API requests (e.g., `https://my-vibekanban-frontend.com`) |
+| `CDT_ALLOWED_ORIGINS` | Runtime | Not set | Comma-separated list of origins that are allowed to make backend API requests (e.g., `https://my-cdesktop.example.com`) |
 | `CDT_SHARED_API_BASE` | Runtime | Not set | Base URL for the remote/cloud API used by the local desktop app |
 | `CDT_SHARED_RELAY_API_BASE` | Runtime | Not set | Base URL for the relay API used by tunnel-mode connections |
 
@@ -119,10 +123,10 @@ Set it to the full origin URL(s) where your frontend is accessible:
 
 ```bash
 # Single origin
-CDT_ALLOWED_ORIGINS=https://vk.example.com
+CDT_ALLOWED_ORIGINS=https://cdesktop.example.com
 
 # Multiple origins (comma-separated)
-CDT_ALLOWED_ORIGINS=https://vk.example.com,https://vk-staging.example.com
+CDT_ALLOWED_ORIGINS=https://cdesktop.example.com,https://cdesktop-staging.example.com
 ```
 
 ### Remote Deployment
@@ -141,3 +145,9 @@ When running cdesktop on a remote server (e.g., via systemctl, Docker, or cloud 
 When configured, the "Open in VSCode" buttons will generate URLs like `vscode://vscode-remote/ssh-remote+user@host/path` that open your local editor and connect to the remote server.
 
 See the [documentation](https://cdesktop.ai) for detailed setup instructions.
+
+## License
+
+Apache License 2.0 — see [`LICENSE`](./LICENSE).
+
+cdesktop is a derivative work of [BloopAI/vibe-kanban](https://github.com/BloopAI/vibe-kanban) (Apache 2.0). The provider preset catalog is derived from [farion1231/cc-switch](https://github.com/farion1231/cc-switch) (MIT). See [`NOTICE`](./NOTICE) for full attribution.
