@@ -1,23 +1,53 @@
-# cdesktop
+<p align="center">
+  <a href="https://cdesktop.ai">
+    <picture>
+      <source srcset="packages/public/vibe-kanban-logo-dark.svg" media="(prefers-color-scheme: dark)">
+      <source srcset="packages/public/vibe-kanban-logo.svg" media="(prefers-color-scheme: light)">
+      <img src="packages/public/vibe-kanban-logo.svg" alt="cdesktop Logo">
+    </picture>
+  </a>
+</p>
 
-> A local desktop/web client for [Claude Code](https://www.anthropic.com/claude-code).
+<p align="center">An open-source alternative to Claude Code Desktop.</p>
+<!-- <p align="center">
+  <a href="https://www.npmjs.com/package/cdesktop"><img alt="npm" src="https://img.shields.io/npm/v/cdesktop?style=flat-square" /></a>
+  <a href="https://github.com/cdesktop-ai/cdesktop/blob/main/.github/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/cdesktop-ai/cdesktop/.github%2Fworkflows%2Fpublish.yml" /></a>
+  <a href="https://deepwiki.com/cdesktop-ai/cdesktop"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
+</p> -->
 
-cdesktop runs the Claude Code CLI as a child process on your machine, gives you a browser-based UI for driving sessions, and keeps everything local — your code, your transcripts, and your worktrees all stay on disk. No cloud account, no kanban boards, no agent marketplace. Just Claude Code sessions with a decent UI around them.
+![](packages/public/vibe-kanban-screenshot-overview.png)
 
-Multi-model support is available via `ANTHROPIC_BASE_URL` overrides.
+## Overview
 
-## Quick start
+cdesktop is an open-source alternative to Anthropic's [Claude Code Desktop](https://code.claude.com/docs/en/desktop-quickstart). It's a local client for [Claude Code](https://www.anthropic.com/claude-code) that wraps the CLI as a child process and gives you a session-oriented UI in your browser, with your code, transcripts, and worktrees all kept on disk.
+
+The layout is modeled after the Code tab of Anthropic's official desktop app: a sessions sidebar, a transcript with an integrated terminal and diff viewer, and a right-side pane for plan, files, and app preview. Unlike the official app, cdesktop is local-only and provider-agnostic — no Chat tab, no Cowork tab, no cloud sessions; bring your own Anthropic key or point at any `ANTHROPIC_BASE_URL`-compatible endpoint.
+
+- **Bring your own provider** — Anthropic out of the box, plus any `ANTHROPIC_BASE_URL`-compatible endpoint, with reasoning-effort controls per model
+- **Run sessions side by side** — split the workspace into up to 4 cells and drag any session into a new cell
+- **Switch between sessions instantly** — no reload between threads; transcripts stay where you left them
+- **Optional Git worktrees** — opt in per project for an isolated branch per session, or work directly in the folder; non-Git directories work too
+- **Review diffs and leave inline comments** — send feedback directly to the agent without leaving the UI
+- **Preview your app** — built-in browser with devtools, inspect mode, and device emulation
+- **Switch between coding agents** — Claude Code today, with Codex, Gemini CLI, OpenCode, and Hermes coming next
+- **Create pull requests and merge** — open PRs with AI-generated descriptions, review on GitHub, and merge
+- **Runs in your browser today** — start with `npx cdesktop` and open it in any modern browser; a Tauri desktop build is wired up but not yet shipped
+
+![](packages/public/vibe-kanban-screenshot-workspace.png)
+
+## Installation
 
 ```bash
 npx cdesktop
 ```
 
-This launches the local backend and opens the UI in your default browser.
+## Support
 
-Requirements:
-- **Node.js** 20+
-- **Git**
-- **[Claude Code](https://www.anthropic.com/claude-code) CLI** installed and on your `PATH`
+File bug reports and feature requests at [cdesktop-ai/cdesktop/issues](https://github.com/cdesktop-ai/cdesktop/issues).
+
+## Contributing
+
+Please raise ideas and changes in [GitHub Discussions](https://github.com/cdesktop-ai/cdesktop/discussions) before opening a PR, so we can align on implementation details and roadmap fit.
 
 ## Development
 
@@ -27,9 +57,14 @@ Requirements:
 - [Node.js](https://nodejs.org/) (>=20)
 - [pnpm](https://pnpm.io/) (>=8)
 
+Additional development tools:
 ```bash
 cargo install cargo-watch
-cargo install sqlx-cli --no-default-features --features rustls,sqlite,postgres
+cargo install sqlx-cli
+```
+
+Install dependencies:
+```bash
 pnpm i
 ```
 
@@ -39,29 +74,70 @@ pnpm i
 pnpm run dev
 ```
 
-Starts the backend and the Vite-served web app on auto-assigned ports. Dev state is persisted under `dev_assets/` (gitignored) rather than the production data directory.
+This will start the backend and web app. A blank DB will be copied from the `dev_assets_seed` folder.
 
-### Building for local install
+### Building the web app
+
+To build just the web app:
 
 ```bash
-./local-build.sh
-cd npx-cli && node bin/cli.js
+cd packages/local-web
+pnpm run build
 ```
 
-### Environment variables
+### Build from source (macOS)
+
+1. Run `./local-build.sh`
+2. Test with `cd npx-cli && node bin/cli.js`
+
+### Environment Variables
+
+The following environment variables can be configured at build time or runtime:
 
 | Variable | Type | Default | Description |
-|---|---|---|---|
-| `PORT` | Runtime | Auto-assign | Prod: server port. Dev: frontend port (backend uses PORT+1) |
-| `BACKEND_PORT` | Runtime | `0` (auto-assign) | Backend server port (dev mode) |
-| `FRONTEND_PORT` | Runtime | `3000` | Frontend dev server port |
+|----------|------|---------|-------------|
+| `POSTHOG_API_KEY` | Build-time | Empty | PostHog analytics API key (disables analytics if empty) |
+| `POSTHOG_API_ENDPOINT` | Build-time | Empty | PostHog analytics endpoint (disables analytics if empty) |
+| `PORT` | Runtime | Auto-assign | **Production**: Server port. **Dev**: Frontend port (backend uses PORT+1) |
+| `BACKEND_PORT` | Runtime | `0` (auto-assign) | Backend server port (dev mode only, overrides PORT+1) |
+| `FRONTEND_PORT` | Runtime | `3000` | Frontend dev server port (dev mode only, overrides PORT) |
 | `HOST` | Runtime | `127.0.0.1` | Backend server host |
-| `MCP_HOST` | Runtime | Value of `HOST` | MCP server connection host |
+| `MCP_HOST` | Runtime | Value of `HOST` | MCP server connection host (use `127.0.0.1` when `HOST=0.0.0.0` on Windows) |
 | `MCP_PORT` | Runtime | Value of `BACKEND_PORT` | MCP server connection port |
-| `DISABLE_WORKTREE_CLEANUP` | Runtime | Not set | Disable git worktree cleanup (debugging) |
+| `DISABLE_WORKTREE_CLEANUP` | Runtime | Not set | Disable all git worktree cleanup including orphan and expired workspace cleanup (for debugging) |
+| `CDT_ALLOWED_ORIGINS` | Runtime | Not set | Comma-separated list of origins that are allowed to make backend API requests (e.g., `https://my-vibekanban-frontend.com`) |
+| `CDT_SHARED_API_BASE` | Runtime | Not set | Base URL for the remote/cloud API used by the local desktop app |
+| `CDT_SHARED_RELAY_API_BASE` | Runtime | Not set | Base URL for the relay API used by tunnel-mode connections |
 
-## License
+**Build-time variables** must be set when running `pnpm run build`. **Runtime variables** are read when the application starts.
 
-Apache License 2.0 — see [`LICENSE`](./LICENSE).
+#### Self-Hosting with a Reverse Proxy or Custom Domain
 
-cdesktop is a derivative work of [BloopAI/vibe-kanban](https://github.com/BloopAI/vibe-kanban), also Apache 2.0. See [`NOTICE`](./NOTICE) for attribution details.
+When running cdesktop behind a reverse proxy (e.g., nginx, Caddy, Traefik) or on a custom domain, you must set the `CDT_ALLOWED_ORIGINS` environment variable. Without this, the browser's Origin header won't match the backend's expected host, and API requests will be rejected with a 403 Forbidden error.
+
+Set it to the full origin URL(s) where your frontend is accessible:
+
+```bash
+# Single origin
+CDT_ALLOWED_ORIGINS=https://vk.example.com
+
+# Multiple origins (comma-separated)
+CDT_ALLOWED_ORIGINS=https://vk.example.com,https://vk-staging.example.com
+```
+
+### Remote Deployment
+
+When running cdesktop on a remote server (e.g., via systemctl, Docker, or cloud hosting), you can configure your editor to open projects via SSH:
+
+1. **Access via tunnel**: Use Cloudflare Tunnel, ngrok, or similar to expose the web UI
+2. **Configure remote SSH** in Settings → Editor Integration:
+   - Set **Remote SSH Host** to your server hostname or IP
+   - Set **Remote SSH User** to your SSH username (optional)
+3. **Prerequisites**:
+   - SSH access from your local machine to the remote server
+   - SSH keys configured (passwordless authentication)
+   - VSCode Remote-SSH extension
+
+When configured, the "Open in VSCode" buttons will generate URLs like `vscode://vscode-remote/ssh-remote+user@host/path` that open your local editor and connect to the remote server.
+
+See the [documentation](https://cdesktop.ai) for detailed setup instructions.
