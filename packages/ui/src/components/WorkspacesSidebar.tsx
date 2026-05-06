@@ -121,8 +121,8 @@ export interface WorkspacesSidebarProps {
   getWorkspaceDragProps?: (workspaceId: string) =>
     | {
         draggable?: boolean;
-        onDragStart?: (e: React.DragEvent<HTMLButtonElement>) => void;
-        onDragEnd?: (e: React.DragEvent<HTMLButtonElement>) => void;
+        onDragStart?: (e: React.DragEvent<HTMLDivElement>) => void;
+        onDragEnd?: (e: React.DragEvent<HTMLDivElement>) => void;
       }
     | undefined;
   /**
