@@ -78,7 +78,15 @@ export function LandingContextSection() {
 
   return (
     <div className="flex flex-col gap-base">
-      <h1 className="text-3xl font-medium tracking-tight text-high">
+      <h1 className="flex items-center gap-double text-3xl font-medium tracking-tight text-high mb-12">
+        <span className="inline-flex h-[1.5em] w-[1.5em] items-center justify-center rounded-xl bg-neutral-900">
+          <img
+            src="/logo-white.svg"
+            alt=""
+            aria-hidden
+            className="h-[0.8em] w-auto"
+          />
+        </span>
         {t('createMode.landing.welcomeBack')}
       </h1>
       {hasRecent ? (
