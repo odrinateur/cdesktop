@@ -266,11 +266,18 @@ export function useExecutorConfig({
     if (config) onPersistRef.current?.(config);
   }, []);
 
+  const userSelectionsRef = useRef(userSelections);
+  useEffect(() => {
+    userSelectionsRef.current = userSelections;
+  }, [userSelections]);
+
   // Setting executor → replaces entire selections with just { executor }.
   // Clears variant + all override fields.
   const setExecutor = useCallback(
     (exec: BaseCodingAgent) => {
-      setUserSelections({ executor: exec });
+      const nextSelections = { executor: exec };
+      userSelectionsRef.current = nextSelections;
+      setUserSelections(nextSelections);
       // Persist with auto-resolved variant (no overrides)
       const newVariants = getVariantOptions(exec, profiles);
       const newVariant = newVariants[0] ?? null;
@@ -294,26 +301,27 @@ export function useExecutorConfig({
 
   // Model selector updates individual override fields (merge into existing).
   // Changing model clears reasoning selection; other overrides are independent.
+  // persist() must run outside the setUserSelections updater — calling it
+  // inside dispatches to CreateModeProvider during CreateChatBoxContainer's
+  // render, which React 19 treats as setState-during-render.
   const setOverrides = useCallback(
     (partial: Partial<ExecutorConfig>) => {
-      setUserSelections((prev) => {
-        const next = { ...prev, ...partial };
-        if ('model_id' in partial && !('reasoning_id' in partial)) {
-          delete next.reasoning_id;
-        }
-        const persistedConfig = executor.effective
-          ? {
-              ...next,
-              executor: executor.effective,
-              variant: variant.resolved,
-            }
-          : null;
-        // Persist with current effective executor/variant
-        if (persistedConfig) {
-          persist(persistedConfig);
-        }
-        return next;
-      });
+      const prev = userSelectionsRef.current;
+      const next = { ...prev, ...partial };
+      if ('model_id' in partial && !('reasoning_id' in partial)) {
+        delete next.reasoning_id;
+      }
+
+      userSelectionsRef.current = next;
+      setUserSelections(next);
+
+      if (executor.effective) {
+        persist({
+          ...next,
+          executor: executor.effective,
+          variant: variant.resolved,
+        });
+      }
     },
     [executor.effective, variant.resolved, persist]
   );
