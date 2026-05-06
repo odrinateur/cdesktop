@@ -21,7 +21,20 @@ function isRenderableConversationEntry(entry: DisplayEntry): boolean {
     'entry_type' in entry.content
   ) {
     const entryType = entry.content.entry_type.type;
-    return entryType !== 'next_action' && entryType !== 'token_usage_info';
+    if (entryType === 'next_action' || entryType === 'token_usage_info') {
+      return false;
+    }
+    // Hide hook lifecycle entries injected by Claude Code hook plugins
+    // (e.g. "System: hook_started", "System: hook_completed"). Filter
+    // here so the row never enters the virtualizer and occupies no space.
+    if (
+      entryType === 'system_message' &&
+      typeof entry.content.content === 'string' &&
+      entry.content.content.startsWith('System: hook_')
+    ) {
+      return false;
+    }
+    return true;
   }
 
   return (
