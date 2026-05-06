@@ -416,25 +416,15 @@ function PinnedSection({
     onReorderPins(newOrder);
   };
 
-  // Empty pinned list: the section becomes a single drop target while a drag
-  // is in progress; otherwise just show the empty-state hint.
+  // Empty pinned list: render a single stable structure regardless of
+  // whether a drag is in progress. The two branches used to differ in
+  // element type (<p> vs <div>), in attached drag handlers, and in
+  // min-height — so flipping between them at dragstart relocated the
+  // source pill's bounding box and Chrome cancelled the drag (the
+  // observed "drag only works when there are pinned sessions" symptom).
+  // Now: handlers always attached, fixed min-height, only the hint text
+  // swaps with the drag state.
   if (pinnedWorkspaces.length === 0) {
-    if (!draggingWorkspaceId) {
-      return (
-        <div className="flex flex-col">
-          <div className="px-double py-half">
-            <span className="text-sm text-low opacity-60">
-              {t('sidebar.pinned.sectionHeader', { defaultValue: 'Pinned' })}
-            </span>
-          </div>
-          <p className="px-double py-half text-sm text-low opacity-60">
-            {t('sidebar.pinned.emptyHint', {
-              defaultValue: 'Pin sessions from their menu to keep them here.',
-            })}
-          </p>
-        </div>
-      );
-    }
     return (
       <div
         className="flex flex-col"
@@ -455,7 +445,13 @@ function PinnedSection({
             minHeight: PINNED_SLOT_OPEN_HEIGHT,
           }}
         >
-          {t('sidebar.pinned.dropHint', { defaultValue: 'Drop here to pin' })}
+          {draggingWorkspaceId
+            ? t('sidebar.pinned.dropHint', {
+                defaultValue: 'Drop here to pin',
+              })
+            : t('sidebar.pinned.emptyHint', {
+                defaultValue: 'Pin sessions from their menu to keep them here.',
+              })}
         </div>
       </div>
     );
