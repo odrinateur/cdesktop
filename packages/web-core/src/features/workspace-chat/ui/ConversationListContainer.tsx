@@ -8,7 +8,7 @@ import {
   useState,
   type MouseEvent,
 } from 'react';
-import { SpinnerIcon } from '@phosphor-icons/react';
+// import { SpinnerIcon } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -827,11 +827,12 @@ export const ConversationList = forwardRef<
   return (
     <ApprovalFormProvider>
       <div className="relative h-full overflow-hidden">
+        {/* Cold-load spinner — hidden in favor of the skeleton below.
         {showLoader && (
           <div className="absolute inset-0 flex items-center justify-center z-10">
             <SpinnerIcon className="size-6 animate-spin text-low" />
           </div>
-        )}
+        )} */}
         <div
           ref={tanstackScrollRef}
           className="h-full overflow-y-auto scrollbar-none pt-12"
