@@ -211,7 +211,28 @@
     "back": "戻る",
     "defaultPlaceholder": "コマンドを入力または検索...",
     "selectBranch": "Select Branch",
-    "selectBranchFor": "Select Branch for {{repoName}}"
+    "selectBranchFor": "Select Branch for {{repoName}}",
+    "pages": {
+      "workspaceActions": {
+        "title": "セッション操作",
+        "groups": {
+          "session": "セッション",
+          "scripts": "スクリプト"
+        }
+      }
+    },
+    "actions": {
+      "startReview": "レビューを開始",
+      "rename": "名前を変更",
+      "duplicate": "複製",
+      "spinOff": "セッションをスピンオフ",
+      "archive": "アーカイブ",
+      "unarchive": "アーカイブ解除",
+      "delete": "削除",
+      "runSetupScript": "セットアップスクリプトを実行",
+      "runCleanupScript": "クリーンアップスクリプトを実行",
+      "runArchiveScript": "アーカイブスクリプトを実行"
+    }
   },
   "workspacesGuide": {
     "welcome": {

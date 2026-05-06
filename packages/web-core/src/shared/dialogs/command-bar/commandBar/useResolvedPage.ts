@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   StackIcon,
   SlidersIcon,
@@ -37,9 +38,23 @@ const PAGE_ICONS = {
   issueActions: KanbanIcon,
 } as const satisfies Record<StaticPageId, typeof StackIcon>;
 
+type Translator = (key: string) => string;
+
+// i18next returns the key when no translation is found, so non-key labels
+// pass through unchanged. Only flagged labels (with a "namespace:" prefix or
+// dotted key form) get looked up.
+function maybeTranslate(value: string | undefined, t: Translator): string | undefined {
+  if (!value) return value;
+  if (value.includes(':') || value.includes('.')) {
+    return t(value);
+  }
+  return value;
+}
+
 function expandGroupItems(
   items: CommandBarGroupItem[],
-  ctx: ActionVisibilityContext
+  ctx: ActionVisibilityContext,
+  t: Translator
 ): ResolvedGroupItem[] {
   return items.flatMap((item) => {
     if (item.type === 'childPages') {
@@ -49,7 +64,7 @@ function expandGroupItems(
         {
           type: 'page' as const,
           pageId: item.id,
-          label: page.title ?? item.id,
+          label: maybeTranslate(page.title, t) ?? item.id,
           icon: PAGE_ICONS[item.id as StaticPageId],
         },
       ];
@@ -63,12 +78,15 @@ function expandGroupItems(
 
 function buildPageGroups(
   pageId: StaticPageId,
-  ctx: ActionVisibilityContext
+  ctx: ActionVisibilityContext,
+  t: Translator
 ): ResolvedGroup[] {
   return Pages[pageId].items
     .map((group) => {
-      const items = expandGroupItems(group.items, ctx);
-      return items.length ? { label: group.label, items } : null;
+      const items = expandGroupItems(group.items, ctx, t);
+      return items.length
+        ? { label: maybeTranslate(group.label, t) ?? group.label, items }
+        : null;
     })
     .filter((g): g is ResolvedGroup => g !== null);
 }
@@ -79,16 +97,19 @@ export function useResolvedPage(
   ctx: ActionVisibilityContext,
   workspace: Workspace | undefined
 ): ResolvedCommandBarPage {
+  const { t, i18n } = useTranslation('common');
+  const language = i18n.language;
   return useMemo(() => {
-    const groups = buildPageGroups(pageId, ctx);
+    const groups = buildPageGroups(pageId, ctx, t);
     if (pageId === 'root' && search.trim()) {
       groups.push(...injectSearchMatches(search, ctx, workspace));
     }
 
     return {
       id: Pages[pageId].id,
-      title: Pages[pageId].title,
+      title: maybeTranslate(Pages[pageId].title, t),
       groups,
     };
-  }, [pageId, search, ctx, workspace]);
+    // language is included so memo invalidates on language change
+  }, [pageId, search, ctx, workspace, t, language]);
 }

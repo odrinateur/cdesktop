@@ -177,7 +177,7 @@ export const Actions = {
   // === Workspace Actions ===
   DuplicateWorkspace: {
     id: 'duplicate-workspace',
-    label: 'Duplicate',
+    label: () => i18n.t('common:commandBar.actions.duplicate'),
     icon: CopyIcon,
     shortcut: 'W D',
     requiresTarget: ActionTargetType.WORKSPACE,
@@ -222,7 +222,7 @@ export const Actions = {
 
   RenameWorkspace: {
     id: 'rename-workspace',
-    label: 'Rename',
+    label: () => i18n.t('common:commandBar.actions.rename'),
     icon: PencilSimpleIcon,
     shortcut: 'W R',
     requiresTarget: ActionTargetType.WORKSPACE,
@@ -261,7 +261,9 @@ export const Actions = {
   ArchiveWorkspace: {
     id: 'archive-workspace',
     label: (workspace?: Workspace) =>
-      workspace?.archived ? 'Unarchive' : 'Archive',
+      workspace?.archived
+        ? i18n.t('common:commandBar.actions.unarchive')
+        : i18n.t('common:commandBar.actions.archive'),
     icon: ArchiveIcon,
     shortcut: 'W A',
     requiresTarget: ActionTargetType.WORKSPACE,
@@ -289,7 +291,7 @@ export const Actions = {
 
   DeleteWorkspace: {
     id: 'delete-workspace',
-    label: 'Delete',
+    label: () => i18n.t('common:commandBar.actions.delete'),
     icon: TrashIcon,
     shortcut: 'W X',
     variant: 'destructive',
@@ -348,7 +350,7 @@ export const Actions = {
 
   StartReview: {
     id: 'start-review',
-    label: 'Start Review',
+    label: () => i18n.t('common:commandBar.actions.startReview'),
     icon: HighlighterIcon,
     requiresTarget: ActionTargetType.WORKSPACE,
     isVisible: (ctx) => SHOW_REVIEW_FEATURE && ctx.hasWorkspace,
@@ -362,7 +364,7 @@ export const Actions = {
 
   SpinOffWorkspace: {
     id: 'spin-off-workspace',
-    label: 'Spin off workspace',
+    label: () => i18n.t('common:commandBar.actions.spinOff'),
     icon: GitForkIcon,
     requiresTarget: ActionTargetType.WORKSPACE,
     isVisible: (ctx) => ctx.hasWorkspace,
@@ -1145,7 +1147,7 @@ export const Actions = {
   // === Script Actions ===
   RunSetupScript: {
     id: 'run-setup-script',
-    label: 'Run Setup Script',
+    label: () => i18n.t('common:commandBar.actions.runSetupScript'),
     icon: TerminalIcon,
     shortcut: 'R S',
     requiresTarget: ActionTargetType.WORKSPACE,
@@ -1167,7 +1169,7 @@ export const Actions = {
 
   RunCleanupScript: {
     id: 'run-cleanup-script',
-    label: 'Run Cleanup Script',
+    label: () => i18n.t('common:commandBar.actions.runCleanupScript'),
     icon: TerminalIcon,
     shortcut: 'R C',
     requiresTarget: ActionTargetType.WORKSPACE,
@@ -1189,7 +1191,7 @@ export const Actions = {
 
   RunArchiveScript: {
     id: 'run-archive-script',
-    label: 'Run Archive Script',
+    label: () => i18n.t('common:commandBar.actions.runArchiveScript'),
     icon: TerminalIcon,
     shortcut: 'R A',
     requiresTarget: ActionTargetType.WORKSPACE,

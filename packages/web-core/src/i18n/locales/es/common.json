@@ -211,7 +211,28 @@
     "back": "Atrás",
     "defaultPlaceholder": "Escribe un comando o busca...",
     "selectBranch": "Select Branch",
-    "selectBranchFor": "Select Branch for {{repoName}}"
+    "selectBranchFor": "Select Branch for {{repoName}}",
+    "pages": {
+      "workspaceActions": {
+        "title": "Acciones de sesión",
+        "groups": {
+          "session": "Sesión",
+          "scripts": "Scripts"
+        }
+      }
+    },
+    "actions": {
+      "startReview": "Iniciar revisión",
+      "rename": "Renombrar",
+      "duplicate": "Duplicar",
+      "spinOff": "Derivar sesión",
+      "archive": "Archivar",
+      "unarchive": "Desarchivar",
+      "delete": "Eliminar",
+      "runSetupScript": "Ejecutar script de configuración",
+      "runCleanupScript": "Ejecutar script de limpieza",
+      "runArchiveScript": "Ejecutar script de archivo"
+    }
   },
   "workspacesGuide": {
     "welcome": {

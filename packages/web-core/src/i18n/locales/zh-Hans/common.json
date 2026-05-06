@@ -211,7 +211,28 @@
     "back": "返回",
     "defaultPlaceholder": "输入命令或搜索...",
     "selectBranch": "Select Branch",
-    "selectBranchFor": "Select Branch for {{repoName}}"
+    "selectBranchFor": "Select Branch for {{repoName}}",
+    "pages": {
+      "workspaceActions": {
+        "title": "会话操作",
+        "groups": {
+          "session": "会话",
+          "scripts": "脚本"
+        }
+      }
+    },
+    "actions": {
+      "startReview": "开始评审",
+      "rename": "重命名",
+      "duplicate": "复制",
+      "spinOff": "派生会话",
+      "archive": "归档",
+      "unarchive": "取消归档",
+      "delete": "删除",
+      "runSetupScript": "运行设置脚本",
+      "runCleanupScript": "运行清理脚本",
+      "runArchiveScript": "运行归档脚本"
+    }
   },
   "workspacesGuide": {
     "welcome": {
