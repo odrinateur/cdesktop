@@ -145,7 +145,9 @@ export function WorkspacesLayout() {
   const hasAutoShownWorkspacesGuide = useRef(false);
 
   // Auto-show Workspaces Guide on first visit
+  const AUTO_SHOW_WORKSPACES_GUIDE = false;
   useEffect(() => {
+    if (!AUTO_SHOW_WORKSPACES_GUIDE) return;
     if (hasAutoShownWorkspacesGuide.current) return;
     if (configLoading || !config) return;
 
