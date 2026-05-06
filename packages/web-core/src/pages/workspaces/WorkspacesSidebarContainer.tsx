@@ -710,7 +710,7 @@ export function WorkspacesSidebarContainer({
   const getWorkspaceDragProps = useCallback(
     (workspaceId: string) => ({
       draggable: !isMobile,
-      onDragStart: (e: React.DragEvent<HTMLDivElement>) => {
+      onDragStart: (e: React.DragEvent<HTMLButtonElement>) => {
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('application/x-vibe-pill', workspaceId);
         usePillDragStore
