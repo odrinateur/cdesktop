@@ -54,15 +54,10 @@ export interface WorkspaceSummaryProps {
   /** Whether this is a draft workspace (shows "Draft" instead of elapsed time) */
   isDraft?: boolean;
   onOpenWorkspaceActions?: (workspaceId: string) => void;
-  /**
-   * HTML5 drag affordance — set by callers that wire pills as drag sources.
-   * Bound to the inner <button> rather than the outer wrapper: in Chrome a
-   * draggable parent of a <button> races against the button's click, so the
-   * drag would fire intermittently (≈1/10) depending on mouse driver / OS.
-   */
+  /** HTML5 drag affordance — set by callers that wire pills as drag sources. */
   draggable?: boolean;
-  onDragStart?: (e: React.DragEvent<HTMLButtonElement>) => void;
-  onDragEnd?: (e: React.DragEvent<HTMLButtonElement>) => void;
+  onDragStart?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragEnd?: (e: React.DragEvent<HTMLDivElement>) => void;
 }
 
 export function WorkspaceSummary({
@@ -103,6 +98,9 @@ export function WorkspaceSummary({
 
   return (
     <div
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
       className={cn(
         'group relative mx-base rounded-[8px] transition-all duration-100 overflow-hidden',
         // Background appears for any session present in the grid;
@@ -114,9 +112,6 @@ export function WorkspaceSummary({
     >
       <button
         onClick={onClick}
-        draggable={draggable}
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
         className="flex w-full cursor-pointer flex-col text-left px-base py-half text-normal transition-all duration-150"
       >
         <div
