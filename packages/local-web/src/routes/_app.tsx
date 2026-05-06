@@ -14,6 +14,7 @@ import { KeyboardShortcutsDialog } from '@/shared/dialogs/shared/KeyboardShortcu
 import { ReleaseNotesDialog } from '@/shared/dialogs/global/ReleaseNotesDialog';
 import { TerminalProvider } from '@/shared/providers/TerminalProvider';
 import { HostIdProvider } from '@/shared/providers/HostIdProvider';
+import { LiveSessionFollowerProvider } from '@/shared/providers/LiveSessionFollowerProvider';
 import { WorkspaceProvider } from '@/shared/providers/WorkspaceProvider';
 import { ExecutionProcessesProvider } from '@/shared/providers/ExecutionProcessesProvider';
 import { LogsPanelProvider } from '@/shared/providers/LogsPanelProvider';
@@ -85,18 +86,20 @@ function ExecutionProcessesProviderWrapper({
 function AppRouteProviders({ children }: { children: ReactNode }) {
   return (
     <HostIdProvider>
-      <WorkspaceProvider>
-        <ExecutionProcessesProviderWrapper>
-          <LogsPanelProvider>
-            <ActionsProvider>
-              {/* NiceModal renders dialogs as siblings of children at the
-                  Provider level, so it must be inside all providers that
-                  dialogs depend on (Workspace, Actions, etc.). */}
-              <NiceModalProvider>{children}</NiceModalProvider>
-            </ActionsProvider>
-          </LogsPanelProvider>
-        </ExecutionProcessesProviderWrapper>
-      </WorkspaceProvider>
+      <LiveSessionFollowerProvider>
+        <WorkspaceProvider>
+          <ExecutionProcessesProviderWrapper>
+            <LogsPanelProvider>
+              <ActionsProvider>
+                {/* NiceModal renders dialogs as siblings of children at the
+                    Provider level, so it must be inside all providers that
+                    dialogs depend on (Workspace, Actions, etc.). */}
+                <NiceModalProvider>{children}</NiceModalProvider>
+              </ActionsProvider>
+            </LogsPanelProvider>
+          </ExecutionProcessesProviderWrapper>
+        </WorkspaceProvider>
+      </LiveSessionFollowerProvider>
     </HostIdProvider>
   );
 }

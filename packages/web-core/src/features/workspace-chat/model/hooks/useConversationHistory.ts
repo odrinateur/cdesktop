@@ -27,9 +27,26 @@ import {
 } from '@/shared/hooks/useConversationHistory/constants';
 import { HISTORIC_FETCH_CONCURRENCY, runBounded } from '../runBounded';
 import {
+  clearCachedEntries,
   getCachedEntries,
   setCachedEntries,
 } from '../executionProcessEntriesCache';
+import { getSessionSnapshot } from '../sessionSnapshotCache';
+
+const HISTORY_PROCESS_RUN_REASONS = new Set([
+  'setupscript',
+  'cleanupscript',
+  'archivescript',
+  'codingagent',
+]);
+
+const parseSessionIdFromScopeKey = (scopeKey: string): string | undefined => {
+  // Robust to extra colons in either segment — split on the LAST colon.
+  const idx = scopeKey.lastIndexOf(':');
+  if (idx < 0) return undefined;
+  const id = scopeKey.slice(idx + 1);
+  return id === 'new' || id === '' ? undefined : id;
+};
 
 export const useConversationHistory = ({
   onTimelineUpdated,
@@ -51,6 +68,10 @@ export const useConversationHistory = ({
   const previousStatusMapRef = useRef<Map<string, ExecutionProcessStatus>>(
     new Map()
   );
+  const seededFromSnapshotRef = useRef(false);
+  // Bumped on every scope-reset; async work tags the gen it started under
+  // and drops its result if the user has switched sessions mid-fetch.
+  const generationRef = useRef(0);
   const [isLoadingHistoryState, setIsLoadingHistory] = useState(false);
 
   // Derive whether this is the first turn (no follow-up processes exist)
@@ -405,6 +426,59 @@ export const useConversationHistory = ({
     emittedEmptyInitialRef.current = false;
     streamingProcessIdsRef.current.clear();
     previousStatusMapRef.current.clear();
+    seededFromSnapshotRef.current = false;
+    generationRef.current += 1;
+
+    // Layer 2 cache consult: if we have a snapshot for this session, seed
+    // executionProcesses.current synchronously so the load effect below can
+    // start cache-hitting per-process entries before the session-list WS
+    // arrives. Also seed previousStatusMapRef so the running→finished
+    // refetch effect fires correctly when the WS reconciles.
+    const sessionId = parseSessionIdFromScopeKey(scopeKey);
+    const snapshot = sessionId ? getSessionSnapshot(sessionId) : undefined;
+    if (snapshot && snapshot.length > 0) {
+      const filtered = snapshot.filter(
+        (ep) => !ep.dropped && HISTORY_PROCESS_RUN_REASONS.has(ep.run_reason)
+      );
+      if (filtered.length > 0) {
+        executionProcesses.current = filtered;
+        for (const p of filtered) {
+          previousStatusMapRef.current.set(p.id, p.status);
+        }
+        seededFromSnapshotRef.current = true;
+
+        // Synchronously hydrate displayed entries from Layer 1 cache for
+        // every process whose entries we already have, regardless of
+        // status. Running processes whose entries the follower captured
+        // paint synchronously alongside the finished ones — no
+        // half-rendered ghost where the running turn would otherwise be
+        // missing until raw WS arrives.
+        let allHydrated = true;
+        for (const p of filtered) {
+          const cached = getCachedEntries(p.id);
+          if (cached !== undefined) {
+            displayedExecutionProcesses.current[p.id] = {
+              executionProcess: p,
+              entries: cached.map((e, idx) => patchWithKey(e, p.id, idx)),
+            };
+          } else {
+            allHydrated = false;
+          }
+        }
+
+        if (allHydrated) {
+          // Full cache hit: bypass the load effect entirely. Setting
+          // loadedInitialEntries.current=true short-circuits its async
+          // path; setIsLoadingHistory(false) keeps the loading flag
+          // from flipping true→false in a later commit (skeleton flash).
+          loadedInitialEntries.current = true;
+          setIsLoadingHistory(false);
+          emitEntries(displayedExecutionProcesses.current, 'initial', false);
+          return;
+        }
+      }
+    }
+
     // Must stay declared before the load effect below — the load effect may flip
     // this false in the empty-processes branch, and React runs effects in
     // declaration order within a commit.
@@ -414,10 +488,14 @@ export const useConversationHistory = ({
 
   useEffect(() => {
     let cancelled = false;
+    const gen = generationRef.current;
     (async () => {
       if (loadedInitialEntries.current) return;
 
-      if (isLoading) return;
+      // Allow proceeding without a fresh WS payload if we seeded from the
+      // snapshot cache — otherwise we'd block the instant-render path on
+      // the WS handshake we're trying to skip.
+      if (isLoading && !seededFromSnapshotRef.current) return;
 
       if (executionProcesses.current.length === 0) {
         if (emittedEmptyInitialRef.current) return;
@@ -430,7 +508,7 @@ export const useConversationHistory = ({
       emittedEmptyInitialRef.current = false;
 
       const allInitialEntries = await loadHistoricEntries(MIN_INITIAL_ENTRIES);
-      if (cancelled) return;
+      if (cancelled || gen !== generationRef.current) return;
       loadedInitialEntries.current = true;
       mergeIntoDisplayed((state) => {
         Object.assign(state, allInitialEntries);
@@ -439,12 +517,14 @@ export const useConversationHistory = ({
 
       while (
         !cancelled &&
+        gen === generationRef.current &&
         (await loadRemainingEntriesInBatches(REMAINING_BATCH_SIZE))
       ) {
-        if (cancelled) return;
+        if (cancelled || gen !== generationRef.current) return;
         emitEntries(displayedExecutionProcesses.current, 'historic', false);
       }
-      if (!cancelled) setIsLoadingHistory(false);
+      if (!cancelled && gen === generationRef.current)
+        setIsLoadingHistory(false);
     })();
     return () => {
       cancelled = true;
@@ -494,6 +574,36 @@ export const useConversationHistory = ({
     loadRunningAndEmitWithBackoff,
   ]);
 
+  // Reconciliation pass: once initial entries are loaded, the load effect
+  // above is gated by `loadedInitialEntries.current` and won't pick up new
+  // processes that appear later (e.g. when raw WS arrives after a snapshot
+  // seed and reveals processes the snapshot didn't have). Drive
+  // loadRemainingEntriesInBatches directly here.
+  useEffect(() => {
+    if (!loadedInitialEntries.current) return;
+    if (isLoading) return;
+    let cancelled = false;
+    const gen = generationRef.current;
+    (async () => {
+      let touched = false;
+      while (
+        !cancelled &&
+        gen === generationRef.current &&
+        (await loadRemainingEntriesInBatches(REMAINING_BATCH_SIZE))
+      ) {
+        if (cancelled || gen !== generationRef.current) return;
+        touched = true;
+        emitEntries(displayedExecutionProcesses.current, 'historic', false);
+      }
+      if (touched && !cancelled && gen === generationRef.current) {
+        setIsLoadingHistory(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [idListKey, isLoading, loadRemainingEntriesInBatches, emitEntries]);
+
   useEffect(() => {
     if (!executionProcessesRaw) return;
 
@@ -520,6 +630,10 @@ export const useConversationHistory = ({
       let anyUpdated = false;
 
       for (const process of processesToReload) {
+        // Invalidate any incremental cache entry the follower may have
+        // written for this still-running process so we re-fetch the
+        // canonical post-finished payload from the server.
+        clearCachedEntries(process.id);
         const entries = await loadEntriesForHistoricExecutionProcess(process);
         if (entries.length === 0) continue;
 
@@ -542,8 +656,16 @@ export const useConversationHistory = ({
     })();
   }, [idStatusKey, executionProcessesRaw, emitEntries]);
 
-  // If an execution process is removed, remove it from the state
+  // If an execution process is removed, remove it from the state.
+  //
+  // Guarded by isLoading because raw is an empty []-during-WS-handshake
+  // until the session-list WS delivers its first payload. Without the
+  // guard, this effect would delete every entry the snapshot fast-path
+  // synchronously hydrated into `displayedExecutionProcesses` during the
+  // scope-reset commit (raw is empty AND `idListKey` changed). The
+  // sibling cleanup at the top of the file is similarly guarded.
   useEffect(() => {
+    if (isLoading) return;
     if (!executionProcessesRaw) return;
 
     const removedProcessIds = Object.keys(
@@ -557,7 +679,7 @@ export const useConversationHistory = ({
         });
       });
     }
-  }, [scopeKey, idListKey, executionProcessesRaw]);
+  }, [scopeKey, idListKey, executionProcessesRaw, isLoading]);
 
   return { isFirstTurn, isLoadingHistory: isLoadingHistoryState };
 };
