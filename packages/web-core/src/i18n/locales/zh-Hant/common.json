@@ -596,7 +596,8 @@
     "newSession": "新增會話",
     "pinned": {
       "emptyHint": "從會話選單釘選即可保留於此。",
-      "sectionHeader": "已釘選"
+      "sectionHeader": "已釘選",
+      "dropHint": "拖放至此以釘選"
     },
     "search": {
       "collapse": {

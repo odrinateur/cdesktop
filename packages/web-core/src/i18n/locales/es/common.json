@@ -596,7 +596,8 @@
     "newSession": "Nueva sesión",
     "pinned": {
       "emptyHint": "Fija sesiones desde su menú para mantenerlas aquí.",
-      "sectionHeader": "Fijados"
+      "sectionHeader": "Fijados",
+      "dropHint": "Suelta aquí para fijar"
     },
     "search": {
       "collapse": {
