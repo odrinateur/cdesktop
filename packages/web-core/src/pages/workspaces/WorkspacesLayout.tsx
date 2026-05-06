@@ -34,7 +34,6 @@ import { ChangesPanelContainer } from './ChangesPanelContainer';
 import { CreateChatBoxContainer } from '@/shared/components/CreateChatBoxContainer';
 import { PreviewBrowserContainer } from './PreviewBrowserContainer';
 import { SessionGrid } from './cells/SessionGrid';
-import { useSessionGridStore } from '@/shared/stores/useSessionGridStore';
 import { scrollFirstCellToBottom } from './cells/firstCellScroll';
 import { WorkspacesGuideDialog } from '@/shared/dialogs/shared/WorkspacesGuideDialog';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
@@ -288,34 +287,18 @@ export function WorkspacesLayout() {
     );
   }
 
-  // Render "New Session" inline in the anchor cell when ≥2 cells already
-  // exist, instead of tearing the grid down for a full-page create form.
-  const totalCells = useSessionGridStore((s) =>
-    s.grid.groups.reduce((n, g) => n + g.cells.length, 0)
+  // Always route create mode through SessionGrid so the create form lives in
+  // the anchor cell (with CellDropOverlay) instead of a special full-page
+  // path. CreateCellHost wraps its own CreateModeProvider, so no page-level
+  // wrap is needed.
+  const mainContent = (
+    <SessionGrid
+      createInFirstCell={isCreateMode}
+      onWorkspaceCreated={handleWorkspaceCreated}
+      createModeProviderKey={isCreateMode ? createModeProviderKey : undefined}
+      createModeInitialState={isCreateMode ? createModeSeed.state : undefined}
+    />
   );
-  const inlineCreateMode = isCreateMode && totalCells >= 2;
-
-  const mainContent =
-    isCreateMode && !inlineCreateMode ? (
-      <ReviewProvider workspaceId={undefined}>
-        <ChangesViewProvider>
-          <CreateChatBoxContainer
-            onWorkspaceCreated={handleWorkspaceCreated}
-          />
-        </ChangesViewProvider>
-      </ReviewProvider>
-    ) : (
-      <SessionGrid
-        createInFirstCell={inlineCreateMode}
-        onWorkspaceCreated={handleWorkspaceCreated}
-        createModeProviderKey={
-          inlineCreateMode ? createModeProviderKey : undefined
-        }
-        createModeInitialState={
-          inlineCreateMode ? createModeSeed.state : undefined
-        }
-      />
-    );
 
   return (
     <div
@@ -330,22 +313,7 @@ export function WorkspacesLayout() {
         </div>
       )}
 
-      <div className="flex-1 min-w-0 h-full">
-        {/* Wrap with CreateModeProvider only for the full-page create
-            form. Inline create mode wraps inside CreateCellHost so the
-            surrounding SessionGrid (and its sibling cells) stays mounted
-            across the regular ↔ create-mode toggle. */}
-        {isCreateMode && !inlineCreateMode ? (
-          <CreateModeProvider
-            key={createModeProviderKey}
-            initialState={createModeSeed.state}
-          >
-            {mainContent}
-          </CreateModeProvider>
-        ) : (
-          mainContent
-        )}
-      </div>
+      <div className="flex-1 min-w-0 h-full">{mainContent}</div>
     </div>
   );
 }

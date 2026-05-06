@@ -301,17 +301,16 @@ export function CreateChatBoxContainer({
   }
 
   return (
-    <div className="relative flex flex-1 flex-col bg-primary h-full min-w-0">
-      <div className="flex flex-1 flex-col pb-[12px] min-w-0">
-        <div className="flex justify-center pt-[18vh]">
-          <div className="w-chat max-w-full px-[35px]">
-            <div className="flex flex-col gap-base">
-              <LandingContextSection />
-            </div>
+    <div className="relative flex flex-1 flex-col bg-primary h-full min-h-0 min-w-0">
+      <div className="flex-1 min-h-0 overflow-y-auto flex justify-center">
+        <div className="w-chat max-w-full px-[35px] pt-[9vh] pb-base">
+          <div className="flex flex-col gap-base">
+            <LandingContextSection />
           </div>
         </div>
-        <div className="mt-auto flex justify-center @container">
-          <div className="w-chat max-w-full px-[35px]">
+      </div>
+      <div className="shrink-0 flex justify-center pb-[12px] @container">
+        <div className="w-chat max-w-full px-[35px]">
             <CreateChatBox
               editor={{
                 value: message,
@@ -416,6 +415,5 @@ export function CreateChatBoxContainer({
           </div>
         </div>
       </div>
-    </div>
   );
 }

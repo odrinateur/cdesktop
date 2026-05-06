@@ -18,6 +18,7 @@ import { CreateModeProvider } from '@/features/create-mode/model/CreateModeProvi
 import type { CreateModeInitialState } from '@/shared/types/createMode';
 import { cn } from '@/shared/lib/utils';
 import { CellHost } from './CellHost';
+import { CellDropOverlay } from './CellDropOverlay';
 import { ResizeHandle } from '../panels';
 
 /**
@@ -56,7 +57,7 @@ export function SessionGrid({
 } = {}) {
   const grid = useSessionGrid();
 
-  if (!grid.groups[0]?.cells[0]?.sessionId) {
+  if (!grid.groups[0]?.cells[0]?.sessionId && !createInFirstCell) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
         No session selected.
@@ -264,6 +265,7 @@ function GroupBody({
       >
         {isAnchor(0) && createInFirstCell && onWorkspaceCreated ? (
           <CreateCellHost
+            cellId={group.cells[0].id}
             isFocused={focusedCellId === group.cells[0].id}
             onFocus={() => focusCell(group.cells[0].id)}
             onWorkspaceCreated={onWorkspaceCreated}
@@ -344,12 +346,14 @@ function CellWrapper({
  * CreateModeProvider.
  */
 function CreateCellHost({
+  cellId,
   isFocused,
   onFocus,
   onWorkspaceCreated,
   providerKey,
   initialState,
 }: {
+  cellId: CellId;
   isFocused: boolean;
   onFocus: () => void;
   onWorkspaceCreated: (workspaceId: string) => void;
@@ -373,6 +377,7 @@ function CreateCellHost({
           </ChangesViewProvider>
         </ReviewProvider>
       </CreateModeProvider>
+      <CellDropOverlay cellId={cellId} />
     </div>
   );
 }
