@@ -45,8 +45,8 @@ export function ExportPage({
 
   const logoSrc =
     resolveTheme(theme) === 'dark'
-      ? '/vibe-kanban-logo-dark.svg'
-      : '/vibe-kanban-logo.svg';
+      ? '/favicon.svg'
+      : '/favicon.svg';
 
   return (
     <div className="h-full overflow-auto bg-primary">
