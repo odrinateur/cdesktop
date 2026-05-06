@@ -211,7 +211,28 @@
     "back": "返回",
     "defaultPlaceholder": "輸入命令或搜尋...",
     "selectBranch": "Select Branch",
-    "selectBranchFor": "Select Branch for {{repoName}}"
+    "selectBranchFor": "Select Branch for {{repoName}}",
+    "pages": {
+      "workspaceActions": {
+        "title": "會話操作",
+        "groups": {
+          "session": "會話",
+          "scripts": "腳本"
+        }
+      }
+    },
+    "actions": {
+      "startReview": "開始評審",
+      "rename": "重新命名",
+      "duplicate": "複製",
+      "spinOff": "衍生會話",
+      "archive": "封存",
+      "unarchive": "取消封存",
+      "delete": "刪除",
+      "runSetupScript": "執行設定指令稿",
+      "runCleanupScript": "執行清理指令稿",
+      "runArchiveScript": "執行封存指令稿"
+    }
   },
   "workspacesGuide": {
     "welcome": {

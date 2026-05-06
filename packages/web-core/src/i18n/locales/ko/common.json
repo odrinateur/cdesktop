@@ -211,7 +211,28 @@
     "back": "뒤로",
     "defaultPlaceholder": "명령어를 입력하거나 검색...",
     "selectBranch": "Select Branch",
-    "selectBranchFor": "Select Branch for {{repoName}}"
+    "selectBranchFor": "Select Branch for {{repoName}}",
+    "pages": {
+      "workspaceActions": {
+        "title": "세션 작업",
+        "groups": {
+          "session": "세션",
+          "scripts": "스크립트"
+        }
+      }
+    },
+    "actions": {
+      "startReview": "리뷰 시작",
+      "rename": "이름 변경",
+      "duplicate": "복제",
+      "spinOff": "세션 분리",
+      "archive": "보관",
+      "unarchive": "보관 해제",
+      "delete": "삭제",
+      "runSetupScript": "설정 스크립트 실행",
+      "runCleanupScript": "정리 스크립트 실행",
+      "runArchiveScript": "보관 스크립트 실행"
+    }
   },
   "workspacesGuide": {
     "welcome": {

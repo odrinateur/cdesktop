@@ -50,13 +50,13 @@ export const Pages: Record<StaticPageId, CommandBarPage> = {
   // Workspace actions page - shown when clicking three-dots on a workspace
   workspaceActions: {
     id: 'workspace-actions',
-    title: 'Session Actions',
+    title: 'common:commandBar.pages.workspaceActions.title',
     parent: 'root',
     isVisible: (ctx) => ctx.hasWorkspace,
     items: [
       {
         type: 'group',
-        label: 'Session',
+        label: 'common:commandBar.pages.workspaceActions.groups.session',
         items: [
           { type: 'action', action: Actions.StartReview },
           { type: 'action', action: Actions.RenameWorkspace },
@@ -69,7 +69,7 @@ export const Pages: Record<StaticPageId, CommandBarPage> = {
       },
       {
         type: 'group',
-        label: 'Scripts',
+        label: 'common:commandBar.pages.workspaceActions.groups.scripts',
         items: [
           { type: 'action', action: Actions.RunSetupScript },
           { type: 'action', action: Actions.RunCleanupScript },
