@@ -596,7 +596,8 @@
     "newSession": "Nouvelle session",
     "pinned": {
       "emptyHint": "Épinglez des sessions depuis leur menu pour les garder ici.",
-      "sectionHeader": "Épinglés"
+      "sectionHeader": "Épinglés",
+      "dropHint": "Déposez ici pour épingler"
     },
     "search": {
       "collapse": {

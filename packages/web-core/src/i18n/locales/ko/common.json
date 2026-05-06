@@ -596,7 +596,8 @@
     "newSession": "새 세션",
     "pinned": {
       "emptyHint": "각 세션 메뉴에서 고정하면 여기에 표시됩니다.",
-      "sectionHeader": "고정됨"
+      "sectionHeader": "고정됨",
+      "dropHint": "여기에 놓아 고정"
     },
     "search": {
       "collapse": {

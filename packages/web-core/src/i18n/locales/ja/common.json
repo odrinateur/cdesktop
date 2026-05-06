@@ -596,7 +596,8 @@
     "newSession": "新規セッション",
     "pinned": {
       "emptyHint": "各セッションのメニューからピン留めすると、ここに表示されます。",
-      "sectionHeader": "ピン留め"
+      "sectionHeader": "ピン留め",
+      "dropHint": "ここにドロップしてピン留め"
     },
     "search": {
       "collapse": {

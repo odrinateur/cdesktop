@@ -596,7 +596,8 @@
     "newSession": "新建会话",
     "pinned": {
       "emptyHint": "从会话菜单中固定它们以保留在此处。",
-      "sectionHeader": "已固定"
+      "sectionHeader": "已固定",
+      "dropHint": "拖放到此处以固定"
     },
     "search": {
       "collapse": {

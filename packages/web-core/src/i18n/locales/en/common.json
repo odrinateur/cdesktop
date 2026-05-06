@@ -192,7 +192,8 @@
     },
     "pinned": {
       "sectionHeader": "Pinned",
-      "emptyHint": "Pin sessions from their menu to keep them here."
+      "emptyHint": "Pin sessions from their menu to keep them here.",
+      "dropHint": "Drop here to pin"
     },
     "kebab": {
       "pin": "Pin session",
