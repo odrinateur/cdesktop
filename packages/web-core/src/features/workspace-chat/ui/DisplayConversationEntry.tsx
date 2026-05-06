@@ -372,12 +372,6 @@ function DisplayConversationEntry(props: Props) {
       );
 
     case 'system_message':
-      // Hide hook lifecycle entries injected by Claude Code hook plugins
-      // (e.g. "System: hook_started", "System: hook_completed"). They're
-      // noise from the user's perspective and clutter the transcript.
-      if (entry.content.startsWith('System: hook_')) {
-        return null;
-      }
       return (
         <SystemMessageEntry
           content={entry.content}
