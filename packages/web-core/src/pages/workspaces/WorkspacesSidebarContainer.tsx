@@ -8,6 +8,7 @@ import { useParams } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { workspacesApi } from '@/shared/lib/api';
 import { workspaceSummaryKeys } from '@/shared/hooks/workspaceSummaryKeys';
+import { workspaceRecordKeys } from '@/shared/hooks/useWorkspaceRecord';
 import { useTranslation } from 'react-i18next';
 import { ThemeMode } from 'shared/types';
 import { useWorkspaceContext } from '@/shared/hooks/useWorkspaceContext';
@@ -696,6 +697,11 @@ export function WorkspacesSidebarContainer({
       try {
         await workspacesApi.update(workspaceId, { pinned: false });
         queryClient.invalidateQueries({ queryKey: workspaceSummaryKeys.all });
+        // Also refresh the per-workspace record so the kebab menu's
+        // PinWorkspace action label flips from "Unpin" → "Pin".
+        queryClient.invalidateQueries({
+          queryKey: workspaceRecordKeys.byId(workspaceId),
+        });
       } catch (err) {
         console.warn('Unpin via drag failed', err);
         setOptimisticPinnedOrder(null);
@@ -794,6 +800,18 @@ export function WorkspacesSidebarContainer({
       try {
         await workspacesApi.reorderPins(orderedIds);
         queryClient.invalidateQueries({ queryKey: workspaceSummaryKeys.all });
+        // Refresh per-workspace records for every workspace whose pinned
+        // state may have flipped (newly pinned + previously pinned). The
+        // kebab menu reads workspace.pinned from this cache to label the
+        // PinWorkspace action; without this, freshly drag-pinned pills
+        // still show "Pin session" and freshly drag-unpinned pills still
+        // show "Unpin session".
+        const affected = new Set<string>([...orderedIds, ...displayed]);
+        for (const id of affected) {
+          queryClient.invalidateQueries({
+            queryKey: workspaceRecordKeys.byId(id),
+          });
+        }
       } catch (err) {
         console.warn('Reorder pins failed', err);
         setOptimisticPinnedOrder(null);
