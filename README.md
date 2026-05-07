@@ -39,11 +39,23 @@ The layout is modeled after the Code tab of Anthropic's official desktop app: a 
 
 ![](packages/public/vibe-kanban-screenshot-workspace.png)
 
+> **Beta software.** Expect bugs and rough edges. Please [file issues](https://github.com/cdesktop-ai/cdesktop/issues) when you hit them.
+
 ## Installation
 
 ```bash
 npx cdesktop
 ```
+
+## Roadmap
+
+- **Desktop app build** — ship Tauri installers for macOS, Windows, and Linux
+- **More coding agents** — surface Codex, Gemini CLI, OpenCode, and Hermes alongside Claude Code (executor abstraction is already wired)
+- **Routines** — scheduled tasks for recurring work (daily code review, weekly dependency audit, morning briefings)
+- **Voice input** — push-to-talk dictation for hands-free prompts
+- **Files panel** — browse the full project file tree, not just the session working directory
+- **Performance optimization** — faster cold start, smaller bundle, lower idle CPU
+- **Skill browser** — in-app discovery and one-click install for slash commands and skills
 
 ## Support
 
@@ -110,8 +122,6 @@ The following environment variables can be configured at build time or runtime:
 | `MCP_PORT` | Runtime | Value of `BACKEND_PORT` | MCP server connection port |
 | `DISABLE_WORKTREE_CLEANUP` | Runtime | Not set | Disable all git worktree cleanup including orphan and expired workspace cleanup (for debugging) |
 | `CDT_ALLOWED_ORIGINS` | Runtime | Not set | Comma-separated list of origins that are allowed to make backend API requests (e.g., `https://my-cdesktop.example.com`) |
-| `CDT_SHARED_API_BASE` | Runtime | Not set | Base URL for the remote/cloud API used by the local desktop app |
-| `CDT_SHARED_RELAY_API_BASE` | Runtime | Not set | Base URL for the relay API used by tunnel-mode connections |
 
 **Build-time variables** must be set when running `pnpm run build`. **Runtime variables** are read when the application starts.
 
