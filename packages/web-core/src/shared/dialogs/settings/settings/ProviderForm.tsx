@@ -405,7 +405,7 @@ export function ProviderForm({
                 key={m.id}
                 className="flex items-center justify-between text-xs px-2 py-1 rounded bg-secondary"
               >
-                <span className="font-mono">{m.id}</span>
+                <span>{m.id}</span>
                 <button
                   onClick={() => removeModel(m.id)}
                   className="text-low hover:text-error"
@@ -486,7 +486,7 @@ export function ProviderForm({
                           }
                         }}
                       />
-                      <span className="font-mono">{m.id}</span>
+                      <span>{m.id}</span>
                       {m.owned_by && (
                         <span className="text-low ml-auto">{m.owned_by}</span>
                       )}

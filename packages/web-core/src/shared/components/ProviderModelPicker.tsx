@@ -348,7 +348,7 @@ function ModelRow({
         isSelected && 'bg-muted font-medium'
       )}
     >
-      <span className="font-mono truncate">{displayName || modelId}</span>
+      <span className="truncate">{displayName || modelId}</span>
       {providerName && (
         <span className="text-low flex-shrink-0">{providerName}</span>
       )}
