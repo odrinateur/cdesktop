@@ -46,7 +46,9 @@ const EditBranchNameDialogImpl = create<EditBranchNameDialogProps>(
         modal.hide();
       },
       (err: unknown) => {
-        setError(getErrorMessage(err) || 'Failed to rename branch');
+        setError(
+          getErrorMessage(err) || t('tasks:git.editBranchDialog.errors.failed')
+        );
       }
     );
 
@@ -54,7 +56,7 @@ const EditBranchNameDialogImpl = create<EditBranchNameDialogProps>(
       const trimmedName = branchName.trim();
 
       if (!trimmedName) {
-        setError('Branch name cannot be empty');
+        setError(t('tasks:git.editBranchDialog.errors.empty'));
         return;
       }
 
@@ -65,7 +67,7 @@ const EditBranchNameDialogImpl = create<EditBranchNameDialogProps>(
       }
 
       if (trimmedName.includes(' ')) {
-        setError('Branch name cannot contain spaces');
+        setError(t('tasks:git.editBranchDialog.errors.noSpaces'));
         return;
       }
 

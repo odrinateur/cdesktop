@@ -258,7 +258,8 @@
   },
   "dialogs": {
     "selectGitRepository": "Select Git Repository",
-    "chooseExistingRepo": "Choose an existing repository from your file system"
+    "chooseExistingRepo": "Choose an existing repository from your file system",
+    "errorTitle": "Error"
   },
   "empty": {
     "noChanges": "No changes to display"
@@ -275,6 +276,12 @@
         "groups": {
           "session": "Session",
           "scripts": "Scripts"
+        }
+      },
+      "repoActions": {
+        "title": "Repository Actions",
+        "groups": {
+          "actions": "Actions"
         }
       }
     },

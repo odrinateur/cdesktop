@@ -156,7 +156,9 @@
       "pushChanges": "변경사항을 푸시하지 못했습니다",
       "mergeChanges": "변경사항을 병합하지 못했습니다",
       "rebaseBranch": "브랜치를 리베이스하지 못했습니다",
-      "branchStatusUnavailable": "브랜치 상태를 가져올 수 없습니다. 대상 브랜치는 여전히 변경할 수 있습니다."
+      "branchStatusUnavailable": "브랜치 상태를 가져올 수 없습니다. 대상 브랜치는 여전히 변경할 수 있습니다.",
+      "rebaseFallback": "리베이스 실패",
+      "attachPr": "PR 연결 실패"
     },
     "pr": {
       "open": "Open PR #{{number}}",
@@ -171,7 +173,14 @@
         "title": "Git 작업을 관리하려면 로그인하세요",
         "description": "이 작업에서 브랜치를 푸시하고 변경 사항을 병합하거나 풀 리퀘스트를 만들려면 Vibe Kanban에 로그인하세요.",
         "action": "로그인"
-      }
+      },
+      "openPullRequest": "풀 리퀘스트 열기",
+      "linkPullRequest": "풀 리퀘스트 연결",
+      "merge": "병합",
+      "createPullRequest": "풀 리퀘스트 만들기",
+      "copyRepoPath": "저장소 경로 복사",
+      "openRepoInIde": "IDE에서 저장소 열기",
+      "repositorySettings": "저장소 설정"
     },
     "mergeDialog": {
       "title": "변경사항 병합",
@@ -201,6 +210,51 @@
       },
       "states": {
         "creating": "생성 중..."
+      }
+    },
+    "dialogs": {
+      "cannotMerge": {
+        "title": "병합할 수 없음",
+        "message": "이 저장소에 열린 풀 리퀘스트가 있습니다. 직접 병합하기 전에 PR을 닫거나 병합하세요."
+      },
+      "rebaseRequired": {
+        "title": "리베이스 필요",
+        "message_one": "브랜치가 대상 브랜치보다 {{count}}개 커밋 뒤쳐져 있습니다. 먼저 리베이스하시겠습니까?",
+        "message_other": "브랜치가 대상 브랜치보다 {{count}}개 커밋 뒤쳐져 있습니다. 먼저 리베이스하시겠습니까?",
+        "confirm": "리베이스"
+      },
+      "noPrFound": {
+        "title": "풀 리퀘스트를 찾을 수 없음",
+        "message": "이 브랜치와 일치하는 열린 풀 리퀘스트를 찾을 수 없습니다. 원격에 이 브랜치의 PR이 있는지 확인하세요."
+      },
+      "prLinked": {
+        "title": "풀 리퀘스트 연결됨",
+        "message": "PR #{{number}} 연결됨",
+        "messageWithUrl": "PR #{{number}} 연결됨 — {{url}}"
+      }
+    },
+    "editBranchDialog": {
+      "errors": {
+        "empty": "브랜치 이름은 비워둘 수 없습니다",
+        "noSpaces": "브랜치 이름에 공백을 포함할 수 없습니다",
+        "failed": "브랜치 이름 변경 실패"
+      }
+    },
+    "createPrDialog": {
+      "ghCli": {
+        "homebrewRequired": "자동 설정에는 Homebrew가 필요합니다",
+        "manualSetup": "GitHub CLI 수동 설정 필요",
+        "setupFailed": "GitHub CLI 설정 실행 실패.",
+        "cliStatus": "{{provider}} CLI {{action}}",
+        "providers": {
+          "gitHub": "GitHub",
+          "azureDevOps": "Azure DevOps",
+          "unknown": "Git 호스트"
+        },
+        "actions": {
+          "notInstalled": "설치되지 않음",
+          "notLoggedIn": "로그인되지 않음"
+        }
       }
     }
   },

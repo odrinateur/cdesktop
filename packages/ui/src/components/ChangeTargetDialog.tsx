@@ -56,7 +56,7 @@ const ChangeTargetDialogImpl = NiceModal.create<ChangeTargetDialogProps>(
         const message =
           err && typeof err === 'object' && 'message' in err
             ? String(err.message)
-            : 'Failed to change target branch';
+            : t('tasks:git.errors.changeTargetBranch');
         setError(message);
       } finally {
         setIsSubmitting(false);

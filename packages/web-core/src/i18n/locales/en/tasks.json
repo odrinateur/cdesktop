@@ -245,6 +245,8 @@
       "pushChanges": "Failed to push changes",
       "mergeChanges": "Failed to merge changes",
       "rebaseBranch": "Failed to rebase branch",
+      "rebaseFallback": "Failed to rebase",
+      "attachPr": "Failed to attach PR",
       "branchStatusUnavailable": "Unable to fetch branch status. You can still change the target branch."
     },
     "pr": {
@@ -255,6 +257,13 @@
     "actions": {
       "title": "Git Actions",
       "changeTarget": "Change target",
+      "openPullRequest": "Open Pull Request",
+      "linkPullRequest": "Link Pull Request",
+      "createPullRequest": "Create Pull Request",
+      "merge": "Merge",
+      "copyRepoPath": "Copy Repo Path",
+      "openRepoInIde": "Open Repo in IDE",
+      "repositorySettings": "Repository Settings",
       "prMerged": "PR #{{number}} is already merged",
       "loginRequired": {
         "title": "Sign in to manage git actions",
@@ -265,6 +274,51 @@
     "mergeDialog": {
       "title": "Merge Changes",
       "description": "This will merge your changes into the target branch. Are you sure you want to continue?"
+    },
+    "dialogs": {
+      "cannotMerge": {
+        "title": "Cannot Merge",
+        "message": "This repository has an open pull request. Please close or merge the PR before merging directly."
+      },
+      "rebaseRequired": {
+        "title": "Rebase Required",
+        "message_one": "Your branch is {{count}} commit behind the target branch. Would you like to rebase first?",
+        "message_other": "Your branch is {{count}} commits behind the target branch. Would you like to rebase first?",
+        "confirm": "Rebase"
+      },
+      "noPrFound": {
+        "title": "No Pull Request Found",
+        "message": "No open pull request was found matching this branch. Make sure a PR exists for this branch on the remote."
+      },
+      "prLinked": {
+        "title": "Pull Request Linked",
+        "message": "Linked PR #{{number}}",
+        "messageWithUrl": "Linked PR #{{number}} — {{url}}"
+      }
+    },
+    "editBranchDialog": {
+      "errors": {
+        "empty": "Branch name cannot be empty",
+        "noSpaces": "Branch name cannot contain spaces",
+        "failed": "Failed to rename branch"
+      }
+    },
+    "createPrDialog": {
+      "ghCli": {
+        "homebrewRequired": "Homebrew is required for automatic setup",
+        "manualSetup": "GitHub CLI needs manual setup",
+        "setupFailed": "Failed to run GitHub CLI setup.",
+        "cliStatus": "{{provider}} CLI is {{action}}",
+        "providers": {
+          "gitHub": "GitHub",
+          "azureDevOps": "Azure DevOps",
+          "unknown": "Git host"
+        },
+        "actions": {
+          "notInstalled": "not installed",
+          "notLoggedIn": "not logged in"
+        }
+      }
     },
     "createRepo": {
       "dialog": {

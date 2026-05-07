@@ -130,7 +130,9 @@
       "mergeChanges": "変更のマージに失敗しました",
       "pushChanges": "変更のプッシュに失敗しました",
       "rebaseBranch": "ブランチのリベースに失敗しました",
-      "branchStatusUnavailable": "ブランチのステータスを取得できません。ターゲットブランチの変更は引き続き可能です。"
+      "branchStatusUnavailable": "ブランチのステータスを取得できません。ターゲットブランチの変更は引き続き可能です。",
+      "rebaseFallback": "リベースに失敗しました",
+      "attachPr": "PR の関連付けに失敗しました"
     },
     "labels": {
       "taskBranch": "タスクブランチ"
@@ -148,7 +150,14 @@
         "title": "Git アクションを管理するにはサインインしてください",
         "description": "このタスクでブランチのプッシュ、変更のマージ、プルリクエストの作成を行うには Vibe Kanban にサインインしてください。",
         "action": "サインイン"
-      }
+      },
+      "openPullRequest": "プルリクエストを開く",
+      "linkPullRequest": "プルリクエストをリンク",
+      "merge": "マージ",
+      "createPullRequest": "プルリクエストを作成",
+      "copyRepoPath": "リポジトリのパスをコピー",
+      "openRepoInIde": "IDE でリポジトリを開く",
+      "repositorySettings": "リポジトリ設定"
     },
     "mergeDialog": {
       "title": "変更をマージ",
@@ -202,6 +211,51 @@
       "commits_other": "コミット",
       "conflicts": "競合",
       "upToDate": "最新"
+    },
+    "dialogs": {
+      "cannotMerge": {
+        "title": "マージできません",
+        "message": "このリポジトリにはオープン中のプルリクエストがあります。直接マージする前に PR を閉じるかマージしてください。"
+      },
+      "rebaseRequired": {
+        "title": "リベースが必要です",
+        "message_one": "ブランチがターゲットブランチより {{count}} コミット遅れています。先にリベースしますか？",
+        "message_other": "ブランチがターゲットブランチより {{count}} コミット遅れています。先にリベースしますか？",
+        "confirm": "リベース"
+      },
+      "noPrFound": {
+        "title": "プルリクエストが見つかりません",
+        "message": "このブランチに一致するオープン中のプルリクエストが見つかりません。リモートにこのブランチの PR があることを確認してください。"
+      },
+      "prLinked": {
+        "title": "プルリクエストをリンクしました",
+        "message": "PR #{{number}} をリンクしました",
+        "messageWithUrl": "PR #{{number}} をリンクしました — {{url}}"
+      }
+    },
+    "editBranchDialog": {
+      "errors": {
+        "empty": "ブランチ名は空にできません",
+        "noSpaces": "ブランチ名にスペースを含めることはできません",
+        "failed": "ブランチ名の変更に失敗しました"
+      }
+    },
+    "createPrDialog": {
+      "ghCli": {
+        "homebrewRequired": "自動セットアップには Homebrew が必要です",
+        "manualSetup": "GitHub CLI を手動で設定する必要があります",
+        "setupFailed": "GitHub CLI のセットアップに失敗しました。",
+        "cliStatus": "{{provider}} CLI は{{action}}です",
+        "providers": {
+          "gitHub": "GitHub",
+          "azureDevOps": "Azure DevOps",
+          "unknown": "Git ホスト"
+        },
+        "actions": {
+          "notInstalled": "インストールされていません",
+          "notLoggedIn": "ログインされていません"
+        }
+      }
     }
   },
   "loading": "タスクを読み込み中...",

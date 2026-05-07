@@ -220,7 +220,7 @@ function RebaseDialogContent({
       }
 
       // Handle other errors
-      let message = 'Failed to rebase';
+      let message = t('tasks:git.errors.rebaseFallback');
       if (err && typeof err === 'object') {
         // Handle Result<void, GitOperationError> structure
         if (

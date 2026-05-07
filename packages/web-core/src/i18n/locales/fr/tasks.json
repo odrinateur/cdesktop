@@ -245,7 +245,9 @@
       "pushChanges": "Échec du push des modifications",
       "mergeChanges": "Échec de la fusion des modifications",
       "rebaseBranch": "Échec du rebasage de la branche",
-      "branchStatusUnavailable": "Impossible de récupérer le statut de la branche. Vous pouvez toujours changer la branche cible."
+      "branchStatusUnavailable": "Impossible de récupérer le statut de la branche. Vous pouvez toujours changer la branche cible.",
+      "rebaseFallback": "Échec du rebase",
+      "attachPr": "Échec de l'association de la PR"
     },
     "pr": {
       "open": "Ouvrir la PR #{{number}}",
@@ -260,7 +262,14 @@
         "title": "Connectez-vous pour gérer les actions git",
         "description": "Connectez-vous à Vibe Kanban pour pouvoir pousser des branches, fusionner des modifications ou ouvrir des pull requests pour cette tâche.",
         "action": "Se connecter"
-      }
+      },
+      "openPullRequest": "Ouvrir une Pull Request",
+      "linkPullRequest": "Lier une Pull Request",
+      "merge": "Fusionner",
+      "createPullRequest": "Créer une Pull Request",
+      "copyRepoPath": "Copier le chemin du dépôt",
+      "openRepoInIde": "Ouvrir le dépôt dans l'IDE",
+      "repositorySettings": "Paramètres du dépôt"
     },
     "mergeDialog": {
       "title": "Fusionner les modifications",
@@ -290,6 +299,51 @@
       },
       "states": {
         "creating": "Création en cours..."
+      }
+    },
+    "dialogs": {
+      "cannotMerge": {
+        "title": "Fusion impossible",
+        "message": "Ce dépôt a une pull request ouverte. Veuillez fermer ou fusionner la PR avant de fusionner directement."
+      },
+      "rebaseRequired": {
+        "title": "Rebase requis",
+        "message_one": "Votre branche est en retard de {{count}} commit sur la branche cible. Voulez-vous rebaser d'abord ?",
+        "message_other": "Votre branche est en retard de {{count}} commits sur la branche cible. Voulez-vous rebaser d'abord ?",
+        "confirm": "Rebaser"
+      },
+      "noPrFound": {
+        "title": "Aucune pull request trouvée",
+        "message": "Aucune pull request ouverte correspondant à cette branche n'a été trouvée. Assurez-vous qu'une PR existe pour cette branche sur le remote."
+      },
+      "prLinked": {
+        "title": "Pull request liée",
+        "message": "PR #{{number}} liée",
+        "messageWithUrl": "PR #{{number}} liée — {{url}}"
+      }
+    },
+    "editBranchDialog": {
+      "errors": {
+        "empty": "Le nom de la branche ne peut pas être vide",
+        "noSpaces": "Le nom de la branche ne peut pas contenir d'espaces",
+        "failed": "Échec du renommage de la branche"
+      }
+    },
+    "createPrDialog": {
+      "ghCli": {
+        "homebrewRequired": "Homebrew est requis pour l'installation automatique",
+        "manualSetup": "GitHub CLI nécessite une configuration manuelle",
+        "setupFailed": "Échec de la configuration de GitHub CLI.",
+        "cliStatus": "{{provider}} CLI {{action}}",
+        "providers": {
+          "gitHub": "GitHub",
+          "azureDevOps": "Azure DevOps",
+          "unknown": "Hôte Git"
+        },
+        "actions": {
+          "notInstalled": "n'est pas installé",
+          "notLoggedIn": "n'est pas connecté"
+        }
       }
     }
   },

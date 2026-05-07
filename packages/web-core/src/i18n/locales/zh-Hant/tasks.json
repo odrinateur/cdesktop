@@ -164,7 +164,9 @@
       "pushChanges": "推送變更失敗",
       "mergeChanges": "合併變更失敗",
       "rebaseBranch": "重基底分支失敗",
-      "branchStatusUnavailable": "無法取得分支狀態。您仍然可以變更目標分支。"
+      "branchStatusUnavailable": "無法取得分支狀態。您仍然可以變更目標分支。",
+      "rebaseFallback": "變基失敗",
+      "attachPr": "連結 PR 失敗"
     },
     "pr": {
       "open": "開啟 PR #{{number}}",
@@ -179,7 +181,14 @@
         "title": "登入以管理 Git 操作",
         "description": "登入 Vibe Kanban，才能推送分支、合併變更或為此任務建立 PR。",
         "action": "登入"
-      }
+      },
+      "openPullRequest": "開啟拉取請求",
+      "linkPullRequest": "連結拉取請求",
+      "merge": "合併",
+      "createPullRequest": "建立拉取請求",
+      "copyRepoPath": "複製儲存庫路徑",
+      "openRepoInIde": "在 IDE 中開啟儲存庫",
+      "repositorySettings": "儲存庫設定"
     },
     "mergeDialog": {
       "title": "合併變更",
@@ -209,6 +218,51 @@
       },
       "states": {
         "creating": "建立中..."
+      }
+    },
+    "dialogs": {
+      "cannotMerge": {
+        "title": "無法合併",
+        "message": "此儲存庫有一個未關閉的拉取請求。請先關閉或合併該 PR，再直接進行合併。"
+      },
+      "rebaseRequired": {
+        "title": "需要變基",
+        "message_one": "您的分支落後目標分支 {{count}} 個提交。是否先變基？",
+        "message_other": "您的分支落後目標分支 {{count}} 個提交。是否先變基？",
+        "confirm": "變基"
+      },
+      "noPrFound": {
+        "title": "找不到拉取請求",
+        "message": "找不到符合此分支的未關閉拉取請求。請確認遠端存在該分支的 PR。"
+      },
+      "prLinked": {
+        "title": "已連結拉取請求",
+        "message": "已連結 PR #{{number}}",
+        "messageWithUrl": "已連結 PR #{{number}} — {{url}}"
+      }
+    },
+    "editBranchDialog": {
+      "errors": {
+        "empty": "分支名稱不能為空",
+        "noSpaces": "分支名稱不能包含空格",
+        "failed": "分支重新命名失敗"
+      }
+    },
+    "createPrDialog": {
+      "ghCli": {
+        "homebrewRequired": "自動安裝需要 Homebrew",
+        "manualSetup": "需要手動設定 GitHub CLI",
+        "setupFailed": "執行 GitHub CLI 安裝失敗。",
+        "cliStatus": "{{provider}} CLI {{action}}",
+        "providers": {
+          "gitHub": "GitHub",
+          "azureDevOps": "Azure DevOps",
+          "unknown": "Git 主機"
+        },
+        "actions": {
+          "notInstalled": "未安裝",
+          "notLoggedIn": "未登入"
+        }
       }
     }
   },
