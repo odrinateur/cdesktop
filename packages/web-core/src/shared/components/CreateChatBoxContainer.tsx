@@ -134,17 +134,12 @@ export function CreateChatBoxContainer({
     if (!resolved) return;
     setSelection(resolved.providerId, resolved.modelId, resolved.reasoningId);
     setPreferredEffort(resolved.preferredEffortId);
-    setExecutorOverrides({
-      model_id: resolved.modelId,
-      reasoning_id: resolved.reasoningId ?? null,
-    });
   }, [
     providers,
     selectedProviderId,
     selectedModelId,
     setSelection,
     setPreferredEffort,
-    setExecutorOverrides,
   ]);
 
   const repoId = repos.length === 1 ? repos[0]?.id : undefined;
@@ -215,7 +210,12 @@ export function CreateChatBoxContainer({
 
     const { title } = splitMessageToTitleDescription(message);
     const data = {
-      executor_config: executorConfig,
+      executor_config: {
+        ...executorConfig,
+        model_id: selectedModelId ?? executorConfig.model_id ?? null,
+        reasoning_id:
+          selectedReasoningId ?? executorConfig.reasoning_id ?? null,
+      },
       name: title,
       prompt: message,
       repos: repos.map((r) => ({
@@ -279,6 +279,7 @@ export function CreateChatBoxContainer({
     useWorktree,
     selectedProviderId,
     selectedModelId,
+    selectedReasoningId,
     preferredEffortId,
   ]);
 
@@ -369,13 +370,9 @@ export function CreateChatBoxContainer({
                     onManageProviders={() =>
                       SettingsDialog.show({ initialSection: 'providers' })
                     }
-                    onSelectionChange={(providerId, modelId, reasoningId) => {
-                      setSelection(providerId, modelId, reasoningId);
-                      setExecutorOverrides({
-                        model_id: modelId,
-                        reasoning_id: reasoningId ?? null,
-                      });
-                    }}
+                    onSelectionChange={(providerId, modelId, reasoningId) =>
+                      setSelection(providerId, modelId, reasoningId)
+                    }
                     onPreferredEffortChange={setPreferredEffort}
                   />
                 ) : undefined

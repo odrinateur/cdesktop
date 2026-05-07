@@ -512,17 +512,12 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
     if (!resolved) return;
     setSelection(resolved.providerId, resolved.modelId, resolved.reasoningId);
     setPreferredEffort(resolved.preferredEffortId);
-    setExecutorOverrides({
-      model_id: resolved.modelId,
-      reasoning_id: resolved.reasoningId ?? null,
-    });
   }, [
     providers,
     selectedProviderId,
     selectedModelId,
     setSelection,
     setPreferredEffort,
-    setExecutorOverrides,
   ]);
 
   const {
@@ -537,6 +532,8 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
     onSelectSession,
     executorConfig,
     selectedProviderId,
+    selectedModelId,
+    selectedReasoningId,
   });
 
   const handleSend = useCallback(async () => {
@@ -611,9 +608,17 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
 
     const { prompt } = buildAgentPrompt(localMessage, [reviewMarkdown]);
 
+    // Picker is authoritative for model_id / reasoning_id — overlay before queue.
+    const effectiveConfig = {
+      ...executorConfig,
+      model_id: selectedModelId ?? executorConfig.model_id ?? null,
+      reasoning_id:
+        selectedReasoningId ?? executorConfig.reasoning_id ?? null,
+    };
+
     cancelDebouncedSave();
-    await saveToScratch(localMessage, executorConfig);
-    await queueMessage(prompt, executorConfig);
+    await saveToScratch(localMessage, effectiveConfig);
+    await queueMessage(prompt, effectiveConfig);
 
     // Clear local state after queueing (same as handleSend)
     setLocalMessage('');
@@ -623,6 +628,8 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
     localMessage,
     reviewMarkdown,
     executorConfig,
+    selectedModelId,
+    selectedReasoningId,
     queueMessage,
     cancelDebouncedSave,
     saveToScratch,
@@ -733,9 +740,15 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
   const handleSubmitEdit = useCallback(async () => {
     if (!editContext.activeEdit || !localMessage.trim() || !executorConfig)
       return;
+    const effectiveConfig = {
+      ...executorConfig,
+      model_id: selectedModelId ?? executorConfig.model_id ?? null,
+      reasoning_id:
+        selectedReasoningId ?? executorConfig.reasoning_id ?? null,
+    };
     editRetryMutation.mutate({
       message: localMessage,
-      executorConfig,
+      executorConfig: effectiveConfig,
       executionProcessId: editContext.activeEdit.processId,
       branchStatus,
       processes,
@@ -744,6 +757,8 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
     editContext.activeEdit,
     localMessage,
     executorConfig,
+    selectedModelId,
+    selectedReasoningId,
     branchStatus,
     processes,
     editRetryMutation,
@@ -994,13 +1009,9 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
       onManageProviders={() =>
         SettingsDialog.show({ initialSection: 'providers' })
       }
-      onSelectionChange={(providerId, modelId, reasoningId) => {
-        setSelection(providerId, modelId, reasoningId);
-        setExecutorOverrides({
-          model_id: modelId,
-          reasoning_id: reasoningId ?? null,
-        });
-      }}
+      onSelectionChange={(providerId, modelId, reasoningId) =>
+        setSelection(providerId, modelId, reasoningId)
+      }
       onPreferredEffortChange={setPreferredEffort}
     />
   ) : undefined;
