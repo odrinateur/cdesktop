@@ -91,7 +91,7 @@ export const RightSidebar = memo(function RightSidebar({
   const sections: SectionDef[] = useMemo(() => {
     const result: SectionDef[] = [
       {
-        title: 'Git',
+        title: t('common:panels.git'),
         persistKey: PERSIST_KEYS.gitPanelRepositories,
         visible: repos.some((r) => r.is_git),
         expanded: gitExpanded,
@@ -104,7 +104,7 @@ export const RightSidebar = memo(function RightSidebar({
         actions: [],
       },
       {
-        title: 'Terminal',
+        title: t('common:panels.terminal'),
         persistKey: PERSIST_KEYS.terminalSection,
         visible: isTerminalVisible && !isTerminalExpanded,
         expanded: terminalExpanded,
@@ -125,7 +125,7 @@ export const RightSidebar = memo(function RightSidebar({
       case RIGHT_MAIN_PANEL_MODES.CHANGES:
         if (selectedWorkspace) {
           result.unshift({
-            title: 'Changes',
+            title: t('common:panels.changes'),
             persistKey: PERSIST_KEYS.changesSection,
             visible: hasUpperContent,
             expanded: upperExpanded,
@@ -143,7 +143,7 @@ export const RightSidebar = memo(function RightSidebar({
         break;
       case RIGHT_MAIN_PANEL_MODES.LOGS:
         result.unshift({
-          title: 'Logs',
+          title: t('common:panels.logs'),
           persistKey: PERSIST_KEYS.rightPanelprocesses,
           visible: hasUpperContent,
           expanded: upperExpanded,
@@ -154,7 +154,7 @@ export const RightSidebar = memo(function RightSidebar({
       case RIGHT_MAIN_PANEL_MODES.PREVIEW:
         if (selectedWorkspace) {
           result.unshift({
-            title: 'Preview',
+            title: t('common:panels.preview'),
             persistKey: PERSIST_KEYS.rightPanelPreview,
             visible: hasUpperContent,
             expanded: upperExpanded,

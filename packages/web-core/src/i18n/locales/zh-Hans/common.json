@@ -201,7 +201,8 @@
   },
   "dialogs": {
     "selectGitRepository": "选择 Git 仓库",
-    "chooseExistingRepo": "从文件系统中选择现有仓库"
+    "chooseExistingRepo": "从文件系统中选择现有仓库",
+    "errorTitle": "错误"
   },
   "empty": {
     "noChanges": "没有要显示的更改"
@@ -218,6 +219,12 @@
         "groups": {
           "session": "会话",
           "scripts": "脚本"
+        }
+      },
+      "repoActions": {
+        "title": "仓库操作",
+        "groups": {
+          "actions": "操作"
         }
       }
     },

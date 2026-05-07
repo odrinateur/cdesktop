@@ -31,15 +31,23 @@ export type RepoAction =
   | 'rebase'
   | 'push';
 
-const repoActionOptions: SplitButtonOption<RepoAction>[] = [
-  {
-    value: 'pull-request',
-    label: 'Open pull request',
-    icon: GitPullRequestIcon,
-  },
-  { value: 'link-pr', label: 'Link pull request', icon: LinkIcon },
-  { value: 'merge', label: 'Merge', icon: GitMergeIcon },
-];
+function getRepoActionOptions(
+  t: (key: string) => string
+): SplitButtonOption<RepoAction>[] {
+  return [
+    {
+      value: 'pull-request',
+      label: t('git.actions.openPullRequest'),
+      icon: GitPullRequestIcon,
+    },
+    {
+      value: 'link-pr',
+      label: t('git.actions.linkPullRequest'),
+      icon: LinkIcon,
+    },
+    { value: 'merge', label: t('git.actions.merge'), icon: GitMergeIcon },
+  ];
+}
 
 interface RepoCardProps {
   repoId: string;
@@ -97,14 +105,14 @@ export function RepoCard({
   const hasPrLinked = !!prNumber;
   const availableActionOptions = useMemo(
     () =>
-      repoActionOptions.filter((opt) => {
+      getRepoActionOptions(t).filter((opt) => {
         if (opt.value === 'pull-request' && hasPrOpen) return false;
         if (opt.value === 'link-pr' && hasPrLinked) return false;
         if (opt.value === 'merge' && (hasPrOpen || isTargetRemote))
           return false;
         return true;
       }),
-    [hasPrOpen, hasPrLinked, isTargetRemote]
+    [hasPrOpen, hasPrLinked, isTargetRemote, t]
   );
 
   // If current selection is unavailable, fall back to the first available option.

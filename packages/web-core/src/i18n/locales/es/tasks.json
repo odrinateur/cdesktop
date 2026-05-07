@@ -130,7 +130,9 @@
       "mergeChanges": "Error al fusionar cambios",
       "pushChanges": "Error al enviar cambios",
       "rebaseBranch": "Error al hacer rebase de la rama",
-      "branchStatusUnavailable": "No se puede obtener el estado de la rama. Aún puedes cambiar la rama de destino."
+      "branchStatusUnavailable": "No se puede obtener el estado de la rama. Aún puedes cambiar la rama de destino.",
+      "rebaseFallback": "No se pudo hacer rebase",
+      "attachPr": "No se pudo adjuntar la PR"
     },
     "labels": {
       "taskBranch": "Rama de tarea"
@@ -174,7 +176,14 @@
         "title": "Inicia sesión para gestionar acciones de Git",
         "description": "Inicia sesión en Vibe Kanban para enviar ramas, fusionar cambios o abrir pull requests para esta tarea.",
         "action": "Iniciar sesión"
-      }
+      },
+      "openPullRequest": "Abrir Pull Request",
+      "linkPullRequest": "Vincular Pull Request",
+      "merge": "Fusionar",
+      "createPullRequest": "Crear Pull Request",
+      "copyRepoPath": "Copiar ruta del repositorio",
+      "openRepoInIde": "Abrir repositorio en el IDE",
+      "repositorySettings": "Configuración del repositorio"
     },
     "mergeDialog": {
       "title": "Fusionar cambios",
@@ -202,6 +211,51 @@
       "commits_other": "commits",
       "conflicts": "Conflictos",
       "upToDate": "Al día"
+    },
+    "dialogs": {
+      "cannotMerge": {
+        "title": "No se puede fusionar",
+        "message": "Este repositorio tiene una pull request abierta. Cierra o fusiona la PR antes de fusionar directamente."
+      },
+      "rebaseRequired": {
+        "title": "Rebase necesario",
+        "message_one": "Tu rama está {{count}} commit por detrás de la rama destino. ¿Quieres hacer rebase primero?",
+        "message_other": "Tu rama está {{count}} commits por detrás de la rama destino. ¿Quieres hacer rebase primero?",
+        "confirm": "Rebase"
+      },
+      "noPrFound": {
+        "title": "No se encontró pull request",
+        "message": "No se encontró una pull request abierta para esta rama. Asegúrate de que exista una PR para esta rama en el remoto."
+      },
+      "prLinked": {
+        "title": "Pull request vinculada",
+        "message": "PR #{{number}} vinculada",
+        "messageWithUrl": "PR #{{number}} vinculada — {{url}}"
+      }
+    },
+    "editBranchDialog": {
+      "errors": {
+        "empty": "El nombre de la rama no puede estar vacío",
+        "noSpaces": "El nombre de la rama no puede contener espacios",
+        "failed": "No se pudo renombrar la rama"
+      }
+    },
+    "createPrDialog": {
+      "ghCli": {
+        "homebrewRequired": "Homebrew es necesario para la instalación automática",
+        "manualSetup": "GitHub CLI requiere configuración manual",
+        "setupFailed": "No se pudo configurar GitHub CLI.",
+        "cliStatus": "{{provider}} CLI {{action}}",
+        "providers": {
+          "gitHub": "GitHub",
+          "azureDevOps": "Azure DevOps",
+          "unknown": "Servidor Git"
+        },
+        "actions": {
+          "notInstalled": "no está instalado",
+          "notLoggedIn": "no ha iniciado sesión"
+        }
+      }
     }
   },
   "loading": "Cargando tareas...",

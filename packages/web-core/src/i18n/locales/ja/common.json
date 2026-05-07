@@ -201,7 +201,8 @@
   },
   "dialogs": {
     "selectGitRepository": "Gitリポジトリを選択",
-    "chooseExistingRepo": "ファイルシステムから既存のリポジトリを選択してください"
+    "chooseExistingRepo": "ファイルシステムから既存のリポジトリを選択してください",
+    "errorTitle": "エラー"
   },
   "empty": {
     "noChanges": "表示する変更がありません"
@@ -218,6 +219,12 @@
         "groups": {
           "session": "セッション",
           "scripts": "スクリプト"
+        }
+      },
+      "repoActions": {
+        "title": "リポジトリアクション",
+        "groups": {
+          "actions": "アクション"
         }
       }
     },

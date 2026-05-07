@@ -124,13 +124,13 @@ export const Pages: Record<StaticPageId, CommandBarPage> = {
   // Repository actions page - shown when clicking "..." on a repo card or via CMD+K
   repoActions: {
     id: 'repo-actions',
-    title: 'Repository Actions',
+    title: 'common:commandBar.pages.repoActions.title',
     parent: 'root',
     isVisible: (ctx) => ctx.hasWorkspace && ctx.hasGitRepos,
     items: [
       {
         type: 'group',
-        label: 'Actions',
+        label: 'common:commandBar.pages.repoActions.groups.actions',
         items: [
           { type: 'action', action: Actions.RepoCopyPath },
           { type: 'action', action: Actions.RepoOpenInIDE },

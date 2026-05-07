@@ -164,7 +164,9 @@
       "pushChanges": "推送更改失败",
       "mergeChanges": "合并更改失败",
       "rebaseBranch": "变基分支失败",
-      "branchStatusUnavailable": "无法获取分支状态。您仍然可以更改目标分支。"
+      "branchStatusUnavailable": "无法获取分支状态。您仍然可以更改目标分支。",
+      "rebaseFallback": "变基失败",
+      "attachPr": "关联 PR 失败"
     },
     "pr": {
       "open": "打开 PR #{{number}}",
@@ -179,7 +181,14 @@
         "title": "登录以管理 git 操作",
         "description": "登录 Vibe Kanban，以便您可以推送分支、合并更改或为此任务打开拉取请求。",
         "action": "登录"
-      }
+      },
+      "openPullRequest": "打开拉取请求",
+      "linkPullRequest": "关联拉取请求",
+      "merge": "合并",
+      "createPullRequest": "创建拉取请求",
+      "copyRepoPath": "复制仓库路径",
+      "openRepoInIde": "在 IDE 中打开仓库",
+      "repositorySettings": "仓库设置"
     },
     "mergeDialog": {
       "title": "合并更改",
@@ -209,6 +218,51 @@
       },
       "states": {
         "creating": "创建中..."
+      }
+    },
+    "dialogs": {
+      "cannotMerge": {
+        "title": "无法合并",
+        "message": "此仓库有一个未关闭的拉取请求。请先关闭或合并该 PR，然后再直接合并。"
+      },
+      "rebaseRequired": {
+        "title": "需要变基",
+        "message_one": "您的分支落后目标分支 {{count}} 个提交。是否先变基？",
+        "message_other": "您的分支落后目标分支 {{count}} 个提交。是否先变基？",
+        "confirm": "变基"
+      },
+      "noPrFound": {
+        "title": "未找到拉取请求",
+        "message": "未找到与此分支匹配的未关闭拉取请求。请确认远程存在该分支的 PR。"
+      },
+      "prLinked": {
+        "title": "已关联拉取请求",
+        "message": "已关联 PR #{{number}}",
+        "messageWithUrl": "已关联 PR #{{number}} — {{url}}"
+      }
+    },
+    "editBranchDialog": {
+      "errors": {
+        "empty": "分支名称不能为空",
+        "noSpaces": "分支名称不能包含空格",
+        "failed": "分支重命名失败"
+      }
+    },
+    "createPrDialog": {
+      "ghCli": {
+        "homebrewRequired": "自动安装需要 Homebrew",
+        "manualSetup": "需要手动配置 GitHub CLI",
+        "setupFailed": "运行 GitHub CLI 安装失败。",
+        "cliStatus": "{{provider}} CLI {{action}}",
+        "providers": {
+          "gitHub": "GitHub",
+          "azureDevOps": "Azure DevOps",
+          "unknown": "Git 主机"
+        },
+        "actions": {
+          "notInstalled": "未安装",
+          "notLoggedIn": "未登录"
+        }
       }
     }
   },

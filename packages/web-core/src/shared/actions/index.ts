@@ -839,7 +839,7 @@ export const Actions = {
   // === Git Actions ===
   GitCreatePR: {
     id: 'git-create-pr',
-    label: 'Create Pull Request',
+    label: () => i18n.t('tasks:git.actions.createPullRequest'),
     icon: GitPullRequestIcon,
     shortcut: 'X P',
     requiresTarget: ActionTargetType.GIT,
@@ -875,7 +875,7 @@ export const Actions = {
 
   GitLinkPR: {
     id: 'git-link-pr',
-    label: 'Link Pull Request',
+    label: () => i18n.t('tasks:git.actions.linkPullRequest'),
     icon: LinkIcon,
     requiresTarget: ActionTargetType.GIT,
     isVisible: (ctx) => ctx.hasWorkspace && ctx.hasGitRepos && !ctx.hasOpenPR,
@@ -891,30 +891,36 @@ export const Actions = {
         });
 
         await ConfirmDialog.show({
-          title: 'Pull Request Linked',
-          message: `Linked PR #${result.data.pr_number}${result.data.pr_url ? ` — ${result.data.pr_url}` : ''}`,
-          confirmText: 'OK',
+          title: i18n.t('tasks:git.dialogs.prLinked.title'),
+          message: result.data.pr_url
+            ? i18n.t('tasks:git.dialogs.prLinked.messageWithUrl', {
+                number: result.data.pr_number,
+                url: result.data.pr_url,
+              })
+            : i18n.t('tasks:git.dialogs.prLinked.message', {
+                number: result.data.pr_number,
+              }),
+          confirmText: i18n.t('common:ok'),
           showCancelButton: false,
           variant: 'success',
         });
       } else if (result.success && !result.data.pr_attached) {
         await ConfirmDialog.show({
-          title: 'No Pull Request Found',
-          message:
-            'No open pull request was found matching this branch. Make sure a PR exists for this branch on the remote.',
-          confirmText: 'OK',
+          title: i18n.t('tasks:git.dialogs.noPrFound.title'),
+          message: i18n.t('tasks:git.dialogs.noPrFound.message'),
+          confirmText: i18n.t('common:ok'),
           showCancelButton: false,
           variant: 'info',
         });
       } else if (!result.success) {
-        throw new Error(result.message || 'Failed to attach PR');
+        throw new Error(result.message || i18n.t('tasks:git.errors.attachPr'));
       }
     },
   },
 
   GitMerge: {
     id: 'git-merge',
-    label: 'Merge',
+    label: () => i18n.t('tasks:git.actions.merge'),
     icon: GitMergeIcon,
     shortcut: 'X M',
     requiresTarget: ActionTargetType.GIT,
@@ -930,10 +936,9 @@ export const Actions = {
       );
       if (hasOpenPR) {
         await ConfirmDialog.show({
-          title: 'Cannot Merge',
-          message:
-            'This repository has an open pull request. Please close or merge the PR before merging directly.',
-          confirmText: 'OK',
+          title: i18n.t('tasks:git.dialogs.cannotMerge.title'),
+          message: i18n.t('tasks:git.dialogs.cannotMerge.message'),
+          confirmText: i18n.t('common:ok'),
           showCancelButton: false,
         });
         return;
@@ -978,10 +983,12 @@ export const Actions = {
       if (commitsBehind > 0) {
         // Prompt user to rebase first
         const confirmRebase = await ConfirmDialog.show({
-          title: 'Rebase Required',
-          message: `Your branch is ${commitsBehind} commit${commitsBehind === 1 ? '' : 's'} behind the target branch. Would you like to rebase first?`,
-          confirmText: 'Rebase',
-          cancelText: 'Cancel',
+          title: i18n.t('tasks:git.dialogs.rebaseRequired.title'),
+          message: i18n.t('tasks:git.dialogs.rebaseRequired.message', {
+            count: commitsBehind,
+          }),
+          confirmText: i18n.t('tasks:git.dialogs.rebaseRequired.confirm'),
+          cancelText: i18n.t('common:actions.cancel'),
         });
 
         if (confirmRebase === 'confirmed') {
@@ -995,11 +1002,10 @@ export const Actions = {
       }
 
       const confirmResult = await ConfirmDialog.show({
-        title: 'Merge Branch',
-        message:
-          'Are you sure you want to merge this branch into the target branch?',
-        confirmText: 'Merge',
-        cancelText: 'Cancel',
+        title: i18n.t('tasks:git.mergeDialog.title'),
+        message: i18n.t('tasks:git.mergeDialog.description'),
+        confirmText: i18n.t('tasks:git.actions.merge'),
+        cancelText: i18n.t('common:actions.cancel'),
       });
 
       if (confirmResult === 'confirmed') {
@@ -1011,7 +1017,7 @@ export const Actions = {
 
   GitRebase: {
     id: 'git-rebase',
-    label: 'Rebase',
+    label: () => i18n.t('tasks:rebase.common.action'),
     icon: ArrowsClockwiseIcon,
     shortcut: 'X R',
     requiresTarget: ActionTargetType.GIT,
@@ -1027,7 +1033,7 @@ export const Actions = {
 
   GitChangeTarget: {
     id: 'git-change-target',
-    label: 'Change Target Branch',
+    label: () => i18n.t('tasks:git.actions.changeTarget'),
     icon: CrosshairIcon,
     requiresTarget: ActionTargetType.GIT,
     isVisible: (ctx) => ctx.hasWorkspace && ctx.hasGitRepos,
@@ -1063,7 +1069,7 @@ export const Actions = {
 
   GitPush: {
     id: 'git-push',
-    label: 'Push',
+    label: () => i18n.t('tasks:git.states.push'),
     icon: ArrowUpIcon,
     shortcut: 'X U',
     requiresTarget: ActionTargetType.GIT,
@@ -1089,7 +1095,7 @@ export const Actions = {
   // === Repo-specific Actions (for command bar when selecting a repo) ===
   RepoCopyPath: {
     id: 'repo-copy-path',
-    label: 'Copy Repo Path',
+    label: () => i18n.t('tasks:git.actions.copyRepoPath'),
     icon: CopyIcon,
     requiresTarget: ActionTargetType.GIT,
     isVisible: (ctx) => ctx.hasWorkspace && ctx.hasGitRepos,
@@ -1108,7 +1114,7 @@ export const Actions = {
 
   RepoOpenInIDE: {
     id: 'repo-open-in-ide',
-    label: 'Open Repo in IDE',
+    label: () => i18n.t('tasks:git.actions.openRepoInIde'),
     icon: DesktopIcon,
     requiresTarget: ActionTargetType.GIT,
     isVisible: (ctx) => ctx.hasWorkspace && ctx.hasGitRepos,
@@ -1130,7 +1136,7 @@ export const Actions = {
 
   RepoSettings: {
     id: 'repo-settings',
-    label: 'Repository Settings',
+    label: () => i18n.t('tasks:git.actions.repositorySettings'),
     icon: GearIcon,
     requiresTarget: ActionTargetType.GIT,
     isVisible: (ctx) => ctx.hasWorkspace && ctx.hasGitRepos,

@@ -99,8 +99,8 @@ const CreatePRDialogImpl = create<CreatePRDialogProps>(
 
     const getGhCliHelpTitle = (variant: GhCliSupportVariant) =>
       variant === 'homebrew'
-        ? 'Homebrew is required for automatic setup'
-        : 'GitHub CLI needs manual setup';
+        ? t('tasks:git.createPrDialog.ghCli.homebrewRequired')
+        : t('tasks:git.createPrDialog.ghCli.manualSetup');
 
     // Initialize form when dialog opens
     useEffect(() => {
@@ -224,7 +224,7 @@ const CreatePRDialogImpl = create<CreatePRDialogProps>(
       setCreatingPR(false);
 
       const defaultGhCliErrorMessage =
-        result.message || 'Failed to run GitHub CLI setup.';
+        result.message || t('tasks:git.createPrDialog.ghCli.setupFailed');
 
       const showGhCliSetupDialog = async () => {
         const setupResult = await GhCliSetupDialog.show({
@@ -245,15 +245,20 @@ const CreatePRDialogImpl = create<CreatePRDialogProps>(
           } else {
             const providerName =
               result.error.provider === 'git_hub'
-                ? 'GitHub'
+                ? t('tasks:git.createPrDialog.ghCli.providers.gitHub')
                 : result.error.provider === 'azure_dev_ops'
-                  ? 'Azure DevOps'
-                  : 'Git host';
+                  ? t('tasks:git.createPrDialog.ghCli.providers.azureDevOps')
+                  : t('tasks:git.createPrDialog.ghCli.providers.unknown');
             const action =
               result.error.type === 'cli_not_installed'
-                ? 'not installed'
-                : 'not logged in';
-            setError(`${providerName} CLI is ${action}`);
+                ? t('tasks:git.createPrDialog.ghCli.actions.notInstalled')
+                : t('tasks:git.createPrDialog.ghCli.actions.notLoggedIn');
+            setError(
+              t('tasks:git.createPrDialog.ghCli.cliStatus', {
+                provider: providerName,
+                action,
+              })
+            );
             setGhCliHelp(null);
           }
           return;
