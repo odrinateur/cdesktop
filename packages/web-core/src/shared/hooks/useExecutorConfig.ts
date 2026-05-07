@@ -17,12 +17,11 @@ function getProfileKey(
   return `${executor}:${variant ?? 'DEFAULT'}`;
 }
 
-const OVERRIDE_FIELDS = [
-  'model_id',
-  'agent_id',
-  'reasoning_id',
-  'permission_policy',
-] as const;
+// model_id and reasoning_id are the picker's authority — they're injected
+// into the request payload at submit time, not resolved here. Keeping them
+// out of the fallback chain prevents lastUsedConfig / scratch / preset from
+// silently overriding the picker's choice.
+const OVERRIDE_FIELDS = ['agent_id', 'permission_policy'] as const;
 
 /**
  * Resolves effective executor.
@@ -150,21 +149,11 @@ function useEffectiveOverrides(
     };
 
     for (const field of OVERRIDE_FIELDS) {
-      const modelMustMatch = field === 'reasoning_id';
-      const scratchModelMatches =
-        !modelMustMatch || scratchConfig?.model_id === resolved.model_id;
-      const lastUsedModelMatches =
-        !modelMustMatch || lastUsedConfig?.model_id === resolved.model_id;
-
       const value =
         field in userSelections
           ? userSelections[field]
-          : ((scratchMatches && scratchModelMatches
-              ? scratchConfig?.[field]
-              : undefined) ??
-            (lastUsedMatches && lastUsedModelMatches
-              ? lastUsedConfig?.[field]
-              : undefined) ??
+          : ((scratchMatches ? scratchConfig?.[field] : undefined) ??
+            (lastUsedMatches ? lastUsedConfig?.[field] : undefined) ??
             presetOptions?.[field]);
       if (value !== undefined) {
         (resolved as Record<string, unknown>)[field] = value;
@@ -299,8 +288,8 @@ export function useExecutorConfig({
     [executor.effective, persist]
   );
 
-  // Model selector updates individual override fields (merge into existing).
-  // Changing model clears reasoning selection; other overrides are independent.
+  // Sets non-model override fields (agent_id, permission_policy). model_id
+  // and reasoning_id live in the picker, not here.
   // persist() must run outside the setUserSelections updater — calling it
   // inside dispatches to CreateModeProvider during CreateChatBoxContainer's
   // render, which React 19 treats as setState-during-render.
@@ -308,9 +297,6 @@ export function useExecutorConfig({
     (partial: Partial<ExecutorConfig>) => {
       const prev = userSelectionsRef.current;
       const next = { ...prev, ...partial };
-      if ('model_id' in partial && !('reasoning_id' in partial)) {
-        delete next.reasoning_id;
-      }
 
       userSelectionsRef.current = next;
       setUserSelections(next);

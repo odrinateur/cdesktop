@@ -12,10 +12,14 @@ interface UseSessionSendOptions {
   isNewSessionMode: boolean;
   /** Callback when session is selected (to exit new session mode) */
   onSelectSession?: (sessionId: string) => void;
-  /** Unified executor config (executor + variant + overrides) */
+  /** Unified executor config (executor + variant + non-model overrides) */
   executorConfig?: ExecutorConfig | null;
   /** Provider ID selected via the per-message provider-model picker */
   selectedProviderId?: string | null;
+  /** Model ID selected via the picker — authoritative for this send */
+  selectedModelId?: string | null;
+  /** Reasoning effort selected via the picker — authoritative for this send */
+  selectedReasoningId?: string | null;
 }
 
 interface UseSessionSendResult {
@@ -45,6 +49,8 @@ export function useSessionSend({
   onSelectSession,
   executorConfig,
   selectedProviderId,
+  selectedModelId,
+  selectedReasoningId,
 }: UseSessionSendOptions): UseSessionSendResult {
   const { mutateAsync: createSession, isPending: isCreatingSession } =
     useCreateSession();
@@ -62,6 +68,16 @@ export function useSessionSend({
 
       setError(null);
 
+      // Picker is authoritative for model_id / reasoning_id; overlay them
+      // onto executor_config right before send so any leftover values from
+      // scratch/lastUsed/preset can't leak through.
+      const effectiveConfig: ExecutorConfig = {
+        ...executorConfig,
+        model_id: selectedModelId ?? executorConfig.model_id ?? null,
+        reasoning_id:
+          selectedReasoningId ?? executorConfig.reasoning_id ?? null,
+      };
+
       if (isNewSessionMode) {
         // New session flow
         if (!workspaceId) {
@@ -72,7 +88,7 @@ export function useSessionSend({
           const session = await createSession({
             workspaceId,
             prompt: trimmed,
-            executorConfig,
+            executorConfig: effectiveConfig,
             selectedProviderId,
           });
           onSelectSession?.(session.id);
@@ -91,7 +107,7 @@ export function useSessionSend({
         try {
           await sessionsApi.followUp(sessionId, {
             prompt: trimmed,
-            executor_config: executorConfig,
+            executor_config: effectiveConfig,
             retry_process_id: null,
             force_when_dirty: null,
             perform_git_reset: null,
@@ -115,6 +131,8 @@ export function useSessionSend({
       onSelectSession,
       executorConfig,
       selectedProviderId,
+      selectedModelId,
+      selectedReasoningId,
     ]
   );
 
