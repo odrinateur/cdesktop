@@ -332,15 +332,14 @@ export function SessionChatBox<TExecutor extends string = string>({
             })
           : t('common:createMode.placeholder.typeForCommands');
 
-  // Cmd+Enter handler
-  const handleCmdEnter = () => {
-    // AskUserQuestion mode: Enter submits custom text as answer
+  // Ref-dispatch so Lexical's listener always sees the freshest canSend/actions (avoids stale-closure no-op on fast Enter).
+  const latestCmdEnterRef = useRef<() => void>(() => {});
+  latestCmdEnterRef.current = () => {
     if (isInAskQuestionMode && hasContent) {
       askQuestionBannerRef.current?.submitCustomAnswer(editor.value);
       editor.onChange('');
       return;
     }
-    // Approval mode: Cmd+Enter triggers approve or request changes based on input
     if (isInApprovalMode && !approvalMode?.isTimedOut) {
       if (canSend) {
         approvalMode?.onRequestChanges();
@@ -359,6 +358,7 @@ export function SessionChatBox<TExecutor extends string = string>({
       actions.onSend();
     }
   };
+  const handleCmdEnter = () => latestCmdEnterRef.current();
 
   // File input handlers
   const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
