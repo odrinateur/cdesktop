@@ -173,8 +173,8 @@ export function SlashCommandTypeaheadPlugin({
                       setHighlightedIndex={setHighlightedIndex}
                       onClick={() => selectOptionAndCleanUp(option)}
                     >
-                      <div className="flex items-center gap-half font-medium">
-                        <span className="font-mono">
+                      <div className="flex items-center gap-half font-medium min-w-0">
+                        <span className="font-mono truncate">
                           /{option.command.name}
                         </span>
                       </div>
