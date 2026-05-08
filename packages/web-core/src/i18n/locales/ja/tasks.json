@@ -509,7 +509,17 @@
       "modified": "変更済み",
       "deleted": "削除済み",
       "renamed": "名前変更済み"
-    }
+    },
+    "diffAction": {
+      "edit": "編集",
+      "write": "書き込み",
+      "delete": "削除",
+      "rename": "名前変更",
+      "renameTo": "名前変更 → {{newPath}}",
+      "change": "変更"
+    },
+    "editCount_one": "{{count}} 編集",
+    "editCount_other": "{{count}} 編集"
   },
   "scriptFixer": {
     "setupScriptTitle": "セットアップスクリプトを修正",

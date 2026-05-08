@@ -509,7 +509,17 @@
       "modified": "수정됨",
       "deleted": "삭제됨",
       "renamed": "이름 변경됨"
-    }
+    },
+    "diffAction": {
+      "edit": "편집",
+      "write": "쓰기",
+      "delete": "삭제",
+      "rename": "이름 변경",
+      "renameTo": "이름 변경 → {{newPath}}",
+      "change": "변경"
+    },
+    "editCount_one": "편집 {{count}}개",
+    "editCount_other": "편집 {{count}}개"
   },
   "scriptFixer": {
     "setupScriptTitle": "설정 스크립트 수정",

@@ -51,10 +51,30 @@
       "createdTask": "Created task: {{description}}",
       "todoOperation": "{{operation}} todos"
     },
+    "aggregated": {
+      "label": {
+        "read": "Read",
+        "search": "Search",
+        "fetched": "Fetched",
+        "edit": "Edit",
+        "fetch": "Fetch"
+      },
+      "unit": {
+        "file_one": "{{count}} file",
+        "file_other": "{{count}} files",
+        "command_one": "{{count}} command",
+        "command_other": "{{count}} commands",
+        "url_one": "{{count}} URL",
+        "url_other": "{{count}} URLs"
+      }
+    },
     "subagent": {
       "defaultType": "Subagent"
     },
     "loadingEarlierMessages": "Loading earlier messages"
+  },
+  "changesPanel": {
+    "notGitRepo": "Not a Git repo — no diff available"
   },
   "folderPicker": {
     "legend": "Click folder names to navigate • Use action buttons to select",

@@ -59,10 +59,30 @@
       "createdTask": "작업 생성: {{description}}",
       "todoOperation": "{{operation}} 할 일"
     },
+    "aggregated": {
+      "label": {
+        "read": "읽기",
+        "search": "검색",
+        "fetched": "가져옴",
+        "edit": "편집",
+        "fetch": "가져오기"
+      },
+      "unit": {
+        "file_one": "파일 {{count}}개",
+        "file_other": "파일 {{count}}개",
+        "command_one": "명령 {{count}}개",
+        "command_other": "명령 {{count}}개",
+        "url_one": "URL {{count}}개",
+        "url_other": "URL {{count}}개"
+      }
+    },
     "subagent": {
       "defaultType": "서브에이전트"
     },
     "loadingEarlierMessages": "이전 메시지 불러오는 중"
+  },
+  "changesPanel": {
+    "notGitRepo": "Git 저장소가 아닙니다 — diff를 사용할 수 없습니다"
   },
   "language": {
     "browserDefault": "브라우저 기본값"

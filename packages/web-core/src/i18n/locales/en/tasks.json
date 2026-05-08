@@ -196,7 +196,17 @@
     },
     "updatedTodos": "Updated Todos",
     "viewInChangesPanel": "View in changes panel",
-    "unableToRenderDiff": "Unable to render diff."
+    "unableToRenderDiff": "Unable to render diff.",
+    "diffAction": {
+      "edit": "Edit",
+      "write": "Write",
+      "delete": "Delete",
+      "rename": "Rename",
+      "renameTo": "Rename → {{newPath}}",
+      "change": "Change"
+    },
+    "editCount_one": "{{count}} edit",
+    "editCount_other": "{{count}} edits"
   },
   "attempt": {
     "actions": {

@@ -93,18 +93,21 @@ function buildDiffContent(
   return undefined;
 }
 
-function getActionLabel(change: ChatAggregatedDiffChange) {
+function useActionLabel(change: ChatAggregatedDiffChange) {
+  const { t } = useTranslation('tasks');
   switch (change.action) {
     case 'edit':
-      return 'Edit';
+      return t('conversation.diffAction.edit');
     case 'write':
-      return 'Write';
+      return t('conversation.diffAction.write');
     case 'delete':
-      return 'Delete';
+      return t('conversation.diffAction.delete');
     case 'rename':
-      return change.new_path ? `Rename → ${change.new_path}` : 'Rename';
+      return change.new_path
+        ? t('conversation.diffAction.renameTo', { newPath: change.new_path })
+        : t('conversation.diffAction.rename');
     default:
-      return 'Change';
+      return t('conversation.diffAction.change');
   }
 }
 
@@ -123,6 +126,7 @@ function DiffEntry({
     diffContent?: ChatFileEntryDiffInput;
   }) => React.ReactNode;
 }) {
+  const actionLabel = useActionLabel(change);
   const { additions, deletions } = useMemo(() => {
     if (change.action === 'edit' && change.unified_diff) {
       return parseUnifiedDiffStats(change.unified_diff);
@@ -150,7 +154,7 @@ function DiffEntry({
           <span className="relative shrink-0">
             {status && <ToolStatusDot status={status} className="size-2" />}
           </span>
-          <span className="text-sm text-low">{getActionLabel(change)}</span>
+          <span className="text-sm text-low">{actionLabel}</span>
           {hasStats && (
             <span className="text-sm shrink-0">
               {(additions ?? writeAdditions) !== undefined &&
@@ -290,7 +294,7 @@ export function ChatAggregatedDiffEntries({
           </span>
           <span className="text-sm text-normal truncate">{filePath}</span>
           <span className="text-xs text-low shrink-0">
-            · {entries.length} {entries.length === 1 ? 'edit' : 'edits'}
+            · {t('conversation.editCount', { count: entries.length })}
           </span>
           {!isVSCode && onOpenInChanges && (
             <button

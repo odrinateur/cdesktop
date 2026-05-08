@@ -46,10 +46,30 @@
       "createdTask": "Tâche créée : {{description}}",
       "todoOperation": "{{operation}} tâches à faire"
     },
+    "aggregated": {
+      "label": {
+        "read": "Lire",
+        "search": "Rechercher",
+        "fetched": "Récupéré",
+        "edit": "Modifier",
+        "fetch": "Récupérer"
+      },
+      "unit": {
+        "file_one": "{{count}} fichier",
+        "file_other": "{{count}} fichiers",
+        "command_one": "{{count}} commande",
+        "command_other": "{{count}} commandes",
+        "url_one": "{{count}} URL",
+        "url_other": "{{count}} URL"
+      }
+    },
     "subagent": {
       "defaultType": "Sous-agent"
     },
     "loadingEarlierMessages": "Chargement des messages précédents"
+  },
+  "changesPanel": {
+    "notGitRepo": "Pas un dépôt Git — aucun diff disponible"
   },
   "folderPicker": {
     "legend": "Cliquez sur les noms de dossiers pour naviguer • Utilisez les boutons d'action pour sélectionner",

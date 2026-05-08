@@ -59,10 +59,30 @@
       "createdTask": "Creó tarea: {{description}}",
       "todoOperation": "{{operation}} tareas pendientes"
     },
+    "aggregated": {
+      "label": {
+        "read": "Leer",
+        "search": "Buscar",
+        "fetched": "Obtenido",
+        "edit": "Editar",
+        "fetch": "Obtener"
+      },
+      "unit": {
+        "file_one": "{{count}} archivo",
+        "file_other": "{{count}} archivos",
+        "command_one": "{{count}} comando",
+        "command_other": "{{count}} comandos",
+        "url_one": "{{count}} URL",
+        "url_other": "{{count}} URL"
+      }
+    },
     "subagent": {
       "defaultType": "Subagente"
     },
     "loadingEarlierMessages": "Cargando mensajes anteriores"
+  },
+  "changesPanel": {
+    "notGitRepo": "No es un repositorio Git — sin diff disponible"
   },
   "language": {
     "browserDefault": "Predeterminado del navegador"

@@ -509,7 +509,17 @@
       "modified": "Modificado",
       "deleted": "Eliminado",
       "renamed": "Renombrado"
-    }
+    },
+    "diffAction": {
+      "edit": "Editar",
+      "write": "Escribir",
+      "delete": "Eliminar",
+      "rename": "Renombrar",
+      "renameTo": "Renombrar → {{newPath}}",
+      "change": "Cambio"
+    },
+    "editCount_one": "{{count}} edición",
+    "editCount_other": "{{count}} ediciones"
   },
   "scriptFixer": {
     "setupScriptTitle": "Corregir Script de Configuración",

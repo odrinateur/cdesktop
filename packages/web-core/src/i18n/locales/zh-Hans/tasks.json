@@ -509,7 +509,17 @@
     "saveAsDefault": "设为默认",
     "updatedTodos": "更新的待办事项",
     "viewInChangesPanel": "在更改面板中查看",
-    "unableToRenderDiff": "无法显示差异。"
+    "unableToRenderDiff": "无法显示差异。",
+    "diffAction": {
+      "edit": "编辑",
+      "write": "写入",
+      "delete": "删除",
+      "rename": "重命名",
+      "renameTo": "重命名 → {{newPath}}",
+      "change": "更改"
+    },
+    "editCount_one": "{{count}} 处编辑",
+    "editCount_other": "{{count}} 处编辑"
   },
   "scriptFixer": {
     "setupScriptTitle": "修复设置脚本",
