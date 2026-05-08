@@ -400,7 +400,7 @@ export const Actions = {
   // === Global/Navigation Actions ===
   NewWorkspace: {
     id: 'new-workspace',
-    label: 'New Workspace',
+    label: () => i18n.t('common:commandBar.actions.newWorkspace'),
     icon: PlusIcon,
     shortcut: 'G N',
     requiresTarget: ActionTargetType.NONE,
@@ -411,7 +411,7 @@ export const Actions = {
 
   CreateWorkspaceFromPR: {
     id: 'create-workspace-from-pr',
-    label: 'Create Workspace from PR',
+    label: () => i18n.t('common:commandBar.actions.createWorkspaceFromPr'),
     icon: GitPullRequestIcon,
     keywords: ['pull request'],
     requiresTarget: ActionTargetType.NONE,
@@ -423,7 +423,7 @@ export const Actions = {
 
   Settings: {
     id: 'settings',
-    label: 'Settings',
+    label: () => i18n.t('common:commandBar.actions.settings'),
     icon: GearIcon,
     shortcut: 'G S',
     requiresTarget: ActionTargetType.NONE,
@@ -434,7 +434,7 @@ export const Actions = {
 
   ProjectSettings: {
     id: 'project-settings',
-    label: 'Project Settings',
+    label: () => i18n.t('common:commandBar.actions.projectSettings'),
     icon: GearIcon,
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) => ctx.layoutMode === 'kanban',
@@ -451,7 +451,7 @@ export const Actions = {
 
   SignIn: {
     id: 'sign-in',
-    label: 'Sign In',
+    label: () => i18n.t('common:commandBar.actions.signIn'),
     icon: SignInIcon,
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) => !ctx.isSignedIn,
@@ -465,7 +465,7 @@ export const Actions = {
 
   SignOut: {
     id: 'sign-out',
-    label: 'Sign Out',
+    label: () => i18n.t('common:commandBar.actions.signOut'),
     icon: SignOutIcon,
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) => ctx.isSignedIn,
@@ -489,7 +489,7 @@ export const Actions = {
 
   Feedback: {
     id: 'feedback',
-    label: 'Give Feedback',
+    label: () => i18n.t('common:commandBar.actions.giveFeedback'),
     icon: MegaphoneIcon,
     requiresTarget: ActionTargetType.NONE,
     execute: () => {
@@ -499,7 +499,7 @@ export const Actions = {
 
   WorkspacesGuide: {
     id: 'workspaces-guide',
-    label: 'Workspaces Guide',
+    label: () => i18n.t('common:commandBar.actions.workspacesGuide'),
     icon: QuestionIcon,
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) => ctx.layoutMode === 'workspaces',
@@ -510,7 +510,7 @@ export const Actions = {
 
   ProjectsGuide: {
     id: 'projects-guide',
-    label: 'Projects Guide',
+    label: () => i18n.t('common:commandBar.actions.projectsGuide'),
     icon: QuestionIcon,
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) => ctx.layoutMode === 'kanban',
@@ -521,7 +521,7 @@ export const Actions = {
 
   OpenCommandBar: {
     id: 'open-command-bar',
-    label: 'Open Command Bar',
+    label: () => i18n.t('common:commandBar.actions.openCommandBar'),
     icon: ListIcon,
     shortcut: '{mod} K',
     requiresTarget: ActionTargetType.NONE,
@@ -539,8 +539,8 @@ export const Actions = {
     id: 'toggle-diff-view-mode',
     label: () =>
       useDiffViewStore.getState().mode === 'unified'
-        ? 'Switch to Side-by-Side View'
-        : 'Switch to Inline View',
+        ? i18n.t('common:commandBar.actions.diffView.switchToSplit')
+        : i18n.t('common:commandBar.actions.diffView.switchToInline'),
     icon: ColumnsIcon,
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) =>
@@ -548,7 +548,9 @@ export const Actions = {
     isActive: (ctx) => ctx.diffViewMode === 'split',
     getIcon: (ctx) => (ctx.diffViewMode === 'split' ? ColumnsIcon : RowsIcon),
     getTooltip: (ctx) =>
-      ctx.diffViewMode === 'split' ? 'Inline view' : 'Side-by-side view',
+      ctx.diffViewMode === 'split'
+        ? i18n.t('common:commandBar.actions.diffView.tooltipInline')
+        : i18n.t('common:commandBar.actions.diffView.tooltipSplit'),
     execute: () => {
       useDiffViewStore.getState().toggle();
     },
@@ -558,8 +560,8 @@ export const Actions = {
     id: 'toggle-ignore-whitespace',
     label: () =>
       useDiffViewStore.getState().ignoreWhitespace
-        ? 'Show Whitespace Changes'
-        : 'Ignore Whitespace Changes',
+        ? i18n.t('common:commandBar.actions.whitespace.show')
+        : i18n.t('common:commandBar.actions.whitespace.ignore'),
     icon: EyeSlashIcon,
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) =>
@@ -574,8 +576,8 @@ export const Actions = {
     id: 'toggle-wrap-lines',
     label: () =>
       useDiffViewStore.getState().wrapText
-        ? 'Disable Line Wrapping'
-        : 'Enable Line Wrapping',
+        ? i18n.t('common:commandBar.actions.lineWrap.disable')
+        : i18n.t('common:commandBar.actions.lineWrap.enable'),
     icon: TextAlignLeftIcon,
     shortcut: 'T W',
     requiresTarget: ActionTargetType.NONE,
@@ -592,8 +594,8 @@ export const Actions = {
     id: 'toggle-left-sidebar',
     label: () =>
       useUiPreferencesStore.getState().isLeftSidebarVisible
-        ? 'Hide Left Sidebar'
-        : 'Show Left Sidebar',
+        ? i18n.t('common:commandBar.actions.leftSidebar.hide')
+        : i18n.t('common:commandBar.actions.leftSidebar.show'),
     icon: SidebarSimpleIcon,
     shortcut: 'V S',
     requiresTarget: ActionTargetType.NONE,
@@ -606,7 +608,7 @@ export const Actions = {
 
   ToggleLeftMainPanel: {
     id: 'toggle-left-main-panel',
-    label: 'Toggle Chat Panel',
+    label: () => i18n.t('common:commandBar.actions.chatPanel.toggle'),
     icon: ChatsTeardropIcon,
     shortcut: 'V H',
     requiresTarget: ActionTargetType.NONE,
@@ -615,7 +617,9 @@ export const Actions = {
     isEnabled: (ctx) =>
       !(ctx.isLeftMainPanelVisible && ctx.openPanels.size === 0),
     getLabel: (ctx) =>
-      ctx.isLeftMainPanelVisible ? 'Hide Chat Panel' : 'Show Chat Panel',
+      ctx.isLeftMainPanelVisible
+        ? i18n.t('common:commandBar.actions.chatPanel.hide')
+        : i18n.t('common:commandBar.actions.chatPanel.show'),
     execute: (ctx) => {
       useUiPreferencesStore
         .getState()
@@ -627,8 +631,8 @@ export const Actions = {
     id: 'toggle-right-sidebar',
     label: () =>
       useUiPreferencesStore.getState().isRightSidebarVisible
-        ? 'Hide Right Sidebar'
-        : 'Show Right Sidebar',
+        ? i18n.t('common:commandBar.actions.rightSidebar.hide')
+        : i18n.t('common:commandBar.actions.rightSidebar.show'),
     icon: RightSidebarIcon,
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) => ctx.layoutMode === 'workspaces',
@@ -640,7 +644,7 @@ export const Actions = {
 
   ToggleChangesMode: {
     id: 'toggle-changes-mode',
-    label: 'Toggle Changes Panel',
+    label: () => i18n.t('common:commandBar.actions.changesPanel.toggle'),
     icon: GitDiffIcon,
     shortcut: 'V C',
     requiresTarget: ActionTargetType.NONE,
@@ -649,8 +653,8 @@ export const Actions = {
     isEnabled: (ctx) => !ctx.isCreateMode,
     getLabel: (ctx) =>
       ctx.openPanels.has('changes')
-        ? 'Hide Changes Panel'
-        : 'Show Changes Panel',
+        ? i18n.t('common:commandBar.actions.changesPanel.hide')
+        : i18n.t('common:commandBar.actions.changesPanel.show'),
     execute: (ctx) => {
       if (!ctx.currentWorkspaceId) return;
       useUiPreferencesStore
@@ -661,7 +665,7 @@ export const Actions = {
 
   ToggleLogsMode: {
     id: 'toggle-logs-mode',
-    label: 'Toggle Logs Panel',
+    label: () => i18n.t('common:commandBar.actions.logsPanel.toggle'),
     icon: TerminalIcon,
     shortcut: 'V L',
     requiresTarget: ActionTargetType.NONE,
@@ -669,7 +673,9 @@ export const Actions = {
     isActive: (ctx) => ctx.openPanels.has('logs'),
     isEnabled: (ctx) => !ctx.isCreateMode,
     getLabel: (ctx) =>
-      ctx.openPanels.has('logs') ? 'Hide Logs Panel' : 'Show Logs Panel',
+      ctx.openPanels.has('logs')
+        ? i18n.t('common:commandBar.actions.logsPanel.hide')
+        : i18n.t('common:commandBar.actions.logsPanel.show'),
     execute: (ctx) => {
       if (!ctx.currentWorkspaceId) return;
       useUiPreferencesStore
@@ -680,7 +686,7 @@ export const Actions = {
 
   TogglePreviewMode: {
     id: 'toggle-preview-mode',
-    label: 'Toggle Preview Panel',
+    label: () => i18n.t('common:commandBar.actions.previewPanel.toggle'),
     icon: DesktopIcon,
     shortcut: 'V P',
     requiresTarget: ActionTargetType.NONE,
@@ -689,8 +695,8 @@ export const Actions = {
     isEnabled: (ctx) => !ctx.isCreateMode,
     getLabel: (ctx) =>
       ctx.openPanels.has('preview')
-        ? 'Hide Preview Panel'
-        : 'Show Preview Panel',
+        ? i18n.t('common:commandBar.actions.previewPanel.hide')
+        : i18n.t('common:commandBar.actions.previewPanel.show'),
     execute: (ctx) => {
       if (!ctx.currentWorkspaceId) return;
       useUiPreferencesStore
@@ -702,7 +708,7 @@ export const Actions = {
   // === Diff Actions for Navbar ===
   ToggleAllDiffs: {
     id: 'toggle-all-diffs',
-    label: 'Toggle All Diffs',
+    label: () => i18n.t('common:commandBar.actions.toggleAllDiffs'),
     icon: CaretDoubleUpIcon,
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) =>
@@ -710,7 +716,9 @@ export const Actions = {
     getIcon: (ctx) =>
       ctx.isAllDiffsExpanded ? CaretDoubleUpIcon : CaretDoubleDownIcon,
     getTooltip: (ctx) =>
-      ctx.isAllDiffsExpanded ? 'Collapse all diffs' : 'Expand all diffs',
+      ctx.isAllDiffsExpanded
+        ? i18n.t('common:commandBar.actions.toggleAllDiffsTooltip.collapse')
+        : i18n.t('common:commandBar.actions.toggleAllDiffsTooltip.expand'),
     execute: (ctx) => {
       const diffPaths = Array.from(
         getWorkspaceDiffData(ctx.currentWorkspaceId ?? undefined).diffPaths
@@ -726,11 +734,14 @@ export const Actions = {
   // === ContextBar Actions ===
   OpenInIDE: {
     id: 'open-in-ide',
-    label: 'Open in IDE',
+    label: () => i18n.t('common:commandBar.actions.openInIde'),
     icon: 'ide-icon' as const,
     requiresTarget: ActionTargetType.NONE,
     isVisible: (ctx) => ctx.hasWorkspace,
-    getTooltip: (ctx) => `Open in ${getIdeName(ctx.editorType)}`,
+    getTooltip: (ctx) =>
+      i18n.t('common:commandBar.actions.openInIdeTooltip', {
+        ide: getIdeName(ctx.editorType),
+      }),
     execute: async (ctx) => {
       if (!ctx.currentWorkspaceId) return;
       try {
@@ -760,7 +771,7 @@ export const Actions = {
 
   CopyWorkspacePath: {
     id: 'copy-workspace-path',
-    label: 'Copy Workspace Path',
+    label: () => i18n.t('common:commandBar.actions.copyWorkspacePath'),
     icon: 'copy-icon' as const,
     shortcut: 'Y P',
     requiresTarget: ActionTargetType.NONE,
@@ -773,7 +784,7 @@ export const Actions = {
 
   CopyRawLogs: {
     id: 'copy-raw-logs',
-    label: 'Copy Raw Logs',
+    label: () => i18n.t('common:commandBar.actions.copyRawLogs'),
     icon: CopyIcon,
     shortcut: 'Y L',
     requiresTarget: ActionTargetType.NONE,
@@ -788,7 +799,7 @@ export const Actions = {
 
   ToggleDevServer: {
     id: 'toggle-dev-server',
-    label: 'Dev Server',
+    label: () => i18n.t('common:commandBar.actions.devServer'),
     icon: PlayIcon,
     shortcut: 'T D',
     requiresTarget: ActionTargetType.NONE,
@@ -810,17 +821,19 @@ export const Actions = {
     getTooltip: (ctx) => {
       switch (ctx.devServerState) {
         case 'starting':
-          return 'Starting dev server...';
+          return i18n.t('common:commandBar.actions.devServerTooltip.starting');
         case 'stopping':
-          return 'Stopping dev server...';
+          return i18n.t('common:commandBar.actions.devServerTooltip.stopping');
         case 'running':
-          return 'Stop dev server';
+          return i18n.t('common:commandBar.actions.devServerTooltip.stop');
         default:
-          return 'Start dev server';
+          return i18n.t('common:commandBar.actions.devServerTooltip.start');
       }
     },
     getLabel: (ctx) =>
-      ctx.devServerState === 'running' ? 'Stop Dev Server' : 'Start Dev Server',
+      ctx.devServerState === 'running'
+        ? i18n.t('common:commandBar.actions.stopDevServer')
+        : i18n.t('common:commandBar.actions.startDevServer'),
     execute: (ctx) => {
       if (ctx.runningDevServers.length > 0) {
         ctx.stopDevServer();
@@ -1220,7 +1233,7 @@ export const Actions = {
   // === Issue Actions ===
   CreateIssue: {
     id: 'create-issue',
-    label: 'Create Issue',
+    label: () => i18n.t('common:commandBar.actions.createIssue'),
     icon: PlusIcon,
     shortcut: 'I C',
     requiresTarget: ActionTargetType.NONE,
@@ -1232,7 +1245,7 @@ export const Actions = {
 
   ChangeIssueStatus: {
     id: 'change-issue-status',
-    label: 'Change Status',
+    label: () => i18n.t('common:commandBar.actions.changeStatus'),
     icon: ArrowsLeftRightIcon,
     shortcut: 'I S',
     requiresTarget: ActionTargetType.ISSUE,
@@ -1245,7 +1258,7 @@ export const Actions = {
 
   ChangeNewIssueStatus: {
     id: 'change-new-issue-status',
-    label: 'Change Status',
+    label: () => i18n.t('common:commandBar.actions.changeStatus'),
     icon: ArrowsLeftRightIcon,
     shortcut: 'I S',
     requiresTarget: ActionTargetType.NONE,
@@ -1264,7 +1277,7 @@ export const Actions = {
 
   ChangePriority: {
     id: 'change-issue-priority',
-    label: 'Change Priority',
+    label: () => i18n.t('common:commandBar.actions.changePriority'),
     icon: ArrowFatLineUpIcon,
     shortcut: 'I P',
     requiresTarget: ActionTargetType.ISSUE,
@@ -1277,7 +1290,7 @@ export const Actions = {
 
   ChangeNewIssuePriority: {
     id: 'change-new-issue-priority',
-    label: 'Change Priority',
+    label: () => i18n.t('common:commandBar.actions.changePriority'),
     icon: ArrowFatLineUpIcon,
     shortcut: 'I P',
     requiresTarget: ActionTargetType.NONE,
@@ -1296,7 +1309,7 @@ export const Actions = {
 
   ChangeAssignees: {
     id: 'change-assignees',
-    label: 'Change Assignees',
+    label: () => i18n.t('common:commandBar.actions.changeAssignees'),
     icon: UsersIcon,
     shortcut: 'I A',
     requiresTarget: ActionTargetType.ISSUE,
@@ -1309,7 +1322,7 @@ export const Actions = {
 
   ChangeNewIssueAssignees: {
     id: 'change-new-issue-assignees',
-    label: 'Change Assignees',
+    label: () => i18n.t('common:commandBar.actions.changeAssignees'),
     icon: UsersIcon,
     shortcut: 'I A',
     requiresTarget: ActionTargetType.NONE,
@@ -1323,7 +1336,7 @@ export const Actions = {
 
   MakeSubIssueOf: {
     id: 'make-sub-issue-of',
-    label: 'Make Sub-issue of',
+    label: () => i18n.t('common:commandBar.actions.makeSubIssueOf'),
     icon: TreeStructureIcon,
     shortcut: 'I M',
     requiresTarget: ActionTargetType.ISSUE,
@@ -1338,7 +1351,7 @@ export const Actions = {
 
   AddSubIssue: {
     id: 'add-sub-issue',
-    label: 'Add Sub-issue',
+    label: () => i18n.t('common:commandBar.actions.addSubIssue'),
     icon: PlusIcon,
     shortcut: 'I B',
     requiresTarget: ActionTargetType.ISSUE,
@@ -1360,7 +1373,7 @@ export const Actions = {
 
   CreateSubIssue: {
     id: 'create-sub-issue',
-    label: 'Create Sub-issue',
+    label: () => i18n.t('common:commandBar.actions.createSubIssue'),
     icon: PlusIcon,
     requiresTarget: ActionTargetType.ISSUE,
     isVisible: (ctx) =>
@@ -1373,7 +1386,7 @@ export const Actions = {
 
   RemoveParentIssue: {
     id: 'remove-parent-issue',
-    label: 'Remove Parent',
+    label: () => i18n.t('common:commandBar.actions.removeParent'),
     icon: XIcon,
     shortcut: 'I U',
     requiresTarget: ActionTargetType.ISSUE,
@@ -1396,7 +1409,7 @@ export const Actions = {
 
   LinkWorkspace: {
     id: 'link-workspace',
-    label: 'Link Workspace',
+    label: () => i18n.t('common:commandBar.actions.linkWorkspace'),
     icon: LinkIcon,
     shortcut: 'I W',
     requiresTarget: ActionTargetType.ISSUE,
@@ -1411,7 +1424,7 @@ export const Actions = {
 
   DeleteIssue: {
     id: 'delete-issue',
-    label: 'Delete Issue',
+    label: () => i18n.t('common:commandBar.actions.deleteIssue'),
     icon: TrashIcon,
     shortcut: 'I X',
     variant: 'destructive',
@@ -1440,7 +1453,7 @@ export const Actions = {
 
   DuplicateIssue: {
     id: 'duplicate-issue',
-    label: 'Duplicate Issue',
+    label: () => i18n.t('common:commandBar.actions.duplicateIssue'),
     icon: CopyIcon,
     shortcut: 'I D',
     requiresTarget: ActionTargetType.ISSUE,
@@ -1456,7 +1469,7 @@ export const Actions = {
 
   MarkBlocking: {
     id: 'mark-blocking',
-    label: 'Mark Blocking',
+    label: () => i18n.t('common:commandBar.actions.markBlocking'),
     icon: ArrowBendUpRightIcon,
     requiresTarget: ActionTargetType.ISSUE,
     isVisible: (ctx) =>
@@ -1475,7 +1488,7 @@ export const Actions = {
 
   MarkBlockedBy: {
     id: 'mark-blocked-by',
-    label: 'Mark Blocked By',
+    label: () => i18n.t('common:commandBar.actions.markBlockedBy'),
     icon: ProhibitIcon,
     requiresTarget: ActionTargetType.ISSUE,
     isVisible: (ctx) =>
@@ -1494,7 +1507,7 @@ export const Actions = {
 
   MarkRelated: {
     id: 'mark-related',
-    label: 'Mark Related',
+    label: () => i18n.t('common:commandBar.actions.markRelated'),
     icon: ArrowsLeftRightIcon,
     requiresTarget: ActionTargetType.ISSUE,
     isVisible: (ctx) =>
@@ -1513,7 +1526,7 @@ export const Actions = {
 
   MarkDuplicateOf: {
     id: 'mark-duplicate-of',
-    label: 'Mark Duplicate Of',
+    label: () => i18n.t('common:commandBar.actions.markDuplicateOf'),
     icon: CopyIcon,
     requiresTarget: ActionTargetType.ISSUE,
     isVisible: (ctx) =>

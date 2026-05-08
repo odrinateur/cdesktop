@@ -234,6 +234,13 @@
     "selectBranch": "Select Branch",
     "selectBranchFor": "Select Branch for {{repoName}}",
     "pages": {
+      "root": {
+        "groups": {
+          "actions": "작업",
+          "view": "보기",
+          "general": "일반"
+        }
+      },
       "workspaceActions": {
         "title": "세션 작업",
         "groups": {
@@ -243,6 +250,24 @@
       },
       "repoActions": {
         "title": "저장소 작업",
+        "groups": {
+          "actions": "작업"
+        }
+      },
+      "diffOptions": {
+        "title": "차이 옵션",
+        "groups": {
+          "display": "표시"
+        }
+      },
+      "viewOptions": {
+        "title": "보기 옵션",
+        "groups": {
+          "panels": "패널"
+        }
+      },
+      "issueActions": {
+        "title": "이슈 작업",
         "groups": {
           "actions": "작업"
         }
@@ -258,7 +283,92 @@
       "delete": "삭제",
       "runSetupScript": "설정 스크립트 실행",
       "runCleanupScript": "정리 스크립트 실행",
-      "runArchiveScript": "보관 스크립트 실행"
+      "runArchiveScript": "보관 스크립트 실행",
+      "newWorkspace": "새 세션",
+      "createWorkspaceFromPr": "PR에서 세션 만들기",
+      "settings": "설정",
+      "projectSettings": "프로젝트 설정",
+      "signIn": "로그인",
+      "signOut": "로그아웃",
+      "giveFeedback": "피드백 보내기",
+      "workspacesGuide": "세션 가이드",
+      "projectsGuide": "프로젝트 가이드",
+      "openCommandBar": "명령 바 열기",
+      "toggleAllDiffs": "모든 차이점 전환",
+      "openInIde": "IDE에서 열기",
+      "openInIdeTooltip": "{{ide}}에서 열기",
+      "copyWorkspacePath": "세션 경로 복사",
+      "copyRawLogs": "원본 로그 복사",
+      "devServer": "개발 서버",
+      "startDevServer": "개발 서버 시작",
+      "stopDevServer": "개발 서버 중지",
+      "devServerTooltip": {
+        "start": "개발 서버 시작",
+        "stop": "개발 서버 중지",
+        "starting": "개발 서버 시작 중...",
+        "stopping": "개발 서버 중지 중..."
+      },
+      "createIssue": "이슈 만들기",
+      "changeStatus": "상태 변경",
+      "changePriority": "우선순위 변경",
+      "changeAssignees": "담당자 변경",
+      "makeSubIssueOf": "하위 이슈로 만들기",
+      "addSubIssue": "하위 이슈 추가",
+      "createSubIssue": "하위 이슈 만들기",
+      "removeParent": "상위 제거",
+      "linkWorkspace": "세션 연결",
+      "deleteIssue": "이슈 삭제",
+      "duplicateIssue": "이슈 복제",
+      "markBlocking": "차단 중으로 표시",
+      "markBlockedBy": "차단됨으로 표시",
+      "markRelated": "관련됨으로 표시",
+      "markDuplicateOf": "중복됨으로 표시",
+      "diffView": {
+        "switchToSplit": "양쪽 보기로 전환",
+        "switchToInline": "인라인 보기로 전환",
+        "tooltipInline": "인라인 보기",
+        "tooltipSplit": "양쪽 보기"
+      },
+      "whitespace": {
+        "show": "공백 변경 표시",
+        "ignore": "공백 변경 무시"
+      },
+      "lineWrap": {
+        "disable": "줄 바꿈 비활성화",
+        "enable": "줄 바꿈 활성화"
+      },
+      "leftSidebar": {
+        "hide": "왼쪽 사이드바 숨기기",
+        "show": "왼쪽 사이드바 표시"
+      },
+      "rightSidebar": {
+        "hide": "오른쪽 사이드바 숨기기",
+        "show": "오른쪽 사이드바 표시"
+      },
+      "chatPanel": {
+        "toggle": "채팅 패널 전환",
+        "hide": "채팅 패널 숨기기",
+        "show": "채팅 패널 표시"
+      },
+      "changesPanel": {
+        "toggle": "변경 패널 전환",
+        "hide": "변경 패널 숨기기",
+        "show": "변경 패널 표시"
+      },
+      "logsPanel": {
+        "toggle": "로그 패널 전환",
+        "hide": "로그 패널 숨기기",
+        "show": "로그 패널 표시"
+      },
+      "previewPanel": {
+        "toggle": "미리보기 패널 전환",
+        "hide": "미리보기 패널 숨기기",
+        "show": "미리보기 패널 표시"
+      },
+      "toggleAllDiffsTooltip": {
+        "collapse": "모든 차이점 접기",
+        "expand": "모든 차이점 펼치기"
+      }
     }
   },
   "workspacesGuide": {

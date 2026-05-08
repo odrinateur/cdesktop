@@ -148,6 +148,9 @@ export interface ActionVisibilityContext {
 
   // Auth state
   isSignedIn: boolean;
+
+  // Viewport
+  isMobile: boolean;
 }
 
 // Enum discriminant for action target types
