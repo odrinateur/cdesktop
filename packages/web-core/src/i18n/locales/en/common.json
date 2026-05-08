@@ -291,6 +291,13 @@
     "selectBranch": "Select Branch",
     "selectBranchFor": "Select Branch for {{repoName}}",
     "pages": {
+      "root": {
+        "groups": {
+          "actions": "Actions",
+          "view": "View",
+          "general": "General"
+        }
+      },
       "workspaceActions": {
         "title": "Session Actions",
         "groups": {
@@ -300,6 +307,24 @@
       },
       "repoActions": {
         "title": "Repository Actions",
+        "groups": {
+          "actions": "Actions"
+        }
+      },
+      "diffOptions": {
+        "title": "Diff Options",
+        "groups": {
+          "display": "Display"
+        }
+      },
+      "viewOptions": {
+        "title": "View Options",
+        "groups": {
+          "panels": "Panels"
+        }
+      },
+      "issueActions": {
+        "title": "Issue Actions",
         "groups": {
           "actions": "Actions"
         }
@@ -315,7 +340,92 @@
       "delete": "Delete",
       "runSetupScript": "Run Setup Script",
       "runCleanupScript": "Run Cleanup Script",
-      "runArchiveScript": "Run Archive Script"
+      "runArchiveScript": "Run Archive Script",
+      "newWorkspace": "New Workspace",
+      "createWorkspaceFromPr": "Create Workspace from PR",
+      "settings": "Settings",
+      "projectSettings": "Project Settings",
+      "signIn": "Sign In",
+      "signOut": "Sign Out",
+      "giveFeedback": "Give Feedback",
+      "workspacesGuide": "Workspaces Guide",
+      "projectsGuide": "Projects Guide",
+      "openCommandBar": "Open Command Bar",
+      "toggleAllDiffs": "Toggle All Diffs",
+      "openInIde": "Open in IDE",
+      "openInIdeTooltip": "Open in {{ide}}",
+      "copyWorkspacePath": "Copy Workspace Path",
+      "copyRawLogs": "Copy Raw Logs",
+      "devServer": "Dev Server",
+      "startDevServer": "Start Dev Server",
+      "stopDevServer": "Stop Dev Server",
+      "devServerTooltip": {
+        "start": "Start dev server",
+        "stop": "Stop dev server",
+        "starting": "Starting dev server...",
+        "stopping": "Stopping dev server..."
+      },
+      "createIssue": "Create Issue",
+      "changeStatus": "Change Status",
+      "changePriority": "Change Priority",
+      "changeAssignees": "Change Assignees",
+      "makeSubIssueOf": "Make Sub-issue of",
+      "addSubIssue": "Add Sub-issue",
+      "createSubIssue": "Create Sub-issue",
+      "removeParent": "Remove Parent",
+      "linkWorkspace": "Link Workspace",
+      "deleteIssue": "Delete Issue",
+      "duplicateIssue": "Duplicate Issue",
+      "markBlocking": "Mark Blocking",
+      "markBlockedBy": "Mark Blocked By",
+      "markRelated": "Mark Related",
+      "markDuplicateOf": "Mark Duplicate Of",
+      "diffView": {
+        "switchToSplit": "Switch to Side-by-Side View",
+        "switchToInline": "Switch to Inline View",
+        "tooltipInline": "Inline view",
+        "tooltipSplit": "Side-by-side view"
+      },
+      "whitespace": {
+        "show": "Show Whitespace Changes",
+        "ignore": "Ignore Whitespace Changes"
+      },
+      "lineWrap": {
+        "disable": "Disable Line Wrapping",
+        "enable": "Enable Line Wrapping"
+      },
+      "leftSidebar": {
+        "hide": "Hide Left Sidebar",
+        "show": "Show Left Sidebar"
+      },
+      "rightSidebar": {
+        "hide": "Hide Right Sidebar",
+        "show": "Show Right Sidebar"
+      },
+      "chatPanel": {
+        "toggle": "Toggle Chat Panel",
+        "hide": "Hide Chat Panel",
+        "show": "Show Chat Panel"
+      },
+      "changesPanel": {
+        "toggle": "Toggle Changes Panel",
+        "hide": "Hide Changes Panel",
+        "show": "Show Changes Panel"
+      },
+      "logsPanel": {
+        "toggle": "Toggle Logs Panel",
+        "hide": "Hide Logs Panel",
+        "show": "Show Logs Panel"
+      },
+      "previewPanel": {
+        "toggle": "Toggle Preview Panel",
+        "hide": "Hide Preview Panel",
+        "show": "Show Preview Panel"
+      },
+      "toggleAllDiffsTooltip": {
+        "collapse": "Collapse all diffs",
+        "expand": "Expand all diffs"
+      }
     }
   },
   "workspacesGuide": {

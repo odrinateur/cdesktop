@@ -234,6 +234,13 @@
     "selectBranch": "Select Branch",
     "selectBranchFor": "Select Branch for {{repoName}}",
     "pages": {
+      "root": {
+        "groups": {
+          "actions": "Acciones",
+          "view": "Ver",
+          "general": "General"
+        }
+      },
       "workspaceActions": {
         "title": "Acciones de sesión",
         "groups": {
@@ -243,6 +250,24 @@
       },
       "repoActions": {
         "title": "Acciones de repositorio",
+        "groups": {
+          "actions": "Acciones"
+        }
+      },
+      "diffOptions": {
+        "title": "Opciones de diferencias",
+        "groups": {
+          "display": "Visualización"
+        }
+      },
+      "viewOptions": {
+        "title": "Opciones de vista",
+        "groups": {
+          "panels": "Paneles"
+        }
+      },
+      "issueActions": {
+        "title": "Acciones de incidencia",
         "groups": {
           "actions": "Acciones"
         }
@@ -258,7 +283,92 @@
       "delete": "Eliminar",
       "runSetupScript": "Ejecutar script de configuración",
       "runCleanupScript": "Ejecutar script de limpieza",
-      "runArchiveScript": "Ejecutar script de archivo"
+      "runArchiveScript": "Ejecutar script de archivo",
+      "newWorkspace": "Nueva sesión",
+      "createWorkspaceFromPr": "Crear sesión desde PR",
+      "settings": "Configuración",
+      "projectSettings": "Configuración del proyecto",
+      "signIn": "Iniciar sesión",
+      "signOut": "Cerrar sesión",
+      "giveFeedback": "Enviar comentarios",
+      "workspacesGuide": "Guía de sesiones",
+      "projectsGuide": "Guía de proyectos",
+      "openCommandBar": "Abrir barra de comandos",
+      "toggleAllDiffs": "Alternar todas las diferencias",
+      "openInIde": "Abrir en IDE",
+      "openInIdeTooltip": "Abrir en {{ide}}",
+      "copyWorkspacePath": "Copiar ruta de la sesión",
+      "copyRawLogs": "Copiar registros sin formato",
+      "devServer": "Servidor de desarrollo",
+      "startDevServer": "Iniciar servidor de desarrollo",
+      "stopDevServer": "Detener servidor de desarrollo",
+      "devServerTooltip": {
+        "start": "Iniciar servidor de desarrollo",
+        "stop": "Detener servidor de desarrollo",
+        "starting": "Iniciando servidor de desarrollo...",
+        "stopping": "Deteniendo servidor de desarrollo..."
+      },
+      "createIssue": "Crear incidencia",
+      "changeStatus": "Cambiar estado",
+      "changePriority": "Cambiar prioridad",
+      "changeAssignees": "Cambiar asignados",
+      "makeSubIssueOf": "Convertir en subincidencia de",
+      "addSubIssue": "Añadir subincidencia",
+      "createSubIssue": "Crear subincidencia",
+      "removeParent": "Eliminar padre",
+      "linkWorkspace": "Vincular sesión",
+      "deleteIssue": "Eliminar incidencia",
+      "duplicateIssue": "Duplicar incidencia",
+      "markBlocking": "Marcar como bloqueante",
+      "markBlockedBy": "Marcar como bloqueada por",
+      "markRelated": "Marcar como relacionada",
+      "markDuplicateOf": "Marcar como duplicada de",
+      "diffView": {
+        "switchToSplit": "Cambiar a vista lado a lado",
+        "switchToInline": "Cambiar a vista en línea",
+        "tooltipInline": "Vista en línea",
+        "tooltipSplit": "Vista lado a lado"
+      },
+      "whitespace": {
+        "show": "Mostrar cambios de espacios en blanco",
+        "ignore": "Ignorar cambios de espacios en blanco"
+      },
+      "lineWrap": {
+        "disable": "Desactivar ajuste de línea",
+        "enable": "Activar ajuste de línea"
+      },
+      "leftSidebar": {
+        "hide": "Ocultar barra lateral izquierda",
+        "show": "Mostrar barra lateral izquierda"
+      },
+      "rightSidebar": {
+        "hide": "Ocultar barra lateral derecha",
+        "show": "Mostrar barra lateral derecha"
+      },
+      "chatPanel": {
+        "toggle": "Alternar panel de chat",
+        "hide": "Ocultar panel de chat",
+        "show": "Mostrar panel de chat"
+      },
+      "changesPanel": {
+        "toggle": "Alternar panel de cambios",
+        "hide": "Ocultar panel de cambios",
+        "show": "Mostrar panel de cambios"
+      },
+      "logsPanel": {
+        "toggle": "Alternar panel de registros",
+        "hide": "Ocultar panel de registros",
+        "show": "Mostrar panel de registros"
+      },
+      "previewPanel": {
+        "toggle": "Alternar panel de vista previa",
+        "hide": "Ocultar panel de vista previa",
+        "show": "Mostrar panel de vista previa"
+      },
+      "toggleAllDiffsTooltip": {
+        "collapse": "Contraer todas las diferencias",
+        "expand": "Expandir todas las diferencias"
+      }
     }
   },
   "workspacesGuide": {

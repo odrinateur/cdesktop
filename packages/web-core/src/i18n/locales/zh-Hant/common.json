@@ -234,6 +234,13 @@
     "selectBranch": "Select Branch",
     "selectBranchFor": "Select Branch for {{repoName}}",
     "pages": {
+      "root": {
+        "groups": {
+          "actions": "動作",
+          "view": "檢視",
+          "general": "一般"
+        }
+      },
       "workspaceActions": {
         "title": "會話操作",
         "groups": {
@@ -243,6 +250,24 @@
       },
       "repoActions": {
         "title": "儲存庫動作",
+        "groups": {
+          "actions": "動作"
+        }
+      },
+      "diffOptions": {
+        "title": "差異選項",
+        "groups": {
+          "display": "顯示"
+        }
+      },
+      "viewOptions": {
+        "title": "檢視選項",
+        "groups": {
+          "panels": "面板"
+        }
+      },
+      "issueActions": {
+        "title": "議題操作",
         "groups": {
           "actions": "動作"
         }
@@ -258,7 +283,92 @@
       "delete": "刪除",
       "runSetupScript": "執行設定指令稿",
       "runCleanupScript": "執行清理指令稿",
-      "runArchiveScript": "執行封存指令稿"
+      "runArchiveScript": "執行封存指令稿",
+      "newWorkspace": "新增會話",
+      "createWorkspaceFromPr": "從 PR 建立會話",
+      "settings": "設定",
+      "projectSettings": "專案設定",
+      "signIn": "登入",
+      "signOut": "登出",
+      "giveFeedback": "提供回饋",
+      "workspacesGuide": "會話指南",
+      "projectsGuide": "專案指南",
+      "openCommandBar": "開啟命令列",
+      "toggleAllDiffs": "切換所有差異",
+      "openInIde": "在 IDE 中開啟",
+      "openInIdeTooltip": "在 {{ide}} 中開啟",
+      "copyWorkspacePath": "複製會話路徑",
+      "copyRawLogs": "複製原始日誌",
+      "devServer": "開發伺服器",
+      "startDevServer": "啟動開發伺服器",
+      "stopDevServer": "停止開發伺服器",
+      "devServerTooltip": {
+        "start": "啟動開發伺服器",
+        "stop": "停止開發伺服器",
+        "starting": "正在啟動開發伺服器...",
+        "stopping": "正在停止開發伺服器..."
+      },
+      "createIssue": "建立議題",
+      "changeStatus": "變更狀態",
+      "changePriority": "變更優先順序",
+      "changeAssignees": "變更指派者",
+      "makeSubIssueOf": "設為子議題",
+      "addSubIssue": "新增子議題",
+      "createSubIssue": "建立子議題",
+      "removeParent": "移除父項",
+      "linkWorkspace": "連結會話",
+      "deleteIssue": "刪除議題",
+      "duplicateIssue": "複製議題",
+      "markBlocking": "標示為阻擋",
+      "markBlockedBy": "標示為被阻擋",
+      "markRelated": "標示為相關",
+      "markDuplicateOf": "標示為重複",
+      "diffView": {
+        "switchToSplit": "切換為並排檢視",
+        "switchToInline": "切換為行內檢視",
+        "tooltipInline": "行內檢視",
+        "tooltipSplit": "並排檢視"
+      },
+      "whitespace": {
+        "show": "顯示空白變更",
+        "ignore": "忽略空白變更"
+      },
+      "lineWrap": {
+        "disable": "停用換行",
+        "enable": "啟用換行"
+      },
+      "leftSidebar": {
+        "hide": "隱藏左側欄",
+        "show": "顯示左側欄"
+      },
+      "rightSidebar": {
+        "hide": "隱藏右側欄",
+        "show": "顯示右側欄"
+      },
+      "chatPanel": {
+        "toggle": "切換聊天面板",
+        "hide": "隱藏聊天面板",
+        "show": "顯示聊天面板"
+      },
+      "changesPanel": {
+        "toggle": "切換變更面板",
+        "hide": "隱藏變更面板",
+        "show": "顯示變更面板"
+      },
+      "logsPanel": {
+        "toggle": "切換日誌面板",
+        "hide": "隱藏日誌面板",
+        "show": "顯示日誌面板"
+      },
+      "previewPanel": {
+        "toggle": "切換預覽面板",
+        "hide": "隱藏預覽面板",
+        "show": "顯示預覽面板"
+      },
+      "toggleAllDiffsTooltip": {
+        "collapse": "折疊所有差異",
+        "expand": "展開所有差異"
+      }
     }
   },
   "workspacesGuide": {

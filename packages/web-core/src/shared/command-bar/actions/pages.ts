@@ -9,7 +9,7 @@ export const Pages: Record<StaticPageId, CommandBarPage> = {
     items: [
       {
         type: 'group',
-        label: 'Actions',
+        label: 'common:commandBar.pages.root.groups.actions',
         items: [
           { type: 'action', action: Actions.NewWorkspace },
           { type: 'action', action: Actions.CreateWorkspaceFromPR },
@@ -25,25 +25,26 @@ export const Pages: Record<StaticPageId, CommandBarPage> = {
       },
       {
         type: 'group',
-        label: 'View',
+        label: 'common:commandBar.pages.root.groups.view',
         items: [
           { type: 'childPages', id: 'viewOptions' },
           { type: 'childPages', id: 'diffOptions' },
         ],
       },
-      {
-        type: 'group',
-        label: 'General',
-        items: [
-          { type: 'action', action: Actions.SignIn },
-          { type: 'action', action: Actions.SignOut },
-          { type: 'action', action: Actions.Feedback },
-          { type: 'action', action: Actions.WorkspacesGuide },
-          { type: 'action', action: Actions.ProjectsGuide },
-          { type: 'action', action: Actions.ProjectSettings },
-          { type: 'action', action: Actions.Settings },
-        ],
-      },
+      // cdesktop v1: General group hidden for now. Uncomment to restore.
+      // {
+      //   type: 'group',
+      //   label: 'common:commandBar.pages.root.groups.general',
+      //   items: [
+      //     { type: 'action', action: Actions.SignIn },
+      //     { type: 'action', action: Actions.SignOut },
+      //     { type: 'action', action: Actions.Feedback },
+      //     { type: 'action', action: Actions.WorkspacesGuide },
+      //     { type: 'action', action: Actions.ProjectsGuide },
+      //     { type: 'action', action: Actions.ProjectSettings },
+      //     { type: 'action', action: Actions.Settings },
+      //   ],
+      // },
     ],
   },
 
@@ -82,13 +83,14 @@ export const Pages: Record<StaticPageId, CommandBarPage> = {
   // Diff options page - shown when changes panel is visible
   diffOptions: {
     id: 'diff-options',
-    title: 'Diff Options',
+    title: 'common:commandBar.pages.diffOptions.title',
     parent: 'root',
-    isVisible: (ctx) => ctx.openPanels.has('changes'),
+    // cdesktop v1: hidden on mobile (sub-actions don't work properly there).
+    isVisible: (ctx) => !ctx.isMobile && ctx.openPanels.has('changes'),
     items: [
       {
         type: 'group',
-        label: 'Display',
+        label: 'common:commandBar.pages.diffOptions.groups.display',
         items: [
           { type: 'action', action: Actions.ToggleDiffViewMode },
           { type: 'action', action: Actions.ToggleWrapLines },
@@ -102,13 +104,14 @@ export const Pages: Record<StaticPageId, CommandBarPage> = {
   // View options page - layout panel controls
   viewOptions: {
     id: 'view-options',
-    title: 'View Options',
+    title: 'common:commandBar.pages.viewOptions.title',
     parent: 'root',
-    isVisible: (ctx) => ctx.layoutMode === 'workspaces',
+    // cdesktop v1: hidden on mobile (sub-actions don't work properly there).
+    isVisible: (ctx) => !ctx.isMobile && ctx.layoutMode === 'workspaces',
     items: [
       {
         type: 'group',
-        label: 'Panels',
+        label: 'common:commandBar.pages.viewOptions.groups.panels',
         items: [
           { type: 'action', action: Actions.ToggleLeftSidebar },
           { type: 'action', action: Actions.ToggleLeftMainPanel },
@@ -149,13 +152,13 @@ export const Pages: Record<StaticPageId, CommandBarPage> = {
   // Issue actions page - shown in kanban mode
   issueActions: {
     id: 'issue-actions',
-    title: 'Issue Actions',
+    title: 'common:commandBar.pages.issueActions.title',
     parent: 'root',
     isVisible: (ctx) => ctx.layoutMode === 'kanban',
     items: [
       {
         type: 'group',
-        label: 'Actions',
+        label: 'common:commandBar.pages.issueActions.groups.actions',
         items: [
           { type: 'action', action: Actions.CreateIssue },
           { type: 'action', action: Actions.ChangeIssueStatus },

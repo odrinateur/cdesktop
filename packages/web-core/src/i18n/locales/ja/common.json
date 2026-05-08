@@ -234,6 +234,13 @@
     "selectBranch": "Select Branch",
     "selectBranchFor": "Select Branch for {{repoName}}",
     "pages": {
+      "root": {
+        "groups": {
+          "actions": "アクション",
+          "view": "表示",
+          "general": "一般"
+        }
+      },
       "workspaceActions": {
         "title": "セッション操作",
         "groups": {
@@ -243,6 +250,24 @@
       },
       "repoActions": {
         "title": "リポジトリアクション",
+        "groups": {
+          "actions": "アクション"
+        }
+      },
+      "diffOptions": {
+        "title": "差分オプション",
+        "groups": {
+          "display": "表示"
+        }
+      },
+      "viewOptions": {
+        "title": "表示オプション",
+        "groups": {
+          "panels": "パネル"
+        }
+      },
+      "issueActions": {
+        "title": "イシューアクション",
         "groups": {
           "actions": "アクション"
         }
@@ -258,7 +283,92 @@
       "delete": "削除",
       "runSetupScript": "セットアップスクリプトを実行",
       "runCleanupScript": "クリーンアップスクリプトを実行",
-      "runArchiveScript": "アーカイブスクリプトを実行"
+      "runArchiveScript": "アーカイブスクリプトを実行",
+      "newWorkspace": "新しいセッション",
+      "createWorkspaceFromPr": "PRからセッションを作成",
+      "settings": "設定",
+      "projectSettings": "プロジェクト設定",
+      "signIn": "サインイン",
+      "signOut": "サインアウト",
+      "giveFeedback": "フィードバックを送る",
+      "workspacesGuide": "セッションガイド",
+      "projectsGuide": "プロジェクトガイド",
+      "openCommandBar": "コマンドバーを開く",
+      "toggleAllDiffs": "すべての差分を切り替え",
+      "openInIde": "IDEで開く",
+      "openInIdeTooltip": "{{ide}}で開く",
+      "copyWorkspacePath": "セッションパスをコピー",
+      "copyRawLogs": "ログをコピー",
+      "devServer": "開発サーバー",
+      "startDevServer": "開発サーバーを起動",
+      "stopDevServer": "開発サーバーを停止",
+      "devServerTooltip": {
+        "start": "開発サーバーを起動",
+        "stop": "開発サーバーを停止",
+        "starting": "開発サーバーを起動中...",
+        "stopping": "開発サーバーを停止中..."
+      },
+      "createIssue": "イシューを作成",
+      "changeStatus": "ステータスを変更",
+      "changePriority": "優先度を変更",
+      "changeAssignees": "担当者を変更",
+      "makeSubIssueOf": "サブイシューにする",
+      "addSubIssue": "サブイシューを追加",
+      "createSubIssue": "サブイシューを作成",
+      "removeParent": "親を削除",
+      "linkWorkspace": "セッションをリンク",
+      "deleteIssue": "イシューを削除",
+      "duplicateIssue": "イシューを複製",
+      "markBlocking": "ブロックとしてマーク",
+      "markBlockedBy": "ブロックされているとしてマーク",
+      "markRelated": "関連としてマーク",
+      "markDuplicateOf": "重複としてマーク",
+      "diffView": {
+        "switchToSplit": "サイドバイサイド表示に切り替え",
+        "switchToInline": "インライン表示に切り替え",
+        "tooltipInline": "インライン表示",
+        "tooltipSplit": "サイドバイサイド表示"
+      },
+      "whitespace": {
+        "show": "空白の変更を表示",
+        "ignore": "空白の変更を無視"
+      },
+      "lineWrap": {
+        "disable": "行の折り返しを無効化",
+        "enable": "行の折り返しを有効化"
+      },
+      "leftSidebar": {
+        "hide": "左サイドバーを非表示",
+        "show": "左サイドバーを表示"
+      },
+      "rightSidebar": {
+        "hide": "右サイドバーを非表示",
+        "show": "右サイドバーを表示"
+      },
+      "chatPanel": {
+        "toggle": "チャットパネルを切り替え",
+        "hide": "チャットパネルを非表示",
+        "show": "チャットパネルを表示"
+      },
+      "changesPanel": {
+        "toggle": "変更パネルを切り替え",
+        "hide": "変更パネルを非表示",
+        "show": "変更パネルを表示"
+      },
+      "logsPanel": {
+        "toggle": "ログパネルを切り替え",
+        "hide": "ログパネルを非表示",
+        "show": "ログパネルを表示"
+      },
+      "previewPanel": {
+        "toggle": "プレビューパネルを切り替え",
+        "hide": "プレビューパネルを非表示",
+        "show": "プレビューパネルを表示"
+      },
+      "toggleAllDiffsTooltip": {
+        "collapse": "すべての差分を折りたたむ",
+        "expand": "すべての差分を展開"
+      }
     }
   },
   "workspacesGuide": {
