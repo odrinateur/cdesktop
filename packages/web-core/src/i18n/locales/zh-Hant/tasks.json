@@ -509,7 +509,17 @@
       "modified": "已修改",
       "deleted": "已刪除",
       "renamed": "已重新命名"
-    }
+    },
+    "diffAction": {
+      "edit": "編輯",
+      "write": "寫入",
+      "delete": "刪除",
+      "rename": "重新命名",
+      "renameTo": "重新命名 → {{newPath}}",
+      "change": "變更"
+    },
+    "editCount_one": "{{count}} 處編輯",
+    "editCount_other": "{{count}} 處編輯"
   },
   "scriptFixer": {
     "setupScriptTitle": "修復設定腳本",

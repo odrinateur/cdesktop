@@ -46,10 +46,30 @@
       "createdTask": "创建任务：{{description}}",
       "todoOperation": "{{operation}} 待办事项"
     },
+    "aggregated": {
+      "label": {
+        "read": "读取",
+        "search": "搜索",
+        "fetched": "已获取",
+        "edit": "编辑",
+        "fetch": "获取"
+      },
+      "unit": {
+        "file_one": "{{count}} 个文件",
+        "file_other": "{{count}} 个文件",
+        "command_one": "{{count}} 条命令",
+        "command_other": "{{count}} 条命令",
+        "url_one": "{{count}} 个 URL",
+        "url_other": "{{count}} 个 URL"
+      }
+    },
     "subagent": {
       "defaultType": "子智能体"
     },
     "loadingEarlierMessages": "正在加载早期消息"
+  },
+  "changesPanel": {
+    "notGitRepo": "不是 Git 仓库 — 无可用 diff"
   },
   "folderPicker": {
     "legend": "点击文件夹名称进行导航 • 使用操作按钮进行选择",

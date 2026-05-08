@@ -59,10 +59,30 @@
       "createdTask": "タスクを作成: {{description}}",
       "todoOperation": "{{operation}} Todo"
     },
+    "aggregated": {
+      "label": {
+        "read": "読み込み",
+        "search": "検索",
+        "fetched": "取得",
+        "edit": "編集",
+        "fetch": "取得"
+      },
+      "unit": {
+        "file_one": "{{count}} ファイル",
+        "file_other": "{{count}} ファイル",
+        "command_one": "{{count}} コマンド",
+        "command_other": "{{count}} コマンド",
+        "url_one": "{{count}} URL",
+        "url_other": "{{count}} URL"
+      }
+    },
     "subagent": {
       "defaultType": "サブエージェント"
     },
     "loadingEarlierMessages": "以前のメッセージを読み込み中"
+  },
+  "changesPanel": {
+    "notGitRepo": "Git リポジトリではありません — 差分はありません"
   },
   "language": {
     "browserDefault": "ブラウザ設定"

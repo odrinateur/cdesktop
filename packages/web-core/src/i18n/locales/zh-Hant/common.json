@@ -46,10 +46,30 @@
       "createdTask": "建立任務：{{description}}",
       "todoOperation": "{{operation}} 待辦事項"
     },
+    "aggregated": {
+      "label": {
+        "read": "讀取",
+        "search": "搜尋",
+        "fetched": "已取得",
+        "edit": "編輯",
+        "fetch": "取得"
+      },
+      "unit": {
+        "file_one": "{{count}} 個檔案",
+        "file_other": "{{count}} 個檔案",
+        "command_one": "{{count}} 條指令",
+        "command_other": "{{count}} 條指令",
+        "url_one": "{{count}} 個 URL",
+        "url_other": "{{count}} 個 URL"
+      }
+    },
     "subagent": {
       "defaultType": "子智能体"
     },
     "loadingEarlierMessages": "正在載入先前的訊息"
+  },
+  "changesPanel": {
+    "notGitRepo": "不是 Git 儲存庫 — 沒有可用的差異"
   },
   "folderPicker": {
     "legend": "點擊資料夾名稱進行導覽 • 使用操作按鈕進行選擇",

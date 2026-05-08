@@ -599,6 +599,7 @@ export const ChangesPanelContainer = memo(function ChangesPanelContainer({
   className,
   workspaceId,
 }: ChangesPanelContainerProps) {
+  const { t } = useTranslation('common');
   const diffs = useDiffs(workspaceId);
   const { repos } = useWorkspaceContext();
   const hasGitRepo = repos.some((r) => r.is_git);
@@ -860,7 +861,7 @@ export const ChangesPanelContainer = memo(function ChangesPanelContainer({
       <div
         className={`w-full h-full flex items-center justify-center bg-secondary text-sm text-tertiary ${className}`}
       >
-        Not a Git repo — no diff available
+        {t('changesPanel.notGitRepo')}
       </div>
     );
   }
