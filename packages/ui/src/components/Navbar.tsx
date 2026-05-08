@@ -282,19 +282,22 @@ export function Navbar({
                   <div className="h-4 w-px bg-border mx-0.5 shrink-0" />
                 </>
               ) : (
-                onOpenDrawer && (
-                  <>
-                    <button
-                      type="button"
-                      className="flex items-center justify-center px-1.5 py-1 text-low hover:text-normal"
-                      onClick={onOpenDrawer}
-                      aria-label="Projects"
-                    >
-                      <KanbanIcon className="size-icon-sm" />
-                    </button>
-                    <div className="h-4 w-px bg-border mx-0.5 shrink-0" />
-                  </>
-                )
+                // cdesktop v1: kanban-icon hamburger + divider hidden on mobile.
+                // Restore by uncommenting; drawer markup in SharedAppLayout still exists.
+                // onOpenDrawer && (
+                //   <>
+                //     <button
+                //       type="button"
+                //       className="flex items-center justify-center px-1.5 py-1 text-low hover:text-normal"
+                //       onClick={onOpenDrawer}
+                //       aria-label="Projects"
+                //     >
+                //       <KanbanIcon className="size-icon-sm" />
+                //     </button>
+                //     <div className="h-4 w-px bg-border mx-0.5 shrink-0" />
+                //   </>
+                // )
+                null
               )}
               {showMobileTabs !== false &&
                 (mobileTabs ?? MOBILE_TABS).map((tab) => {
@@ -385,10 +388,12 @@ export function Navbar({
                 <ListIcon className="size-icon-sm" />
               </button>
             )}
-            {mobileUserSlot && (
+            {/* cdesktop v1: user popover hidden on mobile. Login is disabled for v1. */}
+            {/* {mobileUserSlot && (
               <div className="h-4 w-px bg-border mx-0.5 shrink-0" />
             )}
-            {mobileUserSlot}
+            {mobileUserSlot} */}
+            {void mobileUserSlot}
           </div>
         </div>
 
