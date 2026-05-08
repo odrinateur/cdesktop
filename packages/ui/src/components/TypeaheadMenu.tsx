@@ -253,7 +253,7 @@ function TypeaheadMenuRoot({
     <div
       ref={menuRef}
       style={style}
-      className="z-[10000] w-auto min-w-80 max-w-full p-0 overflow-hidden bg-panel border border-border rounded-sm shadow-md flex flex-col"
+      className="z-[10000] w-auto min-w-80 max-w-lg max-h-[50vh] p-0 overflow-hidden bg-panel border border-border rounded-sm shadow-md flex flex-col"
     >
       {children}
     </div>
