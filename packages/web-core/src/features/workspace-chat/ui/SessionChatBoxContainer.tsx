@@ -555,7 +555,7 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
       cancelDebouncedSave();
       setLocalMessage('');
       clearUploadedAttachments();
-      if (isNewSessionMode) await clearDraft();
+      await clearDraft();
       if (!isSlashCommand) {
         reviewContext?.clearComments();
       }
@@ -573,7 +573,6 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
     cancelDebouncedSave,
     setLocalMessage,
     clearUploadedAttachments,
-    isNewSessionMode,
     clearDraft,
     reviewContext,
     selectedProviderId,

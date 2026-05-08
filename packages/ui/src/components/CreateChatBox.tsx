@@ -140,11 +140,14 @@ export function CreateChatBox<TExecutor extends string = string>({
   const isDisabled = disabled || isSending;
   const canSend = editor.value.trim().length > 0 && !isDisabled;
 
-  const handleCmdEnter = () => {
+  // Ref-dispatch so Lexical's listener always sees the freshest canSend/onSend (avoids stale-closure no-op on fast Enter).
+  const latestCmdEnterRef = useRef<() => void>(() => {});
+  latestCmdEnterRef.current = () => {
     if (canSend) {
       onSend();
     }
   };
+  const handleCmdEnter = () => latestCmdEnterRef.current();
 
   const handleAttachClick = () => {
     fileInputRef.current?.click();
