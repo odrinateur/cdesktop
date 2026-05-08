@@ -26,3 +26,10 @@ export const SHOW_INNER_SESSION_SWITCHER = false;
 // git in the Terminal pane or their shell.
 // See openspec/changes/hide-inner-sessions/ for scope.
 export const SHOW_RESOLVE_CONFLICTS = false;
+
+// Change #2 (hide-cloud-appbar): cloud AppBar rail (org list, hosts, stars,
+// user popover, bell) and the remote-cloud-hosts query that feeds it.
+// When false: SharedAppLayout hides the rail and useRemoteCloudHostsState
+// is disabled so the unconfigured /api/relay-auth/client/hosts call never
+// fires (avoids 400 noise in the console for v1 local-only deployments).
+export const SHOW_CLOUD_APPBAR = false;

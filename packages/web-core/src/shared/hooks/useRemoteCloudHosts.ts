@@ -5,6 +5,7 @@ import type { PairRelayHostRequest, RelayPairedHost } from 'shared/types';
 import type { RelayHost } from 'shared/remote-types';
 import { relayApi } from '@/shared/lib/api';
 import { listRelayHosts } from '@/shared/lib/remoteApi';
+import { SHOW_CLOUD_APPBAR } from '@/shared/lib/cdesktopFlags';
 
 export type RemoteCloudHostStatus = AppBarHostStatus;
 
@@ -76,6 +77,7 @@ export function useRemoteCloudHostsState() {
     queryKey: REMOTE_CLOUD_HOSTS_STATE_QUERY_KEY,
     queryFn: fetchRemoteCloudHostsState,
     staleTime: 0,
+    enabled: SHOW_CLOUD_APPBAR,
   });
 }
 

@@ -55,10 +55,7 @@ import { WorkspacesSidebarContainer } from '@/pages/workspaces/WorkspacesSidebar
 import { WorkspacesSidebarReopenTag } from '@vibe/ui/components/WorkspacesSidebar';
 import { useRemoteCloudHostsAppBarModel } from '@/shared/hooks/useRemoteCloudHosts';
 import { CloudShutdownExportBanner } from '@/shared/components/CloudShutdownExportBanner';
-
-// cdesktop v1: cloud AppBar rail (org list, hosts, stars, user popover, bell) is hidden.
-// Flip to true to restore. See plans/openspec-changes.md change #2 (hide-cloud-appbar).
-const SHOW_CLOUD_APPBAR = false;
+import { SHOW_CLOUD_APPBAR } from '@/shared/lib/cdesktopFlags';
 
 export function SharedAppLayout() {
   const appNavigation = useAppNavigation();
