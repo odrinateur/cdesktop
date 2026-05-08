@@ -4,20 +4,13 @@ import fs from "fs";
 import { cac } from "cac";
 import {
   ensureBinary,
-  ensureDesktopBundle,
   BINARY_TAG,
   CACHE_DIR,
-  DESKTOP_CACHE_DIR,
   LOCAL_DEV_MODE,
   LOCAL_DIST_DIR,
   R2_BASE_URL,
   getLatestVersion,
 } from "./download";
-import {
-  getTauriPlatform,
-  installAndLaunch,
-  cleanOldDesktopVersions,
-} from "./desktop";
 
 const CLI_VERSION: string = require("../package.json").version;
 
@@ -242,36 +235,19 @@ async function runReview(args: string[]): Promise<void> {
 }
 
 async function runMain(desktopMode: boolean): Promise<void> {
+  if (desktopMode) {
+    console.error(
+      "The --desktop bundle is not yet available in this version of cdesktop.",
+    );
+    console.error(
+      "Run without --desktop for browser mode. Native desktop app is planned for a future release.",
+    );
+    process.exit(1);
+  }
+
   checkForUpdates();
 
   const modeLabel = LOCAL_DEV_MODE ? " (local dev)" : "";
-  const tauriPlatform = getTauriPlatform(platformDir);
-
-  // Default: browser mode (headless server + opens browser).
-  // Use --desktop to launch the desktop app instead.
-  if (desktopMode && tauriPlatform) {
-    try {
-      console.log(
-        `Starting cdesktop desktop v${CLI_VERSION}${modeLabel}...`,
-      );
-      const bundleInfo = await ensureDesktopBundle(tauriPlatform, showProgress);
-      console.error(""); // newline after progress
-
-      // Clean old desktop versions after successful download
-      if (!LOCAL_DEV_MODE) {
-        cleanOldDesktopVersions(DESKTOP_CACHE_DIR, BINARY_TAG);
-      }
-
-      const exitCode = await installAndLaunch(bundleInfo, platform);
-      process.exit(exitCode);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.error(`Desktop app not available: ${msg}`);
-      console.error("Falling back to browser mode...");
-    }
-  }
-
-  // Browser mode (default — headless server + opens browser)
   console.log(`Starting cdesktop v${CLI_VERSION}${modeLabel}...`);
   await extractAndRun("cdesktop", (bin) => {
     execSync(`"${bin}"`, { stdio: "inherit" });

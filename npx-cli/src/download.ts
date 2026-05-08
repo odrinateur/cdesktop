@@ -4,8 +4,10 @@ import path from 'path';
 import crypto from 'crypto';
 import os from 'os';
 
-// Replaced during npm pack by workflow
-export const R2_BASE_URL = '__R2_PUBLIC_URL__';
+// Replaced during npm pack by workflow. Overridable at runtime so users
+// behind networks where R2 is slow/unreachable can point at a mirror.
+export const R2_BASE_URL =
+  process.env.CDESKTOP_BINARIES_URL || '__R2_PUBLIC_URL__';
 export const BINARY_TAG = '__BINARY_TAG__'; // e.g., v0.0.135-20251215122030
 export const CACHE_DIR = path.join(os.homedir(), '.cdesktop', 'bin');
 
