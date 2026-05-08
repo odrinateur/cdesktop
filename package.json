@@ -1,6 +1,6 @@
 {
   "name": "cdesktop",
-  "version": "0.1.43",
+  "version": "0.1.0",
   "private": true,
   "bin": {
     "cdesktop": "npx-cli/bin/cli.js"
