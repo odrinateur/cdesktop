@@ -27,14 +27,17 @@ cdesktop is an open-source alternative to Anthropic's [Claude Code Desktop](http
 
 The layout is modeled after the Code tab of Anthropic's official desktop app: a sessions sidebar, a transcript with an integrated terminal and diff viewer, and a right-side pane for plan, files, and app preview. Unlike the official app, cdesktop is local-only and provider-agnostic — no Chat tab, no Cowork tab, no cloud sessions; pick a provider from the built-in catalog or wire up your own.
 
+**As of May 7, 2026, Anthropic's Claude Code Desktop no longer accepts third-party model names.** cdesktop fully supports third-party providers and models.
+
 - **Plug in any provider in one click** — 20+ built-in presets (OpenRouter, AWS Bedrock, DeepSeek, Kimi, ModelScope, MiniMax, Nvidia, …) or add a custom `ANTHROPIC_BASE_URL` endpoint; switch providers and tune reasoning effort per session
 - **Run sessions side by side** — split the workspace into up to 4 cells and drag any session into a new cell
 - **Switch between sessions instantly** — no reload between threads; transcripts stay where you left them
 - **Optional Git worktrees** — opt in per project for an isolated branch per session, or work directly in the folder; non-Git directories work too
 - **Review diffs and leave inline comments** — send feedback directly to the agent without leaving the UI
 - **Preview your app** — built-in browser with devtools, inspect mode, and device emulation
-- **Switch between coding agents** — Claude Code today, with Codex, Gemini CLI, OpenCode, and Hermes coming next
 - **Create pull requests and merge** — open PRs with AI-generated descriptions, review on GitHub, and merge
+- **Speaks your language** — built-in support for English, Simplified/Traditional Chinese, Spanish, French, Japanese, and Korean
+- **Works on your phone** — fully responsive UI; check progress, review diffs, and send follow-ups from any device
 - **Runs in your browser today** — start with `npx cdesktop` and open it in any modern browser; a Tauri desktop build is wired up but not yet shipped
 
 ![](packages/public/vibe-kanban-screenshot-workspace.png)
