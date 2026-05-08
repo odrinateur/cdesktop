@@ -28,7 +28,6 @@ const WANTED: Record<string, string> = {
   "openrouter": "OpenRouter",
   "novita-ai": "Novita AI",
   "nvidia": "Nvidia",
-  "pipellm": "PIPELLM",
   "bailian": "Bailian",
   "bailian-for-coding": "Bailian For Coding",
   "kimi": "Kimi",

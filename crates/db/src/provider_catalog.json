@@ -66,26 +66,6 @@
       "endpoint_candidates": null
     },
     {
-      "id": "pipellm",
-      "name": "PIPELLM",
-      "category": "aggregator",
-      "website_url": "https://code.pipellm.ai",
-      "api_key_url": "https://code.pipellm.ai/login?ref=uvw650za",
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "pipellm",
-      "icon_color": null,
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://cc-api.pipellm.ai",
-        "ANTHROPIC_AUTH_TOKEN": "",
-        "ANTHROPIC_MODEL": "claude-opus-4-7",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5-20251001",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4-6",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4-7"
-      },
-      "models_url": null,
-      "endpoint_candidates": null
-    },
-    {
       "id": "bailian",
       "name": "Bailian",
       "category": "cn_official",

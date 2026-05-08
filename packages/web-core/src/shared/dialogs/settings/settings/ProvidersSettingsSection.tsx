@@ -69,58 +69,61 @@ export function ProvidersSettingsSection() {
     <div className="flex h-full min-h-0 gap-0">
       {/* Left rail */}
       <div className="w-52 flex-shrink-0 border-r border-border flex flex-col">
-        <div className="flex items-center justify-between px-3 py-2 border-b border-border">
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            {t('settings.providers.section.sidebarTitle')}
-          </span>
-          <button
-            onClick={() => setSelectedId('new')}
-            className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
-            title={t('settings.providers.section.addProvider')}
-          >
-            <PlusIcon className="w-4 h-4" />
-          </button>
-        </div>
-
-        {isLoading ? (
-          <div className="p-3 text-xs text-muted-foreground">
-            {t('settings.providers.section.loading')}
-          </div>
-        ) : (
-          <ul className="flex-1 overflow-y-auto py-1">
-            {providers.map((provider) => (
-              <li key={provider.id}>
-                <div
-                  className={cn(
-                    'w-full flex items-center justify-between gap-2 px-3 py-2 text-sm hover:bg-muted',
-                    selectedId === provider.id && 'bg-muted font-medium'
-                  )}
-                >
-                  <button
-                    onClick={() => setSelectedId(provider.id)}
+        <div className="flex-1 overflow-y-auto py-1">
+          {isLoading ? (
+            <div className="p-3 text-xs text-muted-foreground">
+              {t('settings.providers.section.loading')}
+            </div>
+          ) : (
+            <ul>
+              {providers.map((provider) => (
+                <li key={provider.id}>
+                  <div
                     className={cn(
-                      'flex-1 truncate text-left',
-                      !provider.enabled && 'text-muted-foreground'
+                      'w-full flex items-center justify-between gap-2 px-3 py-2 text-sm hover:bg-muted',
+                      selectedId === provider.id && 'bg-muted font-medium'
                     )}
                   >
-                    {provider.kind === 'Default'
-                      ? t('settings.providers.defaultProviderName')
-                      : provider.name}
-                  </button>
-                  <Switch
-                    checked={provider.enabled}
-                    onCheckedChange={() => handleToggleEnabled(provider)}
-                    title={
-                      provider.enabled
-                        ? t('settings.providers.section.disable')
-                        : t('settings.providers.section.enable')
-                    }
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+                    <button
+                      onClick={() => setSelectedId(provider.id)}
+                      className={cn(
+                        'flex-1 truncate text-left',
+                        !provider.enabled && 'text-muted-foreground'
+                      )}
+                    >
+                      {provider.kind === 'Default'
+                        ? t('settings.providers.defaultProviderName')
+                        : provider.name}
+                    </button>
+                    <Switch
+                      checked={provider.enabled}
+                      onCheckedChange={() => handleToggleEnabled(provider)}
+                      title={
+                        provider.enabled
+                          ? t('settings.providers.section.disable')
+                          : t('settings.providers.section.enable')
+                      }
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="px-2 pt-1">
+            <button
+              onClick={() => setSelectedId('new')}
+              className={cn(
+                'w-full flex items-center justify-center gap-1.5 px-2 py-1.5 text-sm rounded',
+                'border border-border hover:bg-muted text-foreground',
+                selectedId === 'new' && 'bg-muted'
+              )}
+            >
+              <PlusIcon className="w-4 h-4" />
+              {t('settings.providers.section.addProvider')}
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Right pane */}
