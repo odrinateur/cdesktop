@@ -24,6 +24,16 @@ function isThinkingEntry(entry: PatchTypeWithKey): boolean {
 }
 
 /**
+ * Empty thinking entries (no text content) render as a lone icon with no body —
+ * common with Claude's signature-only streaming thinking blocks. Hide them.
+ */
+function isEmptyThinkingEntry(entry: PatchTypeWithKey): boolean {
+  if (!isThinkingEntry(entry)) return false;
+  if (entry.type !== 'NORMALIZED_ENTRY') return false;
+  return entry.content.content.trim() === '';
+}
+
+/**
  * Extracts the file path from a file_edit entry, or null if not a file_edit entry.
  */
 function getFileEditPath(entry: PatchTypeWithKey): string | null {
@@ -180,9 +190,12 @@ export function aggregateConsecutiveEntries(
 ): DisplayEntry[] {
   if (entries.length === 0) return [];
 
+  const filteredEntries = entries.filter((e) => !isEmptyThinkingEntry(e));
+  if (filteredEntries.length === 0) return [];
+
   // First pass: aggregate thinking entries in previous turns
   const entriesWithThinkingAggregated =
-    aggregateThinkingInPreviousTurns(entries);
+    aggregateThinkingInPreviousTurns(filteredEntries);
 
   const result: DisplayEntry[] = [];
 

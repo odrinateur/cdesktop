@@ -384,6 +384,7 @@ function DisplayConversationEntry(props: Props) {
         <ChatThinkingMessage
           content={entry.content}
           workspaceId={workspaceWithSession?.id}
+          onIconClick={() => console.log('[thinking raw]', entry)}
           renderMarkdown={({ content, workspaceId, className }) => (
             <AppChatMarkdown
               content={content}
