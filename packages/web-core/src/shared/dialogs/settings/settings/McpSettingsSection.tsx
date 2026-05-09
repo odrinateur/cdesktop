@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PlusIcon } from '@phosphor-icons/react';
+// vibe-kanban: PlusIcon + cn used by hidden Popular Servers gallery
+// import { PlusIcon } from '@phosphor-icons/react';
 import type { BaseCodingAgent, ExecutorProfile } from 'shared/types';
 import { McpConfig } from 'shared/types';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
 import { McpConfigStrategyGeneral } from '@/shared/lib/mcpStrategies';
-import { cn } from '@/shared/lib/utils';
+// import { cn } from '@/shared/lib/utils';
 import { toPrettyCase } from '@/shared/lib/string';
 import {
   DropdownMenu,
@@ -195,41 +196,42 @@ export function McpSettingsSection() {
     setMcpError(null);
   };
 
-  const addServer = (key: string) => {
-    try {
-      const existing = mcpServers.trim() ? JSON.parse(mcpServers) : {};
-      const updated = McpConfigStrategyGeneral.addPreconfiguredToConfig(
-        mcpConfig!,
-        existing,
-        key
-      );
-      setMcpServers(JSON.stringify(updated, null, 2));
-      setMcpError(null);
-    } catch (err) {
-      console.error(err);
-      setMcpError(
-        err instanceof Error
-          ? err.message
-          : t('settings.mcp.errors.addServerFailed')
-      );
-    }
-  };
-
-  const preconfiguredObj = (mcpConfig?.preconfigured ?? {}) as Record<
-    string,
-    unknown
-  >;
-  const meta =
-    typeof preconfiguredObj.meta === 'object' && preconfiguredObj.meta !== null
-      ? (preconfiguredObj.meta as Record<
-          string,
-          { name?: string; description?: string; url?: string; icon?: string }
-        >)
-      : {};
-  const servers = Object.fromEntries(
-    Object.entries(preconfiguredObj).filter(([k]) => k !== 'meta')
-  ) as Record<string, unknown>;
-  const getMetaFor = (key: string) => meta[key] || {};
+  // vibe-kanban: Popular Servers gallery — restore alongside addServer / servers / getMetaFor
+  // const addServer = (key: string) => {
+  //   try {
+  //     const existing = mcpServers.trim() ? JSON.parse(mcpServers) : {};
+  //     const updated = McpConfigStrategyGeneral.addPreconfiguredToConfig(
+  //       mcpConfig!,
+  //       existing,
+  //       key
+  //     );
+  //     setMcpServers(JSON.stringify(updated, null, 2));
+  //     setMcpError(null);
+  //   } catch (err) {
+  //     console.error(err);
+  //     setMcpError(
+  //       err instanceof Error
+  //         ? err.message
+  //         : t('settings.mcp.errors.addServerFailed')
+  //     );
+  //   }
+  // };
+  //
+  // const preconfiguredObj = (mcpConfig?.preconfigured ?? {}) as Record<
+  //   string,
+  //   unknown
+  // >;
+  // const meta =
+  //   typeof preconfiguredObj.meta === 'object' && preconfiguredObj.meta !== null
+  //     ? (preconfiguredObj.meta as Record<
+  //         string,
+  //         { name?: string; description?: string; url?: string; icon?: string }
+  //       >)
+  //     : {};
+  // const servers = Object.fromEntries(
+  //   Object.entries(preconfiguredObj).filter(([k]) => k !== 'meta')
+  // ) as Record<string, unknown>;
+  // const getMetaFor = (key: string) => meta[key] || {};
 
   const profileOptions = profiles
     ? Object.keys(profiles)

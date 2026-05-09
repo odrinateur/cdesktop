@@ -532,9 +532,10 @@ export function WorkspacesSidebar({
   selectedWorkspaceId,
   onSelectWorkspace,
   onAddWorkspace,
-  isCreateMode = false,
+  // vibe-kanban: workspace create-mode UI — restore if inline-create returns
+  // isCreateMode = false,
   draftTitle,
-  onSelectCreate,
+  // onSelectCreate,
   showArchive = false,
   onShowArchiveChange,
   layoutMode = 'folder',

@@ -8,11 +8,12 @@ import {
 } from '@phosphor-icons/react';
 import { FolderPickerDialog } from '@/shared/dialogs/shared/FolderPickerDialog';
 import {
-  type BaseCodingAgent,
+  // vibe-kanban: executor variants — restore alongside default agent picker
+  // type BaseCodingAgent,
   DEFAULT_COMMIT_REMINDER_PROMPT,
   DEFAULT_PR_DESCRIPTION_PROMPT,
   EditorType,
-  type ExecutorProfileId,
+  // type ExecutorProfileId,
   type SendMessageShortcut,
   SoundFile,
   ThemeMode,
@@ -21,10 +22,11 @@ import {
 import { getModifierKey } from '@/shared/lib/platform';
 import { getLanguageOptions } from '@/i18n/languages';
 import { toPrettyCase } from '@/shared/lib/string';
-import {
-  getExecutorVariantKeys,
-  getSortedExecutorVariantKeys,
-} from '@/shared/lib/executor';
+// vibe-kanban: executor helpers used by hidden default-agent / variant picker
+// import {
+//   getExecutorVariantKeys,
+//   getSortedExecutorVariantKeys,
+// } from '@/shared/lib/executor';
 import { useTheme } from '@/shared/hooks/useTheme';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
 import { TagManager } from '@/shared/components/TagManager';
@@ -33,16 +35,17 @@ import {
   type MobileFontScale,
   useMobileFontScale,
 } from '@/shared/stores/useUiPreferencesStore';
-import { cn, playSound } from '@/shared/lib/utils';
+import { playSound } from '@/shared/lib/utils';
 import { PrimaryButton } from '@vibe/ui/components/PrimaryButton';
 import { IconButton } from '@vibe/ui/components/IconButton';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuTriggerButton,
-} from '@vibe/ui/components/Dropdown';
+// vibe-kanban: Dropdown imports used by hidden default-agent / variant picker
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuTrigger,
+//   DropdownMenuTriggerButton,
+// } from '@vibe/ui/components/Dropdown';
 import {
   SettingsCard,
   SettingsCheckbox,
@@ -66,7 +69,8 @@ export function GeneralSettingsSection() {
       defaultValue: 'Browser Default',
     })
   );
-  const { config, loading, updateAndSaveConfig, profiles } = useUserSystem();
+  // vibe-kanban: `profiles` used by hidden default-agent picker
+  const { config, loading, updateAndSaveConfig } = useUserSystem();
 
   const [draft, setDraft] = useState(() => (config ? cloneDeep(config) : null));
   const [dirty, setDirty] = useState(false);
@@ -78,19 +82,19 @@ export function GeneralSettingsSection() {
   );
   const { setTheme } = useTheme();
 
-  // Executor options for the default coding agent dropdown
-  const executorOptions = profiles
-    ? Object.keys(profiles)
-        .sort()
-        .map((key) => ({ value: key, label: toPrettyCase(key) }))
-    : [];
-
-  const selectedAgentProfile =
-    profiles?.[draft?.executor_profile?.executor || ''];
-  const variantOptions = selectedAgentProfile
-    ? getSortedExecutorVariantKeys(selectedAgentProfile)
-    : [];
-  const hasVariants = variantOptions.length > 0;
+  // vibe-kanban: default coding agent + variant picker — restore when feature returns
+  // const executorOptions = profiles
+  //   ? Object.keys(profiles)
+  //       .sort()
+  //       .map((key) => ({ value: key, label: toPrettyCase(key) }))
+  //   : [];
+  //
+  // const selectedAgentProfile =
+  //   profiles?.[draft?.executor_profile?.executor || ''];
+  // const variantOptions = selectedAgentProfile
+  //   ? getSortedExecutorVariantKeys(selectedAgentProfile)
+  //   : [];
+  // const hasVariants = variantOptions.length > 0;
 
   const validateBranchPrefix = useCallback(
     (prefix: string): string | null => {
@@ -203,13 +207,14 @@ export function GeneralSettingsSection() {
     setDirty(false);
   };
 
-  const resetOnboarding = async () => {
-    if (!config) return;
-    updateAndSaveConfig({
-      onboarding_acknowledged: false,
-      remote_onboarding_acknowledged: false,
-    });
-  };
+  // vibe-kanban: reset-onboarding action — restore when Safety & Disclaimers returns
+  // const resetOnboarding = async () => {
+  //   if (!config) return;
+  //   updateAndSaveConfig({
+  //     onboarding_acknowledged: false,
+  //     remote_onboarding_acknowledged: false,
+  //   });
+  // };
 
   if (loading) {
     return (
