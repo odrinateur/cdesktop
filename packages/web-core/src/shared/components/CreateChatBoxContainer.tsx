@@ -1,9 +1,12 @@
-import { useEffect, useMemo, useCallback, useState } from 'react';
+import { useEffect, useMemo, useCallback, useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useTranslation } from 'react-i18next';
 import { useCreateMode } from '@/features/create-mode/model/useCreateMode';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
-import WYSIWYGEditor from '@/shared/components/WYSIWYGEditor';
+import WYSIWYGEditor, {
+  type WYSIWYGEditorRef,
+} from '@/shared/components/WYSIWYGEditor';
+import { useFolderSeedStore } from '@/shared/stores/useFolderSeedStore';
 import { useCreateWorkspace } from '@/shared/hooks/useCreateWorkspace';
 import { useCreateAttachments } from '@/shared/hooks/useCreateAttachments';
 import { useExecutorConfig } from '@/shared/hooks/useExecutorConfig';
@@ -57,6 +60,15 @@ export function CreateChatBoxContainer({
   // Auto-attach the most recently used repo as primary when composer mounts
   // with no attached repos.
   useAutoAttachMostRecent();
+
+  // Focus the editor when a folder seed comes in (covers the case where the
+  // create page is already mounted and route navigation is a no-op).
+  const editorRef = useRef<WYSIWYGEditorRef>(null);
+  const pendingFolderSeedRepoId = useFolderSeedStore((s) => s.pendingRepoId);
+  useEffect(() => {
+    if (!pendingFolderSeedRepoId) return;
+    editorRef.current?.focus();
+  }, [pendingFolderSeedRepoId]);
 
   const { createWorkspace } = useCreateWorkspace();
   const { data: providers = [] } = useProviders();
@@ -331,6 +343,7 @@ export function CreateChatBoxContainer({
                 // user can start typing immediately. canSubmit / displayError
                 // gate the actual submit on hasSelectedRepos.
                 <WYSIWYGEditor
+                  ref={editorRef}
                   placeholder={t('createMode.placeholder.typeForCommands')}
                   value={value}
                   onChange={onChange}
