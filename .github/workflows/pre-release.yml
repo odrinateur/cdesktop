@@ -368,8 +368,7 @@ jobs:
           # Without this, cmake-rs selects RelWithDebInfo and CMake fails when ASM is enabled.
           CARGO_PROFILE_RELEASE_DEBUG: 0
 
-      - name: Prepare binaries (non-macOS)
-        if: runner.os != 'macOS'
+      - name: Prepare binaries
         shell: bash
         run: |
           mkdir -p dist
