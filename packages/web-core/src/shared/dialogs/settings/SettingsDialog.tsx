@@ -1,13 +1,12 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { CaretLeftIcon, PlusIcon, XIcon } from '@phosphor-icons/react';
+import { CaretLeftIcon, XIcon } from '@phosphor-icons/react';
 import { create, useModal } from '@ebay/nice-modal-react';
 import { defineModal } from '@/shared/lib/modals';
 
 import { cn } from '@/shared/lib/utils';
 import { SettingsSection } from './settings/SettingsSection';
-import { SettingsSelect } from './settings/SettingsComponents';
 import type {
   SettingsSectionType,
   SettingsSectionInitialState,
@@ -48,32 +47,34 @@ function SettingsDialogNavigation({
 }) {
   const { t } = useTranslation('settings');
   const {
-    availableHosts,
+    // vibe-kanban: multi-host pairing — restore when host picker returns
+    // availableHosts,
     hostsResolved,
     selectedHost,
-    selectedHostId,
-    setSelectedHostId,
+    // selectedHostId,
+    // setSelectedHostId,
   } = useSettingsHost();
   const hostSections = SETTINGS_SECTION_DEFINITIONS.filter(
     (section) => section.group === 'host'
   );
-  const universalSections = SETTINGS_SECTION_DEFINITIONS.filter(
-    (section) => section.group === 'universal'
-  );
-  const hostOptions = availableHosts.map((host) => ({
-    value: host.id,
-    label: host.status != null ? `${host.label} (${host.status})` : host.label,
-  }));
+  // vibe-kanban: multi-host pairing — restore when host picker / account tabs return
+  // const universalSections = SETTINGS_SECTION_DEFINITIONS.filter(
+  //   (section) => section.group === 'universal'
+  // );
+  // const hostOptions = availableHosts.map((host) => ({
+  //   value: host.id,
+  //   label: host.status != null ? `${host.label} (${host.status})` : host.label,
+  // }));
   const hostSettingsDisabled = !hostsResolved || !selectedHost;
-  const hostHint = !hostsResolved
-    ? t('settings.general.loading')
-    : availableHosts.length === 0
-      ? t('settings.hostPicker.pairMachineHint')
-      : t('settings.hostPicker.selectMachineHint');
+  // const hostHint = !hostsResolved
+  //   ? t('settings.general.loading')
+  //   : availableHosts.length === 0
+  //     ? t('settings.hostPicker.pairMachineHint')
+  //     : t('settings.hostPicker.selectMachineHint');
 
-  const handlePairOtherMachines = () => {
-    onSectionSelect('relay');
-  };
+  // const handlePairOtherMachines = () => {
+  //   onSectionSelect('relay');
+  // };
 
   const renderSectionButton = (sectionId: SettingsSectionType) => {
     const section = SETTINGS_SECTION_DEFINITIONS.find(

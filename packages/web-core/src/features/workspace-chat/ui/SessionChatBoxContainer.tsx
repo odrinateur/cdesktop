@@ -847,7 +847,7 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
           {
             id: action.id,
             icon: action.icon,
-            label,
+            label: label(),
             tooltip: getActionTooltip(action, actionCtx),
             disabled: !isActionEnabled(action, actionCtx),
             onClick: () => handleToolbarAction(action),
