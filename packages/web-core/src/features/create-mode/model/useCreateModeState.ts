@@ -19,6 +19,7 @@ import {
 } from 'shared/remote-types';
 import { useScratch } from '@/shared/hooks/useScratch';
 import { useDebouncedCallback } from '@/shared/hooks/useDebouncedCallback';
+import { useFolderSeedStore } from '@/shared/stores/useFolderSeedStore';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
 import { useShape } from '@/shared/integrations/electric/hooks';
 import { repoApi } from '@/shared/lib/api';
@@ -62,6 +63,7 @@ type DraftAction =
   | { type: 'SET_PROJECT'; projectId: string | null }
   | { type: 'ADD_REPO'; repo: Repo; targetBranch: string | null }
   | { type: 'SET_REPOS_IF_EMPTY'; repos: SelectedRepo[] }
+  | { type: 'SET_REPOS'; repos: SelectedRepo[] }
   | { type: 'REMOVE_REPO'; repoId: string }
   | { type: 'SET_TARGET_BRANCH'; repoId: string; branch: string }
   | { type: 'SET_MESSAGE'; message: string }
@@ -126,6 +128,9 @@ function draftReducer(state: DraftState, action: DraftAction): DraftState {
       if (state.repos.length > 0) {
         return state;
       }
+      return { ...state, repos: action.repos };
+
+    case 'SET_REPOS':
       return { ...state, repos: action.repos };
 
     case 'REMOVE_REPO':
@@ -499,6 +504,55 @@ export function useCreateModeState({
       cancelled = true;
     };
   }, [state.linkedIssue?.remoteProjectId, state.repos.length]);
+
+  // ============================================================================
+  // Folder-seed bridge: sidebar "+ in folder" sets a pending repoId in a
+  // shared store so it works even when the create page is already mounted.
+  // ============================================================================
+  const pendingFolderSeedRepoId = useFolderSeedStore((s) => s.pendingRepoId);
+  const consumeFolderSeed = useFolderSeedStore((s) => s.consume);
+  useEffect(() => {
+    if (state.phase !== 'ready') return;
+    if (!pendingFolderSeedRepoId) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const allRepos = await repoApi.list();
+        if (cancelled) return;
+        const repo = allRepos.find((r) => r.id === pendingFolderSeedRepoId);
+        if (!repo) return;
+
+        // Mirror ComposerChipRow.resolveInitialBranch: prefer HEAD, fall back
+        // to default_target_branch. Only meaningful for git repos.
+        let targetBranch: string | null = null;
+        if (repo.is_git) {
+          try {
+            const branches = await repoApi.getBranches(repo.id);
+            if (cancelled) return;
+            const current = branches.find((b) => b.is_current);
+            targetBranch =
+              current?.name ?? repo.default_target_branch ?? null;
+          } catch {
+            targetBranch = repo.default_target_branch ?? null;
+          }
+        }
+
+        dispatch({
+          type: 'SET_REPOS',
+          repos: [{ repo, targetBranch }],
+        });
+      } catch (err) {
+        console.warn('[useCreateModeState] Folder-seed lookup failed:', err);
+      } finally {
+        if (!cancelled) consumeFolderSeed();
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [state.phase, pendingFolderSeedRepoId, consumeFolderSeed]);
 
   // ============================================================================
   // Persistence to scratch (debounced)
