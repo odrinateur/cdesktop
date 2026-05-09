@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version_type:
-        description: "Version bump type"
+        description: "Version bump type ('none' reuses current version with a fresh timestamp tag — use to retry after a failed run without burning a version)"
         required: true
         default: "patch"
         type: choice
@@ -13,6 +13,7 @@ on:
           - minor
           - major
           - prerelease
+          - none
 
 concurrency:
   group: release-${{ github.ref_name }} # allow concurrent prerelease from different branches
@@ -87,7 +88,12 @@ jobs:
           timestamp=$(date +%Y%m%d%H%M%S)
 
           # Update root package.json based on base version
-          if [[ "${{ github.event.inputs.version_type }}" == "prerelease" ]]; then
+          if [[ "${{ github.event.inputs.version_type }}" == "none" ]]; then
+            # Retry path: reuse current repo version, only mint a fresh timestamp tag
+            new_version=$current_repo_version
+            new_tag="v${new_version}-${timestamp}"
+            echo "Reusing version $new_version with new tag $new_tag"
+          elif [[ "${{ github.event.inputs.version_type }}" == "prerelease" ]]; then
             # For prerelease, use current package.json version and add branch suffix
             npm version prerelease --preid="${{ steps.branch.outputs.suffix }}" --no-git-tag-version
 
@@ -136,9 +142,13 @@ jobs:
           git add $(find . -name Cargo.toml)
           [ -f crates/remote/Cargo.lock ] && git add crates/remote/Cargo.lock || true
           [ -f crates/relay-tunnel/Cargo.lock ] && git add crates/relay-tunnel/Cargo.lock || true
-          git commit -m "chore: bump version to ${{ steps.version.outputs.new_version }}"
+          if git diff --cached --quiet; then
+            echo "No version changes to commit (version_type=none)"
+          else
+            git commit -m "chore: bump version to ${{ steps.version.outputs.new_version }}"
+            git push
+          fi
           git tag -a ${{ steps.version.outputs.new_tag }} -m "Release ${{ steps.version.outputs.new_tag }}"
-          git push
           git push --tags
 
   build-frontend:
