@@ -15,6 +15,7 @@ import { useWorkspaceContext } from '@/shared/hooks/useWorkspaceContext';
 import { useUserContext } from '@/shared/hooks/useUserContext';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
 import { useScratch } from '@/shared/hooks/useScratch';
+import { useFolderSeedStore } from '@/shared/stores/useFolderSeedStore';
 import { useTheme } from '@/shared/hooks/useTheme';
 import { ScratchType, type DraftWorkspaceData } from 'shared/types';
 import { splitMessageToTitleDescription } from '@/shared/lib/string';
@@ -648,6 +649,18 @@ export function WorkspacesSidebarContainer({
     }
   }, [navigateToCreate, isMobile, setMobileActiveTab]);
 
+  const setPendingFolderSeed = useFolderSeedStore((s) => s.setPending);
+  const handleCreateInFolder = useCallback(
+    (repoId: string) => {
+      setPendingFolderSeed(repoId);
+      navigateToCreate();
+      if (isMobile) {
+        setMobileActiveTab('chat');
+      }
+    },
+    [setPendingFolderSeed, navigateToCreate, isMobile, setMobileActiveTab]
+  );
+
   const handleOpenWorkspaceActions = useCallback((workspaceId: string) => {
     CommandBarDialog.show({
       page: 'workspaceActions',
@@ -888,6 +901,7 @@ export function WorkspacesSidebarContainer({
         selectedWorkspaceId={focusedSessionId ?? selectedWorkspaceId ?? null}
         onSelectWorkspace={handleSelectWorkspace}
         onAddWorkspace={handleAddWorkspace}
+        onCreateInFolder={handleCreateInFolder}
         isCreateMode={isCreateMode}
         draftTitle={persistedDraftTitle}
         onSelectCreate={navigateToCreate}

@@ -83,6 +83,8 @@ export interface WorkspacesSidebarProps {
   selectedWorkspaceId: string | null;
   onSelectWorkspace: (id: string) => void;
   onAddWorkspace?: () => void;
+  /** Open the new-session page with a specific folder's repo pre-selected. */
+  onCreateInFolder?: (repoId: string) => void;
   /** Whether we're in create mode */
   isCreateMode?: boolean;
   /** Title extracted from draft message (only shown when isCreateMode and non-empty) */
@@ -241,6 +243,7 @@ function FolderGroup({
   onOpenWorkspaceActions,
   getWorkspaceDragProps,
   openInGridWorkspaceIds,
+  onCreateInFolder,
 }: {
   group: WorkspacesSidebarFolderGroup;
   selectedWorkspaceId: string | null;
@@ -248,7 +251,9 @@ function FolderGroup({
   onOpenWorkspaceActions: (workspaceId: string) => void;
   getWorkspaceDragProps?: WorkspacesSidebarProps['getWorkspaceDragProps'];
   openInGridWorkspaceIds?: ReadonlySet<string>;
+  onCreateInFolder?: (repoId: string) => void;
 }) {
+  const { t } = useTranslation('common');
   const [expanded, setExpandedState] = useState(() =>
     readFolderExpanded(group.repoId)
   );
@@ -263,20 +268,38 @@ function FolderGroup({
 
   return (
     <div className="flex flex-col">
-      <button
-        type="button"
-        onClick={toggle}
-        className="group w-full flex items-center gap-half px-double py-half text-sm text-low opacity-60 hover:opacity-100 hover:text-normal transition-colors lowercase"
-      >
-        <span className="flex-1 text-left truncate">{group.displayName}</span>
-        <CaretDownIcon
-          className={cn(
-            'size-icon-xs opacity-0 group-hover:opacity-100 transition-transform',
-            expanded ? 'rotate-0' : '-rotate-90'
-          )}
-          weight="bold"
-        />
-      </button>
+      <div className="group flex items-center px-double py-half text-sm text-low opacity-60 hover:opacity-100 hover:text-normal transition-colors lowercase">
+        <button
+          type="button"
+          onClick={toggle}
+          className="min-w-0 flex items-center gap-half text-left"
+        >
+          <span className="truncate">{group.displayName}</span>
+          <CaretDownIcon
+            className={cn(
+              'size-icon-xs shrink-0 opacity-0 group-hover:opacity-100 transition-transform',
+              expanded ? 'rotate-0' : '-rotate-90'
+            )}
+            weight="bold"
+          />
+        </button>
+        {onCreateInFolder && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onCreateInFolder(group.repoId);
+            }}
+            aria-label={t('sidebar.newSessionInFolder', {
+              defaultValue: 'New session in {{folder}}',
+              folder: group.displayName,
+            })}
+            className="ml-auto shrink-0 pl-base opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <PlusIcon className="size-icon-xs" weight="bold" />
+          </button>
+        )}
+      </div>
       {expanded && (
         <div className="flex flex-col gap-[2px]">
           <WorkspaceList
@@ -532,6 +555,7 @@ export function WorkspacesSidebar({
   selectedWorkspaceId,
   onSelectWorkspace,
   onAddWorkspace,
+  onCreateInFolder,
   // vibe-kanban: workspace create-mode UI — restore if inline-create returns
   // isCreateMode = false,
   draftTitle,
@@ -884,6 +908,7 @@ export function WorkspacesSidebar({
                 onOpenWorkspaceActions={handleOpenWorkspaceActions}
                 getWorkspaceDragProps={getWorkspaceDragProps}
                 openInGridWorkspaceIds={openInGridWorkspaceIds}
+                onCreateInFolder={onCreateInFolder}
               />
             ))}
           </div>
