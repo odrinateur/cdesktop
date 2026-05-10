@@ -426,6 +426,8 @@
         "baseUrlPlaceholder": "https://api.example.com",
         "apiKey": "API key",
         "apiKeyPlaceholder": "sk-…",
+        "apiKeyOverride": "API key override",
+        "apiKeyOverrideHint": "Leave empty to use the provider's top-level API key",
         "backgroundTaskModel": "Background task model",
         "followMainModel": "Follow main model",
         "haikuModelPlaceholder": "e.g. claude-haiku-4-5-20251001",

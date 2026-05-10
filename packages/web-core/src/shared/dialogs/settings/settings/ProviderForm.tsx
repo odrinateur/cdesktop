@@ -129,6 +129,26 @@ function textToObject(text: string): OptionsMap {
   return out;
 }
 
+function ApiKeyOverrideField({
+  value,
+  onChange,
+}: {
+  value: string | null;
+  onChange: (v: string | null) => void;
+}) {
+  const { t } = useTranslation('settings');
+  return (
+    <SettingsField label={t('settings.providers.form.apiKeyOverride')}>
+      <InputBase
+        type="password"
+        value={value ?? ''}
+        onChange={(v) => onChange(v ? v : null)}
+        placeholder={t('settings.providers.form.apiKeyOverrideHint')}
+      />
+    </SettingsField>
+  );
+}
+
 function InputBase({
   value,
   onChange,
@@ -250,24 +270,36 @@ export function ProviderForm({
       apiKeyField: 'ANTHROPIC_AUTH_TOKEN',
       baseUrl: null,
       haikuModel: null,
+      apiKey: null,
       env: {},
     }
   );
   const [codexPayload, setCodexPayload] = useState<CodexPayload>(
-    provider?.codex ?? { baseUrl: null, env: {} }
+    provider?.codex ?? { baseUrl: null, apiKey: null, env: {} }
   );
   const [opencodePayload, setOpencodePayload] = useState<OpencodePayload>(
-    provider?.opencode ?? { npm: null, baseUrl: null, options: {}, env: {} }
+    provider?.opencode ?? {
+      npm: null,
+      baseUrl: null,
+      options: {},
+      apiKey: null,
+      env: {},
+    }
   );
   const [deepseekTuiPayload, setDeepseekTuiPayload] =
     useState<DeepseekTuiPayload>(
-      provider?.deepseekTui ?? { baseUrl: null, env: {} }
+      provider?.deepseekTui ?? { baseUrl: null, apiKey: null, env: {} }
     );
   const [geminiPayload, setGeminiPayload] = useState<GeminiPayload>(
-    provider?.gemini ?? { baseUrl: null, env: {} }
+    provider?.gemini ?? { baseUrl: null, apiKey: null, env: {} }
   );
   const [hermesPayload, setHermesPayload] = useState<HermesPayload>(
-    provider?.hermes ?? { baseUrl: null, apiMode: null, env: {} }
+    provider?.hermes ?? {
+      baseUrl: null,
+      apiMode: null,
+      apiKey: null,
+      env: {},
+    }
   );
 
   // Agent the user was active on — auto-expand its chevron.
@@ -509,6 +541,10 @@ export function ProviderForm({
                 placeholder="https://api.example.com/v1"
               />
             </SettingsField>
+            <ApiKeyOverrideField
+              value={claudePayload.apiKey ?? null}
+              onChange={(v) => setClaudePayload((p) => ({ ...p, apiKey: v }))}
+            />
             <SettingsField label={t('settings.providers.form.authField')}>
               <div className="flex gap-2">
                 {(['ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_API_KEY'] as const).map(
@@ -583,6 +619,10 @@ export function ProviderForm({
                 placeholder="https://api.example.com/v1"
               />
             </SettingsField>
+            <ApiKeyOverrideField
+              value={codexPayload.apiKey ?? null}
+              onChange={(v) => setCodexPayload((p) => ({ ...p, apiKey: v }))}
+            />
             <SettingsField label={t('settings.providers.form.extraEnvVars')}>
               <SettingsTextarea
                 value={envMapToText(codexPayload.env)}
@@ -614,6 +654,10 @@ export function ProviderForm({
                 placeholder="https://api.example.com/v1"
               />
             </SettingsField>
+            <ApiKeyOverrideField
+              value={opencodePayload.apiKey ?? null}
+              onChange={(v) => setOpencodePayload((p) => ({ ...p, apiKey: v }))}
+            />
             <SettingsField label={t('settings.providers.form.extraOptions')}>
               <SettingsTextarea
                 value={objectToText(opencodePayload.options)}
@@ -659,6 +703,12 @@ export function ProviderForm({
                 placeholder="https://api.example.com/v1"
               />
             </SettingsField>
+            <ApiKeyOverrideField
+              value={deepseekTuiPayload.apiKey ?? null}
+              onChange={(v) =>
+                setDeepseekTuiPayload((p) => ({ ...p, apiKey: v }))
+              }
+            />
             <SettingsField label={t('settings.providers.form.extraEnvVars')}>
               <SettingsTextarea
                 value={envMapToText(deepseekTuiPayload.env)}
@@ -693,6 +743,10 @@ export function ProviderForm({
                 placeholder="https://generativelanguage.googleapis.com"
               />
             </SettingsField>
+            <ApiKeyOverrideField
+              value={geminiPayload.apiKey ?? null}
+              onChange={(v) => setGeminiPayload((p) => ({ ...p, apiKey: v }))}
+            />
             <SettingsField label={t('settings.providers.form.extraEnvVars')}>
               <SettingsTextarea
                 value={envMapToText(geminiPayload.env)}
@@ -724,6 +778,10 @@ export function ProviderForm({
                 placeholder="https://api.example.com/v1"
               />
             </SettingsField>
+            <ApiKeyOverrideField
+              value={hermesPayload.apiKey ?? null}
+              onChange={(v) => setHermesPayload((p) => ({ ...p, apiKey: v }))}
+            />
             <SettingsField label={t('settings.providers.form.apiMode')}>
               <select
                 value={hermesPayload.apiMode ?? ''}
