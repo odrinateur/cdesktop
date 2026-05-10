@@ -22,6 +22,9 @@ use crate::provider_payloads::{
 //     ordering; a real spawn against an OpenRouter (Anthropic-compat)
 //     OpenCode provider with diff of `~/.config/opencode/` before/after is
 //     still pending.
+//   - Phase F (Gemini): unit tests cover env shape + overlay ordering; a
+//     real spawn against a user-supplied Google-API-compatible Custom
+//     record with diff of `~/.gemini/` before/after is still pending.
 // Tracked here so the gap is visible from the appliers themselves.
 
 /// Hardcoded `model_providers.<id>` slug for the cdesktop-injected Codex
@@ -536,7 +539,9 @@ impl Provider {
     /// the `--model` CLI flag the executor passes for the *main* model. See
     /// plan §3.2 spawn-time applier.
     ///
-    /// Codex/OpenCode/DeepSeek TUI/Gemini/Hermes appliers ship in Phases C-F.
+    /// Codex / OpenCode / Gemini appliers ship as Phases C / D / F via
+    /// their own `build_*_injection` methods. DeepSeek TUI / Hermes still
+    /// pending.
     pub fn build_spawn_env(&self, model_id: &str) -> HashMap<String, String> {
         if self.kind == AiProviderKind::Default {
             return HashMap::new();
@@ -723,10 +728,7 @@ impl Provider {
             "baseURL".to_string(),
             JsonValue::String(base_url.to_string()),
         );
-        options_map.insert(
-            "apiKey".to_string(),
-            JsonValue::String(api_key.to_string()),
-        );
+        options_map.insert("apiKey".to_string(), JsonValue::String(api_key.to_string()));
 
         // models = { id: {} } for each enabled model
         let mut models_map: serde_json::Map<String, JsonValue> = serde_json::Map::new();
@@ -744,10 +746,7 @@ impl Provider {
         provider_inner.insert("models".to_string(), JsonValue::Object(models_map));
 
         let mut providers_map: serde_json::Map<String, JsonValue> = serde_json::Map::new();
-        providers_map.insert(
-            provider_slug.to_string(),
-            JsonValue::Object(provider_inner),
-        );
+        providers_map.insert(provider_slug.to_string(), JsonValue::Object(provider_inner));
 
         let mut root: serde_json::Map<String, JsonValue> = serde_json::Map::new();
         root.insert("provider".to_string(), JsonValue::Object(providers_map));
@@ -760,16 +759,69 @@ impl Provider {
         Ok(Some(env))
     }
 
+    /// Build the Gemini-side spawn injection: env-only, same shape as
+    /// Claude (plan §3.2 lines 231-237).
+    ///
+    /// For Default (ambient auth): returns `Ok(None)` — gemini-cli reads
+    /// its own `~/.gemini/oauth_creds.json` / `GEMINI_API_KEY` env. For
+    /// Preset/Custom: derives `GOOGLE_GEMINI_BASE_URL` from
+    /// `record.gemini.base_url`, sets `GEMINI_API_KEY` from the resolved
+    /// API key, and overlays `record.gemini.env` for vendor quirks.
+    ///
+    /// Errors:
+    /// - `MissingApiKey("GEMINI")` when the resolved API key is empty.
+    /// - `EnabledAgentMissingBaseUrl("GEMINI")` when `record.gemini.base_url` is empty.
+    ///
+    /// `record.gemini.env` is overlaid first so the credential-bearing
+    /// `GOOGLE_GEMINI_BASE_URL` / `GEMINI_API_KEY` set last cannot be
+    /// silently clobbered by a vendor-quirk env entry — same defensive
+    /// ordering as Phase C/D. Plan §3.2 line 236 lists overlay order
+    /// loosely; the credential-last choice mirrors the Codex/OpenCode
+    /// appliers.
+    ///
+    /// Catalog ships no Gemini presets (per plan §3.1 — Default's ambient
+    /// auth covers official Google routing, remaining cc-switch presets
+    /// have upstream issues). The applier therefore exists exclusively
+    /// for Custom records pointing at user-supplied
+    /// Google-API-compatible endpoints.
+    pub fn build_gemini_injection(&self) -> Result<Option<HashMap<String, String>>, ProviderError> {
+        if self.kind == AiProviderKind::Default {
+            return Ok(None);
+        }
+
+        let api_key = self
+            .resolved_api_key(BaseCodingAgent::Gemini)
+            .ok_or_else(|| ProviderError::MissingApiKey("GEMINI".to_string()))?;
+        let base_url = self
+            .gemini
+            .base_url
+            .as_deref()
+            .filter(|s| !s.is_empty())
+            .ok_or_else(|| ProviderError::EnabledAgentMissingBaseUrl("GEMINI".to_string()))?;
+
+        let mut env = self.gemini.env.clone();
+        // GOOGLE_GEMINI_BASE_URL + GEMINI_API_KEY set last so vendor-quirk
+        // env (set above) can't accidentally overwrite either.
+        env.insert("GOOGLE_GEMINI_BASE_URL".to_string(), base_url.to_string());
+        env.insert("GEMINI_API_KEY".to_string(), api_key.to_string());
+        Ok(Some(env))
+    }
+
     /// Per-agent spawn injection — the single dispatch point that route
     /// handlers call when a user picks a provider for a given message.
     ///
     /// Each agent gets its own applier (Codex via `build_codex_injection`,
-    /// OpenCode via `build_opencode_injection`, every other agent via
-    /// Claude-style env-only `build_spawn_env`). Phase E / F will populate
-    /// the remaining slots on `AgentInjection` (DeepSeek TUI flags, Gemini
-    /// env, Hermes carrier — see plan §3.2 lines 192-260). Adding a new
-    /// agent only adds a match arm here and a field on `AgentInjection`;
-    /// route handlers stay put.
+    /// OpenCode via `build_opencode_injection`, Gemini via
+    /// `build_gemini_injection`, Claude via `build_spawn_env`). Phase E
+    /// will populate the remaining slot on `AgentInjection` (DeepSeek TUI
+    /// CLI flags — see plan §3.2 lines 192-260). Adding a new agent only
+    /// adds a match arm here and a field on `AgentInjection`; route
+    /// handlers stay put.
+    ///
+    /// The catch-all arm calls `build_spawn_env` (Claude env). Agents
+    /// without their own applier (DeepSeek TUI / Hermes today) still
+    /// land there; they are picker-gated off until their phase ships, so
+    /// the wrong-env injection is unreachable in practice.
     pub fn build_agent_injection(
         &self,
         agent: BaseCodingAgent,
@@ -785,6 +837,10 @@ impl Provider {
             },
             BaseCodingAgent::Opencode => Ok(AgentInjection {
                 env: self.build_opencode_injection()?,
+                codex: None,
+            }),
+            BaseCodingAgent::Gemini => Ok(AgentInjection {
+                env: self.build_gemini_injection()?,
                 codex: None,
             }),
             _ => {
@@ -809,8 +865,9 @@ pub struct AgentInjection {
     /// `ThreadStartParams` at spawn (see `Codex::build_thread_start_params`).
     pub codex: Option<CodexProviderInjection>,
     // OpenCode (Phase D) ships its config via the `OPENCODE_CONFIG_CONTENT`
-    // env var inside `env` — no dedicated slot needed. Future:
-    // deepseek_tui (Phase E), gemini (Phase F).
+    // env var inside `env` — no dedicated slot needed. Gemini (Phase F)
+    // is env-only too. Future: deepseek_tui (Phase E) likely needs a
+    // dedicated argv slot since its applier emits CLI flags.
 }
 
 #[cfg(test)]
@@ -919,7 +976,9 @@ mod codex_injection_tests {
         );
         assert_eq!(
             cfg.get("model_providers.cdt.base_url"),
-            Some(&JsonValue::String("https://openrouter.ai/api/v1".to_string()))
+            Some(&JsonValue::String(
+                "https://openrouter.ai/api/v1".to_string()
+            ))
         );
         assert_eq!(
             cfg.get("model_providers.cdt.env_key"),
@@ -960,8 +1019,9 @@ mod codex_injection_tests {
 
 #[cfg(test)]
 mod opencode_injection_tests {
-    use super::*;
     use serde_json::json;
+
+    use super::*;
 
     fn provider_with_opencode(
         kind: AiProviderKind,
@@ -1125,14 +1185,8 @@ mod opencode_injection_tests {
         );
         assert_eq!(provider["options"]["apiKey"], json!("sk-real"));
         assert_eq!(provider["options"]["setCacheKey"], json!(true));
-        assert_eq!(
-            provider["models"]["anthropic/claude-opus-4.7"],
-            json!({})
-        );
-        assert_eq!(
-            provider["models"]["anthropic/claude-sonnet-4.6"],
-            json!({})
-        );
+        assert_eq!(provider["models"]["anthropic/claude-opus-4.7"], json!({}));
+        assert_eq!(provider["models"]["anthropic/claude-sonnet-4.6"], json!({}));
     }
 
     #[test]
@@ -1262,5 +1316,211 @@ mod opencode_injection_tests {
             cfg["provider"]["openrouter"]["options"]["baseURL"],
             json!("https://openrouter.ai/api/v1")
         );
+    }
+}
+
+#[cfg(test)]
+mod gemini_injection_tests {
+    use super::*;
+
+    fn provider_with_gemini(
+        kind: AiProviderKind,
+        api_key: Option<&str>,
+        base_url: Option<&str>,
+        gemini_env: HashMap<String, String>,
+    ) -> Provider {
+        Provider {
+            id: Uuid::new_v4(),
+            name: "Test Provider".to_string(),
+            kind,
+            preset_id: None,
+            enabled: true,
+            api_key: api_key.map(|s| s.to_string()),
+            per_agent_enabled: HashMap::new(),
+            claude: ClaudePayload::default(),
+            codex: CodexPayload::default(),
+            opencode: OpencodePayload::default(),
+            deepseek_tui: DeepseekTuiPayload::default(),
+            gemini: GeminiPayload {
+                base_url: base_url.map(|s| s.to_string()),
+                api_key: None,
+                env: gemini_env,
+            },
+            hermes: HermesPayload::default(),
+            enabled_models: vec![],
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
+        }
+    }
+
+    #[test]
+    fn default_returns_none() {
+        let p = provider_with_gemini(
+            AiProviderKind::Default,
+            Some("ignored"),
+            Some("ignored"),
+            HashMap::new(),
+        );
+        assert!(p.build_gemini_injection().unwrap().is_none());
+    }
+
+    #[test]
+    fn missing_api_key_rejected() {
+        let p = provider_with_gemini(
+            AiProviderKind::Custom,
+            None,
+            Some("https://generativelanguage.googleapis.com"),
+            HashMap::new(),
+        );
+        assert!(matches!(
+            p.build_gemini_injection(),
+            Err(ProviderError::MissingApiKey(_))
+        ));
+    }
+
+    #[test]
+    fn empty_api_key_rejected() {
+        let p = provider_with_gemini(
+            AiProviderKind::Custom,
+            Some(""),
+            Some("https://generativelanguage.googleapis.com"),
+            HashMap::new(),
+        );
+        assert!(matches!(
+            p.build_gemini_injection(),
+            Err(ProviderError::MissingApiKey(_))
+        ));
+    }
+
+    #[test]
+    fn missing_base_url_rejected() {
+        let p = provider_with_gemini(
+            AiProviderKind::Custom,
+            Some("sk-test"),
+            None,
+            HashMap::new(),
+        );
+        assert!(matches!(
+            p.build_gemini_injection(),
+            Err(ProviderError::EnabledAgentMissingBaseUrl(_))
+        ));
+    }
+
+    #[test]
+    fn structural_keys_emitted() {
+        // Plan §3.2 lines 233-236: GOOGLE_GEMINI_BASE_URL + GEMINI_API_KEY
+        // are the entire applier output (plus any vendor-quirk env overlay).
+        let p = provider_with_gemini(
+            AiProviderKind::Custom,
+            Some("sk-real"),
+            Some("https://generativelanguage.googleapis.com"),
+            HashMap::new(),
+        );
+        let env = p.build_gemini_injection().unwrap().unwrap();
+        assert_eq!(
+            env.get("GOOGLE_GEMINI_BASE_URL").map(String::as_str),
+            Some("https://generativelanguage.googleapis.com")
+        );
+        assert_eq!(
+            env.get("GEMINI_API_KEY").map(String::as_str),
+            Some("sk-real")
+        );
+        assert_eq!(env.len(), 2);
+    }
+
+    #[test]
+    fn payload_apikey_overrides_top_level() {
+        // Per-agent apiKey override (Packy Code style) wins over top-level.
+        let mut p = provider_with_gemini(
+            AiProviderKind::Custom,
+            Some("top-level-key"),
+            Some("https://generativelanguage.googleapis.com"),
+            HashMap::new(),
+        );
+        p.gemini.api_key = Some("gemini-specific-key".to_string());
+
+        let env = p.build_gemini_injection().unwrap().unwrap();
+        assert_eq!(
+            env.get("GEMINI_API_KEY").map(String::as_str),
+            Some("gemini-specific-key")
+        );
+    }
+
+    #[test]
+    fn vendor_env_overlaid_credential_wins() {
+        // record.gemini.env is overlaid first; GOOGLE_GEMINI_BASE_URL +
+        // GEMINI_API_KEY are inserted last so a misconfigured vendor entry
+        // can't clobber either. Mirrors Phase C/D defensive ordering.
+        let mut gemini_env = HashMap::new();
+        gemini_env.insert("GEMINI_LOG_LEVEL".to_string(), "debug".to_string());
+        gemini_env.insert(
+            "GEMINI_API_KEY".to_string(),
+            "should-be-overridden".to_string(),
+        );
+        gemini_env.insert(
+            "GOOGLE_GEMINI_BASE_URL".to_string(),
+            "https://wrong.example".to_string(),
+        );
+
+        let p = provider_with_gemini(
+            AiProviderKind::Custom,
+            Some("real-key"),
+            Some("https://generativelanguage.googleapis.com"),
+            gemini_env,
+        );
+        let env = p.build_gemini_injection().unwrap().unwrap();
+        assert_eq!(
+            env.get("GEMINI_API_KEY").map(String::as_str),
+            Some("real-key")
+        );
+        assert_eq!(
+            env.get("GOOGLE_GEMINI_BASE_URL").map(String::as_str),
+            Some("https://generativelanguage.googleapis.com")
+        );
+        assert_eq!(
+            env.get("GEMINI_LOG_LEVEL").map(String::as_str),
+            Some("debug")
+        );
+    }
+
+    #[test]
+    fn dispatch_routes_gemini_to_gemini_applier() {
+        // build_agent_injection(Gemini, _) must hit build_gemini_injection,
+        // not the catch-all that emits Claude env vars. Regression guard
+        // against a non-Default provider used with Gemini accidentally
+        // injecting ANTHROPIC_BASE_URL into the gemini-cli child.
+        let p = provider_with_gemini(
+            AiProviderKind::Custom,
+            Some("sk-real"),
+            Some("https://generativelanguage.googleapis.com"),
+            HashMap::new(),
+        );
+        let inj = p
+            .build_agent_injection(BaseCodingAgent::Gemini, "gemini-3-pro-preview")
+            .unwrap();
+        let env = inj.env.expect("Custom Gemini emits env");
+        assert!(env.contains_key("GEMINI_API_KEY"));
+        assert!(env.contains_key("GOOGLE_GEMINI_BASE_URL"));
+        assert!(!env.contains_key("ANTHROPIC_BASE_URL"));
+        assert!(!env.contains_key("ANTHROPIC_AUTH_TOKEN"));
+        assert!(inj.codex.is_none());
+    }
+
+    #[test]
+    fn dispatch_default_gemini_returns_no_env() {
+        // Default provider routes Gemini to ambient ~/.gemini auth; the
+        // dispatch must yield env: None so provider_vars stays empty and
+        // gemini-cli reads its own oauth_creds.json.
+        let p = provider_with_gemini(
+            AiProviderKind::Default,
+            Some("ignored"),
+            None,
+            HashMap::new(),
+        );
+        let inj = p
+            .build_agent_injection(BaseCodingAgent::Gemini, "gemini-3-pro-preview")
+            .unwrap();
+        assert!(inj.env.is_none());
+        assert!(inj.codex.is_none());
     }
 }
