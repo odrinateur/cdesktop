@@ -1069,6 +1069,7 @@ pub trait ContainerService {
         executor_config: ExecutorConfig,
         prompt: String,
         provider_env: Option<HashMap<String, String>>,
+        provider_codex: Option<executors::env::CodexProviderInjection>,
         selected_provider_id: Option<String>,
         selected_model_id: Option<String>,
     ) -> Result<ExecutionProcess, ContainerError> {
@@ -1121,6 +1122,9 @@ pub trait ContainerService {
             );
             if let Some(env) = provider_env {
                 a = a.with_provider_env(env);
+            }
+            if let Some(codex) = provider_codex {
+                a = a.with_provider_codex(codex);
             }
             a.with_provider_selection(selected_provider_id, selected_model_id)
         };

@@ -449,7 +449,7 @@ impl Codex {
         apply_overrides(builder, &self.cmd)
     }
 
-    fn build_thread_start_params(&self, cwd: &Path) -> ThreadStartParams {
+    fn build_thread_start_params(&self, cwd: &Path, env: &ExecutionEnv) -> ThreadStartParams {
         let sandbox = match self.sandbox.as_ref() {
             None | Some(SandboxMode::Auto) => Some(V2SandboxMode::WorkspaceWrite), // match the Auto preset in codex
             Some(SandboxMode::ReadOnly) => Some(V2SandboxMode::ReadOnly),
@@ -505,6 +505,24 @@ impl Codex {
             None
         };
 
+        // Per-message Codex provider injection. When the user picks a non-Default
+        // provider record for this message, `Provider::build_codex_injection`
+        // emits dotted-path overrides (`model_providers.cdt.{name,base_url,
+        // env_key,wire_api}`) that get merged into Codex's free-form `config`
+        // map and a `model_provider` id ("cdt") that selects them. The
+        // `apply_single_override` path in codex's app-server applies these to
+        // the loaded `~/.codex/config.toml` IN MEMORY only — `auth.json` and
+        // `config.toml` on disk are never touched (plan §3.2 / Phase C
+        // verification target).
+        let mut model_provider = self.model_provider.clone();
+        if let Some(injection) = env.provider_codex.as_ref() {
+            let map = config.get_or_insert_with(HashMap::new);
+            for (k, v) in &injection.config_overrides {
+                map.insert(k.clone(), v.clone());
+            }
+            model_provider = Some(injection.model_provider_id.clone());
+        }
+
         ThreadStartParams {
             model: model.map(|m| m.to_string()),
             cwd: Some(cwd.to_string_lossy().to_string()),
@@ -512,7 +530,7 @@ impl Codex {
             sandbox,
             config,
             base_instructions: self.base_instructions.clone(),
-            model_provider: self.model_provider.clone(),
+            model_provider,
             developer_instructions: self.developer_instructions.clone(),
             service_tier,
             ..Default::default()
@@ -560,7 +578,7 @@ impl Codex {
         resume_session: Option<&str>,
         env: &ExecutionEnv,
     ) -> Result<SpawnedChild, ExecutorError> {
-        let params = self.build_thread_start_params(current_dir);
+        let params = self.build_thread_start_params(current_dir, env);
         let resume_session = resume_session.map(|s| s.to_string());
 
         self.spawn_app_server(

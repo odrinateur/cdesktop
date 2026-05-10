@@ -12,7 +12,7 @@ use crate::{
         script::ScriptRequest,
     },
     approvals::ExecutorApprovalService,
-    env::ExecutionEnv,
+    env::{CodexProviderInjection, ExecutionEnv},
     executors::{BaseCodingAgent, ExecutorError, SpawnedChild},
 };
 pub mod coding_agent_follow_up;
@@ -41,6 +41,13 @@ pub struct ExecutorAction {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[ts(skip)]
     pub provider_env: Option<HashMap<String, String>>,
+    /// Codex-specific spawn injection (config overrides + model_provider id),
+    /// populated alongside `provider_env` when the active agent is Codex and
+    /// the user picked a non-Default provider record. See
+    /// `crates/executors/src/env.rs::CodexProviderInjection` for shape.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(skip)]
+    pub provider_codex: Option<CodexProviderInjection>,
     /// Provider ID selected for this message; persisted to coding_agent_turns
     /// for recents query and transcript markers (§4/§6).
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -58,6 +65,7 @@ impl ExecutorAction {
             typ,
             next_action,
             provider_env: None,
+            provider_codex: None,
             selected_provider_id: None,
             selected_model_id: None,
         }
@@ -65,6 +73,11 @@ impl ExecutorAction {
 
     pub fn with_provider_env(mut self, env: HashMap<String, String>) -> Self {
         self.provider_env = Some(env);
+        self
+    }
+
+    pub fn with_provider_codex(mut self, injection: CodexProviderInjection) -> Self {
+        self.provider_codex = Some(injection);
         self
     }
 

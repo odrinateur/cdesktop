@@ -11,7 +11,7 @@ use axum::{
 use db::models::{
     coding_agent_turn::{CodingAgentTurn, TurnSelection},
     execution_process::{ExecutionProcess, ExecutionProcessRunReason},
-    provider::Provider,
+    provider::{AgentInjection, Provider},
     requests::UpdateSession,
     scratch::{Scratch, ScratchType},
     session::{CreateSession, Session, SessionError},
@@ -249,8 +249,13 @@ pub async fn follow_up(
         )
     };
 
-    // Build provider env if a provider was selected for this message.
-    let provider_env = if let Some(provider_id) = payload.selected_provider_id {
+    // Build the spawn-time provider injection if a provider was selected for
+    // this message. `Provider::build_agent_injection` dispatches per agent —
+    // Codex emits env + ThreadStartParams overrides; every other agent uses
+    // env-only. TODO(phase-G): map ProviderError variants to a structured
+    // ApiError code (e.g. PROVIDER_MISSING_API_KEY) so the picker can render
+    // a "configure API key for this provider" CTA instead of a generic 400.
+    let injection = if let Some(provider_id) = payload.selected_provider_id {
         let provider = Provider::find_by_id(pool, provider_id)
             .await
             .map_err(|_| ApiError::BadRequest(format!("Provider '{provider_id}' not found")))?;
@@ -263,10 +268,11 @@ pub async fn follow_up(
         }
 
         let model_id = payload.executor_config.model_id.as_deref().unwrap_or("");
-        let env = provider.build_spawn_env(model_id);
-        if env.is_empty() { None } else { Some(env) }
+        provider
+            .build_agent_injection(payload.executor_config.executor, model_id)
+            .map_err(|e| ApiError::BadRequest(e.to_string()))?
     } else {
-        None
+        AgentInjection::default()
     };
 
     let selected_provider_id_str = payload.selected_provider_id.map(|id| id.to_string());
@@ -274,8 +280,11 @@ pub async fn follow_up(
 
     let action = {
         let mut a = ExecutorAction::new(action_type, None);
-        if let Some(env) = provider_env {
+        if let Some(env) = injection.env {
             a = a.with_provider_env(env);
+        }
+        if let Some(codex) = injection.codex {
+            a = a.with_provider_codex(codex);
         }
         a.with_provider_selection(selected_provider_id_str, selected_model_id_str)
     };

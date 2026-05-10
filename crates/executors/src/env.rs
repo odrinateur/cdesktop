@@ -1,6 +1,7 @@
 use std::{collections::HashMap, path::PathBuf};
 
 use git::GitService;
+use serde::{Deserialize, Serialize};
 use tokio::process::Command;
 
 use crate::command::CmdOverrides;
@@ -87,6 +88,30 @@ impl RepoContext {
     }
 }
 
+/// Codex-specific spawn injection beyond plain env vars.
+///
+/// Codex's `app-server` JSON-RPC subcommand accepts arbitrary
+/// `model_providers.<id>.<key>` overrides via `ThreadStartParams.config`
+/// (a free-form `HashMap<String, serde_json::Value>` that the server feeds
+/// to the same dotted-path applier the `-c key=value` CLI flag uses;
+/// see `related/codex/.../apply_single_override`). The `model_provider`
+/// field on `ThreadStartParams` is a separate typesafe knob that picks
+/// which `model_providers.<id>` block to use.
+///
+/// Spawned only when the user picks a non-Default provider record for
+/// a Codex session (see `Provider::build_codex_injection`).
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct CodexProviderInjection {
+    /// Dotted-path keys merged into `ThreadStartParams.config`. Per plan §3.2:
+    /// `model_providers.cdt.{name,base_url,env_key,wire_api}`.
+    #[serde(default)]
+    pub config_overrides: HashMap<String, serde_json::Value>,
+    /// Value for `ThreadStartParams.model_provider`. Hardcoded to `"cdt"` for
+    /// our injected provider id; carried explicitly so consumers don't have
+    /// to know the magic slug.
+    pub model_provider_id: String,
+}
+
 /// Environment variables to inject into executor processes
 #[derive(Debug, Clone)]
 pub struct ExecutionEnv {
@@ -97,6 +122,9 @@ pub struct ExecutionEnv {
     /// Provider-selected env vars. Applied last in `apply_to_command`, after
     /// profile/cmd env, so per-message provider selection takes highest precedence.
     pub provider_vars: HashMap<String, String>,
+    /// Codex-specific spawn injection (config overrides + model_provider id).
+    /// Populated only when the active session's provider record routes Codex.
+    pub provider_codex: Option<CodexProviderInjection>,
 }
 
 impl ExecutionEnv {
@@ -111,6 +139,7 @@ impl ExecutionEnv {
             commit_reminder,
             commit_reminder_prompt,
             provider_vars: HashMap::new(),
+            provider_codex: None,
         }
     }
 

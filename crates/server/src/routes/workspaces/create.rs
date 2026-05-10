@@ -229,7 +229,13 @@ pub async fn create_and_start_workspace(
     let use_worktree = use_worktree.unwrap_or(true);
 
     let pool = &deployment.db().pool;
-    let provider_env = if let Some(provider_id) = selected_provider_id {
+    // Build the spawn-time provider injection if a provider was selected.
+    // `Provider::build_agent_injection` dispatches per agent — Codex emits env
+    // + ThreadStartParams overrides; every other agent uses env-only.
+    // TODO(phase-G): map ProviderError variants to a structured ApiError code
+    // (e.g. PROVIDER_MISSING_API_KEY) so the picker can render a "configure
+    // API key for this provider" CTA instead of a generic 400.
+    let injection = if let Some(provider_id) = selected_provider_id {
         let provider = db::models::provider::Provider::find_by_id(pool, provider_id)
             .await
             .map_err(|_| ApiError::BadRequest(format!("Provider '{provider_id}' not found")))?;
@@ -240,10 +246,11 @@ pub async fn create_and_start_workspace(
             )));
         }
         let model_id = executor_config.model_id.as_deref().unwrap_or("");
-        let env = provider.build_spawn_env(model_id);
-        if env.is_empty() { None } else { Some(env) }
+        provider
+            .build_agent_injection(executor_config.executor, model_id)
+            .map_err(|e| ApiError::BadRequest(e.to_string()))?
     } else {
-        None
+        db::models::provider::AgentInjection::default()
     };
     let selected_provider_id_str = selected_provider_id.map(|id| id.to_string());
     let selected_model_id_str = executor_config.model_id.clone();
@@ -373,7 +380,8 @@ pub async fn create_and_start_workspace(
             &workspace,
             executor_config.clone(),
             workspace_prompt,
-            provider_env,
+            injection.env,
+            injection.codex,
             selected_provider_id_str,
             selected_model_id_str,
         )
