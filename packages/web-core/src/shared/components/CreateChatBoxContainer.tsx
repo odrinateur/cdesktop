@@ -84,6 +84,7 @@ import {
   resolveDefaultSelection,
 } from '@/shared/hooks/useWorkspacePickerSelection';
 import { useProviders } from '@/shared/hooks/useProviders';
+import { useModelSelectorConfig } from '@/shared/hooks/useExecutorDiscovery';
 
 interface CreateChatBoxContainerProps {
   onWorkspaceCreated: (workspaceId: string) => void;
@@ -192,11 +193,30 @@ export function CreateChatBoxContainer({
     onPersist: (cfg) => setDraftConfig(cfg),
   });
 
+  // Per-agent canonical model list (executor discovery is the source of
+  // truth — Default's DB-synthesized enabledModels is Claude-only and
+  // misleads downstream picker code without this substitution).
+  const { config: agentModelConfig } = useModelSelectorConfig(
+    effectiveExecutor
+  );
+  const agentDefaultModels = useMemo(
+    () =>
+      (agentModelConfig?.models ?? []).map((m) => ({
+        id: m.id,
+        displayName: m.name,
+        ownedBy: null,
+      })),
+    [agentModelConfig]
+  );
+
   // Auto-seed the new-session picker from last-used (or hardcoded fallback)
-  // so the pill reflects what will actually be sent on first message.
+  // so the pill reflects what will actually be sent on first message. Wait
+  // for agent discovery to load when an agent is active so the seeded model
+  // matches that agent's canonical list (avoids a Claude→Codex flicker).
   useEffect(() => {
     if (selectedProviderId || selectedModelId) return;
-    const resolved = resolveDefaultSelection(providers);
+    if (effectiveExecutor && agentDefaultModels.length === 0) return;
+    const resolved = resolveDefaultSelection(providers, agentDefaultModels);
     if (!resolved) return;
     setSelection(resolved.providerId, resolved.modelId, resolved.reasoningId);
     setPreferredEffort(resolved.preferredEffortId);
@@ -204,30 +224,45 @@ export function CreateChatBoxContainer({
     providers,
     selectedProviderId,
     selectedModelId,
+    effectiveExecutor,
+    agentDefaultModels,
     setSelection,
     setPreferredEffort,
   ]);
 
   // Reset the picker when the active agent changes if the current selection
-  // isn't enabled for that agent. Default-kind providers are always allowed;
-  // others must have perAgentEnabled[agent] === true. We pass an
-  // agent-filtered providers list to resolveDefaultSelection so its
-  // last-used branch can't re-pick the now-invalid choice.
+  // isn't valid for that agent. Two checks:
+  //   - Provider must be Default (always passes through) or
+  //     perAgentEnabled[agent] === true.
+  //   - For Default, the model id must exist in the agent's canonical list,
+  //     since each agent (Claude, Codex, Gemini, ...) has its own models.
+  // We pass an agent-filtered providers list and the agent's canonical model
+  // list to resolveDefaultSelection so its last-used branch can't re-pick the
+  // now-invalid choice.
   useEffect(() => {
     if (!effectiveExecutor || !selectedProviderId) return;
     const provider = providers.find((p) => p.id === selectedProviderId);
     if (!provider) return;
-    const allowed =
+
+    const allowedProvider =
       provider.kind === 'Default' ||
       provider.perAgentEnabled?.[effectiveExecutor] === true;
-    if (allowed) return;
+
+    // When discovery hasn't loaded the agent's models yet, skip — we can't
+    // tell whether the current selection is valid.
+    const allowedModel =
+      provider.kind !== 'Default' ||
+      agentDefaultModels.length === 0 ||
+      agentDefaultModels.some((m) => m.id === selectedModelId);
+
+    if (allowedProvider && allowedModel) return;
 
     const eligible = providers.filter(
       (p) =>
         p.kind === 'Default' ||
         p.perAgentEnabled?.[effectiveExecutor] === true
     );
-    const resolved = resolveDefaultSelection(eligible);
+    const resolved = resolveDefaultSelection(eligible, agentDefaultModels);
     if (!resolved) {
       setSelection(null, null, null);
       setPreferredEffort(null);
@@ -239,6 +274,8 @@ export function CreateChatBoxContainer({
     effectiveExecutor,
     providers,
     selectedProviderId,
+    selectedModelId,
+    agentDefaultModels,
     setSelection,
     setPreferredEffort,
   ]);

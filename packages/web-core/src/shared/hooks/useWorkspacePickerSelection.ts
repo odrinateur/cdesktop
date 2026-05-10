@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { Provider } from 'shared/types';
+import type { EnabledModel, Provider } from 'shared/types';
 import {
   clampEffortToModel,
   inferReasoningOptions,
@@ -133,11 +133,16 @@ export function seedWorkspacePicker(workspaceId: string) {
 /**
  * Resolve a default selection for the new-session composer:
  * last-used choice (if its provider+model still exist & enabled) →
- * Default-provider + opus[1m] + xhigh fallback.
- * Returns null if providers haven't loaded yet or the fallback model isn't available.
+ * Default-provider + agent's first canonical model (or opus[1m]) + xhigh fallback.
+ *
+ * When `agentDefaultModels` is provided, Default-provider validation and the
+ * fallback model use the active agent's canonical list instead of the
+ * DB-synthesized (Claude-only) `enabledModels`. Pass it whenever the resolver
+ * runs in an agent-aware context.
  */
 export function resolveDefaultSelection(
-  providers: Provider[]
+  providers: Provider[],
+  agentDefaultModels?: EnabledModel[]
 ): {
   providerId: string;
   modelId: string;
@@ -146,10 +151,21 @@ export function resolveDefaultSelection(
 } | null {
   if (providers.length === 0) return null;
 
+  const modelsFor = (p: Provider): EnabledModel[] => {
+    if (
+      p.kind === 'Default' &&
+      agentDefaultModels &&
+      agentDefaultModels.length > 0
+    ) {
+      return agentDefaultModels;
+    }
+    return p.enabledModels ?? [];
+  };
+
   const findEnabledModel = (providerId: string, modelId: string) => {
     const p = providers.find((x) => x.id === providerId);
     if (!p || !p.enabled) return null;
-    const m = p.enabledModels?.find((mm) => mm.id === modelId);
+    const m = modelsFor(p).find((mm) => mm.id === modelId);
     return m ? p : null;
   };
 
@@ -172,6 +188,18 @@ export function resolveDefaultSelection(
     (p) => p.kind === 'Default' && p.enabled
   );
   if (defaultProvider) {
+    // Agent-aware path: pick the agent's first canonical model.
+    if (agentDefaultModels && agentDefaultModels.length > 0) {
+      const firstId = agentDefaultModels[0].id;
+      const opts = inferReasoningOptions(firstId);
+      const reasoning = clampEffortToModel(FALLBACK_PREFERRED_EFFORT, opts);
+      return {
+        providerId: defaultProvider.id,
+        modelId: firstId,
+        reasoningId: reasoning,
+        preferredEffortId: FALLBACK_PREFERRED_EFFORT,
+      };
+    }
     const hasFallback = defaultProvider.enabledModels?.some(
       (m) => m.id === FALLBACK_MODEL_ID
     );

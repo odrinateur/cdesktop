@@ -4,11 +4,12 @@ import { MagnifyingGlassIcon, GearIcon } from '@phosphor-icons/react';
 import { useQuery } from '@tanstack/react-query';
 import { makeLocalApiRequest } from '@/shared/lib/localApiTransport';
 import { useProviders } from '@/shared/hooks/useProviders';
+import { useModelSelectorConfig } from '@/shared/hooks/useExecutorDiscovery';
 import {
   inferReasoningOptions,
   clampEffortToModel,
 } from '@/shared/lib/reasoningCapability';
-import type { BaseCodingAgent, Provider } from 'shared/types';
+import type { BaseCodingAgent, EnabledModel, Provider } from 'shared/types';
 import { cn } from '@/shared/lib/utils';
 import {
   DropdownMenu,
@@ -53,6 +54,28 @@ export function ProviderModelPicker({
 }: ProviderModelPickerProps) {
   const { t } = useTranslation('settings');
   const { data: providers = [] } = useProviders();
+  const { config: agentModelConfig } = useModelSelectorConfig(
+    activeAgent ?? null
+  );
+
+  // Default's DB-synthesized enabledModels is Claude-only. Substitute the
+  // active agent's canonical list (sourced from executor discovery) so the
+  // picker reflects what each agent will actually accept.
+  const agentDefaultModels = useMemo<EnabledModel[]>(() => {
+    if (!agentModelConfig) return [];
+    return agentModelConfig.models.map((m) => ({
+      id: m.id,
+      displayName: m.name,
+      ownedBy: null,
+    }));
+  }, [agentModelConfig]);
+
+  const modelsForProvider = (p: Provider): EnabledModel[] => {
+    if (p.kind === 'Default' && activeAgent && agentDefaultModels.length > 0) {
+      return agentDefaultModels;
+    }
+    return p.enabledModels ?? [];
+  };
 
   const { data: recents = [] } = useQuery({
     queryKey: ['providers', 'recents'],
@@ -84,7 +107,7 @@ export function ProviderModelPicker({
       ) {
         continue;
       }
-      for (const m of p.enabledModels ?? []) {
+      for (const m of modelsForProvider(p)) {
         if (
           !search ||
           m.id.toLowerCase().includes(search.toLowerCase()) ||
@@ -99,7 +122,7 @@ export function ProviderModelPicker({
       }
     }
     return items;
-  }, [providers, search, activeAgent]);
+  }, [providers, search, activeAgent, agentDefaultModels]);
 
   const grouped = useMemo(() => {
     const map = new Map<
@@ -121,8 +144,11 @@ export function ProviderModelPicker({
     return recents
       .map((r) => {
         const provider = providers.find((p) => p.id === r.provider_id);
-        const model = provider?.enabledModels?.find((m) => m.id === r.model_id);
-        if (!provider || !model) return null;
+        if (!provider) return null;
+        const model = modelsForProvider(provider).find(
+          (m) => m.id === r.model_id
+        );
+        if (!model) return null;
         return {
           provider,
           modelId: r.model_id,
@@ -130,7 +156,7 @@ export function ProviderModelPicker({
         };
       })
       .filter((x): x is NonNullable<typeof x> => x !== null);
-  }, [recents, providers]);
+  }, [recents, providers, activeAgent, agentDefaultModels]);
 
   const selectedProvider = providers.find((p) => p.id === selectedProviderId);
   const currentReasoningOptions = useMemo<string[]>(
@@ -138,9 +164,9 @@ export function ProviderModelPicker({
     [selectedModelId]
   );
 
-  const selectedModel = selectedProvider?.enabledModels?.find(
-    (m) => m.id === selectedModelId
-  );
+  const selectedModel = selectedProvider
+    ? modelsForProvider(selectedProvider).find((m) => m.id === selectedModelId)
+    : undefined;
   const displayName = selectedModel?.displayName ?? selectedModelId ?? '';
   const contextMatch = displayName.match(/^(.*) \((\d+M) context\)$/);
   const rawName = contextMatch ? contextMatch[1] : displayName;
