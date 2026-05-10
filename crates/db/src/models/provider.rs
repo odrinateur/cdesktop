@@ -25,6 +25,9 @@ use crate::provider_payloads::{
 //   - Phase F (Gemini): unit tests cover env shape + overlay ordering; a
 //     real spawn against a user-supplied Google-API-compatible Custom
 //     record with diff of `~/.gemini/` before/after is still pending.
+//     Note: catalog ships no Gemini presets (plan §3.1), so verification
+//     needs a *manually-created* Custom record — no preset path to
+//     instantiate from, unlike Phases C/D.
 // Tracked here so the gap is visible from the appliers themselves.
 
 /// Hardcoded `model_providers.<id>` slug for the cdesktop-injected Codex
@@ -784,6 +787,13 @@ impl Provider {
     /// have upstream issues). The applier therefore exists exclusively
     /// for Custom records pointing at user-supplied
     /// Google-API-compatible endpoints.
+    ///
+    /// `GOOGLE_API_KEY` (gemini-cli's alternate credential env var,
+    /// `contentGenerator.ts:156`) is **not** set or cleared by this
+    /// applier. `gemini-cli`'s `getAuthTypeFromEnv` (`:76-93`) prefers
+    /// `GEMINI_API_KEY` first, so the credential we inject wins; an
+    /// ambient `GOOGLE_API_KEY` (shell or vendor `record.gemini.env`)
+    /// passes through to the child untouched.
     pub fn build_gemini_injection(&self) -> Result<Option<HashMap<String, String>>, ProviderError> {
         if self.kind == AiProviderKind::Default {
             return Ok(None);
@@ -1480,6 +1490,36 @@ mod gemini_injection_tests {
         assert_eq!(
             env.get("GEMINI_LOG_LEVEL").map(String::as_str),
             Some("debug")
+        );
+    }
+
+    #[test]
+    fn google_api_key_in_overlay_survives() {
+        // gemini-cli reads `GOOGLE_API_KEY` as an alternate credential
+        // (contentGenerator.ts:156) and prefers `GEMINI_API_KEY` when both
+        // are set (`getAuthTypeFromEnv`). The applier sets only
+        // `GEMINI_API_KEY` and must leave any `GOOGLE_API_KEY` from the
+        // vendor-env overlay alone — confirms the documented "passes
+        // through untouched" contract.
+        let mut gemini_env = HashMap::new();
+        gemini_env.insert(
+            "GOOGLE_API_KEY".to_string(),
+            "ambient-google-key".to_string(),
+        );
+        let p = provider_with_gemini(
+            AiProviderKind::Custom,
+            Some("sk-real"),
+            Some("https://generativelanguage.googleapis.com"),
+            gemini_env,
+        );
+        let env = p.build_gemini_injection().unwrap().unwrap();
+        assert_eq!(
+            env.get("GOOGLE_API_KEY").map(String::as_str),
+            Some("ambient-google-key")
+        );
+        assert_eq!(
+            env.get("GEMINI_API_KEY").map(String::as_str),
+            Some("sk-real")
         );
     }
 
