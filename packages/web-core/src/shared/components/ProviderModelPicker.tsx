@@ -8,7 +8,7 @@ import {
   inferReasoningOptions,
   clampEffortToModel,
 } from '@/shared/lib/reasoningCapability';
-import type { Provider } from 'shared/types';
+import type { BaseCodingAgent, Provider } from 'shared/types';
 import { cn } from '@/shared/lib/utils';
 import {
   DropdownMenu,
@@ -26,6 +26,12 @@ interface ProviderModelPickerProps {
   selectedModelId: string | null;
   selectedReasoningId: string | null;
   preferredEffortId: string | null;
+  /**
+   * Currently active agent (composer's executor dropdown). Filters non-Default
+   * providers by `record.perAgentEnabled[activeAgent] === true`. Default is
+   * always shown. Pass null to disable the filter (legacy callers).
+   */
+  activeAgent?: BaseCodingAgent | null;
   onManageProviders: () => void;
   onSelectionChange: (
     providerId: string,
@@ -40,6 +46,7 @@ export function ProviderModelPicker({
   selectedModelId,
   selectedReasoningId,
   preferredEffortId,
+  activeAgent,
   onManageProviders,
   onSelectionChange,
   onPreferredEffortChange,
@@ -67,6 +74,16 @@ export function ProviderModelPicker({
     }[] = [];
     for (const p of providers) {
       if (!p.enabled) continue;
+      // Default is always visible regardless of activeAgent — it's the
+      // "use whatever native config" passthrough. For Preset/Custom, the
+      // perAgentEnabled toggle gates picker visibility per plan §3.3.
+      if (
+        activeAgent &&
+        p.kind !== 'Default' &&
+        p.perAgentEnabled?.[activeAgent] !== true
+      ) {
+        continue;
+      }
       for (const m of p.enabledModels ?? []) {
         if (
           !search ||
@@ -82,7 +99,7 @@ export function ProviderModelPicker({
       }
     }
     return items;
-  }, [providers, search]);
+  }, [providers, search, activeAgent]);
 
   const grouped = useMemo(() => {
     const map = new Map<

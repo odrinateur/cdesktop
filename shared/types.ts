@@ -338,7 +338,12 @@ create_new_branch?: boolean,
  */
 selected_provider_id?: string, };
 
-export type Provider = { id: string, name: string, kind: AiProviderKind, agentKind: string, presetId: string | null, enabled: boolean, env: { [key in string]?: string }, extraArgs: Array<string>, haikuModel: string | null, enabledModels: Array<EnabledModel>, createdAt: Date, updatedAt: Date, };
+export type Provider = { id: string, name: string, kind: AiProviderKind, presetId: string | null, enabled: boolean, apiKey: string | null, 
+/**
+ * Map<agent_enum_name, bool>. Single source of truth for picker visibility
+ * per plan §3.2. Keys span the full agent enum.
+ */
+perAgentEnabled: { [key in string]?: boolean }, claude: ClaudePayload, codex: CodexPayload, opencode: OpencodePayload, deepseekTui: DeepseekTuiPayload, gemini: GeminiPayload, hermes: HermesPayload, enabledModels: Array<EnabledModel>, createdAt: Date, updatedAt: Date, };
 
 export type RecentModelProviderPair = { model_id: string, provider_id: string, };
 
@@ -348,9 +353,21 @@ export type AiProviderKind = "Default" | "Preset" | "Custom";
 
 export type EnabledModel = { id: string, displayName: string, ownedBy: string | null, };
 
-export type CreateProvider = { name: string, kind: AiProviderKind, agentKind: string | null, presetId: string | null, env: { [key in string]?: string }, extraArgs: Array<string>, haikuModel: string | null, enabledModels: Array<EnabledModel>, };
+export type CreateProvider = { name: string, kind: AiProviderKind, presetId: string | null, apiKey: string | null, perAgentEnabled: { [key in string]?: boolean }, claude: ClaudePayload, codex: CodexPayload, opencode: OpencodePayload, deepseekTui: DeepseekTuiPayload, gemini: GeminiPayload, hermes: HermesPayload, enabledModels: Array<EnabledModel>, };
 
-export type UpdateProvider = { name: string, presetId: string | null, enabled: boolean, env: { [key in string]?: string }, extraArgs: Array<string>, haikuModel: string | null, enabledModels: Array<EnabledModel>, };
+export type UpdateProvider = { name: string, presetId: string | null, enabled: boolean, apiKey: string | null, perAgentEnabled: { [key in string]?: boolean }, claude: ClaudePayload, codex: CodexPayload, opencode: OpencodePayload, deepseekTui: DeepseekTuiPayload, gemini: GeminiPayload, hermes: HermesPayload, enabledModels: Array<EnabledModel>, };
+
+export type ClaudePayload = { apiKeyField: string | null, baseUrl: string | null, haikuModel: string | null, env: { [key in string]?: string }, };
+
+export type CodexPayload = { baseUrl: string | null, env: { [key in string]?: string }, };
+
+export type OpencodePayload = { npm: string | null, baseUrl: string | null, options: { [key in string]?: JsonValue }, env: { [key in string]?: string }, };
+
+export type DeepseekTuiPayload = { baseUrl: string | null, env: { [key in string]?: string }, };
+
+export type GeminiPayload = { baseUrl: string | null, env: { [key in string]?: string }, };
+
+export type HermesPayload = { baseUrl: string | null, apiMode: string | null, env: { [key in string]?: string }, };
 
 export type ResetProcessRequest = { process_id: string, force_when_dirty: boolean | null, perform_git_reset: boolean | null, };
 

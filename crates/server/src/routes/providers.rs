@@ -26,6 +26,9 @@ impl From<ProviderError> for ApiError {
             ProviderError::CannotDeleteDefault => {
                 ApiError::BadRequest("Cannot delete the Default provider".to_string())
             }
+            ProviderError::EmptyEnabledModels => {
+                ApiError::BadRequest("enabledModels must not be empty".to_string())
+            }
             ProviderError::Database(e) => ApiError::Database(e),
             e => ApiError::BadRequest(e.to_string()),
         }

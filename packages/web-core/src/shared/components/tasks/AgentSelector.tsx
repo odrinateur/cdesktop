@@ -1,4 +1,4 @@
-import { Bot, ArrowDown } from 'lucide-react';
+import { ArrowDown } from 'lucide-react';
 import { Button } from '@vibe/ui/components/Button';
 import {
   DropdownMenu,
@@ -8,7 +8,7 @@ import {
 } from '@vibe/ui/components/DropdownMenu';
 import { Label } from '@vibe/ui/components/Label';
 import { BaseCodingAgent, type ExecutorProfileId } from 'shared/types';
-import { SHOW_AGENT_PICKER } from '@/shared/lib/cdesktopFlags';
+import { AgentIcon, getAgentName } from '@/shared/components/AgentIcon';
 
 interface AgentSelectorProps {
   profiles: Record<string, Record<string, unknown>> | null;
@@ -28,11 +28,7 @@ export function AgentSelector({
   showLabel = false,
 }: AgentSelectorProps) {
   const agents = profiles
-    ? SHOW_AGENT_PICKER
-      ? (Object.keys(profiles).sort() as BaseCodingAgent[])
-      : (Object.keys(profiles).filter(
-          (a) => a === BaseCodingAgent.CLAUDE_CODE
-        ) as BaseCodingAgent[])
+    ? (Object.keys(profiles).sort() as BaseCodingAgent[])
     : [];
   const selectedAgent = selectedExecutorProfile?.executor;
 
@@ -55,8 +51,10 @@ export function AgentSelector({
             aria-label="Select agent"
           >
             <div className="flex items-center gap-1.5 w-full">
-              <Bot className="h-3 w-3" />
-              <span className="truncate">{selectedAgent || 'Agent'}</span>
+              <AgentIcon agent={selectedAgent} className="h-3 w-3" />
+              <span className="truncate">
+                {selectedAgent ? getAgentName(selectedAgent) : 'Agent'}
+              </span>
             </div>
             <ArrowDown className="h-3 w-3" />
           </Button>
@@ -78,7 +76,10 @@ export function AgentSelector({
                 }}
                 className={selectedAgent === agent ? 'bg-accent' : ''}
               >
-                {agent}
+                <div className="flex items-center gap-2">
+                  <AgentIcon agent={agent} className="h-3.5 w-3.5" />
+                  <span>{getAgentName(agent)}</span>
+                </div>
               </DropdownMenuItem>
             ))
           )}

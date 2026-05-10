@@ -7,7 +7,6 @@ import type {
 } from 'shared/types';
 import { getVariantOptions } from '@/shared/lib/executor';
 import { usePresetOptions } from '@/shared/hooks/usePresetOptions';
-import { SHOW_AGENT_PICKER } from '@/shared/lib/cdesktopFlags';
 
 function getProfileKey(
   executor: BaseCodingAgent | null,
@@ -35,30 +34,26 @@ function useEffectiveExecutor(
   configExecutorProfile: ExecutorProfileId | null | undefined
 ) {
   const options = useMemo(
-    () =>
-      SHOW_AGENT_PICKER
-        ? (Object.keys(profiles ?? {}) as BaseCodingAgent[])
-        : [BaseCodingAgent.CLAUDE_CODE],
+    () => Object.keys(profiles ?? {}) as BaseCodingAgent[],
     [profiles]
   );
 
-  const effective = useMemo(() => {
-    if (!SHOW_AGENT_PICKER) return BaseCodingAgent.CLAUDE_CODE;
-    return (
+  const effective = useMemo(
+    () =>
       userSelections.executor ??
       scratchConfig?.executor ??
       lastUsedConfig?.executor ??
       configExecutorProfile?.executor ??
       options[0] ??
-      null
-    );
-  }, [
-    userSelections.executor,
-    scratchConfig,
-    lastUsedConfig,
-    configExecutorProfile,
-    options,
-  ]);
+      null,
+    [
+      userSelections.executor,
+      scratchConfig,
+      lastUsedConfig,
+      configExecutorProfile,
+      options,
+    ]
+  );
 
   return { effective, options };
 }

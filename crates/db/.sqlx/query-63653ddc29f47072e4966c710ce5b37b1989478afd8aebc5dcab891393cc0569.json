@@ -1,0 +1,110 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT\n                id, name, kind, preset_id,\n                enabled as \"enabled!: bool\",\n                api_key, per_agent_enabled,\n                claude, codex, opencode, deepseek_tui, gemini, hermes,\n                enabled_models,\n                created_at as \"created_at!: DateTime<Utc>\",\n                updated_at as \"updated_at!: DateTime<Utc>\"\n               FROM providers WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "kind",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "preset_id",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "enabled!: bool",
+        "ordinal": 4,
+        "type_info": "Integer"
+      },
+      {
+        "name": "api_key",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "per_agent_enabled",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "claude",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "codex",
+        "ordinal": 8,
+        "type_info": "Text"
+      },
+      {
+        "name": "opencode",
+        "ordinal": 9,
+        "type_info": "Text"
+      },
+      {
+        "name": "deepseek_tui",
+        "ordinal": 10,
+        "type_info": "Text"
+      },
+      {
+        "name": "gemini",
+        "ordinal": 11,
+        "type_info": "Text"
+      },
+      {
+        "name": "hermes",
+        "ordinal": 12,
+        "type_info": "Text"
+      },
+      {
+        "name": "enabled_models",
+        "ordinal": 13,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at!: DateTime<Utc>",
+        "ordinal": 14,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at!: DateTime<Utc>",
+        "ordinal": 15,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "63653ddc29f47072e4966c710ce5b37b1989478afd8aebc5dcab891393cc0569"
+}

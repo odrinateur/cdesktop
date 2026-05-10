@@ -165,6 +165,12 @@ export function CreateChatBox<TExecutor extends string = string>({
     ? formatExecutorLabel(executor.selected)
     : emptyExecutorLabel;
 
+  // Skip rendering the header row entirely when none of its slots have content.
+  // Otherwise an empty `<></>` here counts as truthy and ChatBoxBase paints a
+  // phantom row of vertical padding.
+  const hasHeaderLeftContent =
+    !!agentIcon || executor.options.length > 1 || saveAsDefault?.visible;
+
   return (
     <ChatBoxBase
       editor={renderEditor({
@@ -184,6 +190,7 @@ export function CreateChatBox<TExecutor extends string = string>({
       modelSelector={modelSelector}
       chipRow={chipRow}
       headerLeft={
+        hasHeaderLeftContent ? (
         <>
           {agentIcon}
           {executor.options.length > 1 && (
@@ -214,6 +221,7 @@ export function CreateChatBox<TExecutor extends string = string>({
             </label>
           )}
         </>
+        ) : undefined
       }
       footerLeft={
         <>

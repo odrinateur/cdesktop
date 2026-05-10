@@ -1,451 +1,953 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "cc_switch_source_sha": "72ab8a5cfdaa0161e83536f912a905eee26ea343",
-  "note": "env values preserved verbatim. At preset instantiation: ANTHROPIC_MODEL / ANTHROPIC_DEFAULT_SONNET_MODEL / ANTHROPIC_DEFAULT_OPUS_MODEL stripped from env; ANTHROPIC_DEFAULT_HAIKU_MODEL migrated to haiku_model field.",
+  "note": "Per-agent payloads derived programmatically from cc-switch's claude/codex/opencode/hermes preset sources. agents[] = recommended set, computed from per-agent payload availability + eligibility filters (CODEX requires wire_api='responses'; GEMINI is never sourced from cc-switch — Default's ambient auth covers official Google routing and remaining cc-switch gemini presets have known upstream issues; DEEPSEEK_TUI is added in Phase E once the executor lands).",
   "presets": [
     {
       "id": "openrouter",
       "name": "OpenRouter",
-      "category": "aggregator",
-      "website_url": "https://openrouter.ai",
-      "api_key_url": "https://openrouter.ai/keys",
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "openrouter",
-      "icon_color": "#6566F1",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://openrouter.ai/api",
-        "ANTHROPIC_AUTH_TOKEN": "",
-        "ANTHROPIC_MODEL": "anthropic/claude-sonnet-4.6",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "anthropic/claude-haiku-4.5",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "anthropic/claude-sonnet-4.6",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "anthropic/claude-opus-4.7"
+      "agents": [
+        "CLAUDE_CODE",
+        "CODEX",
+        "OPENCODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://openrouter.ai/api",
+        "haikuModel": "anthropic/claude-haiku-4.5",
+        "env": {}
       },
-      "models_url": null,
-      "endpoint_candidates": null
+      "codex": {
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/anthropic",
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "apiMode": "chat_completions",
+        "env": {}
+      },
+      "enabledModels": [
+        "anthropic/claude-sonnet-4.6",
+        "anthropic/claude-opus-4.7"
+      ]
     },
     {
       "id": "novita-ai",
       "name": "Novita AI",
-      "category": "aggregator",
-      "website_url": "https://novita.ai",
-      "api_key_url": "https://novita.ai",
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "novita",
-      "icon_color": "#000000",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://api.novita.ai/anthropic",
-        "ANTHROPIC_AUTH_TOKEN": "",
-        "ANTHROPIC_MODEL": "zai-org/glm-5",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "zai-org/glm-5",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "zai-org/glm-5",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "zai-org/glm-5"
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.novita.ai/anthropic",
+        "haikuModel": "zai-org/glm-5",
+        "env": {}
       },
-      "models_url": null,
-      "endpoint_candidates": [
-        "https://api.novita.ai/anthropic"
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.novita.ai/openai",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.novita.ai/v3/openai",
+        "apiMode": "chat_completions",
+        "env": {}
+      },
+      "enabledModels": [
+        "zai-org/glm-5"
       ]
     },
     {
       "id": "nvidia",
       "name": "Nvidia",
-      "category": "aggregator",
-      "website_url": "https://build.nvidia.com",
-      "api_key_url": "https://build.nvidia.com/settings/api-keys",
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "nvidia",
-      "icon_color": "#000000",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://integrate.api.nvidia.com",
-        "ANTHROPIC_AUTH_TOKEN": "",
-        "ANTHROPIC_MODEL": "moonshotai/kimi-k2.5",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "moonshotai/kimi-k2.5",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "moonshotai/kimi-k2.5",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "moonshotai/kimi-k2.5"
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://integrate.api.nvidia.com",
+        "haikuModel": "moonshotai/kimi-k2.5",
+        "env": {}
       },
-      "models_url": null,
-      "endpoint_candidates": null
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://integrate.api.nvidia.com/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://integrate.api.nvidia.com",
+        "apiMode": "chat_completions",
+        "env": {}
+      },
+      "enabledModels": [
+        "moonshotai/kimi-k2.5"
+      ]
     },
     {
       "id": "bailian",
       "name": "Bailian",
-      "category": "cn_official",
-      "website_url": "https://bailian.console.aliyun.com",
-      "api_key_url": null,
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "bailian",
-      "icon_color": "#624AFF",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://dashscope.aliyuncs.com/apps/anthropic",
-        "ANTHROPIC_AUTH_TOKEN": ""
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://dashscope.aliyuncs.com/apps/anthropic",
+        "haikuModel": null,
+        "env": {}
       },
-      "models_url": null,
-      "endpoint_candidates": null
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "apiMode": "chat_completions",
+        "env": {}
+      },
+      "enabledModels": [
+        "qwen3-coder-plus",
+        "qwen3-max"
+      ]
     },
     {
       "id": "bailian-for-coding",
       "name": "Bailian For Coding",
-      "category": "cn_official",
-      "website_url": "https://bailian.console.aliyun.com",
-      "api_key_url": null,
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "bailian",
-      "icon_color": "#624AFF",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://coding.dashscope.aliyuncs.com/apps/anthropic",
-        "ANTHROPIC_AUTH_TOKEN": ""
+      "agents": [
+        "CLAUDE_CODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://coding.dashscope.aliyuncs.com/apps/anthropic",
+        "haikuModel": null,
+        "env": {}
       },
-      "models_url": null,
-      "endpoint_candidates": null
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": null,
+        "baseUrl": null,
+        "options": {},
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://coding.dashscope.aliyuncs.com/apps/anthropic",
+        "apiMode": "anthropic_messages",
+        "env": {}
+      },
+      "enabledModels": [
+        "qwen3-coder-plus",
+        "qwen3-max"
+      ]
     },
     {
       "id": "kimi",
       "name": "Kimi",
-      "category": "cn_official",
-      "website_url": "https://platform.moonshot.cn/console",
-      "api_key_url": null,
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "kimi",
-      "icon_color": "#6366F1",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://api.moonshot.cn/anthropic",
-        "ANTHROPIC_AUTH_TOKEN": "",
-        "ANTHROPIC_MODEL": "kimi-k2.6",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "kimi-k2.6",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "kimi-k2.6",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "kimi-k2.6"
+      "agents": [
+        "CLAUDE_CODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.moonshot.cn/anthropic",
+        "haikuModel": "kimi-k2.6",
+        "env": {}
       },
-      "models_url": null,
-      "endpoint_candidates": null
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": null,
+        "baseUrl": null,
+        "options": {},
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.moonshot.cn/v1",
+        "apiMode": "chat_completions",
+        "env": {}
+      },
+      "enabledModels": [
+        "kimi-k2.6"
+      ]
     },
     {
       "id": "kimi-for-coding",
       "name": "Kimi For Coding",
-      "category": "cn_official",
-      "website_url": "https://www.kimi.com/code/docs/",
-      "api_key_url": null,
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "kimi",
-      "icon_color": "#6366F1",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://api.kimi.com/coding/",
-        "ANTHROPIC_AUTH_TOKEN": ""
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.kimi.com/coding/",
+        "haikuModel": null,
+        "env": {}
       },
-      "models_url": null,
-      "endpoint_candidates": null
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/anthropic",
+        "baseUrl": "https://api.kimi.com/coding/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.kimi.com/coding/",
+        "apiMode": "anthropic_messages",
+        "env": {}
+      },
+      "enabledModels": [
+        "kimi-for-coding"
+      ]
     },
     {
       "id": "stepfun",
       "name": "StepFun",
-      "category": "cn_official",
-      "website_url": "https://platform.stepfun.com/step-plan",
-      "api_key_url": "https://platform.stepfun.com/interface-key",
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "stepfun",
-      "icon_color": "#16D6D2",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://api.stepfun.com/step_plan",
-        "ANTHROPIC_AUTH_TOKEN": "",
-        "ANTHROPIC_MODEL": "step-3.5-flash-2603",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "step-3.5-flash-2603",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "step-3.5-flash-2603",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "step-3.5-flash-2603"
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.stepfun.com/step_plan",
+        "haikuModel": "step-3.5-flash-2603",
+        "env": {}
       },
-      "models_url": null,
-      "endpoint_candidates": [
-        "https://api.stepfun.com/step_plan"
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.stepfun.com/step_plan/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.stepfun.ai/v1",
+        "apiMode": "chat_completions",
+        "env": {}
+      },
+      "enabledModels": [
+        "step-3.5-flash-2603",
+        "step-3.5-flash"
       ]
     },
     {
       "id": "stepfun-en",
       "name": "StepFun en",
-      "category": "cn_official",
-      "website_url": "https://platform.stepfun.ai/step-plan",
-      "api_key_url": "https://platform.stepfun.ai/interface-key",
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "stepfun",
-      "icon_color": "#16D6D2",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://api.stepfun.ai/step_plan",
-        "ANTHROPIC_AUTH_TOKEN": "",
-        "ANTHROPIC_MODEL": "step-3.5-flash-2603",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "step-3.5-flash-2603",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "step-3.5-flash-2603",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "step-3.5-flash-2603"
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.stepfun.ai/step_plan",
+        "haikuModel": "step-3.5-flash-2603",
+        "env": {}
       },
-      "models_url": null,
-      "endpoint_candidates": [
-        "https://api.stepfun.ai/step_plan"
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.stepfun.ai/step_plan/v1",
+        "options": {},
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": null,
+        "apiMode": null,
+        "env": {}
+      },
+      "enabledModels": [
+        "step-3.5-flash-2603",
+        "step-3.5-flash"
       ]
     },
     {
       "id": "kat-coder",
       "name": "KAT-Coder",
-      "category": "cn_official",
-      "website_url": "https://console.streamlake.ai",
-      "api_key_url": "https://console.streamlake.ai/console/api-key",
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "catcoder",
-      "icon_color": null,
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://vanchin.streamlake.ai/api/gateway/v1/endpoints/${ENDPOINT_ID}/claude-code-proxy",
-        "ANTHROPIC_AUTH_TOKEN": "",
-        "ANTHROPIC_MODEL": "KAT-Coder-Pro V1",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "KAT-Coder-Air V1",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "KAT-Coder-Pro V1",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "KAT-Coder-Pro V1"
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://vanchin.streamlake.ai/api/gateway/v1/endpoints/${ENDPOINT_ID}/claude-code-proxy",
+        "haikuModel": "KAT-Coder-Air V1",
+        "env": {}
       },
-      "models_url": null,
-      "endpoint_candidates": null
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://vanchin.streamlake.ai/api/gateway/v1/endpoints/${ENDPOINT_ID}/openai",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://vanchin.streamlake.ai/api/gateway/v1/endpoints/${ENDPOINT_ID}/claude-code-proxy",
+        "apiMode": "anthropic_messages",
+        "env": {}
+      },
+      "enabledModels": [
+        "KAT-Coder-Pro"
+      ]
     },
     {
       "id": "longcat",
       "name": "Longcat",
-      "category": "cn_official",
-      "website_url": "https://longcat.chat/platform",
-      "api_key_url": "https://longcat.chat/platform/api_keys",
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "longcat",
-      "icon_color": "#29E154",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://api.longcat.chat/anthropic",
-        "ANTHROPIC_AUTH_TOKEN": "",
-        "ANTHROPIC_MODEL": "LongCat-Flash-Chat",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "LongCat-Flash-Chat",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "LongCat-Flash-Chat",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "LongCat-Flash-Chat",
-        "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "6000",
-        "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.longcat.chat/anthropic",
+        "haikuModel": "LongCat-Flash-Chat",
+        "env": {
+          "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "6000",
+          "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+        }
       },
-      "models_url": null,
-      "endpoint_candidates": null
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.longcat.chat/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.longcat.chat/openai/v1",
+        "apiMode": "chat_completions",
+        "env": {}
+      },
+      "enabledModels": [
+        "LongCat-Flash-Chat"
+      ]
     },
     {
       "id": "minimax",
       "name": "MiniMax",
-      "category": "cn_official",
-      "website_url": "https://platform.minimaxi.com",
-      "api_key_url": "https://platform.minimaxi.com/subscribe/coding-plan",
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "minimax",
-      "icon_color": "#FF6B6B",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://api.minimaxi.com/anthropic",
-        "ANTHROPIC_AUTH_TOKEN": "",
-        "API_TIMEOUT_MS": "3000000",
-        "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
-        "ANTHROPIC_MODEL": "MiniMax-M2.7",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "MiniMax-M2.7",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "MiniMax-M2.7",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "MiniMax-M2.7"
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.minimaxi.com/anthropic",
+        "haikuModel": "MiniMax-M2.7",
+        "env": {
+          "API_TIMEOUT_MS": "3000000",
+          "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+        }
       },
-      "models_url": null,
-      "endpoint_candidates": null
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.minimaxi.com/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.minimaxi.com/v1",
+        "apiMode": "chat_completions",
+        "env": {}
+      },
+      "enabledModels": [
+        "MiniMax-M2.7"
+      ]
     },
     {
       "id": "minimax-en",
       "name": "MiniMax en",
-      "category": "cn_official",
-      "website_url": "https://platform.minimax.io",
-      "api_key_url": "https://platform.minimax.io/subscribe/coding-plan",
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "minimax",
-      "icon_color": "#FF6B6B",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://api.minimax.io/anthropic",
-        "ANTHROPIC_AUTH_TOKEN": "",
-        "API_TIMEOUT_MS": "3000000",
-        "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
-        "ANTHROPIC_MODEL": "MiniMax-M2.7",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "MiniMax-M2.7",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "MiniMax-M2.7",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "MiniMax-M2.7"
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.minimax.io/anthropic",
+        "haikuModel": "MiniMax-M2.7",
+        "env": {
+          "API_TIMEOUT_MS": "3000000",
+          "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+        }
       },
-      "models_url": null,
-      "endpoint_candidates": null
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.minimax.io/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.minimax.io/v1",
+        "apiMode": "chat_completions",
+        "env": {}
+      },
+      "enabledModels": [
+        "MiniMax-M2.7"
+      ]
     },
     {
       "id": "doubao-seed",
       "name": "DouBaoSeed",
-      "category": "cn_official",
-      "website_url": "https://www.volcengine.com/product/doubao",
-      "api_key_url": "https://www.volcengine.com/product/doubao",
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "doubao",
-      "icon_color": "#3370FF",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://ark.cn-beijing.volces.com/api/coding",
-        "ANTHROPIC_AUTH_TOKEN": "",
-        "API_TIMEOUT_MS": "3000000",
-        "ANTHROPIC_MODEL": "doubao-seed-2-0-code-preview-latest",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "doubao-seed-2-0-code-preview-latest",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "doubao-seed-2-0-code-preview-latest",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "doubao-seed-2-0-code-preview-latest"
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://ark.cn-beijing.volces.com/api/coding",
+        "haikuModel": "doubao-seed-2-0-code-preview-latest",
+        "env": {
+          "API_TIMEOUT_MS": "3000000"
+        }
       },
-      "models_url": null,
-      "endpoint_candidates": null
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://ark.cn-beijing.volces.com/api/v3",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://ark.cn-beijing.volces.com/api/coding",
+        "apiMode": "anthropic_messages",
+        "env": {}
+      },
+      "enabledModels": [
+        "doubao-seed-2-0-code-preview-latest"
+      ]
     },
     {
       "id": "bailing",
       "name": "BaiLing",
-      "category": "cn_official",
-      "website_url": "https://alipaytbox.yuque.com/sxs0ba/ling/get_started",
-      "api_key_url": null,
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": null,
-      "icon_color": null,
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://api.tbox.cn/api/anthropic",
-        "ANTHROPIC_AUTH_TOKEN": "",
-        "ANTHROPIC_MODEL": "Ling-2.5-1T",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "Ling-2.5-1T",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "Ling-2.5-1T",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "Ling-2.5-1T"
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.tbox.cn/api/anthropic",
+        "haikuModel": "Ling-2.5-1T",
+        "env": {}
       },
-      "models_url": null,
-      "endpoint_candidates": null
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.tbox.cn/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.tbox.cn/api/anthropic",
+        "apiMode": "anthropic_messages",
+        "env": {}
+      },
+      "enabledModels": [
+        "Ling-2.5-1T"
+      ]
     },
     {
       "id": "xiaomi-mimo",
       "name": "Xiaomi MiMo",
-      "category": "cn_official",
-      "website_url": "https://platform.xiaomimimo.com",
-      "api_key_url": "https://platform.xiaomimimo.com/#/console/api-keys",
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "xiaomimimo",
-      "icon_color": "#000000",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://api.xiaomimimo.com/anthropic",
-        "ANTHROPIC_AUTH_TOKEN": "",
-        "ANTHROPIC_MODEL": "mimo-v2-pro",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "mimo-v2-pro",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "mimo-v2-pro",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "mimo-v2-pro"
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.xiaomimimo.com/anthropic",
+        "haikuModel": "mimo-v2-pro",
+        "env": {}
       },
-      "models_url": null,
-      "endpoint_candidates": null
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.xiaomimimo.com/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.xiaomimimo.com/v1",
+        "apiMode": "chat_completions",
+        "env": {}
+      },
+      "enabledModels": [
+        "mimo-v2-pro"
+      ]
     },
     {
       "id": "aws-bedrock-api-key",
       "name": "AWS Bedrock (API Key)",
-      "category": "cloud_provider",
-      "website_url": "https://aws.amazon.com/bedrock/",
-      "api_key_url": null,
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "aws",
-      "icon_color": "#FF9900",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://bedrock-runtime.${AWS_REGION}.amazonaws.com",
-        "AWS_REGION": "${AWS_REGION}",
-        "ANTHROPIC_MODEL": "global.anthropic.claude-opus-4-7",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "global.anthropic.claude-haiku-4-5-20251001-v1:0",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "global.anthropic.claude-sonnet-4-6",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "global.anthropic.claude-opus-4-7",
-        "CLAUDE_CODE_USE_BEDROCK": "1"
+      "agents": [
+        "CLAUDE_CODE"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://bedrock-runtime.${AWS_REGION}.amazonaws.com",
+        "haikuModel": "global.anthropic.claude-haiku-4-5-20251001-v1:0",
+        "env": {
+          "AWS_REGION": "${AWS_REGION}",
+          "CLAUDE_CODE_USE_BEDROCK": "1"
+        }
       },
-      "models_url": null,
-      "endpoint_candidates": null
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": null,
+        "baseUrl": null,
+        "options": {},
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": null,
+        "apiMode": null,
+        "env": {}
+      },
+      "enabledModels": []
     },
     {
       "id": "modelscope",
       "name": "ModelScope",
-      "category": "aggregator",
-      "website_url": "https://modelscope.cn",
-      "api_key_url": null,
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "modelscope",
-      "icon_color": "#624AFF",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://api-inference.modelscope.cn",
-        "ANTHROPIC_AUTH_TOKEN": "",
-        "ANTHROPIC_MODEL": "ZhipuAI/GLM-5",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "ZhipuAI/GLM-5",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "ZhipuAI/GLM-5",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "ZhipuAI/GLM-5"
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api-inference.modelscope.cn",
+        "haikuModel": "ZhipuAI/GLM-5",
+        "env": {}
       },
-      "models_url": null,
-      "endpoint_candidates": null
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api-inference.modelscope.cn/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api-inference.modelscope.cn/v1",
+        "apiMode": "chat_completions",
+        "env": {}
+      },
+      "enabledModels": [
+        "ZhipuAI/GLM-5"
+      ]
     },
     {
       "id": "deepseek",
       "name": "DeepSeek",
-      "category": "cn_official",
-      "website_url": "https://platform.deepseek.com",
-      "api_key_url": null,
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "deepseek",
-      "icon_color": "#1E88E5",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic",
-        "ANTHROPIC_AUTH_TOKEN": "",
-        "ANTHROPIC_MODEL": "deepseek-v4-pro",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "deepseek-v4-flash",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-v4-pro",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-v4-pro"
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.deepseek.com/anthropic",
+        "haikuModel": "deepseek-v4-flash",
+        "env": {}
       },
-      "models_url": "https://api.deepseek.com/models",
-      "endpoint_candidates": null
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.deepseek.com/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.deepseek.com",
+        "apiMode": "chat_completions",
+        "env": {}
+      },
+      "enabledModels": [
+        "deepseek-v4-pro",
+        "deepseek-v4-flash"
+      ]
     },
     {
       "id": "zhipu-glm",
       "name": "Zhipu GLM",
-      "category": "cn_official",
-      "website_url": "https://open.bigmodel.cn",
-      "api_key_url": "https://www.bigmodel.cn/claude-code?ic=RRVJPB5SII",
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "zhipu",
-      "icon_color": "#0F62FE",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://open.bigmodel.cn/api/anthropic",
-        "ANTHROPIC_AUTH_TOKEN": "",
-        "ANTHROPIC_MODEL": "glm-5",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-5",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-5",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5"
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://open.bigmodel.cn/api/anthropic",
+        "haikuModel": "glm-5",
+        "env": {}
       },
-      "models_url": null,
-      "endpoint_candidates": null
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
+        "apiMode": "chat_completions",
+        "env": {}
+      },
+      "enabledModels": [
+        "glm-5"
+      ]
     },
     {
       "id": "zhipu-glm-en",
       "name": "Zhipu GLM en",
-      "category": "cn_official",
-      "website_url": "https://z.ai",
-      "api_key_url": "https://z.ai/subscribe?ic=8JVLJQFSKB",
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "zhipu",
-      "icon_color": "#0F62FE",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
-        "ANTHROPIC_AUTH_TOKEN": "",
-        "ANTHROPIC_MODEL": "glm-5",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-5",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-5",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5"
+      "agents": [
+        "CLAUDE_CODE",
+        "OPENCODE",
+        "HERMES"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://api.z.ai/api/anthropic",
+        "haikuModel": "glm-5",
+        "env": {}
       },
-      "models_url": null,
-      "endpoint_candidates": null
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": "@ai-sdk/openai-compatible",
+        "baseUrl": "https://api.z.ai/v1",
+        "options": {
+          "setCacheKey": true
+        },
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": "https://api.z.ai/api/paas/v4",
+        "apiMode": "chat_completions",
+        "env": {}
+      },
+      "enabledModels": [
+        "glm-5"
+      ]
     },
     {
       "id": "baidu-qianfan",
       "name": "Baidu Qianfan Coding Plan",
-      "category": "cn_official",
-      "website_url": "https://cloud.baidu.com/product/qianfan_modelbuilder",
-      "api_key_url": "https://console.bce.baidu.com/qianfan/ais/console/applicationConsole/application",
-      "api_key_field": "ANTHROPIC_AUTH_TOKEN",
-      "icon": "baidu",
-      "icon_color": "#2932E1",
-      "env": {
-        "ANTHROPIC_BASE_URL": "https://qianfan.baidubce.com/anthropic/coding",
-        "ANTHROPIC_AUTH_TOKEN": "",
-        "ANTHROPIC_MODEL": "qianfan-code-latest",
-        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "qianfan-code-latest",
-        "ANTHROPIC_DEFAULT_SONNET_MODEL": "qianfan-code-latest",
-        "ANTHROPIC_DEFAULT_OPUS_MODEL": "qianfan-code-latest"
+      "agents": [
+        "CLAUDE_CODE"
+      ],
+      "claude": {
+        "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
+        "baseUrl": "https://qianfan.baidubce.com/anthropic/coding",
+        "haikuModel": "qianfan-code-latest",
+        "env": {}
       },
-      "models_url": null,
-      "endpoint_candidates": [
-        "https://qianfan.baidubce.com/anthropic/coding"
-      ]
+      "codex": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "opencode": {
+        "npm": null,
+        "baseUrl": null,
+        "options": {},
+        "env": {}
+      },
+      "deepseekTui": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "gemini": {
+        "baseUrl": null,
+        "env": {}
+      },
+      "hermes": {
+        "baseUrl": null,
+        "apiMode": null,
+        "env": {}
+      },
+      "enabledModels": []
     }
   ]
 }

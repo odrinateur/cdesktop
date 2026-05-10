@@ -40,16 +40,20 @@ export function ProvidersSettingsSection() {
   };
 
   const handleToggleEnabled = async (p: Provider) => {
-    const env = p.env ?? {};
     await updateProvider.mutateAsync({
       id: p.id,
       data: {
         name: p.name,
         presetId: p.presetId ?? null,
         enabled: !p.enabled,
-        env,
-        extraArgs: p.extraArgs ?? [],
-        haikuModel: p.haikuModel ?? null,
+        apiKey: p.apiKey ?? null,
+        perAgentEnabled: p.perAgentEnabled ?? {},
+        claude: p.claude,
+        codex: p.codex,
+        opencode: p.opencode,
+        deepseekTui: p.deepseekTui,
+        gemini: p.gemini,
+        hermes: p.hermes,
         enabledModels: p.enabledModels ?? [],
       },
     });
