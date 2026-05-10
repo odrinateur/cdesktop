@@ -12,7 +12,7 @@ const sizes = {
 const lineHeightMultiplier = 1.5;
 const radiusMultiplier = 0.25;
 const iconMultiplier = 1.25;
-const chatMaxWidth = '780px';
+const chatMaxWidth = '840px';
 
 function getSize(sizeLabel, multiplier = 1) {
 
