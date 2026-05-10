@@ -382,7 +382,8 @@
         "noModelsMatch": "Aucun modèle correspondant",
         "effort": "Effort",
         "effortTooltip": "Effort {{label}}",
-        "manageProviders": "Gérer les fournisseurs →"
+        "manageProviders": "Gérer les fournisseurs →",
+        "defaultModel": "Défaut de l'agent"
       },
       "effort": {
         "low": "Faible",

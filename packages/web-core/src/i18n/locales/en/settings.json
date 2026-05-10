@@ -390,7 +390,8 @@
         "noModelsMatch": "No models match",
         "effort": "Effort",
         "effortTooltip": "{{label}} effort",
-        "manageProviders": "Manage providers →"
+        "manageProviders": "Manage providers →",
+        "defaultModel": "Agent default"
       },
       "effort": {
         "low": "Low",

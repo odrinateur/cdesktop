@@ -249,10 +249,12 @@ export function CreateChatBoxContainer({
       provider.perAgentEnabled?.[effectiveExecutor] === true;
 
     // When discovery hasn't loaded the agent's models yet, skip — we can't
-    // tell whether the current selection is valid.
+    // tell whether the current selection is valid. Empty string is the
+    // "agent default" sentinel — always valid on the Default provider.
     const allowedModel =
       provider.kind !== 'Default' ||
       agentDefaultModels.length === 0 ||
+      selectedModelId === '' ||
       agentDefaultModels.some((m) => m.id === selectedModelId);
 
     if (allowedProvider && allowedModel) return;
@@ -350,7 +352,13 @@ export function CreateChatBoxContainer({
     const data = {
       executor_config: {
         ...executorConfig,
-        model_id: selectedModelId ?? executorConfig.model_id ?? null,
+        // Empty string is the "agent default" sentinel from ProviderModelPicker
+        // — map it to null so the spawn applier skips the `--model` flag and
+        // each agent reads its own ambient config.
+        model_id:
+          selectedModelId === ''
+            ? null
+            : (selectedModelId ?? executorConfig.model_id ?? null),
         reasoning_id:
           selectedReasoningId ?? executorConfig.reasoning_id ?? null,
       },

@@ -382,7 +382,8 @@
         "noModelsMatch": "일치하는 모델이 없습니다",
         "effort": "추론 강도",
         "effortTooltip": "{{label}} 강도",
-        "manageProviders": "제공자 관리 →"
+        "manageProviders": "제공자 관리 →",
+        "defaultModel": "에이전트 기본값"
       },
       "effort": {
         "low": "낮음",
