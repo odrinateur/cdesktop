@@ -391,7 +391,7 @@
         "effort": "Effort",
         "effortTooltip": "{{label}} effort",
         "manageProviders": "Manage providers →",
-        "defaultModel": "Agent default"
+        "defaultModel": "Default Model"
       },
       "effort": {
         "low": "Low",

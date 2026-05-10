@@ -383,7 +383,7 @@
         "effort": "추론 강도",
         "effortTooltip": "{{label}} 강도",
         "manageProviders": "제공자 관리 →",
-        "defaultModel": "에이전트 기본값"
+        "defaultModel": "기본 모델"
       },
       "effort": {
         "low": "낮음",
