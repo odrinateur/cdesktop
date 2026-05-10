@@ -427,8 +427,13 @@ export function ModelSelectorContainer({
     persistPendingSelections();
   }, [isOpen, persistPendingSelections]);
 
+  const formatPresetLabel = (preset: string) =>
+    preset.toUpperCase() === 'DEFAULT'
+      ? t('modelSelector.default')
+      : toPrettyCase(preset);
+
   const presetLabel = resolvedPreset
-    ? toPrettyCase(resolvedPreset)
+    ? formatPresetLabel(resolvedPreset)
     : defaultLabel;
 
   const showModelSelector =
@@ -490,7 +495,7 @@ export function ModelSelectorContainer({
               icon={preset === resolvedPreset ? CheckIcon : undefined}
               onClick={() => onPresetSelect?.(preset)}
             >
-              {toPrettyCase(preset)}
+              {formatPresetLabel(preset)}
             </DropdownMenuItem>
           ))
         ) : (

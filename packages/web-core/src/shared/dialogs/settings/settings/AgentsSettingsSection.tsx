@@ -494,7 +494,9 @@ export function AgentsSettingsSection() {
                         </>
                       }
                     >
-                      {toPrettyCase(configName)}
+                      {configName.toUpperCase() === 'DEFAULT'
+                        ? t('common:modelSelector.default')
+                        : toPrettyCase(configName)}
                     </TwoColumnPickerItem>
                   );
                 })
