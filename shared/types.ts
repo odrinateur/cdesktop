@@ -357,17 +357,17 @@ export type CreateProvider = { name: string, kind: AiProviderKind, presetId: str
 
 export type UpdateProvider = { name: string, presetId: string | null, enabled: boolean, apiKey: string | null, perAgentEnabled: { [key in string]?: boolean }, claude: ClaudePayload, codex: CodexPayload, opencode: OpencodePayload, deepseekTui: DeepseekTuiPayload, gemini: GeminiPayload, hermes: HermesPayload, enabledModels: Array<EnabledModel>, };
 
-export type ClaudePayload = { apiKeyField: string | null, baseUrl: string | null, haikuModel: string | null, env: { [key in string]?: string }, };
+export type ClaudePayload = { apiKeyField: string | null, baseUrl: string | null, haikuModel: string | null, apiKey: string | null, env: { [key in string]?: string }, };
 
-export type CodexPayload = { baseUrl: string | null, env: { [key in string]?: string }, };
+export type CodexPayload = { baseUrl: string | null, apiKey: string | null, env: { [key in string]?: string }, };
 
-export type OpencodePayload = { npm: string | null, baseUrl: string | null, options: { [key in string]?: JsonValue }, env: { [key in string]?: string }, };
+export type OpencodePayload = { npm: string | null, baseUrl: string | null, options: { [key in string]?: JsonValue }, apiKey: string | null, env: { [key in string]?: string }, };
 
-export type DeepseekTuiPayload = { baseUrl: string | null, env: { [key in string]?: string }, };
+export type DeepseekTuiPayload = { baseUrl: string | null, apiKey: string | null, env: { [key in string]?: string }, };
 
-export type GeminiPayload = { baseUrl: string | null, env: { [key in string]?: string }, };
+export type GeminiPayload = { baseUrl: string | null, apiKey: string | null, env: { [key in string]?: string }, };
 
-export type HermesPayload = { baseUrl: string | null, apiMode: string | null, env: { [key in string]?: string }, };
+export type HermesPayload = { baseUrl: string | null, apiMode: string | null, apiKey: string | null, env: { [key in string]?: string }, };
 
 export type ResetProcessRequest = { process_id: string, force_when_dirty: boolean | null, perform_git_reset: boolean | null, };
 

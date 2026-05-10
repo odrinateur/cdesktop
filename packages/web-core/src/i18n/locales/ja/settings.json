@@ -418,6 +418,8 @@
         "baseUrlPlaceholder": "https://api.example.com",
         "apiKey": "API キー",
         "apiKeyPlaceholder": "sk-…",
+        "apiKeyOverride": "API キーの上書き",
+        "apiKeyOverrideHint": "空のままにすると、上位の API キーが使用されます",
         "backgroundTaskModel": "バックグラウンドタスク用モデル",
         "followMainModel": "メインモデルに従う",
         "haikuModelPlaceholder": "例: claude-haiku-4-5-20251001",

@@ -418,6 +418,8 @@
         "baseUrlPlaceholder": "https://api.example.com",
         "apiKey": "API 密钥",
         "apiKeyPlaceholder": "sk-…",
+        "apiKeyOverride": "API 密钥覆盖",
+        "apiKeyOverrideHint": "留空则使用顶级 API 密钥",
         "backgroundTaskModel": "后台任务模型",
         "followMainModel": "跟随主模型",
         "haikuModelPlaceholder": "例如 claude-haiku-4-5-20251001",

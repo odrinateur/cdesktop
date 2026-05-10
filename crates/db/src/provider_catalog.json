@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "cc_switch_source_sha": "72ab8a5cfdaa0161e83536f912a905eee26ea343",
-  "note": "Per-agent payloads derived programmatically from cc-switch's claude/codex/opencode/hermes preset sources. agents[] = recommended set, computed from per-agent payload availability + eligibility filters (CODEX requires wire_api='responses'; GEMINI is never sourced from cc-switch — Default's ambient auth covers official Google routing and remaining cc-switch gemini presets have known upstream issues; DEEPSEEK_TUI piggybacks on the OpenCode source whenever npm='@ai-sdk/openai-compatible' supplies an OpenAI-compatible baseUrl).",
+  "note": "Per-agent payloads derived programmatically from cc-switch's claude/codex/opencode/hermes preset sources. agents[] = recommended set, computed from per-agent payload availability + eligibility filters (CODEX requires wire_api='responses'; GEMINI is never sourced from cc-switch — Default's ambient auth covers official Google routing and remaining cc-switch gemini presets have known upstream issues; DEEPSEEK_TUI is enabled for any preset exposing an OpenAI Chat Completions endpoint — either via OpenCode's npm='@ai-sdk/openai-compatible' or via Hermes's api_mode='chat_completions').",
   "presets": [
     {
       "id": "openrouter",
@@ -10,16 +10,19 @@
         "CLAUDE_CODE",
         "CODEX",
         "OPENCODE",
-        "HERMES"
+        "HERMES",
+        "DEEPSEEK_TUI"
       ],
       "claude": {
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
         "baseUrl": "https://openrouter.ai/api",
         "haikuModel": "anthropic/claude-haiku-4.5",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "codex": {
         "baseUrl": "https://openrouter.ai/api/v1",
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
@@ -28,20 +31,24 @@
         "options": {
           "setCacheKey": true
         },
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "deepseekTui": {
-        "baseUrl": null,
-        "env": {}
+        "baseUrl": "https://openrouter.ai/api/v1",
+        "env": {},
+        "apiKey": null
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": "https://openrouter.ai/api/v1",
         "apiMode": "chat_completions",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "enabledModels": [
         "anthropic/claude-sonnet-4.6",
@@ -61,10 +68,12 @@
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
         "baseUrl": "https://api.novita.ai/anthropic",
         "haikuModel": "zai-org/glm-5",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
@@ -73,20 +82,24 @@
         "options": {
           "setCacheKey": true
         },
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "deepseekTui": {
         "baseUrl": "https://api.novita.ai/openai",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": "https://api.novita.ai/v3/openai",
         "apiMode": "chat_completions",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "enabledModels": [
         "zai-org/glm-5"
@@ -105,10 +118,12 @@
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
         "baseUrl": "https://integrate.api.nvidia.com",
         "haikuModel": "moonshotai/kimi-k2.5",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
@@ -117,20 +132,24 @@
         "options": {
           "setCacheKey": true
         },
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "deepseekTui": {
         "baseUrl": "https://integrate.api.nvidia.com/v1",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": "https://integrate.api.nvidia.com",
         "apiMode": "chat_completions",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "enabledModels": [
         "moonshotai/kimi-k2.5"
@@ -149,10 +168,12 @@
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
         "baseUrl": "https://dashscope.aliyuncs.com/apps/anthropic",
         "haikuModel": null,
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
@@ -161,20 +182,24 @@
         "options": {
           "setCacheKey": true
         },
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "deepseekTui": {
         "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
         "apiMode": "chat_completions",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "enabledModels": [
         "qwen3-coder-plus",
@@ -192,30 +217,36 @@
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
         "baseUrl": "https://coding.dashscope.aliyuncs.com/apps/anthropic",
         "haikuModel": null,
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
         "npm": null,
         "baseUrl": null,
         "options": {},
+        "apiKey": null,
         "env": {}
       },
       "deepseekTui": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": "https://coding.dashscope.aliyuncs.com/apps/anthropic",
         "apiMode": "anthropic_messages",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "enabledModels": [
         "qwen3-coder-plus",
@@ -227,36 +258,43 @@
       "name": "Kimi",
       "agents": [
         "CLAUDE_CODE",
-        "HERMES"
+        "HERMES",
+        "DEEPSEEK_TUI"
       ],
       "claude": {
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
         "baseUrl": "https://api.moonshot.cn/anthropic",
         "haikuModel": "kimi-k2.6",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
         "npm": null,
         "baseUrl": null,
         "options": {},
+        "apiKey": null,
         "env": {}
       },
       "deepseekTui": {
-        "baseUrl": null,
-        "env": {}
+        "baseUrl": "https://api.moonshot.cn/v1",
+        "env": {},
+        "apiKey": null
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": "https://api.moonshot.cn/v1",
         "apiMode": "chat_completions",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "enabledModels": [
         "kimi-k2.6"
@@ -274,10 +312,12 @@
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
         "baseUrl": "https://api.kimi.com/coding/",
         "haikuModel": null,
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
@@ -286,20 +326,24 @@
         "options": {
           "setCacheKey": true
         },
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "deepseekTui": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": "https://api.kimi.com/coding/",
         "apiMode": "anthropic_messages",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "enabledModels": [
         "kimi-for-coding"
@@ -318,10 +362,12 @@
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
         "baseUrl": "https://api.stepfun.com/step_plan",
         "haikuModel": "step-3.5-flash-2603",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
@@ -330,20 +376,24 @@
         "options": {
           "setCacheKey": true
         },
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "deepseekTui": {
         "baseUrl": "https://api.stepfun.com/step_plan/v1",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": "https://api.stepfun.ai/v1",
         "apiMode": "chat_completions",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "enabledModels": [
         "step-3.5-flash-2603",
@@ -362,29 +412,35 @@
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
         "baseUrl": "https://api.stepfun.ai/step_plan",
         "haikuModel": "step-3.5-flash-2603",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
         "npm": "@ai-sdk/openai-compatible",
         "baseUrl": "https://api.stepfun.ai/step_plan/v1",
         "options": {},
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "deepseekTui": {
         "baseUrl": "https://api.stepfun.ai/step_plan/v1",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": null,
         "apiMode": null,
+        "apiKey": null,
         "env": {}
       },
       "enabledModels": [
@@ -405,10 +461,12 @@
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
         "baseUrl": "https://vanchin.streamlake.ai/api/gateway/v1/endpoints/${ENDPOINT_ID}/claude-code-proxy",
         "haikuModel": "KAT-Coder-Air V1",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
@@ -417,20 +475,24 @@
         "options": {
           "setCacheKey": true
         },
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "deepseekTui": {
         "baseUrl": "https://vanchin.streamlake.ai/api/gateway/v1/endpoints/${ENDPOINT_ID}/openai",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": "https://vanchin.streamlake.ai/api/gateway/v1/endpoints/${ENDPOINT_ID}/claude-code-proxy",
         "apiMode": "anthropic_messages",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "enabledModels": [
         "KAT-Coder-Pro"
@@ -452,10 +514,12 @@
         "env": {
           "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "6000",
           "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
-        }
+        },
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
@@ -464,20 +528,24 @@
         "options": {
           "setCacheKey": true
         },
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "deepseekTui": {
         "baseUrl": "https://api.longcat.chat/v1",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": "https://api.longcat.chat/openai/v1",
         "apiMode": "chat_completions",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "enabledModels": [
         "LongCat-Flash-Chat"
@@ -499,10 +567,12 @@
         "env": {
           "API_TIMEOUT_MS": "3000000",
           "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
-        }
+        },
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
@@ -511,20 +581,24 @@
         "options": {
           "setCacheKey": true
         },
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "deepseekTui": {
         "baseUrl": "https://api.minimaxi.com/v1",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": "https://api.minimaxi.com/v1",
         "apiMode": "chat_completions",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "enabledModels": [
         "MiniMax-M2.7"
@@ -546,10 +620,12 @@
         "env": {
           "API_TIMEOUT_MS": "3000000",
           "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
-        }
+        },
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
@@ -558,20 +634,24 @@
         "options": {
           "setCacheKey": true
         },
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "deepseekTui": {
         "baseUrl": "https://api.minimax.io/v1",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": "https://api.minimax.io/v1",
         "apiMode": "chat_completions",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "enabledModels": [
         "MiniMax-M2.7"
@@ -592,10 +672,12 @@
         "haikuModel": "doubao-seed-2-0-code-preview-latest",
         "env": {
           "API_TIMEOUT_MS": "3000000"
-        }
+        },
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
@@ -604,20 +686,24 @@
         "options": {
           "setCacheKey": true
         },
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "deepseekTui": {
         "baseUrl": "https://ark.cn-beijing.volces.com/api/v3",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": "https://ark.cn-beijing.volces.com/api/coding",
         "apiMode": "anthropic_messages",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "enabledModels": [
         "doubao-seed-2-0-code-preview-latest"
@@ -636,10 +722,12 @@
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
         "baseUrl": "https://api.tbox.cn/api/anthropic",
         "haikuModel": "Ling-2.5-1T",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
@@ -648,20 +736,24 @@
         "options": {
           "setCacheKey": true
         },
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "deepseekTui": {
         "baseUrl": "https://api.tbox.cn/v1",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": "https://api.tbox.cn/api/anthropic",
         "apiMode": "anthropic_messages",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "enabledModels": [
         "Ling-2.5-1T"
@@ -680,10 +772,12 @@
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
         "baseUrl": "https://api.xiaomimimo.com/anthropic",
         "haikuModel": "mimo-v2-pro",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
@@ -692,20 +786,24 @@
         "options": {
           "setCacheKey": true
         },
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "deepseekTui": {
         "baseUrl": "https://api.xiaomimimo.com/v1",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": "https://api.xiaomimimo.com/v1",
         "apiMode": "chat_completions",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "enabledModels": [
         "mimo-v2-pro"
@@ -724,29 +822,35 @@
         "env": {
           "AWS_REGION": "${AWS_REGION}",
           "CLAUDE_CODE_USE_BEDROCK": "1"
-        }
+        },
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
         "npm": null,
         "baseUrl": null,
         "options": {},
+        "apiKey": null,
         "env": {}
       },
       "deepseekTui": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": null,
         "apiMode": null,
+        "apiKey": null,
         "env": {}
       },
       "enabledModels": []
@@ -764,10 +868,12 @@
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
         "baseUrl": "https://api-inference.modelscope.cn",
         "haikuModel": "ZhipuAI/GLM-5",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
@@ -776,20 +882,24 @@
         "options": {
           "setCacheKey": true
         },
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "deepseekTui": {
         "baseUrl": "https://api-inference.modelscope.cn/v1",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": "https://api-inference.modelscope.cn/v1",
         "apiMode": "chat_completions",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "enabledModels": [
         "ZhipuAI/GLM-5"
@@ -808,10 +918,12 @@
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
         "baseUrl": "https://api.deepseek.com/anthropic",
         "haikuModel": "deepseek-v4-flash",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
@@ -820,20 +932,24 @@
         "options": {
           "setCacheKey": true
         },
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "deepseekTui": {
         "baseUrl": "https://api.deepseek.com/v1",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": "https://api.deepseek.com",
         "apiMode": "chat_completions",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "enabledModels": [
         "deepseek-v4-pro",
@@ -853,10 +969,12 @@
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
         "baseUrl": "https://open.bigmodel.cn/api/anthropic",
         "haikuModel": "glm-5",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
@@ -865,20 +983,24 @@
         "options": {
           "setCacheKey": true
         },
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "deepseekTui": {
         "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
         "apiMode": "chat_completions",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "enabledModels": [
         "glm-5"
@@ -897,10 +1019,12 @@
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
         "baseUrl": "https://api.z.ai/api/anthropic",
         "haikuModel": "glm-5",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
@@ -909,20 +1033,24 @@
         "options": {
           "setCacheKey": true
         },
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "deepseekTui": {
         "baseUrl": "https://api.z.ai/v1",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": "https://api.z.ai/api/paas/v4",
         "apiMode": "chat_completions",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "enabledModels": [
         "glm-5"
@@ -938,29 +1066,35 @@
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
         "baseUrl": "https://qianfan.baidubce.com/anthropic/coding",
         "haikuModel": "qianfan-code-latest",
-        "env": {}
+        "env": {},
+        "apiKey": null
       },
       "codex": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "opencode": {
         "npm": null,
         "baseUrl": null,
         "options": {},
+        "apiKey": null,
         "env": {}
       },
       "deepseekTui": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "gemini": {
         "baseUrl": null,
+        "apiKey": null,
         "env": {}
       },
       "hermes": {
         "baseUrl": null,
         "apiMode": null,
+        "apiKey": null,
         "env": {}
       },
       "enabledModels": []

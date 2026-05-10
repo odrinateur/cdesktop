@@ -418,6 +418,8 @@
         "baseUrlPlaceholder": "https://api.example.com",
         "apiKey": "API 키",
         "apiKeyPlaceholder": "sk-…",
+        "apiKeyOverride": "API 키 재정의",
+        "apiKeyOverrideHint": "비워 두면 상위 API 키가 사용됩니다",
         "backgroundTaskModel": "백그라운드 작업 모델",
         "followMainModel": "기본 모델 따르기",
         "haikuModelPlaceholder": "예: claude-haiku-4-5-20251001",

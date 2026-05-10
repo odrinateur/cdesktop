@@ -23,11 +23,14 @@
  *             gemini-cli auth, and remaining cc-switch gemini presets have
  *             known upstream issues. All catalog presets emit an empty
  *             gemini slot; users wanting Gemini routing create a Custom record.
- *   - DEEPSEEK_TUI: piggybacks on cc-switch's OpenCode source: any preset whose
- *             opencode npm == "@ai-sdk/openai-compatible" with a baseURL is
- *             OpenAI-Chat-Completions–compatible, which is exactly what
- *             DeepSeek TUI speaks. We reuse that baseUrl for the deepseek_tui
- *             slot. (The executor wrapper itself ships in Phase E.)
+ *   - DEEPSEEK_TUI: any preset that exposes an OpenAI Chat Completions
+ *             endpoint, which is what DeepSeek TUI speaks. Two cc-switch
+ *             signals: opencode `npm == "@ai-sdk/openai-compatible"` with a
+ *             baseURL, OR hermes `api_mode == "chat_completions"` with a
+ *             base_url (catches OpenRouter, Kimi, etc. whose OpenCode preset
+ *             uses @ai-sdk/anthropic but whose service still offers an
+ *             OpenAI-compatible route via Hermes). (The executor wrapper
+ *             itself ships in Phase E.)
  *
  * Normalization applied at instantiation time (not here):
  *   - ANTHROPIC_MODEL / ANTHROPIC_DEFAULT_SONNET_MODEL / ANTHROPIC_DEFAULT_OPUS_MODEL
@@ -249,19 +252,29 @@ interface DeepseekTuiPayload {
   env: Record<string, string>;
 }
 
-// DeepSeek TUI speaks OpenAI Chat Completions. cc-switch's OpenCode preset
-// flags OpenAI-compatible endpoints via `npm: "@ai-sdk/openai-compatible"` —
-// we reuse that signal + the same baseUrl.
+// DeepSeek TUI speaks OpenAI Chat Completions. Two cc-switch signals:
+//   1. OpenCode preset uses `npm: "@ai-sdk/openai-compatible"` + baseURL.
+//   2. Hermes preset uses `api_mode: "chat_completions"` + base_url.
+// Either is sufficient — many providers (OpenRouter, Kimi, …) ship their
+// OpenAI-compatible endpoint under Hermes while OpenCode uses a different
+// adapter for richer semantics. Prefer (1) when present, fall back to (2).
 function extractDeepseekTui(
-  raw: OpencodeRaw | undefined
+  opencodeRaw: OpencodeRaw | undefined,
+  hermesRaw: HermesRaw | undefined
 ): DeepseekTuiPayload | null {
-  if (!raw) return null;
-  const sc = raw.settingsConfig ?? {};
-  if (sc.npm !== "@ai-sdk/openai-compatible") return null;
-  const opts = sc.options ?? {};
-  const baseUrl = typeof opts.baseURL === "string" ? opts.baseURL : null;
-  if (!baseUrl) return null;
-  return { baseUrl, env: {} };
+  const ocSc = opencodeRaw?.settingsConfig ?? {};
+  if (ocSc.npm === "@ai-sdk/openai-compatible") {
+    const opts = ocSc.options ?? {};
+    const baseUrl = typeof opts.baseURL === "string" ? opts.baseURL : null;
+    if (baseUrl) return { baseUrl, env: {} };
+  }
+
+  const hSc = hermesRaw?.settingsConfig;
+  if (hSc?.api_mode === "chat_completions" && hSc.base_url) {
+    return { baseUrl: hSc.base_url, env: {} };
+  }
+
+  return null;
 }
 
 interface HermesPayload {
@@ -296,6 +309,9 @@ function extractEnabledModels(
 
 // --- Build the catalog ---
 
+// Catalog presets never carry apiKey — that's a user-supplied credential. We
+// emit `apiKey: null` for every per-agent payload to match the shared
+// (catalog + user-record) shape; users override via the form's per-agent field.
 interface CatalogPreset {
   id: string;
   name: string;
@@ -304,20 +320,35 @@ interface CatalogPreset {
     apiKeyField: string | null;
     baseUrl: string | null;
     haikuModel: string | null;
+    apiKey: string | null;
     env: Record<string, string>;
   };
-  codex: { baseUrl: string | null; env: Record<string, string> };
+  codex: {
+    baseUrl: string | null;
+    apiKey: string | null;
+    env: Record<string, string>;
+  };
   opencode: {
     npm: string | null;
     baseUrl: string | null;
     options: Record<string, unknown>;
+    apiKey: string | null;
     env: Record<string, string>;
   };
-  deepseekTui: { baseUrl: string | null; env: Record<string, string> };
-  gemini: { baseUrl: string | null; env: Record<string, string> };
+  deepseekTui: {
+    baseUrl: string | null;
+    apiKey: string | null;
+    env: Record<string, string>;
+  };
+  gemini: {
+    baseUrl: string | null;
+    apiKey: string | null;
+    env: Record<string, string>;
+  };
   hermes: {
     baseUrl: string | null;
     apiMode: string | null;
+    apiKey: string | null;
     env: Record<string, string>;
   };
   enabledModels: string[];
@@ -344,7 +375,7 @@ for (const [id, ccName] of Object.entries(WANTED)) {
   const claudeExtracted = extractClaude(claudeRaw);
   const codexExtracted = extractCodex(codexRaw);
   const opencodeExtracted = extractOpencode(opencodeRaw);
-  const deepseekTuiExtracted = extractDeepseekTui(opencodeRaw);
+  const deepseekTuiExtracted = extractDeepseekTui(opencodeRaw, hermesRaw);
   const hermesExtracted = extractHermes(hermesRaw);
 
   // Eligibility filters → recommended agents[] for this preset.
@@ -382,21 +413,31 @@ for (const [id, ccName] of Object.entries(WANTED)) {
     name: claudeRaw?.name ?? ccName,
     agents,
     claude: claudeEligible
-      ? claudeExtracted!
-      : { apiKeyField: null, baseUrl: null, haikuModel: null, env: {} },
+      ? { ...claudeExtracted!, apiKey: null }
+      : {
+          apiKeyField: null,
+          baseUrl: null,
+          haikuModel: null,
+          apiKey: null,
+          env: {},
+        },
     codex: codexEligible
-      ? { baseUrl: codexExtracted!.baseUrl, env: codexExtracted!.env }
-      : { baseUrl: null, env: {} },
+      ? {
+          baseUrl: codexExtracted!.baseUrl,
+          apiKey: null,
+          env: codexExtracted!.env,
+        }
+      : { baseUrl: null, apiKey: null, env: {} },
     opencode: opencodeEligible
-      ? opencodeExtracted!
-      : { npm: null, baseUrl: null, options: {}, env: {} },
+      ? { ...opencodeExtracted!, apiKey: null }
+      : { npm: null, baseUrl: null, options: {}, apiKey: null, env: {} },
     deepseekTui: deepseekTuiEligible
-      ? deepseekTuiExtracted!
-      : { baseUrl: null, env: {} },
-    gemini: { baseUrl: null, env: {} },
+      ? { ...deepseekTuiExtracted!, apiKey: null }
+      : { baseUrl: null, apiKey: null, env: {} },
+    gemini: { baseUrl: null, apiKey: null, env: {} },
     hermes: hermesEligible
-      ? hermesExtracted!
-      : { baseUrl: null, apiMode: null, env: {} },
+      ? { ...hermesExtracted!, apiKey: null }
+      : { baseUrl: null, apiMode: null, apiKey: null, env: {} },
     enabledModels: extractEnabledModels(opencodeRaw, hermesRaw),
   });
 }
@@ -409,7 +450,7 @@ const catalog = {
     "agents[] = recommended set, computed from per-agent payload availability + eligibility filters " +
     "(CODEX requires wire_api='responses'; GEMINI is never sourced from cc-switch — Default's ambient " +
     "auth covers official Google routing and remaining cc-switch gemini presets have known upstream issues; " +
-    "DEEPSEEK_TUI piggybacks on the OpenCode source whenever npm='@ai-sdk/openai-compatible' supplies an OpenAI-compatible baseUrl).",
+    "DEEPSEEK_TUI is enabled for any preset exposing an OpenAI Chat Completions endpoint — either via OpenCode's npm='@ai-sdk/openai-compatible' or via Hermes's api_mode='chat_completions').",
   presets,
 };
 

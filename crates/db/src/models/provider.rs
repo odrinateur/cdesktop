@@ -490,6 +490,27 @@ impl Provider {
         self.kind == AiProviderKind::Default
     }
 
+    /// Per-agent credential resolution. Each per-agent payload may carry an
+    /// `api_key` override; when present (and non-empty) it wins over the
+    /// top-level `Provider::api_key`. Aggregators like Packy Code use this to
+    /// issue distinct keys per backing agent. The common case (one key for
+    /// every agent) leaves payload overrides empty and falls through.
+    pub fn resolved_api_key(&self, agent: BaseCodingAgent) -> Option<&str> {
+        let override_key: Option<&str> = match agent {
+            BaseCodingAgent::ClaudeCode => self.claude.api_key.as_deref(),
+            BaseCodingAgent::Codex => self.codex.api_key.as_deref(),
+            BaseCodingAgent::Opencode => self.opencode.api_key.as_deref(),
+            BaseCodingAgent::Gemini => self.gemini.api_key.as_deref(),
+            // Phase E (DeepSeek TUI) / Hermes will fall through to top-level
+            // until their executor enums land. Other agents (Amp, Cursor,
+            // Qwen, Copilot, Droid, QaMock) have no per-agent payload.
+            _ => None,
+        };
+        override_key
+            .filter(|s| !s.is_empty())
+            .or_else(|| self.api_key.as_deref().filter(|s| !s.is_empty()))
+    }
+
     /// Build the Claude-side env map to inject at process spawn time.
     ///
     /// For Default (ambient auth): empty map — Claude CLI uses its own config.
@@ -526,8 +547,8 @@ impl Provider {
             .api_key_field
             .as_deref()
             .unwrap_or("ANTHROPIC_AUTH_TOKEN");
-        if let Some(key) = &self.api_key {
-            env.insert(api_key_field.to_string(), key.clone());
+        if let Some(key) = self.resolved_api_key(BaseCodingAgent::ClaudeCode) {
+            env.insert(api_key_field.to_string(), key.to_string());
         }
 
         if !model_id.is_empty() {
@@ -588,9 +609,7 @@ impl Provider {
         }
 
         let api_key = self
-            .api_key
-            .as_deref()
-            .filter(|s| !s.is_empty())
+            .resolved_api_key(BaseCodingAgent::Codex)
             .ok_or_else(|| ProviderError::MissingApiKey("CODEX".to_string()))?;
         let base_url = self
             .codex

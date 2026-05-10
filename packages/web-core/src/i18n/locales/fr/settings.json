@@ -418,6 +418,8 @@
         "baseUrlPlaceholder": "https://api.example.com",
         "apiKey": "Clé API",
         "apiKeyPlaceholder": "sk-…",
+        "apiKeyOverride": "Clé API spécifique",
+        "apiKeyOverrideHint": "Laisser vide pour utiliser la clé API du niveau supérieur",
         "backgroundTaskModel": "Modèle pour tâches en arrière-plan",
         "followMainModel": "Suivre le modèle principal",
         "haikuModelPlaceholder": "ex. claude-haiku-4-5-20251001",
