@@ -19,6 +19,7 @@ import { useApprovalFeedbackOptional } from '../model/contexts/ApprovalFeedbackC
 import { useMessageEditContext } from '../model/contexts/MessageEditContext';
 import { useEntries, useTokenUsage } from '../model/contexts/EntriesContext';
 import { useExecutionProcesses } from '@/shared/hooks/useExecutionProcesses';
+import { isAgentDefaultModelId } from '@/shared/lib/agentDefaultModel';
 import { useReviewOptional } from '@/shared/hooks/useReview';
 import { useActions } from '@/shared/hooks/useActions';
 import { useTodos } from '../model/hooks/useTodos';
@@ -626,12 +627,11 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
     // Picker is authoritative for model_id / reasoning_id — overlay before queue.
     const effectiveConfig = {
       ...executorConfig,
-      // Empty string is the "agent default" sentinel from ProviderModelPicker
-      // — map it to null so the spawn applier skips the `--model` flag.
-      model_id:
-        selectedModelId === ''
-          ? null
-          : (selectedModelId ?? executorConfig.model_id ?? null),
+      // The "agent default" sentinel from ProviderModelPicker maps to null
+      // so the spawn applier skips the `--model` flag.
+      model_id: isAgentDefaultModelId(selectedModelId)
+        ? null
+        : (selectedModelId ?? executorConfig.model_id ?? null),
       reasoning_id:
         selectedReasoningId ?? executorConfig.reasoning_id ?? null,
     };
@@ -762,12 +762,11 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
       return;
     const effectiveConfig = {
       ...executorConfig,
-      // Empty string is the "agent default" sentinel from ProviderModelPicker
-      // — map it to null so the spawn applier skips the `--model` flag.
-      model_id:
-        selectedModelId === ''
-          ? null
-          : (selectedModelId ?? executorConfig.model_id ?? null),
+      // The "agent default" sentinel from ProviderModelPicker maps to null
+      // so the spawn applier skips the `--model` flag.
+      model_id: isAgentDefaultModelId(selectedModelId)
+        ? null
+        : (selectedModelId ?? executorConfig.model_id ?? null),
       reasoning_id:
         selectedReasoningId ?? executorConfig.reasoning_id ?? null,
     };

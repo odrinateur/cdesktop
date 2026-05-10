@@ -9,6 +9,7 @@ import {
   inferReasoningOptions,
   clampEffortToModel,
 } from '@/shared/lib/reasoningCapability';
+import { AGENT_DEFAULT_MODEL_ID } from '@/shared/lib/agentDefaultModel';
 import type { BaseCodingAgent, EnabledModel, Provider } from 'shared/types';
 import { cn } from '@/shared/lib/utils';
 import {
@@ -21,19 +22,6 @@ interface RecentPair {
   model_id: string;
   provider_id: string;
 }
-
-/**
- * Sentinel model id for "use the agent's own ambient configuration" — when
- * the user picks this, no `--model` flag (or equivalent) is passed to the
- * spawned CLI, so each agent falls back to its own settings file / env-var
- * preferences (`~/.gemini/.env`, `~/.claude.json`, `~/.codex/config.toml`,
- * etc.). Only meaningful for the Default provider; non-Default routing
- * always needs an explicit model since the applier injects a base URL.
- *
- * The same constant lives in `useWorkspacePickerSelection.ts` for the
- * resolver — duplicated by design to avoid a circular import.
- */
-const AGENT_DEFAULT_MODEL_ID = '';
 
 interface ProviderModelPickerProps {
   selectedProviderId: string | null;

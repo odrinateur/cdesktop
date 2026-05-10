@@ -383,7 +383,7 @@
         "effort": "Esfuerzo",
         "effortTooltip": "Esfuerzo {{label}}",
         "manageProviders": "Administrar proveedores →",
-        "defaultModel": "Predeterminado del agente"
+        "defaultModel": "Modelo predeterminado"
       },
       "effort": {
         "low": "Bajo",

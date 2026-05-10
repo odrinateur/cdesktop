@@ -4,6 +4,7 @@ import {
   clampEffortToModel,
   inferReasoningOptions,
 } from '@/shared/lib/reasoningCapability';
+import { isAgentDefaultModelId } from '@/shared/lib/agentDefaultModel';
 
 const NEW_KEY = 'cdesktop:picker:new';
 const LAST_USED_KEY = 'cdesktop:picker:last-used';
@@ -12,13 +13,6 @@ const workspaceKey = (id: string) => `cdesktop:picker:workspace:${id}`;
 /** Hardcoded fallback when no last-used choice exists. */
 const FALLBACK_MODEL_ID = 'opus[1m]';
 const FALLBACK_PREFERRED_EFFORT = 'xhigh';
-
-/**
- * Sentinel model id meaning "use the agent's own ambient configuration"
- * (no `--model` flag at spawn). Mirrors the constant in
- * `ProviderModelPicker.tsx`; duplicated to avoid a circular import.
- */
-const AGENT_DEFAULT_MODEL_ID = '';
 
 export interface PickerSelection {
   selectedProviderId: string | null;
@@ -175,7 +169,7 @@ export function resolveDefaultSelection(
     // The "agent default" sentinel is only valid on the Default provider —
     // non-Default routing always needs an explicit model since the
     // applier injects a base URL.
-    if (modelId === AGENT_DEFAULT_MODEL_ID) {
+    if (isAgentDefaultModelId(modelId)) {
       return p.kind === 'Default' ? p : null;
     }
     const m = modelsFor(p).find((mm) => mm.id === modelId);

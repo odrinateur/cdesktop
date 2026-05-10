@@ -383,7 +383,7 @@
         "effort": "思考深度",
         "effortTooltip": "{{label}} 強度",
         "manageProviders": "管理服務商 →",
-        "defaultModel": "代理預設"
+        "defaultModel": "預設模型"
       },
       "effort": {
         "low": "低",
