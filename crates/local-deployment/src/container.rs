@@ -1388,6 +1388,17 @@ impl ContainerService for LocalContainerService {
             tracing::debug!(keys = ?provider_env.keys().collect::<Vec<_>>(), "injecting provider env");
             env.provider_vars = provider_env.clone();
         }
+        // Codex-specific spawn injection (config overrides + model_provider id).
+        // Read by `Codex::build_thread_start_params` and merged into the
+        // app-server's ThreadStartParams.
+        if let Some(provider_codex) = &executor_action.provider_codex {
+            tracing::debug!(
+                keys = ?provider_codex.config_overrides.keys().collect::<Vec<_>>(),
+                model_provider = %provider_codex.model_provider_id,
+                "injecting codex provider overrides"
+            );
+            env.provider_codex = Some(provider_codex.clone());
+        }
 
         // Create the child and stream, add to execution tracker with timeout
         let mut spawned = tokio::time::timeout(

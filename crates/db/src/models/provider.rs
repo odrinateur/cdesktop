@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
+use executors::{env::CodexProviderInjection, executors::BaseCodingAgent};
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 use sqlx::{FromRow, SqlitePool};
 use thiserror::Error;
 use ts_rs::TS;
@@ -10,6 +12,18 @@ use uuid::Uuid;
 use crate::provider_payloads::{
     ClaudePayload, CodexPayload, DeepseekTuiPayload, GeminiPayload, HermesPayload, OpencodePayload,
 };
+
+/// Hardcoded `model_providers.<id>` slug for the cdesktop-injected Codex
+/// provider. Plan §3.2: the injected provider id is `cdt`, which keeps the
+/// applier's emitted keys identical for every preset (`model_providers.cdt.*`)
+/// without depending on user-record naming.
+pub const CODEX_INJECTED_PROVIDER_ID: &str = "cdt";
+
+/// Env-var name carrying the user's API key into Codex's `env_key`-driven
+/// auth path. Plan §3.2 fixes this to `CDT_API_KEY` so the spawn applier
+/// can wire `model_providers.cdt.env_key=CDT_API_KEY` once and never
+/// re-derive the variable name.
+pub const CODEX_INJECTED_API_KEY_ENV: &str = "CDT_API_KEY";
 
 pub const DEFAULT_PROVIDER_ID: &str = "00000000-0000-0000-0000-000000000001";
 
@@ -151,6 +165,8 @@ pub enum ProviderError {
     EmptyEnabledModels,
     #[error("agent {0} is enabled but its baseUrl is empty")]
     EnabledAgentMissingBaseUrl(String),
+    #[error("agent {0} is enabled but apiKey is empty")]
+    MissingApiKey(String),
 }
 
 // Raw row returned from SQLite — JSON fields stored as TEXT.
@@ -533,5 +549,277 @@ impl Provider {
         }
 
         env
+    }
+
+    /// Build the Codex-side spawn injection: the env-var map carrying
+    /// `CDT_API_KEY`, plus the dotted-path config overrides + model-provider
+    /// id that get merged into Codex's `ThreadStartParams.config` and
+    /// `ThreadStartParams.model_provider` respectively.
+    ///
+    /// Per plan §3.2 the emitted overrides are:
+    /// ```text
+    /// model_providers.cdt.name      = record.name
+    /// model_providers.cdt.base_url  = record.codex.baseUrl
+    /// model_providers.cdt.env_key   = "CDT_API_KEY"
+    /// model_providers.cdt.wire_api  = "responses"
+    /// ```
+    /// `requires_openai_auth` is left at its default (false), so codex's
+    /// auth path reads only the `env_key` env var and never consults
+    /// `~/.codex/auth.json` for our provider — matching the plan's
+    /// "user's home dir is read-only from cdesktop" rule.
+    ///
+    /// Errors:
+    /// - `MissingApiKey("CODEX")` when `record.api_key` is empty.
+    /// - `EnabledAgentMissingBaseUrl("CODEX")` when `record.codex.base_url` is empty.
+    ///
+    /// Both checks duplicate Phase B's save-time `validate_enabled_agent_payloads`.
+    /// They re-run here to guard records edited (or whose secret got cleared)
+    /// between save and spawn — the save-time validator can't see a
+    /// post-save edit that goes through a different path.
+    ///
+    /// `record.codex.env` is overlaid first so the `CDT_API_KEY` we set
+    /// last cannot be silently clobbered by a vendor-quirk env entry.
+    /// Returns `Ok(None)` for the Default provider (ambient auth path).
+    pub fn build_codex_injection(
+        &self,
+    ) -> Result<Option<(HashMap<String, String>, CodexProviderInjection)>, ProviderError> {
+        if self.kind == AiProviderKind::Default {
+            return Ok(None);
+        }
+
+        let api_key = self
+            .api_key
+            .as_deref()
+            .filter(|s| !s.is_empty())
+            .ok_or_else(|| ProviderError::MissingApiKey("CODEX".to_string()))?;
+        let base_url = self
+            .codex
+            .base_url
+            .as_deref()
+            .filter(|s| !s.is_empty())
+            .ok_or_else(|| ProviderError::EnabledAgentMissingBaseUrl("CODEX".to_string()))?;
+
+        let mut env = self.codex.env.clone();
+        // `CDT_API_KEY` set last so vendor-quirk env (set above) can't
+        // accidentally overwrite the credential. Plan §3.2 is silent on
+        // ordering; defensive choice.
+        env.insert(CODEX_INJECTED_API_KEY_ENV.to_string(), api_key.to_string());
+
+        let prefix = format!("model_providers.{CODEX_INJECTED_PROVIDER_ID}");
+        let mut config_overrides = HashMap::new();
+        config_overrides.insert(
+            format!("{prefix}.name"),
+            JsonValue::String(self.name.clone()),
+        );
+        config_overrides.insert(
+            format!("{prefix}.base_url"),
+            JsonValue::String(base_url.to_string()),
+        );
+        config_overrides.insert(
+            format!("{prefix}.env_key"),
+            JsonValue::String(CODEX_INJECTED_API_KEY_ENV.to_string()),
+        );
+        config_overrides.insert(
+            format!("{prefix}.wire_api"),
+            JsonValue::String("responses".to_string()),
+        );
+
+        Ok(Some((
+            env,
+            CodexProviderInjection {
+                config_overrides,
+                model_provider_id: CODEX_INJECTED_PROVIDER_ID.to_string(),
+            },
+        )))
+    }
+
+    /// Per-agent spawn injection — the single dispatch point that route
+    /// handlers call when a user picks a provider for a given message.
+    ///
+    /// Each agent gets its own applier (Codex via `build_codex_injection`,
+    /// every other agent via Claude-style env-only `build_spawn_env`).
+    /// Phase D / E / F will populate the other slots on `AgentInjection`
+    /// (OpenCode JSON config, DeepSeek TUI flags, Gemini env, Hermes carrier
+    /// — see plan §3.2 lines 192-260). Adding a new agent only adds a match
+    /// arm here and a field on `AgentInjection`; route handlers stay put.
+    pub fn build_agent_injection(
+        &self,
+        agent: BaseCodingAgent,
+        model_id: &str,
+    ) -> Result<AgentInjection, ProviderError> {
+        match agent {
+            BaseCodingAgent::Codex => match self.build_codex_injection()? {
+                Some((env, codex)) => Ok(AgentInjection {
+                    env: Some(env),
+                    codex: Some(codex),
+                }),
+                None => Ok(AgentInjection::default()),
+            },
+            _ => {
+                let env = self.build_spawn_env(model_id);
+                let env = if env.is_empty() { None } else { Some(env) };
+                Ok(AgentInjection { env, codex: None })
+            }
+        }
+    }
+}
+
+/// Per-agent spawn injection bundle — env vars + agent-specific structured
+/// payloads. One slot per agent that has a non-trivial spawn-time applier.
+/// Phases D/E/F add more slots; route handlers remain agent-agnostic.
+#[derive(Debug, Clone, Default)]
+pub struct AgentInjection {
+    /// Process env to merge into `ExecutionEnv.provider_vars` for spawn.
+    /// Carries `CDT_API_KEY` for Codex, native auth env for every other
+    /// agent (e.g. `ANTHROPIC_BASE_URL` + `ANTHROPIC_AUTH_TOKEN` for Claude).
+    pub env: Option<HashMap<String, String>>,
+    /// Codex-only: dotted-path overrides + `model_provider` id merged into
+    /// `ThreadStartParams` at spawn (see `Codex::build_thread_start_params`).
+    pub codex: Option<CodexProviderInjection>,
+    // Future: opencode (Phase D), deepseek_tui (Phase E), gemini (Phase F).
+}
+
+#[cfg(test)]
+mod codex_injection_tests {
+    use super::*;
+
+    fn provider_with_codex(
+        kind: AiProviderKind,
+        api_key: Option<&str>,
+        base_url: Option<&str>,
+        codex_env: HashMap<String, String>,
+    ) -> Provider {
+        Provider {
+            id: Uuid::new_v4(),
+            name: "Test Provider".to_string(),
+            kind,
+            preset_id: None,
+            enabled: true,
+            api_key: api_key.map(|s| s.to_string()),
+            per_agent_enabled: HashMap::new(),
+            claude: ClaudePayload::default(),
+            codex: CodexPayload {
+                base_url: base_url.map(|s| s.to_string()),
+                env: codex_env,
+            },
+            opencode: OpencodePayload::default(),
+            deepseek_tui: DeepseekTuiPayload::default(),
+            gemini: GeminiPayload::default(),
+            hermes: HermesPayload::default(),
+            enabled_models: vec![],
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
+        }
+    }
+
+    #[test]
+    fn default_returns_none() {
+        let p = provider_with_codex(
+            AiProviderKind::Default,
+            Some("ignored"),
+            Some("ignored"),
+            HashMap::new(),
+        );
+        assert!(p.build_codex_injection().unwrap().is_none());
+    }
+
+    #[test]
+    fn missing_api_key_rejected() {
+        let p = provider_with_codex(
+            AiProviderKind::Preset,
+            None,
+            Some("https://example.com/v1"),
+            HashMap::new(),
+        );
+        assert!(matches!(
+            p.build_codex_injection(),
+            Err(ProviderError::MissingApiKey(_))
+        ));
+    }
+
+    #[test]
+    fn empty_api_key_rejected() {
+        let p = provider_with_codex(
+            AiProviderKind::Preset,
+            Some(""),
+            Some("https://example.com/v1"),
+            HashMap::new(),
+        );
+        assert!(matches!(
+            p.build_codex_injection(),
+            Err(ProviderError::MissingApiKey(_))
+        ));
+    }
+
+    #[test]
+    fn missing_base_url_rejected() {
+        let p = provider_with_codex(
+            AiProviderKind::Preset,
+            Some("sk-test"),
+            None,
+            HashMap::new(),
+        );
+        assert!(matches!(
+            p.build_codex_injection(),
+            Err(ProviderError::EnabledAgentMissingBaseUrl(_))
+        ));
+    }
+
+    #[test]
+    fn structural_keys_emitted() {
+        let p = provider_with_codex(
+            AiProviderKind::Preset,
+            Some("sk-test"),
+            Some("https://openrouter.ai/api/v1"),
+            HashMap::new(),
+        );
+        let (env, injection) = p.build_codex_injection().unwrap().unwrap();
+
+        assert_eq!(env.get("CDT_API_KEY").map(String::as_str), Some("sk-test"));
+        assert_eq!(injection.model_provider_id, "cdt");
+
+        let cfg = &injection.config_overrides;
+        assert_eq!(
+            cfg.get("model_providers.cdt.name"),
+            Some(&JsonValue::String("Test Provider".to_string()))
+        );
+        assert_eq!(
+            cfg.get("model_providers.cdt.base_url"),
+            Some(&JsonValue::String("https://openrouter.ai/api/v1".to_string()))
+        );
+        assert_eq!(
+            cfg.get("model_providers.cdt.env_key"),
+            Some(&JsonValue::String("CDT_API_KEY".to_string()))
+        );
+        assert_eq!(
+            cfg.get("model_providers.cdt.wire_api"),
+            Some(&JsonValue::String("responses".to_string()))
+        );
+    }
+
+    #[test]
+    fn vendor_env_overlaid_first_credential_wins() {
+        // Vendor-quirk env in record.codex.env is overlaid first; CDT_API_KEY
+        // is set last so a misconfigured vendor entry can't overwrite the
+        // credential.
+        let mut codex_env = HashMap::new();
+        codex_env.insert("OPENAI_TIMEOUT_MS".to_string(), "30000".to_string());
+        codex_env.insert(
+            "CDT_API_KEY".to_string(),
+            "should-be-overridden".to_string(),
+        );
+
+        let p = provider_with_codex(
+            AiProviderKind::Preset,
+            Some("real-key"),
+            Some("https://example.com/v1"),
+            codex_env,
+        );
+        let (env, _) = p.build_codex_injection().unwrap().unwrap();
+        assert_eq!(env.get("CDT_API_KEY").map(String::as_str), Some("real-key"));
+        assert_eq!(
+            env.get("OPENAI_TIMEOUT_MS").map(String::as_str),
+            Some("30000")
+        );
     }
 }
