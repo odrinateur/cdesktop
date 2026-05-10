@@ -652,15 +652,113 @@ impl Provider {
         )))
     }
 
+    /// Build the OpenCode-side spawn injection — a single env var
+    /// `OPENCODE_CONFIG_CONTENT` whose value is the provider/model JSON
+    /// OpenCode loads after the user's global + project configs (so our
+    /// keys win without touching `~/.config/opencode/`). Plan §3.2 lines
+    /// 192-213 describes the wire shape; `name` / `apiKey` / `models` are
+    /// synthesized at spawn from the user record's top-level fields, so
+    /// the catalog payload itself stays small.
+    ///
+    /// The provider id key is `presetId` when the record came from the
+    /// catalog, else `"custom"` — same as plan §3.2 line 197.
+    ///
+    /// Errors:
+    /// - `MissingApiKey("OPENCODE")` when the resolved API key is empty.
+    /// - `EnabledAgentMissingBaseUrl("OPENCODE")` when `record.opencode.base_url` is empty.
+    /// - `EmptyEnabledModels` when `record.enabled_models` is empty —
+    ///   OpenCode's runtime deletes any provider whose `models` map is empty
+    ///   (`provider.ts:1393`), silently breaking the agent. Defense in depth
+    ///   even though the form's `≥1 model checked` rule should already catch this.
+    ///
+    /// `record.opencode.env` is overlaid first so the caller's
+    /// `OPENCODE_CONFIG_CONTENT` we set last cannot be silently clobbered.
+    /// Returns `Ok(None)` for the Default provider (ambient auth path).
+    pub fn build_opencode_injection(
+        &self,
+    ) -> Result<Option<HashMap<String, String>>, ProviderError> {
+        if self.kind == AiProviderKind::Default {
+            return Ok(None);
+        }
+
+        let api_key = self
+            .resolved_api_key(BaseCodingAgent::Opencode)
+            .ok_or_else(|| ProviderError::MissingApiKey("OPENCODE".to_string()))?;
+        let base_url = self
+            .opencode
+            .base_url
+            .as_deref()
+            .filter(|s| !s.is_empty())
+            .ok_or_else(|| ProviderError::EnabledAgentMissingBaseUrl("OPENCODE".to_string()))?;
+
+        if self.enabled_models.is_empty() {
+            return Err(ProviderError::EmptyEnabledModels);
+        }
+
+        // Provider id slug: presetId for catalog-backed records, "custom" for
+        // standalone ones. Mirrors plan §3.2 line 197.
+        let provider_slug = self.preset_id.as_deref().unwrap_or("custom");
+
+        // options = { baseURL, apiKey, ...record.opencode.options }
+        let mut options_map: serde_json::Map<String, JsonValue> = serde_json::Map::new();
+        options_map.insert(
+            "baseURL".to_string(),
+            JsonValue::String(base_url.to_string()),
+        );
+        options_map.insert(
+            "apiKey".to_string(),
+            JsonValue::String(api_key.to_string()),
+        );
+        for (k, v) in &self.opencode.options {
+            // User-supplied options overlay; intentionally permitted to
+            // override `baseURL` / `apiKey` if the catalog/user has a
+            // vendor-specific reason to (uncommon, but the catalog's
+            // `setCacheKey` etc. land here too).
+            options_map.insert(k.clone(), v.clone());
+        }
+
+        // models = { id: {} } for each enabled model
+        let mut models_map: serde_json::Map<String, JsonValue> = serde_json::Map::new();
+        for m in &self.enabled_models {
+            models_map.insert(m.id.clone(), JsonValue::Object(serde_json::Map::new()));
+        }
+
+        // provider.<slug> = { npm, name, options, models }
+        let mut provider_inner: serde_json::Map<String, JsonValue> = serde_json::Map::new();
+        if let Some(npm) = &self.opencode.npm {
+            provider_inner.insert("npm".to_string(), JsonValue::String(npm.clone()));
+        }
+        provider_inner.insert("name".to_string(), JsonValue::String(self.name.clone()));
+        provider_inner.insert("options".to_string(), JsonValue::Object(options_map));
+        provider_inner.insert("models".to_string(), JsonValue::Object(models_map));
+
+        let mut providers_map: serde_json::Map<String, JsonValue> = serde_json::Map::new();
+        providers_map.insert(
+            provider_slug.to_string(),
+            JsonValue::Object(provider_inner),
+        );
+
+        let mut root: serde_json::Map<String, JsonValue> = serde_json::Map::new();
+        root.insert("provider".to_string(), JsonValue::Object(providers_map));
+
+        let json = serde_json::to_string(&JsonValue::Object(root))?;
+
+        let mut env = self.opencode.env.clone();
+        // Set last so vendor-quirk env overlay can't accidentally clobber it.
+        env.insert("OPENCODE_CONFIG_CONTENT".to_string(), json);
+        Ok(Some(env))
+    }
+
     /// Per-agent spawn injection — the single dispatch point that route
     /// handlers call when a user picks a provider for a given message.
     ///
     /// Each agent gets its own applier (Codex via `build_codex_injection`,
-    /// every other agent via Claude-style env-only `build_spawn_env`).
-    /// Phase D / E / F will populate the other slots on `AgentInjection`
-    /// (OpenCode JSON config, DeepSeek TUI flags, Gemini env, Hermes carrier
-    /// — see plan §3.2 lines 192-260). Adding a new agent only adds a match
-    /// arm here and a field on `AgentInjection`; route handlers stay put.
+    /// OpenCode via `build_opencode_injection`, every other agent via
+    /// Claude-style env-only `build_spawn_env`). Phase E / F will populate
+    /// the remaining slots on `AgentInjection` (DeepSeek TUI flags, Gemini
+    /// env, Hermes carrier — see plan §3.2 lines 192-260). Adding a new
+    /// agent only adds a match arm here and a field on `AgentInjection`;
+    /// route handlers stay put.
     pub fn build_agent_injection(
         &self,
         agent: BaseCodingAgent,
@@ -674,6 +772,10 @@ impl Provider {
                 }),
                 None => Ok(AgentInjection::default()),
             },
+            BaseCodingAgent::Opencode => Ok(AgentInjection {
+                env: self.build_opencode_injection()?,
+                codex: None,
+            }),
             _ => {
                 let env = self.build_spawn_env(model_id);
                 let env = if env.is_empty() { None } else { Some(env) };
@@ -695,7 +797,9 @@ pub struct AgentInjection {
     /// Codex-only: dotted-path overrides + `model_provider` id merged into
     /// `ThreadStartParams` at spawn (see `Codex::build_thread_start_params`).
     pub codex: Option<CodexProviderInjection>,
-    // Future: opencode (Phase D), deepseek_tui (Phase E), gemini (Phase F).
+    // OpenCode (Phase D) ships its config via the `OPENCODE_CONFIG_CONTENT`
+    // env var inside `env` — no dedicated slot needed. Future:
+    // deepseek_tui (Phase E), gemini (Phase F).
 }
 
 #[cfg(test)]
@@ -839,6 +943,273 @@ mod codex_injection_tests {
         assert_eq!(
             env.get("OPENAI_TIMEOUT_MS").map(String::as_str),
             Some("30000")
+        );
+    }
+}
+
+#[cfg(test)]
+mod opencode_injection_tests {
+    use super::*;
+    use serde_json::json;
+
+    fn provider_with_opencode(
+        kind: AiProviderKind,
+        api_key: Option<&str>,
+        preset_id: Option<&str>,
+        base_url: Option<&str>,
+        npm: Option<&str>,
+        opencode_env: HashMap<String, String>,
+        opencode_options: HashMap<String, JsonValue>,
+        enabled_models: Vec<EnabledModel>,
+    ) -> Provider {
+        Provider {
+            id: Uuid::new_v4(),
+            name: "Test Provider".to_string(),
+            kind,
+            preset_id: preset_id.map(|s| s.to_string()),
+            enabled: true,
+            api_key: api_key.map(|s| s.to_string()),
+            per_agent_enabled: HashMap::new(),
+            claude: ClaudePayload::default(),
+            codex: CodexPayload::default(),
+            opencode: OpencodePayload {
+                npm: npm.map(|s| s.to_string()),
+                base_url: base_url.map(|s| s.to_string()),
+                options: opencode_options,
+                api_key: None,
+                env: opencode_env,
+            },
+            deepseek_tui: DeepseekTuiPayload::default(),
+            gemini: GeminiPayload::default(),
+            hermes: HermesPayload::default(),
+            enabled_models,
+            created_at: Utc::now(),
+            updated_at: Utc::now(),
+        }
+    }
+
+    fn parse_config(env: &HashMap<String, String>) -> JsonValue {
+        let raw = env
+            .get("OPENCODE_CONFIG_CONTENT")
+            .expect("OPENCODE_CONFIG_CONTENT must be present");
+        serde_json::from_str(raw).expect("config content must parse as JSON")
+    }
+
+    #[test]
+    fn default_returns_none() {
+        let p = provider_with_opencode(
+            AiProviderKind::Default,
+            Some("ignored"),
+            None,
+            Some("ignored"),
+            None,
+            HashMap::new(),
+            HashMap::new(),
+            vec![],
+        );
+        assert!(p.build_opencode_injection().unwrap().is_none());
+    }
+
+    #[test]
+    fn missing_api_key_rejected() {
+        let p = provider_with_opencode(
+            AiProviderKind::Preset,
+            None,
+            Some("openrouter"),
+            Some("https://openrouter.ai/api/v1"),
+            Some("@ai-sdk/anthropic"),
+            HashMap::new(),
+            HashMap::new(),
+            vec![EnabledModel {
+                id: "anthropic/claude-opus-4.7".to_string(),
+                display_name: "Opus 4.7".to_string(),
+                owned_by: None,
+            }],
+        );
+        assert!(matches!(
+            p.build_opencode_injection(),
+            Err(ProviderError::MissingApiKey(_))
+        ));
+    }
+
+    #[test]
+    fn missing_base_url_rejected() {
+        let p = provider_with_opencode(
+            AiProviderKind::Preset,
+            Some("sk-test"),
+            Some("openrouter"),
+            None,
+            Some("@ai-sdk/anthropic"),
+            HashMap::new(),
+            HashMap::new(),
+            vec![EnabledModel {
+                id: "anthropic/claude-opus-4.7".to_string(),
+                display_name: "Opus 4.7".to_string(),
+                owned_by: None,
+            }],
+        );
+        assert!(matches!(
+            p.build_opencode_injection(),
+            Err(ProviderError::EnabledAgentMissingBaseUrl(_))
+        ));
+    }
+
+    #[test]
+    fn empty_models_rejected() {
+        let p = provider_with_opencode(
+            AiProviderKind::Preset,
+            Some("sk-test"),
+            Some("openrouter"),
+            Some("https://openrouter.ai/api/v1"),
+            Some("@ai-sdk/anthropic"),
+            HashMap::new(),
+            HashMap::new(),
+            vec![],
+        );
+        assert!(matches!(
+            p.build_opencode_injection(),
+            Err(ProviderError::EmptyEnabledModels)
+        ));
+    }
+
+    #[test]
+    fn json_shape_matches_plan() {
+        // Plan §3.2 lines 192-211: provider.<slug>.{npm,name,options,models}
+        // with options carrying baseURL + apiKey + custom options, and models
+        // synthesized as { id: {} } for each enabled model.
+        let mut options = HashMap::new();
+        options.insert("setCacheKey".to_string(), json!(true));
+
+        let p = provider_with_opencode(
+            AiProviderKind::Preset,
+            Some("sk-real"),
+            Some("openrouter"),
+            Some("https://openrouter.ai/api/v1"),
+            Some("@ai-sdk/anthropic"),
+            HashMap::new(),
+            options,
+            vec![
+                EnabledModel {
+                    id: "anthropic/claude-opus-4.7".to_string(),
+                    display_name: "Opus 4.7".to_string(),
+                    owned_by: None,
+                },
+                EnabledModel {
+                    id: "anthropic/claude-sonnet-4.6".to_string(),
+                    display_name: "Sonnet 4.6".to_string(),
+                    owned_by: None,
+                },
+            ],
+        );
+
+        let env = p.build_opencode_injection().unwrap().unwrap();
+        let cfg = parse_config(&env);
+
+        let provider = &cfg["provider"]["openrouter"];
+        assert_eq!(provider["npm"], json!("@ai-sdk/anthropic"));
+        assert_eq!(provider["name"], json!("Test Provider"));
+        assert_eq!(
+            provider["options"]["baseURL"],
+            json!("https://openrouter.ai/api/v1")
+        );
+        assert_eq!(provider["options"]["apiKey"], json!("sk-real"));
+        assert_eq!(provider["options"]["setCacheKey"], json!(true));
+        assert_eq!(
+            provider["models"]["anthropic/claude-opus-4.7"],
+            json!({})
+        );
+        assert_eq!(
+            provider["models"]["anthropic/claude-sonnet-4.6"],
+            json!({})
+        );
+    }
+
+    #[test]
+    fn custom_record_uses_custom_slug() {
+        // Records with no presetId (Custom) emit `provider.custom.*`
+        // per plan §3.2 line 197.
+        let p = provider_with_opencode(
+            AiProviderKind::Custom,
+            Some("sk-test"),
+            None,
+            Some("https://example.com/v1"),
+            Some("@ai-sdk/openai-compatible"),
+            HashMap::new(),
+            HashMap::new(),
+            vec![EnabledModel {
+                id: "gpt-4".to_string(),
+                display_name: "GPT-4".to_string(),
+                owned_by: None,
+            }],
+        );
+        let env = p.build_opencode_injection().unwrap().unwrap();
+        let cfg = parse_config(&env);
+        assert!(cfg["provider"]["custom"].is_object());
+        assert!(cfg["provider"]["openrouter"].is_null());
+    }
+
+    #[test]
+    fn payload_apikey_overrides_top_level() {
+        // Per-agent apiKey override (Packy Code style) wins over top-level.
+        let mut p = provider_with_opencode(
+            AiProviderKind::Preset,
+            Some("top-level-key"),
+            Some("openrouter"),
+            Some("https://openrouter.ai/api/v1"),
+            Some("@ai-sdk/anthropic"),
+            HashMap::new(),
+            HashMap::new(),
+            vec![EnabledModel {
+                id: "anthropic/claude-opus-4.7".to_string(),
+                display_name: "Opus 4.7".to_string(),
+                owned_by: None,
+            }],
+        );
+        p.opencode.api_key = Some("opencode-specific-key".to_string());
+
+        let env = p.build_opencode_injection().unwrap().unwrap();
+        let cfg = parse_config(&env);
+        assert_eq!(
+            cfg["provider"]["openrouter"]["options"]["apiKey"],
+            json!("opencode-specific-key")
+        );
+    }
+
+    #[test]
+    fn vendor_env_overlaid_config_content_wins() {
+        // record.opencode.env is overlaid first; OPENCODE_CONFIG_CONTENT is
+        // set last so a misconfigured vendor env entry can't clobber the
+        // provider config we just built.
+        let mut opencode_env = HashMap::new();
+        opencode_env.insert("OPENCODE_LOG_LEVEL".to_string(), "debug".to_string());
+        opencode_env.insert(
+            "OPENCODE_CONFIG_CONTENT".to_string(),
+            "should-be-overridden".to_string(),
+        );
+
+        let p = provider_with_opencode(
+            AiProviderKind::Preset,
+            Some("sk-test"),
+            Some("openrouter"),
+            Some("https://openrouter.ai/api/v1"),
+            Some("@ai-sdk/anthropic"),
+            opencode_env,
+            HashMap::new(),
+            vec![EnabledModel {
+                id: "m".to_string(),
+                display_name: "m".to_string(),
+                owned_by: None,
+            }],
+        );
+        let env = p.build_opencode_injection().unwrap().unwrap();
+        let cfg = parse_config(&env);
+        assert_eq!(
+            cfg["provider"]["openrouter"]["options"]["baseURL"],
+            json!("https://openrouter.ai/api/v1")
+        );
+        assert_eq!(
+            env.get("OPENCODE_LOG_LEVEL").map(String::as_str),
+            Some("debug")
         );
     }
 }
