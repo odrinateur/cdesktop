@@ -25,7 +25,26 @@ use crate::{
 const SUPPRESSED_STDERR_PATTERNS: &[&str] = &[
     "was started but never ended. Skipping metrics.",
     "YOLO mode is enabled. All tool calls will be automatically approved.",
+    "Ripgrep is not available. Falling back to GrepTool.",
+    "is overriding the built-in skill.",
 ];
+
+/// gemini-cli refuses to load `~/.gemini/.env` (and the API key it carries)
+/// when the spawn cwd isn't on the user's `trustedFolders.json` allowlist.
+/// Session worktrees are fresh paths and never on that list, so the auth
+/// env never reaches `process.env` and requests go out keyless → 400.
+/// `GEMINI_CLI_TRUST_WORKSPACE=true` is gemini-cli's documented override
+/// (`packages/core/src/utils/trust.ts:47-49`), checked before the trust
+/// file. cdesktop has already authorized the user to act on the worktree
+/// via session creation, so opting in matches the security model. Set on
+/// `env.vars` (lowest precedence) so a future profile/provider env entry
+/// can opt out by overwriting it.
+fn with_workspace_trust(env: &ExecutionEnv) -> ExecutionEnv {
+    let mut env = env.clone();
+    env.vars
+        .insert("GEMINI_CLI_TRUST_WORKSPACE".to_string(), "true".to_string());
+    env
+}
 
 #[derive(Derivative, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[derivative(Debug, PartialEq)]
@@ -54,10 +73,9 @@ impl Gemini {
 
         if self.yolo.unwrap_or(false) {
             builder = builder.extend_params(["--yolo"]);
-            builder = builder.extend_params(["--allowed-tools", "run_shell_command"]);
         }
 
-        builder = builder.extend_params(["--experimental-acp"]);
+        builder = builder.extend_params(["--acp"]);
 
         apply_overrides(builder, &self.cmd)
     }
@@ -90,6 +108,14 @@ impl StandardCodingAgentExecutor for Gemini {
         let harness = AcpAgentHarness::new();
         let combined_prompt = self.append_prompt.combine_prompt(prompt);
         let gemini_command = self.build_command_builder()?.build_initial()?;
+        let env = with_workspace_trust(env);
+        tracing::info!(
+            command = ?gemini_command,
+            cwd = %current_dir.display(),
+            env = ?env.vars,
+            provider_env = ?env.provider_vars,
+            "Spawning Gemini"
+        );
         let approvals = if self.yolo.unwrap_or(false) {
             None
         } else {
@@ -100,7 +126,7 @@ impl StandardCodingAgentExecutor for Gemini {
                 current_dir,
                 combined_prompt,
                 gemini_command,
-                env,
+                &env,
                 &self.cmd,
                 approvals,
             )
@@ -118,6 +144,15 @@ impl StandardCodingAgentExecutor for Gemini {
         let harness = AcpAgentHarness::new();
         let combined_prompt = self.append_prompt.combine_prompt(prompt);
         let gemini_command = self.build_command_builder()?.build_follow_up(&[])?;
+        let env = with_workspace_trust(env);
+        tracing::info!(
+            command = ?gemini_command,
+            cwd = %current_dir.display(),
+            session_id = %session_id,
+            env = ?env.vars,
+            provider_env = ?env.provider_vars,
+            "Spawning Gemini follow-up"
+        );
         let approvals = if self.yolo.unwrap_or(false) {
             None
         } else {
@@ -129,7 +164,7 @@ impl StandardCodingAgentExecutor for Gemini {
                 combined_prompt,
                 session_id,
                 gemini_command,
-                env,
+                &env,
                 &self.cmd,
                 approvals,
             )
