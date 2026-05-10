@@ -13,6 +13,17 @@ use crate::provider_payloads::{
     ClaudePayload, CodexPayload, DeepseekTuiPayload, GeminiPayload, HermesPayload, OpencodePayload,
 };
 
+// Spawn-time provider applier real-world verification status (per
+// multi-agent-routing.md verification matrix at §7):
+//   - Phase C (Codex): unit tests cover env+config-overrides shape; a real
+//     spawn against an OpenRouter Codex provider with diff of `~/.codex/`
+//     before/after is still pending.
+//   - Phase D (OpenCode): unit tests cover JSON shape + env overlay
+//     ordering; a real spawn against an OpenRouter (Anthropic-compat)
+//     OpenCode provider with diff of `~/.config/opencode/` before/after is
+//     still pending.
+// Tracked here so the gap is visible from the appliers themselves.
+
 /// Hardcoded `model_providers.<id>` slug for the cdesktop-injected Codex
 /// provider. Plan §3.2: the injected provider id is `cdt`, which keeps the
 /// applier's emitted keys identical for every preset (`model_providers.cdt.*`)
@@ -699,8 +710,15 @@ impl Provider {
         // standalone ones. Mirrors plan §3.2 line 197.
         let provider_slug = self.preset_id.as_deref().unwrap_or("custom");
 
-        // options = { baseURL, apiKey, ...record.opencode.options }
+        // options = { ...record.opencode.options, baseURL, apiKey }
+        // Vendor-quirk options (catalog's `setCacheKey`, `region`, etc.) are
+        // overlaid first; baseURL + apiKey are inserted LAST so they always
+        // win, since silent shadowing of the credential or endpoint by an
+        // `options` entry would be confusing for users editing the form.
         let mut options_map: serde_json::Map<String, JsonValue> = serde_json::Map::new();
+        for (k, v) in &self.opencode.options {
+            options_map.insert(k.clone(), v.clone());
+        }
         options_map.insert(
             "baseURL".to_string(),
             JsonValue::String(base_url.to_string()),
@@ -709,13 +727,6 @@ impl Provider {
             "apiKey".to_string(),
             JsonValue::String(api_key.to_string()),
         );
-        for (k, v) in &self.opencode.options {
-            // User-supplied options overlay; intentionally permitted to
-            // override `baseURL` / `apiKey` if the catalog/user has a
-            // vendor-specific reason to (uncommon, but the catalog's
-            // `setCacheKey` etc. land here too).
-            options_map.insert(k.clone(), v.clone());
-        }
 
         // models = { id: {} } for each enabled model
         let mut models_map: serde_json::Map<String, JsonValue> = serde_json::Map::new();
@@ -1202,6 +1213,11 @@ mod opencode_injection_tests {
             }],
         );
         let env = p.build_opencode_injection().unwrap().unwrap();
+        // The vendor entry must be fully replaced, not merged into.
+        assert_ne!(
+            env.get("OPENCODE_CONFIG_CONTENT").map(String::as_str),
+            Some("should-be-overridden")
+        );
         let cfg = parse_config(&env);
         assert_eq!(
             cfg["provider"]["openrouter"]["options"]["baseURL"],
@@ -1210,6 +1226,41 @@ mod opencode_injection_tests {
         assert_eq!(
             env.get("OPENCODE_LOG_LEVEL").map(String::as_str),
             Some("debug")
+        );
+    }
+
+    #[test]
+    fn options_apikey_cannot_shadow_resolved_credential() {
+        // record.opencode.options is overlaid first, then baseURL+apiKey are
+        // inserted last so they always win. Confirms a misconfigured
+        // `options.apiKey` can't silently replace the resolved credential.
+        let mut bad_options = HashMap::new();
+        bad_options.insert("apiKey".to_string(), json!("LEAKED-FROM-OPTIONS"));
+        bad_options.insert("baseURL".to_string(), json!("https://wrong.example/v1"));
+
+        let p = provider_with_opencode(
+            AiProviderKind::Preset,
+            Some("sk-real"),
+            Some("openrouter"),
+            Some("https://openrouter.ai/api/v1"),
+            Some("@ai-sdk/anthropic"),
+            HashMap::new(),
+            bad_options,
+            vec![EnabledModel {
+                id: "m".to_string(),
+                display_name: "m".to_string(),
+                owned_by: None,
+            }],
+        );
+        let env = p.build_opencode_injection().unwrap().unwrap();
+        let cfg = parse_config(&env);
+        assert_eq!(
+            cfg["provider"]["openrouter"]["options"]["apiKey"],
+            json!("sk-real")
+        );
+        assert_eq!(
+            cfg["provider"]["openrouter"]["options"]["baseURL"],
+            json!("https://openrouter.ai/api/v1")
         );
     }
 }

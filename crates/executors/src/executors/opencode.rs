@@ -804,21 +804,21 @@ fn setup_compaction_env(auto_compact: bool, env: &ExecutionEnv) -> ExecutionEnv 
     }
 
     let mut env = env.clone();
-    // Phase D writes the provider applier's OPENCODE_CONFIG_CONTENT into
-    // `provider_vars` (applied last in `apply_to_command` for highest
-    // precedence over profile env). Read from there first so the compaction
-    // merge sees the provider config and writes its result back into the same
-    // slot — otherwise our `{compaction:{auto:true}}` lands in `vars` and
-    // gets clobbered when `provider_vars` is applied later.
-    if let Some(existing) = env.provider_vars.get("OPENCODE_CONFIG_CONTENT").cloned() {
-        let merged = merge_compaction_config(Some(existing.as_str()));
-        env.provider_vars
-            .insert("OPENCODE_CONFIG_CONTENT".to_string(), merged);
-    } else {
-        let merged =
-            merge_compaction_config(env.get("OPENCODE_CONFIG_CONTENT").map(String::as_str));
-        env.insert("OPENCODE_CONFIG_CONTENT", merged);
-    }
+    // Read OPENCODE_CONFIG_CONTENT from whichever slot has it (provider_vars
+    // wins, since Phase D writes the provider applier's JSON there), then
+    // ALWAYS write the merged result to `provider_vars`. `provider_vars` is
+    // applied last in `apply_to_command`, so this lets the compaction config
+    // win over profile env even when no provider applier ran (Default
+    // provider). One write target keeps the env-write contract simple and
+    // prevents future writers from racing.
+    let existing = env
+        .provider_vars
+        .get("OPENCODE_CONFIG_CONTENT")
+        .cloned()
+        .or_else(|| env.vars.get("OPENCODE_CONFIG_CONTENT").cloned());
+    let merged = merge_compaction_config(existing.as_deref());
+    env.provider_vars
+        .insert("OPENCODE_CONFIG_CONTENT".to_string(), merged);
     env
 }
 
