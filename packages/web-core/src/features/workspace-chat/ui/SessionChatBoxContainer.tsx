@@ -1005,6 +1005,7 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
       selectedModelId={selectedModelId}
       selectedReasoningId={selectedReasoningId}
       preferredEffortId={preferredEffortId}
+      activeAgent={effectiveExecutor}
       onManageProviders={() =>
         SettingsDialog.show({ initialSection: 'providers' })
       }

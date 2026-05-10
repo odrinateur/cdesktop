@@ -273,7 +273,7 @@ function SettingsDialogContent({
             // Mobile: full screen, no rounded corners
             'rounded-none border-0',
             // Desktop: fixed size with rounded corners
-            'md:w-[900px] md:h-[700px] md:rounded-sm md:border md:border-border/50'
+            'md:w-[1000px] md:h-[700px] md:rounded-sm md:border md:border-border/50'
           )}
         >
           {/* Sidebar - hidden on mobile when showing content */}

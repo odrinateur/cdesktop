@@ -20,7 +20,6 @@ import { CreateConfigurationDialog } from '../CreateConfigurationDialog';
 import { DeleteConfigurationDialog } from '../DeleteConfigurationDialog';
 import { BaseCodingAgent, type ExecutorConfigs } from 'shared/types';
 import { cn } from '@/shared/lib/utils';
-import { SHOW_AGENT_PICKER } from '@/shared/lib/cdesktopFlags';
 import { toPrettyCase } from '@/shared/lib/string';
 import {
   SettingsSaveBar,
@@ -68,20 +67,8 @@ export function AgentsSettingsSection() {
   const [isDirty, setIsDirty] = useState(false);
 
   // Initialize selection with default executor when config loads.
-  // When the agent picker is hidden, lock to Claude Code so users with a
-  // non-Claude default in their config land on a selection that's actually
-  // visible in the (filtered) agents column.
   useEffect(() => {
     if (selectedExecutorType) return;
-    if (!SHOW_AGENT_PICKER) {
-      setSelectedExecutorType(BaseCodingAgent.CLAUDE_CODE);
-      setSelectedConfiguration(
-        config?.executor_profile?.executor === BaseCodingAgent.CLAUDE_CODE
-          ? config.executor_profile.variant || 'DEFAULT'
-          : 'DEFAULT'
-      );
-      return;
-    }
     if (config?.executor_profile) {
       setSelectedExecutorType(config.executor_profile.executor);
       setSelectedConfiguration(config.executor_profile.variant || 'DEFAULT');
@@ -400,12 +387,7 @@ export function AgentsSettingsSection() {
               label={t('settings.agents.editor.agentLabel')}
               isFirst
             >
-              {(SHOW_AGENT_PICKER
-                ? Object.keys(localParsedProfiles.executors)
-                : Object.keys(localParsedProfiles.executors).filter(
-                    (e) => e === BaseCodingAgent.CLAUDE_CODE
-                  )
-              ).map((executor) => {
+              {Object.keys(localParsedProfiles.executors).map((executor) => {
                 const isDefault =
                   config?.executor_profile?.executor === executor;
                 return (

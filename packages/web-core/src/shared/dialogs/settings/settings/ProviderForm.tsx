@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   PlusIcon,
   TrashIcon,
   ArrowClockwiseIcon,
   CheckIcon,
+  CaretRightIcon,
 } from '@phosphor-icons/react';
 import { useQuery } from '@tanstack/react-query';
 import { makeLocalApiRequest } from '@/shared/lib/localApiTransport';
@@ -13,6 +14,12 @@ import type {
   CreateProvider,
   UpdateProvider,
   EnabledModel,
+  ClaudePayload,
+  CodexPayload,
+  OpencodePayload,
+  DeepseekTuiPayload,
+  GeminiPayload,
+  HermesPayload,
 } from 'shared/types';
 import { cn } from '@/shared/lib/utils';
 import {
@@ -21,14 +28,19 @@ import {
   SettingsTextarea,
 } from './SettingsComponents';
 
+// Catalog preset shape returned by /api/providers/catalog (matches
+// crates/db/src/provider_catalog.rs::CatalogPreset).
 interface CatalogPreset {
   id: string;
   name: string;
-  api_key_field: string;
-  icon: string | null;
-  icon_color: string | null;
-  env: Record<string, string>;
-  models_url: string | null;
+  agents: string[];
+  claude: ClaudePayload;
+  codex: CodexPayload;
+  opencode: OpencodePayload;
+  deepseekTui: DeepseekTuiPayload;
+  gemini: GeminiPayload;
+  hermes: HermesPayload;
+  enabledModels: string[];
 }
 
 interface FetchedModel {
@@ -36,27 +48,88 @@ interface FetchedModel {
   owned_by: string | null;
 }
 
-const STRIP_FROM_ENV = [
-  'ANTHROPIC_MODEL',
-  'ANTHROPIC_DEFAULT_SONNET_MODEL',
-  'ANTHROPIC_DEFAULT_OPUS_MODEL',
-];
-const HAIKU_KEY = 'ANTHROPIC_DEFAULT_HAIKU_MODEL';
+// Order matters — controls the agent-section render order. Hermes last because
+// its executor is deferred (note shown alongside).
+const AGENT_KEYS = [
+  'CLAUDE_CODE',
+  'CODEX',
+  'OPENCODE',
+  'DEEPSEEK_TUI',
+  'GEMINI',
+  'HERMES',
+] as const;
+type AgentKey = (typeof AGENT_KEYS)[number];
 
-function normalizeCatalogPreset(preset: CatalogPreset) {
-  const env = { ...preset.env };
-  const baseUrl = env['ANTHROPIC_BASE_URL'] ?? '';
-  const haikuModel = env[HAIKU_KEY] ?? null;
-  for (const key of STRIP_FROM_ENV) delete env[key];
-  delete env[HAIKU_KEY];
-  delete env['ANTHROPIC_BASE_URL'];
-  delete env[preset.api_key_field];
-  return {
-    baseUrl,
-    apiKeyField: preset.api_key_field,
-    extraEnv: env,
-    haikuModel,
-  };
+const AGENT_LABEL: Record<AgentKey, string> = {
+  CLAUDE_CODE: 'Claude',
+  CODEX: 'Codex',
+  OPENCODE: 'OpenCode',
+  DEEPSEEK_TUI: 'DeepSeek TUI',
+  GEMINI: 'Gemini',
+  HERMES: 'Hermes',
+};
+
+// Hermes data slot lands in this change; executor wrapper ships next change.
+const DEFERRED_EXECUTOR_AGENTS: ReadonlySet<AgentKey> = new Set(['HERMES']);
+
+const HERMES_API_MODES = [
+  'chat_completions',
+  'anthropic_messages',
+  'codex_responses',
+] as const;
+
+// ts-rs emits HashMap<String, T> as `{ [key in string]?: T }` (mapped-type
+// shape, values implicitly optional). For form state we use the structurally
+// equivalent `Record<string, T | undefined>`, which assigns cleanly to the
+// generated payload types at save time.
+type EnvMap = Record<string, string | undefined>;
+// Match OpencodePayload['options'] = `{ [key in string]?: JsonValue }` from ts-rs.
+// Use a structurally-compatible Record-style alias.
+type JsonValuish = string | number | boolean | null | object;
+type OptionsMap = Record<string, JsonValuish | undefined>;
+type PerAgentEnabled = Record<string, boolean | undefined>;
+
+function emptyPerAgentEnabled(): PerAgentEnabled {
+  return Object.fromEntries(AGENT_KEYS.map((k) => [k, false]));
+}
+
+function envMapToText(env: EnvMap): string {
+  return Object.entries(env)
+    .filter((entry): entry is [string, string] => entry[1] !== undefined)
+    .map(([k, v]) => `${k}=${v}`)
+    .join('\n');
+}
+
+function textToEnvMap(text: string): EnvMap {
+  const out: EnvMap = {};
+  for (const line of text.split('\n')) {
+    const eq = line.indexOf('=');
+    if (eq > 0) out[line.slice(0, eq).trim()] = line.slice(eq + 1).trim();
+  }
+  return out;
+}
+
+function objectToText(obj: OptionsMap): string {
+  return Object.entries(obj)
+    .filter(([, v]) => v !== undefined)
+    .map(([k, v]) => `${k}=${typeof v === 'string' ? v : JSON.stringify(v)}`)
+    .join('\n');
+}
+
+function textToObject(text: string): OptionsMap {
+  const out: OptionsMap = {};
+  for (const line of text.split('\n')) {
+    const eq = line.indexOf('=');
+    if (eq > 0) {
+      const k = line.slice(0, eq).trim();
+      const v = line.slice(eq + 1).trim();
+      if (v === 'true') out[k] = true;
+      else if (v === 'false') out[k] = false;
+      else if (/^-?\d+$/.test(v)) out[k] = Number(v);
+      else out[k] = v;
+    }
+  }
+  return out;
 }
 
 function InputBase({
@@ -87,6 +160,65 @@ function InputBase({
   );
 }
 
+// --- Per-agent section components ---
+
+function AgentSection({
+  agent,
+  enabled,
+  onToggleEnabled,
+  recommended,
+  expanded,
+  onToggleExpanded,
+  children,
+}: {
+  agent: AgentKey;
+  enabled: boolean;
+  onToggleEnabled: (v: boolean) => void;
+  recommended: boolean;
+  expanded: boolean;
+  onToggleExpanded: () => void;
+  children: React.ReactNode;
+}) {
+  const { t } = useTranslation('settings');
+  const isDeferred = DEFERRED_EXECUTOR_AGENTS.has(agent);
+  const subtitle = !recommended
+    ? t('settings.providers.form.notRecommendedForPreset')
+    : isDeferred
+      ? t('settings.providers.form.executorComing')
+      : null;
+  return (
+    <div className="border border-border rounded-sm">
+      <button
+        type="button"
+        onClick={onToggleExpanded}
+        className="flex w-full items-center gap-2 px-2 py-1.5 hover:bg-muted text-left"
+      >
+        <CaretRightIcon
+          className={cn(
+            'w-3 h-3 transition-transform shrink-0',
+            expanded && 'rotate-90'
+          )}
+        />
+        <span className="text-sm font-medium">{AGENT_LABEL[agent]}</span>
+        <span className="ml-auto flex items-center gap-2">
+          {subtitle && <span className="text-xs text-low">{subtitle}</span>}
+          <span
+            className="flex items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <input
+              type="checkbox"
+              checked={enabled}
+              onChange={(e) => onToggleEnabled(e.target.checked)}
+            />
+          </span>
+        </span>
+      </button>
+      {expanded && <div className="p-2 border-t border-border">{children}</div>}
+    </div>
+  );
+}
+
 interface ProviderFormProps {
   provider?: Provider;
   onSave: (data: CreateProvider | UpdateProvider) => Promise<void>;
@@ -101,7 +233,8 @@ export function ProviderForm({
   saveLabel,
 }: ProviderFormProps) {
   const { t } = useTranslation('settings');
-  const resolvedSaveLabel = saveLabel ?? t('settings.providers.section.saveLabel');
+  const resolvedSaveLabel =
+    saveLabel ?? t('settings.providers.section.saveLabel');
   const { data: catalog } = useQuery({
     queryKey: ['providers', 'catalog'],
     queryFn: async () => {
@@ -119,14 +252,46 @@ export function ProviderForm({
     provider?.presetId ?? null
   );
   const [name, setName] = useState(provider?.name ?? '');
-  const [baseUrl, setBaseUrl] = useState('');
-  const [apiKeyField, setApiKeyField] = useState('ANTHROPIC_AUTH_TOKEN');
   const [apiKey, setApiKey] = useState('');
-  const [haikuFollowMain, setHaikuFollowMain] = useState(
-    provider?.haikuModel == null
+  const [perAgentEnabled, setPerAgentEnabled] = useState<PerAgentEnabled>(
+    provider?.perAgentEnabled ?? emptyPerAgentEnabled()
   );
-  const [haikuModel, setHaikuModel] = useState(provider?.haikuModel ?? '');
-  const [extraEnvText, setExtraEnvText] = useState('');
+
+  // Per-agent payload state.
+  const [claudePayload, setClaudePayload] = useState<ClaudePayload>(
+    provider?.claude ?? {
+      apiKeyField: 'ANTHROPIC_AUTH_TOKEN',
+      baseUrl: null,
+      haikuModel: null,
+      env: {},
+    }
+  );
+  const [codexPayload, setCodexPayload] = useState<CodexPayload>(
+    provider?.codex ?? { baseUrl: null, env: {} }
+  );
+  const [opencodePayload, setOpencodePayload] = useState<OpencodePayload>(
+    provider?.opencode ?? { npm: null, baseUrl: null, options: {}, env: {} }
+  );
+  const [deepseekTuiPayload, setDeepseekTuiPayload] =
+    useState<DeepseekTuiPayload>(
+      provider?.deepseekTui ?? { baseUrl: null, env: {} }
+    );
+  const [geminiPayload, setGeminiPayload] = useState<GeminiPayload>(
+    provider?.gemini ?? { baseUrl: null, env: {} }
+  );
+  const [hermesPayload, setHermesPayload] = useState<HermesPayload>(
+    provider?.hermes ?? { baseUrl: null, apiMode: null, env: {} }
+  );
+
+  // Agent the user was active on — auto-expand its chevron.
+  const [expandedAgents, setExpandedAgents] = useState<Set<AgentKey>>(
+    () => new Set(['CLAUDE_CODE'])
+  );
+
+  const [haikuFollowMain, setHaikuFollowMain] = useState(
+    provider?.claude?.haikuModel == null
+  );
+
   const [enabledModels, setEnabledModels] = useState<EnabledModel[]>(
     provider?.enabledModels ?? []
   );
@@ -137,23 +302,11 @@ export function ProviderForm({
   const [fetchedModels, setFetchedModels] = useState<FetchedModel[]>([]);
   const [fetchSearch, setFetchSearch] = useState('');
 
-  useEffect(() => {
-    if (!provider) return;
-    const env = provider.env ?? {};
-    setBaseUrl(env['ANTHROPIC_BASE_URL'] ?? '');
-    const hasAuth = 'ANTHROPIC_AUTH_TOKEN' in env;
-    setApiKeyField(hasAuth ? 'ANTHROPIC_AUTH_TOKEN' : 'ANTHROPIC_API_KEY');
-    setApiKey(env['ANTHROPIC_AUTH_TOKEN'] ?? env['ANTHROPIC_API_KEY'] ?? '');
-    const stripped = { ...env };
-    delete stripped['ANTHROPIC_BASE_URL'];
-    delete stripped['ANTHROPIC_AUTH_TOKEN'];
-    delete stripped['ANTHROPIC_API_KEY'];
-    setExtraEnvText(
-      Object.entries(stripped)
-        .map(([k, v]) => `${k}=${v}`)
-        .join('\n')
-    );
-  }, [provider]);
+  // The currently-selected preset, used to derive recommendation subtitles.
+  const selectedPreset = useMemo(
+    () => catalog?.find((p) => p.id === selectedPresetId) ?? null,
+    [catalog, selectedPresetId]
+  );
 
   const handlePresetSelect = useCallback(
     (presetId: string | null) => {
@@ -161,56 +314,68 @@ export function ProviderForm({
       if (!presetId || !catalog) return;
       const preset = catalog.find((p) => p.id === presetId);
       if (!preset) return;
-      const {
-        baseUrl: pUrl,
-        apiKeyField: pField,
-        extraEnv,
-        haikuModel: pHaiku,
-      } = normalizeCatalogPreset(preset);
       setName(preset.name);
-      setBaseUrl(pUrl);
-      setApiKeyField(pField);
-      setHaikuFollowMain(pHaiku == null);
-      setHaikuModel(pHaiku ?? '');
-      setExtraEnvText(
-        Object.entries(extraEnv)
-          .map(([k, v]) => `${k}=${v}`)
-          .join('\n')
+      setClaudePayload(preset.claude);
+      setCodexPayload(preset.codex);
+      setOpencodePayload(preset.opencode);
+      setDeepseekTuiPayload(preset.deepseekTui);
+      setGeminiPayload(preset.gemini);
+      setHermesPayload(preset.hermes);
+      setHaikuFollowMain(preset.claude?.haikuModel == null);
+      // Seed perAgentEnabled from agents[]: true for in-list, false otherwise.
+      const seeded: PerAgentEnabled = {};
+      for (const a of AGENT_KEYS) seeded[a] = preset.agents.includes(a);
+      setPerAgentEnabled(seeded);
+      // Seed enabledModels from preset's recommended list.
+      setEnabledModels(
+        preset.enabledModels.map((id) => ({
+          id,
+          displayName: id,
+          ownedBy: null,
+        }))
       );
     },
     [catalog]
   );
 
-  const buildEnv = useCallback((): Record<string, string> => {
-    const env: Record<string, string> = {};
-    if (baseUrl) env['ANTHROPIC_BASE_URL'] = baseUrl;
-    if (apiKey) env[apiKeyField] = apiKey;
-    for (const line of extraEnvText.split('\n')) {
-      const eq = line.indexOf('=');
-      if (eq > 0) env[line.slice(0, eq).trim()] = line.slice(eq + 1).trim();
-    }
-    return env;
-  }, [baseUrl, apiKey, apiKeyField, extraEnvText]);
+  // First-load sync when editing an existing provider.
+  useEffect(() => {
+    if (!provider) return;
+    setApiKey(provider.apiKey ?? '');
+  }, [provider]);
+
+  const toggleExpanded = useCallback((agent: AgentKey) => {
+    setExpandedAgents((prev) => {
+      const next = new Set(prev);
+      if (next.has(agent)) next.delete(agent);
+      else next.add(agent);
+      return next;
+    });
+  }, []);
 
   const handleFetchModels = async () => {
     setFetchingModels(true);
     setFetchError(null);
     try {
-      const preset = selectedPresetId
-        ? catalog?.find((p) => p.id === selectedPresetId)
-        : null;
-      const res = await makeLocalApiRequest(
-        '/api/providers/fetch-models',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            base_url: baseUrl,
-            api_key: apiKey,
-            models_url: preset?.models_url ?? null,
-          }),
-        }
-      );
+      // Probe whichever per-agent baseUrl is set (Claude first, then OpenAI-compat).
+      const baseUrl =
+        claudePayload.baseUrl ||
+        opencodePayload.baseUrl ||
+        codexPayload.baseUrl ||
+        deepseekTuiPayload.baseUrl ||
+        '';
+      if (!baseUrl) {
+        throw new Error('No base URL configured for any agent');
+      }
+      const res = await makeLocalApiRequest('/api/providers/fetch-models', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          base_url: baseUrl,
+          api_key: apiKey,
+          models_url: null,
+        }),
+      });
       if (!res.ok) throw new Error(await res.text());
       const body = await res.json();
       const fetched: FetchedModel[] = body.data?.models ?? [];
@@ -239,26 +404,37 @@ export function ProviderForm({
   const handleSave = async () => {
     setSaving(true);
     try {
-      const env = buildEnv();
-      const resolvedHaiku = haikuFollowMain ? null : haikuModel || null;
+      const claude: ClaudePayload = {
+        ...claudePayload,
+        haikuModel: haikuFollowMain ? null : claudePayload.haikuModel,
+      };
       const data: CreateProvider | UpdateProvider = isCreate
         ? {
             name,
             kind: selectedPresetId ? 'Preset' : 'Custom',
-            agentKind: 'CLAUDE_CODE',
             presetId: selectedPresetId,
-            env,
-            extraArgs: [],
-            haikuModel: resolvedHaiku,
+            apiKey: apiKey || null,
+            perAgentEnabled,
+            claude,
+            codex: codexPayload,
+            opencode: opencodePayload,
+            deepseekTui: deepseekTuiPayload,
+            gemini: geminiPayload,
+            hermes: hermesPayload,
             enabledModels,
           }
         : {
             name,
             presetId: provider?.presetId ?? null,
             enabled: provider?.enabled ?? true,
-            env,
-            extraArgs: [],
-            haikuModel: resolvedHaiku,
+            apiKey: apiKey || null,
+            perAgentEnabled,
+            claude,
+            codex: codexPayload,
+            opencode: opencodePayload,
+            deepseekTui: deepseekTuiPayload,
+            gemini: geminiPayload,
+            hermes: hermesPayload,
             enabledModels,
           };
       await onSave(data);
@@ -274,6 +450,13 @@ export function ProviderForm({
       </div>
     );
   }
+
+  // For each agent, recommendation is derived from the catalog preset's
+  // agents[] (Custom records have no preset → all agents are "no subtitle").
+  const isRecommended = (agent: AgentKey): boolean => {
+    if (!selectedPreset) return true; // Custom: no recommendation = no subtitle
+    return selectedPreset.agents.includes(agent);
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -322,13 +505,6 @@ export function ProviderForm({
             placeholder={t('settings.providers.form.namePlaceholder')}
           />
         </SettingsField>
-        <SettingsField label={t('settings.providers.form.baseUrl')}>
-          <InputBase
-            value={baseUrl}
-            onChange={setBaseUrl}
-            placeholder={t('settings.providers.form.baseUrlPlaceholder')}
-          />
-        </SettingsField>
         <SettingsField label={t('settings.providers.form.apiKey')}>
           <InputBase
             type="password"
@@ -336,52 +512,284 @@ export function ProviderForm({
             onChange={setApiKey}
             placeholder={t('settings.providers.form.apiKeyPlaceholder')}
           />
-          <div className="flex gap-2 mt-1">
-            {(['ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_API_KEY'] as const).map(
-              (field) => (
-                <button
-                  key={field}
-                  onClick={() => setApiKeyField(field)}
-                  className={cn(
-                    'text-xs px-2 py-0.5 rounded border',
-                    apiKeyField === field
-                      ? 'border-brand bg-brand/10'
-                      : 'border-border'
-                  )}
-                >
-                  {field}
-                </button>
-              )
-            )}
-          </div>
         </SettingsField>
-        <SettingsField label={t('settings.providers.form.backgroundTaskModel')}>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={haikuFollowMain}
-              onChange={(e) => setHaikuFollowMain(e.target.checked)}
-            />
-            {t('settings.providers.form.followMainModel')}
-          </label>
-          {!haikuFollowMain && (
-            <InputBase
-              value={haikuModel}
-              onChange={setHaikuModel}
-              placeholder={t('settings.providers.form.haikuModelPlaceholder')}
-              className="mt-1"
-            />
-          )}
-        </SettingsField>
-        <SettingsField label={t('settings.providers.form.extraEnv')}>
-          <SettingsTextarea
-            value={extraEnvText}
-            onChange={setExtraEnvText}
-            placeholder={t('settings.providers.form.envPlaceholder')}
-            monospace
-            rows={3}
-          />
-        </SettingsField>
+      </SettingsCard>
+
+      <SettingsCard title={t('settings.providers.form.perAgentSettings')}>
+        <div className="flex flex-col gap-2">
+          <AgentSection
+            agent="CLAUDE_CODE"
+            enabled={perAgentEnabled.CLAUDE_CODE === true}
+            onToggleEnabled={(v) =>
+              setPerAgentEnabled((p) => ({ ...p, CLAUDE_CODE: v }))
+            }
+            recommended={isRecommended('CLAUDE_CODE')}
+            expanded={expandedAgents.has('CLAUDE_CODE')}
+            onToggleExpanded={() => toggleExpanded('CLAUDE_CODE')}
+          >
+            <SettingsField label={t('settings.providers.form.baseUrl')}>
+              <InputBase
+                value={claudePayload.baseUrl ?? ''}
+                onChange={(v) =>
+                  setClaudePayload((p) => ({ ...p, baseUrl: v || null }))
+                }
+                placeholder="https://api.example.com/v1"
+              />
+            </SettingsField>
+            <SettingsField label={t('settings.providers.form.authField')}>
+              <div className="flex gap-2">
+                {(['ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_API_KEY'] as const).map(
+                  (field) => (
+                    <button
+                      key={field}
+                      type="button"
+                      onClick={() =>
+                        setClaudePayload((p) => ({ ...p, apiKeyField: field }))
+                      }
+                      className={cn(
+                        'text-xs px-2 py-0.5 rounded border',
+                        claudePayload.apiKeyField === field
+                          ? 'border-brand bg-brand/10'
+                          : 'border-border'
+                      )}
+                    >
+                      {field}
+                    </button>
+                  )
+                )}
+              </div>
+            </SettingsField>
+            <SettingsField label={t('settings.providers.form.haikuModel')}>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={haikuFollowMain}
+                  onChange={(e) => setHaikuFollowMain(e.target.checked)}
+                />
+                {t('settings.providers.form.followMainModel')}
+              </label>
+              {!haikuFollowMain && (
+                <InputBase
+                  value={claudePayload.haikuModel ?? ''}
+                  onChange={(v) =>
+                    setClaudePayload((p) => ({ ...p, haikuModel: v || null }))
+                  }
+                  placeholder="claude-haiku-4.5"
+                  className="mt-1"
+                />
+              )}
+            </SettingsField>
+            <SettingsField label={t('settings.providers.form.extraEnvVars')}>
+              <SettingsTextarea
+                value={envMapToText(claudePayload.env)}
+                onChange={(v) =>
+                  setClaudePayload((p) => ({ ...p, env: textToEnvMap(v) }))
+                }
+                placeholder="KEY=value"
+                monospace
+                rows={3}
+              />
+            </SettingsField>
+          </AgentSection>
+
+          <AgentSection
+            agent="CODEX"
+            enabled={perAgentEnabled.CODEX === true}
+            onToggleEnabled={(v) =>
+              setPerAgentEnabled((p) => ({ ...p, CODEX: v }))
+            }
+            recommended={isRecommended('CODEX')}
+            expanded={expandedAgents.has('CODEX')}
+            onToggleExpanded={() => toggleExpanded('CODEX')}
+          >
+            <SettingsField label={t('settings.providers.form.baseUrl')}>
+              <InputBase
+                value={codexPayload.baseUrl ?? ''}
+                onChange={(v) =>
+                  setCodexPayload((p) => ({ ...p, baseUrl: v || null }))
+                }
+                placeholder="https://api.example.com/v1"
+              />
+            </SettingsField>
+            <SettingsField label={t('settings.providers.form.extraEnvVars')}>
+              <SettingsTextarea
+                value={envMapToText(codexPayload.env)}
+                onChange={(v) =>
+                  setCodexPayload((p) => ({ ...p, env: textToEnvMap(v) }))
+                }
+                placeholder="KEY=value"
+                monospace
+                rows={3}
+              />
+            </SettingsField>
+          </AgentSection>
+
+          <AgentSection
+            agent="OPENCODE"
+            enabled={perAgentEnabled.OPENCODE === true}
+            onToggleEnabled={(v) =>
+              setPerAgentEnabled((p) => ({ ...p, OPENCODE: v }))
+            }
+            recommended={isRecommended('OPENCODE')}
+            expanded={expandedAgents.has('OPENCODE')}
+            onToggleExpanded={() => toggleExpanded('OPENCODE')}
+          >
+            <SettingsField label={t('settings.providers.form.baseUrl')}>
+              <InputBase
+                value={opencodePayload.baseUrl ?? ''}
+                onChange={(v) =>
+                  setOpencodePayload((p) => ({ ...p, baseUrl: v || null }))
+                }
+                placeholder="https://api.example.com/v1"
+              />
+            </SettingsField>
+            <SettingsField label={t('settings.providers.form.extraOptions')}>
+              <SettingsTextarea
+                value={objectToText(opencodePayload.options)}
+                onChange={(v) =>
+                  setOpencodePayload((p) => ({
+                    ...p,
+                    options: textToObject(v),
+                  }))
+                }
+                placeholder={t('settings.providers.form.optionsPlaceholder')}
+                monospace
+                rows={3}
+              />
+            </SettingsField>
+            <SettingsField label={t('settings.providers.form.extraEnvVars')}>
+              <SettingsTextarea
+                value={envMapToText(opencodePayload.env)}
+                onChange={(v) =>
+                  setOpencodePayload((p) => ({ ...p, env: textToEnvMap(v) }))
+                }
+                placeholder="KEY=value"
+                monospace
+                rows={3}
+              />
+            </SettingsField>
+          </AgentSection>
+
+          <AgentSection
+            agent="DEEPSEEK_TUI"
+            enabled={perAgentEnabled.DEEPSEEK_TUI === true}
+            onToggleEnabled={(v) =>
+              setPerAgentEnabled((p) => ({ ...p, DEEPSEEK_TUI: v }))
+            }
+            recommended={isRecommended('DEEPSEEK_TUI')}
+            expanded={expandedAgents.has('DEEPSEEK_TUI')}
+            onToggleExpanded={() => toggleExpanded('DEEPSEEK_TUI')}
+          >
+            <SettingsField label={t('settings.providers.form.baseUrl')}>
+              <InputBase
+                value={deepseekTuiPayload.baseUrl ?? ''}
+                onChange={(v) =>
+                  setDeepseekTuiPayload((p) => ({ ...p, baseUrl: v || null }))
+                }
+                placeholder="https://api.example.com/v1"
+              />
+            </SettingsField>
+            <SettingsField label={t('settings.providers.form.extraEnvVars')}>
+              <SettingsTextarea
+                value={envMapToText(deepseekTuiPayload.env)}
+                onChange={(v) =>
+                  setDeepseekTuiPayload((p) => ({
+                    ...p,
+                    env: textToEnvMap(v),
+                  }))
+                }
+                placeholder="KEY=value"
+                monospace
+                rows={3}
+              />
+            </SettingsField>
+          </AgentSection>
+
+          <AgentSection
+            agent="GEMINI"
+            enabled={perAgentEnabled.GEMINI === true}
+            onToggleEnabled={(v) =>
+              setPerAgentEnabled((p) => ({ ...p, GEMINI: v }))
+            }
+            recommended={isRecommended('GEMINI')}
+            expanded={expandedAgents.has('GEMINI')}
+            onToggleExpanded={() => toggleExpanded('GEMINI')}
+          >
+            <SettingsField label={t('settings.providers.form.baseUrl')}>
+              <InputBase
+                value={geminiPayload.baseUrl ?? ''}
+                onChange={(v) =>
+                  setGeminiPayload((p) => ({ ...p, baseUrl: v || null }))
+                }
+                placeholder="https://generativelanguage.googleapis.com"
+              />
+            </SettingsField>
+            <SettingsField label={t('settings.providers.form.extraEnvVars')}>
+              <SettingsTextarea
+                value={envMapToText(geminiPayload.env)}
+                onChange={(v) =>
+                  setGeminiPayload((p) => ({ ...p, env: textToEnvMap(v) }))
+                }
+                placeholder="KEY=value"
+                monospace
+                rows={3}
+              />
+            </SettingsField>
+          </AgentSection>
+
+          <AgentSection
+            agent="HERMES"
+            enabled={perAgentEnabled.HERMES === true}
+            onToggleEnabled={(v) =>
+              setPerAgentEnabled((p) => ({ ...p, HERMES: v }))
+            }
+            recommended={isRecommended('HERMES')}
+            expanded={expandedAgents.has('HERMES')}
+            onToggleExpanded={() => toggleExpanded('HERMES')}
+          >
+            <SettingsField label={t('settings.providers.form.baseUrl')}>
+              <InputBase
+                value={hermesPayload.baseUrl ?? ''}
+                onChange={(v) =>
+                  setHermesPayload((p) => ({ ...p, baseUrl: v || null }))
+                }
+                placeholder="https://api.example.com/v1"
+              />
+            </SettingsField>
+            <SettingsField label={t('settings.providers.form.apiMode')}>
+              <select
+                value={hermesPayload.apiMode ?? ''}
+                onChange={(e) =>
+                  setHermesPayload((p) => ({
+                    ...p,
+                    apiMode: e.target.value || null,
+                  }))
+                }
+                className="w-full bg-secondary border border-border rounded-sm px-2 py-1.5 text-sm text-high"
+              >
+                <option value="">
+                  {t('settings.providers.form.apiModeNone')}
+                </option>
+                {HERMES_API_MODES.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </SettingsField>
+            <SettingsField label={t('settings.providers.form.extraEnvVars')}>
+              <SettingsTextarea
+                value={envMapToText(hermesPayload.env)}
+                onChange={(v) =>
+                  setHermesPayload((p) => ({ ...p, env: textToEnvMap(v) }))
+                }
+                placeholder="KEY=value"
+                monospace
+                rows={3}
+              />
+            </SettingsField>
+          </AgentSection>
+        </div>
       </SettingsCard>
 
       <SettingsCard title={t('settings.providers.form.models')}>
@@ -509,8 +917,13 @@ export function ProviderForm({
         )}
         <button
           onClick={handleSave}
-          disabled={saving || !name}
+          disabled={saving || !name || enabledModels.length === 0}
           className="flex items-center gap-1 px-3 py-1.5 text-sm rounded bg-brand text-white hover:bg-brand/90 disabled:opacity-50"
+          title={
+            enabledModels.length === 0
+              ? t('settings.providers.form.atLeastOneModel')
+              : undefined
+          }
         >
           {saving ? (
             <ArrowClockwiseIcon className="w-3 h-3 animate-spin" />

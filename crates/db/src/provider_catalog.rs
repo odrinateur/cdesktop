@@ -1,6 +1,8 @@
-use std::collections::HashMap;
-
 use serde::{Deserialize, Serialize};
+
+use crate::provider_payloads::{
+    ClaudePayload, CodexPayload, DeepseekTuiPayload, GeminiPayload, HermesPayload, OpencodePayload,
+};
 
 const CATALOG_JSON: &str = include_str!("provider_catalog.json");
 
@@ -11,19 +13,23 @@ pub struct ProviderCatalog {
     pub presets: Vec<CatalogPreset>,
 }
 
+/// A catalog preset — the shipped recommendation for a provider.
+/// `agents[]` is the recommended set; user records use this to seed `perAgentEnabled`.
+/// Per-agent payload slots are always present (some may be empty/null when the preset
+/// doesn't recommend that agent).
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CatalogPreset {
     pub id: String,
     pub name: String,
-    pub category: Option<String>,
-    pub website_url: String,
-    pub api_key_url: Option<String>,
-    pub api_key_field: String,
-    pub icon: Option<String>,
-    pub icon_color: Option<String>,
-    pub env: HashMap<String, String>,
-    pub models_url: Option<String>,
-    pub endpoint_candidates: Option<Vec<String>>,
+    pub agents: Vec<String>,
+    pub claude: ClaudePayload,
+    pub codex: CodexPayload,
+    pub opencode: OpencodePayload,
+    pub deepseek_tui: DeepseekTuiPayload,
+    pub gemini: GeminiPayload,
+    pub hermes: HermesPayload,
+    pub enabled_models: Vec<String>,
 }
 
 #[cfg(test)]
