@@ -382,7 +382,8 @@
         "noModelsMatch": "沒有符合的模型",
         "effort": "思考深度",
         "effortTooltip": "{{label}} 強度",
-        "manageProviders": "管理服務商 →"
+        "manageProviders": "管理服務商 →",
+        "defaultModel": "代理預設"
       },
       "effort": {
         "low": "低",

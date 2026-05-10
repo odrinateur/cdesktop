@@ -13,6 +13,13 @@ const workspaceKey = (id: string) => `cdesktop:picker:workspace:${id}`;
 const FALLBACK_MODEL_ID = 'opus[1m]';
 const FALLBACK_PREFERRED_EFFORT = 'xhigh';
 
+/**
+ * Sentinel model id meaning "use the agent's own ambient configuration"
+ * (no `--model` flag at spawn). Mirrors the constant in
+ * `ProviderModelPicker.tsx`; duplicated to avoid a circular import.
+ */
+const AGENT_DEFAULT_MODEL_ID = '';
+
 export interface PickerSelection {
   selectedProviderId: string | null;
   selectedModelId: string | null;
@@ -165,6 +172,12 @@ export function resolveDefaultSelection(
   const findEnabledModel = (providerId: string, modelId: string) => {
     const p = providers.find((x) => x.id === providerId);
     if (!p || !p.enabled) return null;
+    // The "agent default" sentinel is only valid on the Default provider —
+    // non-Default routing always needs an explicit model since the
+    // applier injects a base URL.
+    if (modelId === AGENT_DEFAULT_MODEL_ID) {
+      return p.kind === 'Default' ? p : null;
+    }
     const m = modelsFor(p).find((mm) => mm.id === modelId);
     return m ? p : null;
   };

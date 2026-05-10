@@ -382,7 +382,8 @@
         "noModelsMatch": "一致するモデルがありません",
         "effort": "推論レベル",
         "effortTooltip": "{{label}} 推論",
-        "manageProviders": "プロバイダーを管理 →"
+        "manageProviders": "プロバイダーを管理 →",
+        "defaultModel": "エージェントのデフォルト"
       },
       "effort": {
         "low": "低",

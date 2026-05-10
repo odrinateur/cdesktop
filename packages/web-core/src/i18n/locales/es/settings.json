@@ -382,7 +382,8 @@
         "noModelsMatch": "Sin modelos coincidentes",
         "effort": "Esfuerzo",
         "effortTooltip": "Esfuerzo {{label}}",
-        "manageProviders": "Administrar proveedores →"
+        "manageProviders": "Administrar proveedores →",
+        "defaultModel": "Predeterminado del agente"
       },
       "effort": {
         "low": "Bajo",

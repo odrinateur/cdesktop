@@ -626,7 +626,12 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
     // Picker is authoritative for model_id / reasoning_id — overlay before queue.
     const effectiveConfig = {
       ...executorConfig,
-      model_id: selectedModelId ?? executorConfig.model_id ?? null,
+      // Empty string is the "agent default" sentinel from ProviderModelPicker
+      // — map it to null so the spawn applier skips the `--model` flag.
+      model_id:
+        selectedModelId === ''
+          ? null
+          : (selectedModelId ?? executorConfig.model_id ?? null),
       reasoning_id:
         selectedReasoningId ?? executorConfig.reasoning_id ?? null,
     };
@@ -757,7 +762,12 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
       return;
     const effectiveConfig = {
       ...executorConfig,
-      model_id: selectedModelId ?? executorConfig.model_id ?? null,
+      // Empty string is the "agent default" sentinel from ProviderModelPicker
+      // — map it to null so the spawn applier skips the `--model` flag.
+      model_id:
+        selectedModelId === ''
+          ? null
+          : (selectedModelId ?? executorConfig.model_id ?? null),
       reasoning_id:
         selectedReasoningId ?? executorConfig.reasoning_id ?? null,
     };

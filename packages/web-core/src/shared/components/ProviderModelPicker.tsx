@@ -22,6 +22,19 @@ interface RecentPair {
   provider_id: string;
 }
 
+/**
+ * Sentinel model id for "use the agent's own ambient configuration" — when
+ * the user picks this, no `--model` flag (or equivalent) is passed to the
+ * spawned CLI, so each agent falls back to its own settings file / env-var
+ * preferences (`~/.gemini/.env`, `~/.claude.json`, `~/.codex/config.toml`,
+ * etc.). Only meaningful for the Default provider; non-Default routing
+ * always needs an explicit model since the applier injects a base URL.
+ *
+ * The same constant lives in `useWorkspacePickerSelection.ts` for the
+ * resolver — duplicated by design to avoid a circular import.
+ */
+const AGENT_DEFAULT_MODEL_ID = '';
+
 interface ProviderModelPickerProps {
   selectedProviderId: string | null;
   selectedModelId: string | null;
@@ -72,7 +85,14 @@ export function ProviderModelPicker({
 
   const modelsForProvider = (p: Provider): EnabledModel[] => {
     if (p.kind === 'Default' && activeAgent && agentDefaultModels.length > 0) {
-      return agentDefaultModels;
+      // Prepend the "agent default" virtual entry so users who configure
+      // their own agent can opt out of cdesktop forcing a `--model` flag.
+      const virtualDefault: EnabledModel = {
+        id: AGENT_DEFAULT_MODEL_ID,
+        displayName: t('settings.providers.picker.defaultModel'),
+        ownedBy: null,
+      };
+      return [virtualDefault, ...agentDefaultModels];
     }
     return p.enabledModels ?? [];
   };
@@ -175,8 +195,11 @@ export function ProviderModelPicker({
   const effortLabel = selectedReasoningId
     ? t(`settings.providers.effort.${selectedReasoningId}`)
     : null;
+  // selectedModelId === '' is the AGENT_DEFAULT_MODEL_ID sentinel — a valid
+  // pick. Use !== null so the trigger renders "Agent default" rather than
+  // the "Model ▾" placeholder when the user opts into ambient agent config.
   const triggerLabel =
-    selectedModelId && selectedProvider ? (
+    selectedModelId !== null && selectedProvider ? (
       <>
         {namePart}
         {contextSuffix && <span className="text-low"> {contextSuffix}</span>}
