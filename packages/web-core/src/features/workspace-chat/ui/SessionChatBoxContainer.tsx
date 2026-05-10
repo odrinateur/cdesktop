@@ -24,6 +24,7 @@ import { useActions } from '@/shared/hooks/useActions';
 import { useTodos } from '../model/hooks/useTodos';
 import { getLatestConfigFromProcesses } from '@/shared/lib/executor';
 import { useExecutorConfig } from '@/shared/hooks/useExecutorConfig';
+import { useModelSelectorConfig } from '@/shared/hooks/useExecutorDiscovery';
 import {
   SHOW_INNER_SESSION_SWITCHER,
   SHOW_RESOLVE_CONFLICTS,
@@ -503,12 +504,25 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
     setPreferredEffort,
   } = useWorkspacePickerSelection(workspaceId);
 
-  // Legacy / never-picked sessions: seed from last-used (or hardcoded fallback)
-  // so the pill matches what will actually run on send.
+  // Legacy / never-picked sessions: seed from last-used (or the active agent's
+  // first canonical model) so the pill matches what will actually run on send.
   const { data: providers = [] } = useProviders();
+  const { config: agentModelConfig } = useModelSelectorConfig(
+    effectiveExecutor
+  );
+  const agentDefaultModels = useMemo(
+    () =>
+      (agentModelConfig?.models ?? []).map((m) => ({
+        id: m.id,
+        displayName: m.name,
+        ownedBy: null,
+      })),
+    [agentModelConfig]
+  );
   useEffect(() => {
     if (selectedProviderId || selectedModelId) return;
-    const resolved = resolveDefaultSelection(providers);
+    if (effectiveExecutor && agentDefaultModels.length === 0) return;
+    const resolved = resolveDefaultSelection(providers, agentDefaultModels);
     if (!resolved) return;
     setSelection(resolved.providerId, resolved.modelId, resolved.reasoningId);
     setPreferredEffort(resolved.preferredEffortId);
@@ -516,6 +530,8 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
     providers,
     selectedProviderId,
     selectedModelId,
+    effectiveExecutor,
+    agentDefaultModels,
     setSelection,
     setPreferredEffort,
   ]);
