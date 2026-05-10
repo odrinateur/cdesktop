@@ -429,8 +429,6 @@
         "optionsPlaceholder": "setCacheKey=true",
         "apiMode": "Mode API",
         "apiModeNone": "(aucun)",
-        "executorComing": "exécuteur disponible dans le prochain changement",
-        "notRecommendedForPreset": "non recommandé pour ce préréglage — peut ne pas fonctionner",
         "atLeastOneModel": "Ajoutez au moins un modèle",
         "extraEnv": "Variables d'environnement supplémentaires (Avancé)",
         "envPlaceholder": "KEY=value\nANOTHER_KEY=value",
@@ -442,7 +440,7 @@
         "manualPlaceholder": "Saisir un ID de modèle manuellement…",
         "add": "Ajouter",
         "cancel": "Annuler",
-        "defaultDescription": "Le fournisseur par défaut utilise votre authentification Claude actuelle (claude login). Aucune configuration nécessaire."
+        "defaultDescription": "Le fournisseur par défaut utilise l'authentification native de chaque agent (claude login, codex login, gemini auth, etc.). Aucune configuration nécessaire."
       },
       "defaultProviderName": "Par défaut",
       "turnSwitchMarker": "↳ basculé vers {{model}} via {{provider}}"

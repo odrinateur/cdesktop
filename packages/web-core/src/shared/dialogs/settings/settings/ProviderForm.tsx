@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   PlusIcon,
@@ -68,9 +68,6 @@ const AGENT_LABEL: Record<AgentKey, string> = {
   GEMINI: 'Gemini',
   HERMES: 'Hermes',
 };
-
-// Hermes data slot lands in this change; executor wrapper ships next change.
-const DEFERRED_EXECUTOR_AGENTS: ReadonlySet<AgentKey> = new Set(['HERMES']);
 
 const HERMES_API_MODES = [
   'chat_completions',
@@ -166,7 +163,6 @@ function AgentSection({
   agent,
   enabled,
   onToggleEnabled,
-  recommended,
   expanded,
   onToggleExpanded,
   children,
@@ -174,18 +170,10 @@ function AgentSection({
   agent: AgentKey;
   enabled: boolean;
   onToggleEnabled: (v: boolean) => void;
-  recommended: boolean;
   expanded: boolean;
   onToggleExpanded: () => void;
   children: React.ReactNode;
 }) {
-  const { t } = useTranslation('settings');
-  const isDeferred = DEFERRED_EXECUTOR_AGENTS.has(agent);
-  const subtitle = !recommended
-    ? t('settings.providers.form.notRecommendedForPreset')
-    : isDeferred
-      ? t('settings.providers.form.executorComing')
-      : null;
   return (
     <div className="border border-border rounded-sm">
       <button
@@ -201,7 +189,6 @@ function AgentSection({
         />
         <span className="text-sm font-medium">{AGENT_LABEL[agent]}</span>
         <span className="ml-auto flex items-center gap-2">
-          {subtitle && <span className="text-xs text-low">{subtitle}</span>}
           <span
             className="flex items-center"
             onClick={(e) => e.stopPropagation()}
@@ -301,12 +288,6 @@ export function ProviderForm({
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [fetchedModels, setFetchedModels] = useState<FetchedModel[]>([]);
   const [fetchSearch, setFetchSearch] = useState('');
-
-  // The currently-selected preset, used to derive recommendation subtitles.
-  const selectedPreset = useMemo(
-    () => catalog?.find((p) => p.id === selectedPresetId) ?? null,
-    [catalog, selectedPresetId]
-  );
 
   const handlePresetSelect = useCallback(
     (presetId: string | null) => {
@@ -451,13 +432,6 @@ export function ProviderForm({
     );
   }
 
-  // For each agent, recommendation is derived from the catalog preset's
-  // agents[] (Custom records have no preset → all agents are "no subtitle").
-  const isRecommended = (agent: AgentKey): boolean => {
-    if (!selectedPreset) return true; // Custom: no recommendation = no subtitle
-    return selectedPreset.agents.includes(agent);
-  };
-
   return (
     <div className="flex flex-col gap-6">
       {isCreate && catalog && (
@@ -523,7 +497,6 @@ export function ProviderForm({
             onToggleEnabled={(v) =>
               setPerAgentEnabled((p) => ({ ...p, CLAUDE_CODE: v }))
             }
-            recommended={isRecommended('CLAUDE_CODE')}
             expanded={expandedAgents.has('CLAUDE_CODE')}
             onToggleExpanded={() => toggleExpanded('CLAUDE_CODE')}
           >
@@ -598,7 +571,6 @@ export function ProviderForm({
             onToggleEnabled={(v) =>
               setPerAgentEnabled((p) => ({ ...p, CODEX: v }))
             }
-            recommended={isRecommended('CODEX')}
             expanded={expandedAgents.has('CODEX')}
             onToggleExpanded={() => toggleExpanded('CODEX')}
           >
@@ -630,7 +602,6 @@ export function ProviderForm({
             onToggleEnabled={(v) =>
               setPerAgentEnabled((p) => ({ ...p, OPENCODE: v }))
             }
-            recommended={isRecommended('OPENCODE')}
             expanded={expandedAgents.has('OPENCODE')}
             onToggleExpanded={() => toggleExpanded('OPENCODE')}
           >
@@ -676,7 +647,6 @@ export function ProviderForm({
             onToggleEnabled={(v) =>
               setPerAgentEnabled((p) => ({ ...p, DEEPSEEK_TUI: v }))
             }
-            recommended={isRecommended('DEEPSEEK_TUI')}
             expanded={expandedAgents.has('DEEPSEEK_TUI')}
             onToggleExpanded={() => toggleExpanded('DEEPSEEK_TUI')}
           >
@@ -711,7 +681,6 @@ export function ProviderForm({
             onToggleEnabled={(v) =>
               setPerAgentEnabled((p) => ({ ...p, GEMINI: v }))
             }
-            recommended={isRecommended('GEMINI')}
             expanded={expandedAgents.has('GEMINI')}
             onToggleExpanded={() => toggleExpanded('GEMINI')}
           >
@@ -743,7 +712,6 @@ export function ProviderForm({
             onToggleEnabled={(v) =>
               setPerAgentEnabled((p) => ({ ...p, HERMES: v }))
             }
-            recommended={isRecommended('HERMES')}
             expanded={expandedAgents.has('HERMES')}
             onToggleExpanded={() => toggleExpanded('HERMES')}
           >

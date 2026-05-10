@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "cc_switch_source_sha": "72ab8a5cfdaa0161e83536f912a905eee26ea343",
-  "note": "Per-agent payloads derived programmatically from cc-switch's claude/codex/opencode/hermes preset sources. agents[] = recommended set, computed from per-agent payload availability + eligibility filters (CODEX requires wire_api='responses'; GEMINI is never sourced from cc-switch — Default's ambient auth covers official Google routing and remaining cc-switch gemini presets have known upstream issues; DEEPSEEK_TUI is added in Phase E once the executor lands).",
+  "note": "Per-agent payloads derived programmatically from cc-switch's claude/codex/opencode/hermes preset sources. agents[] = recommended set, computed from per-agent payload availability + eligibility filters (CODEX requires wire_api='responses'; GEMINI is never sourced from cc-switch — Default's ambient auth covers official Google routing and remaining cc-switch gemini presets have known upstream issues; DEEPSEEK_TUI piggybacks on the OpenCode source whenever npm='@ai-sdk/openai-compatible' supplies an OpenAI-compatible baseUrl).",
   "presets": [
     {
       "id": "openrouter",
@@ -54,7 +54,8 @@
       "agents": [
         "CLAUDE_CODE",
         "OPENCODE",
-        "HERMES"
+        "HERMES",
+        "DEEPSEEK_TUI"
       ],
       "claude": {
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
@@ -75,7 +76,7 @@
         "env": {}
       },
       "deepseekTui": {
-        "baseUrl": null,
+        "baseUrl": "https://api.novita.ai/openai",
         "env": {}
       },
       "gemini": {
@@ -97,7 +98,8 @@
       "agents": [
         "CLAUDE_CODE",
         "OPENCODE",
-        "HERMES"
+        "HERMES",
+        "DEEPSEEK_TUI"
       ],
       "claude": {
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
@@ -118,7 +120,7 @@
         "env": {}
       },
       "deepseekTui": {
-        "baseUrl": null,
+        "baseUrl": "https://integrate.api.nvidia.com/v1",
         "env": {}
       },
       "gemini": {
@@ -140,7 +142,8 @@
       "agents": [
         "CLAUDE_CODE",
         "OPENCODE",
-        "HERMES"
+        "HERMES",
+        "DEEPSEEK_TUI"
       ],
       "claude": {
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
@@ -161,7 +164,7 @@
         "env": {}
       },
       "deepseekTui": {
-        "baseUrl": null,
+        "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
         "env": {}
       },
       "gemini": {
@@ -308,7 +311,8 @@
       "agents": [
         "CLAUDE_CODE",
         "OPENCODE",
-        "HERMES"
+        "HERMES",
+        "DEEPSEEK_TUI"
       ],
       "claude": {
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
@@ -329,7 +333,7 @@
         "env": {}
       },
       "deepseekTui": {
-        "baseUrl": null,
+        "baseUrl": "https://api.stepfun.com/step_plan/v1",
         "env": {}
       },
       "gemini": {
@@ -351,7 +355,8 @@
       "name": "StepFun en",
       "agents": [
         "CLAUDE_CODE",
-        "OPENCODE"
+        "OPENCODE",
+        "DEEPSEEK_TUI"
       ],
       "claude": {
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
@@ -370,7 +375,7 @@
         "env": {}
       },
       "deepseekTui": {
-        "baseUrl": null,
+        "baseUrl": "https://api.stepfun.ai/step_plan/v1",
         "env": {}
       },
       "gemini": {
@@ -393,7 +398,8 @@
       "agents": [
         "CLAUDE_CODE",
         "OPENCODE",
-        "HERMES"
+        "HERMES",
+        "DEEPSEEK_TUI"
       ],
       "claude": {
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
@@ -414,7 +420,7 @@
         "env": {}
       },
       "deepseekTui": {
-        "baseUrl": null,
+        "baseUrl": "https://vanchin.streamlake.ai/api/gateway/v1/endpoints/${ENDPOINT_ID}/openai",
         "env": {}
       },
       "gemini": {
@@ -436,7 +442,8 @@
       "agents": [
         "CLAUDE_CODE",
         "OPENCODE",
-        "HERMES"
+        "HERMES",
+        "DEEPSEEK_TUI"
       ],
       "claude": {
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
@@ -460,7 +467,7 @@
         "env": {}
       },
       "deepseekTui": {
-        "baseUrl": null,
+        "baseUrl": "https://api.longcat.chat/v1",
         "env": {}
       },
       "gemini": {
@@ -482,7 +489,8 @@
       "agents": [
         "CLAUDE_CODE",
         "OPENCODE",
-        "HERMES"
+        "HERMES",
+        "DEEPSEEK_TUI"
       ],
       "claude": {
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
@@ -506,7 +514,7 @@
         "env": {}
       },
       "deepseekTui": {
-        "baseUrl": null,
+        "baseUrl": "https://api.minimaxi.com/v1",
         "env": {}
       },
       "gemini": {
@@ -528,7 +536,8 @@
       "agents": [
         "CLAUDE_CODE",
         "OPENCODE",
-        "HERMES"
+        "HERMES",
+        "DEEPSEEK_TUI"
       ],
       "claude": {
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
@@ -552,7 +561,7 @@
         "env": {}
       },
       "deepseekTui": {
-        "baseUrl": null,
+        "baseUrl": "https://api.minimax.io/v1",
         "env": {}
       },
       "gemini": {
@@ -574,7 +583,8 @@
       "agents": [
         "CLAUDE_CODE",
         "OPENCODE",
-        "HERMES"
+        "HERMES",
+        "DEEPSEEK_TUI"
       ],
       "claude": {
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
@@ -597,7 +607,7 @@
         "env": {}
       },
       "deepseekTui": {
-        "baseUrl": null,
+        "baseUrl": "https://ark.cn-beijing.volces.com/api/v3",
         "env": {}
       },
       "gemini": {
@@ -619,7 +629,8 @@
       "agents": [
         "CLAUDE_CODE",
         "OPENCODE",
-        "HERMES"
+        "HERMES",
+        "DEEPSEEK_TUI"
       ],
       "claude": {
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
@@ -640,7 +651,7 @@
         "env": {}
       },
       "deepseekTui": {
-        "baseUrl": null,
+        "baseUrl": "https://api.tbox.cn/v1",
         "env": {}
       },
       "gemini": {
@@ -662,7 +673,8 @@
       "agents": [
         "CLAUDE_CODE",
         "OPENCODE",
-        "HERMES"
+        "HERMES",
+        "DEEPSEEK_TUI"
       ],
       "claude": {
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
@@ -683,7 +695,7 @@
         "env": {}
       },
       "deepseekTui": {
-        "baseUrl": null,
+        "baseUrl": "https://api.xiaomimimo.com/v1",
         "env": {}
       },
       "gemini": {
@@ -745,7 +757,8 @@
       "agents": [
         "CLAUDE_CODE",
         "OPENCODE",
-        "HERMES"
+        "HERMES",
+        "DEEPSEEK_TUI"
       ],
       "claude": {
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
@@ -766,7 +779,7 @@
         "env": {}
       },
       "deepseekTui": {
-        "baseUrl": null,
+        "baseUrl": "https://api-inference.modelscope.cn/v1",
         "env": {}
       },
       "gemini": {
@@ -788,7 +801,8 @@
       "agents": [
         "CLAUDE_CODE",
         "OPENCODE",
-        "HERMES"
+        "HERMES",
+        "DEEPSEEK_TUI"
       ],
       "claude": {
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
@@ -809,7 +823,7 @@
         "env": {}
       },
       "deepseekTui": {
-        "baseUrl": null,
+        "baseUrl": "https://api.deepseek.com/v1",
         "env": {}
       },
       "gemini": {
@@ -832,7 +846,8 @@
       "agents": [
         "CLAUDE_CODE",
         "OPENCODE",
-        "HERMES"
+        "HERMES",
+        "DEEPSEEK_TUI"
       ],
       "claude": {
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
@@ -853,7 +868,7 @@
         "env": {}
       },
       "deepseekTui": {
-        "baseUrl": null,
+        "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
         "env": {}
       },
       "gemini": {
@@ -875,7 +890,8 @@
       "agents": [
         "CLAUDE_CODE",
         "OPENCODE",
-        "HERMES"
+        "HERMES",
+        "DEEPSEEK_TUI"
       ],
       "claude": {
         "apiKeyField": "ANTHROPIC_AUTH_TOKEN",
@@ -896,7 +912,7 @@
         "env": {}
       },
       "deepseekTui": {
-        "baseUrl": null,
+        "baseUrl": "https://api.z.ai/v1",
         "env": {}
       },
       "gemini": {

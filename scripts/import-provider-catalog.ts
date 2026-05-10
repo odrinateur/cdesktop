@@ -23,7 +23,11 @@
  *             gemini-cli auth, and remaining cc-switch gemini presets have
  *             known upstream issues. All catalog presets emit an empty
  *             gemini slot; users wanting Gemini routing create a Custom record.
- *   - DEEPSEEK_TUI: not in cc-switch; skipped this phase, surfaced in Phase E.
+ *   - DEEPSEEK_TUI: piggybacks on cc-switch's OpenCode source: any preset whose
+ *             opencode npm == "@ai-sdk/openai-compatible" with a baseURL is
+ *             OpenAI-Chat-Completions–compatible, which is exactly what
+ *             DeepSeek TUI speaks. We reuse that baseUrl for the deepseek_tui
+ *             slot. (The executor wrapper itself ships in Phase E.)
  *
  * Normalization applied at instantiation time (not here):
  *   - ANTHROPIC_MODEL / ANTHROPIC_DEFAULT_SONNET_MODEL / ANTHROPIC_DEFAULT_OPUS_MODEL
@@ -240,6 +244,26 @@ function extractOpencode(raw: OpencodeRaw | undefined): OpencodePayload | null {
   };
 }
 
+interface DeepseekTuiPayload {
+  baseUrl: string;
+  env: Record<string, string>;
+}
+
+// DeepSeek TUI speaks OpenAI Chat Completions. cc-switch's OpenCode preset
+// flags OpenAI-compatible endpoints via `npm: "@ai-sdk/openai-compatible"` —
+// we reuse that signal + the same baseUrl.
+function extractDeepseekTui(
+  raw: OpencodeRaw | undefined
+): DeepseekTuiPayload | null {
+  if (!raw) return null;
+  const sc = raw.settingsConfig ?? {};
+  if (sc.npm !== "@ai-sdk/openai-compatible") return null;
+  const opts = sc.options ?? {};
+  const baseUrl = typeof opts.baseURL === "string" ? opts.baseURL : null;
+  if (!baseUrl) return null;
+  return { baseUrl, env: {} };
+}
+
 interface HermesPayload {
   baseUrl: string | null;
   apiMode: string | null;
@@ -320,6 +344,7 @@ for (const [id, ccName] of Object.entries(WANTED)) {
   const claudeExtracted = extractClaude(claudeRaw);
   const codexExtracted = extractCodex(codexRaw);
   const opencodeExtracted = extractOpencode(opencodeRaw);
+  const deepseekTuiExtracted = extractDeepseekTui(opencodeRaw);
   const hermesExtracted = extractHermes(hermesRaw);
 
   // Eligibility filters → recommended agents[] for this preset.
@@ -348,7 +373,9 @@ for (const [id, ccName] of Object.entries(WANTED)) {
 
   const hermesEligible = !!(hermesExtracted && hermesExtracted.baseUrl);
   if (hermesEligible) agents.push("HERMES");
-  // DEEPSEEK_TUI: not in cc-switch — added in Phase E.
+
+  const deepseekTuiEligible = !!deepseekTuiExtracted;
+  if (deepseekTuiEligible) agents.push("DEEPSEEK_TUI");
 
   presets.push({
     id,
@@ -363,7 +390,9 @@ for (const [id, ccName] of Object.entries(WANTED)) {
     opencode: opencodeEligible
       ? opencodeExtracted!
       : { npm: null, baseUrl: null, options: {}, env: {} },
-    deepseekTui: { baseUrl: null, env: {} },
+    deepseekTui: deepseekTuiEligible
+      ? deepseekTuiExtracted!
+      : { baseUrl: null, env: {} },
     gemini: { baseUrl: null, env: {} },
     hermes: hermesEligible
       ? hermesExtracted!
@@ -380,7 +409,7 @@ const catalog = {
     "agents[] = recommended set, computed from per-agent payload availability + eligibility filters " +
     "(CODEX requires wire_api='responses'; GEMINI is never sourced from cc-switch — Default's ambient " +
     "auth covers official Google routing and remaining cc-switch gemini presets have known upstream issues; " +
-    "DEEPSEEK_TUI is added in Phase E once the executor lands).",
+    "DEEPSEEK_TUI piggybacks on the OpenCode source whenever npm='@ai-sdk/openai-compatible' supplies an OpenAI-compatible baseUrl).",
   presets,
 };
 
