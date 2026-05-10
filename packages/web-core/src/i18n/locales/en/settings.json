@@ -437,8 +437,6 @@
         "optionsPlaceholder": "setCacheKey=true",
         "apiMode": "API mode",
         "apiModeNone": "(none)",
-        "executorComing": "executor coming in next change",
-        "notRecommendedForPreset": "not recommended for this preset — may not work",
         "atLeastOneModel": "Add at least one model",
         "extraEnv": "Extra env (Advanced)",
         "envPlaceholder": "KEY=value\nANOTHER_KEY=value",
@@ -450,7 +448,7 @@
         "manualPlaceholder": "Type a model id manually…",
         "add": "Add",
         "cancel": "Cancel",
-        "defaultDescription": "Default provider uses your ambient Claude auth (claude login). No configuration needed."
+        "defaultDescription": "Default provider passes through to each agent's native auth (claude login, codex login, gemini auth, etc.). No configuration needed."
       },
       "defaultProviderName": "Default",
       "turnSwitchMarker": "↳ switched to {{model}} via {{provider}}"

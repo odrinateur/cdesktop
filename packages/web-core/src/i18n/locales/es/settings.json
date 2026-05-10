@@ -429,8 +429,6 @@
         "optionsPlaceholder": "setCacheKey=true",
         "apiMode": "Modo API",
         "apiModeNone": "(ninguno)",
-        "executorComing": "el ejecutor llegará en el próximo cambio",
-        "notRecommendedForPreset": "no recomendado para este preset — puede no funcionar",
         "atLeastOneModel": "Agrega al menos un modelo",
         "extraEnv": "Variables de entorno adicionales (Avanzado)",
         "envPlaceholder": "KEY=value\nANOTHER_KEY=value",
@@ -442,7 +440,7 @@
         "manualPlaceholder": "Escribe un ID de modelo manualmente…",
         "add": "Agregar",
         "cancel": "Cancelar",
-        "defaultDescription": "El proveedor predeterminado usa tu autenticación actual de Claude (claude login). No requiere configuración."
+        "defaultDescription": "El proveedor predeterminado utiliza la autenticación nativa de cada agente (claude login, codex login, gemini auth, etc.). No requiere configuración."
       },
       "defaultProviderName": "Predeterminado",
       "turnSwitchMarker": "↳ cambiado a {{model}} vía {{provider}}"

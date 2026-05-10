@@ -208,6 +208,41 @@ export function CreateChatBoxContainer({
     setPreferredEffort,
   ]);
 
+  // Reset the picker when the active agent changes if the current selection
+  // isn't enabled for that agent. Default-kind providers are always allowed;
+  // others must have perAgentEnabled[agent] === true. We pass an
+  // agent-filtered providers list to resolveDefaultSelection so its
+  // last-used branch can't re-pick the now-invalid choice.
+  useEffect(() => {
+    if (!effectiveExecutor || !selectedProviderId) return;
+    const provider = providers.find((p) => p.id === selectedProviderId);
+    if (!provider) return;
+    const allowed =
+      provider.kind === 'Default' ||
+      provider.perAgentEnabled?.[effectiveExecutor] === true;
+    if (allowed) return;
+
+    const eligible = providers.filter(
+      (p) =>
+        p.kind === 'Default' ||
+        p.perAgentEnabled?.[effectiveExecutor] === true
+    );
+    const resolved = resolveDefaultSelection(eligible);
+    if (!resolved) {
+      setSelection(null, null, null);
+      setPreferredEffort(null);
+      return;
+    }
+    setSelection(resolved.providerId, resolved.modelId, resolved.reasoningId);
+    setPreferredEffort(resolved.preferredEffortId);
+  }, [
+    effectiveExecutor,
+    providers,
+    selectedProviderId,
+    setSelection,
+    setPreferredEffort,
+  ]);
+
   const repoId = repos.length === 1 ? repos[0]?.id : undefined;
 
   const hasSelectedBranchesForAllRepos = repos.every(

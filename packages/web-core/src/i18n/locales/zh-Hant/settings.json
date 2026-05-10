@@ -429,8 +429,6 @@
         "optionsPlaceholder": "setCacheKey=true",
         "apiMode": "API 模式",
         "apiModeNone": "（無）",
-        "executorComing": "執行器將在下次變更中引入",
-        "notRecommendedForPreset": "此預設不推薦 — 可能無法運作",
         "atLeastOneModel": "至少新增一個模型",
         "extraEnv": "額外環境變數（進階）",
         "envPlaceholder": "KEY=value\nANOTHER_KEY=value",
@@ -442,7 +440,7 @@
         "manualPlaceholder": "手動輸入模型 ID…",
         "add": "新增",
         "cancel": "取消",
-        "defaultDescription": "預設服務商使用您現有的 Claude 認證（claude login）。無需額外設定。"
+        "defaultDescription": "預設服務商沿用各代理自身的認證（claude login、codex login、gemini auth 等）。無需額外設定。"
       },
       "defaultProviderName": "預設",
       "turnSwitchMarker": "↳ 切換到 {{model}} ({{provider}})"
