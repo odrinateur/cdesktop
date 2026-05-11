@@ -9,6 +9,7 @@ import {
 import { Label } from '@vibe/ui/components/Label';
 import { BaseCodingAgent, type ExecutorProfileId } from 'shared/types';
 import { AgentIcon, getAgentName } from '@/shared/components/AgentIcon';
+import { filterAndSortAgents } from '@/shared/lib/agentOrder';
 
 interface AgentSelectorProps {
   profiles: Record<string, Record<string, unknown>> | null;
@@ -28,7 +29,7 @@ export function AgentSelector({
   showLabel = false,
 }: AgentSelectorProps) {
   const agents = profiles
-    ? (Object.keys(profiles).sort() as BaseCodingAgent[])
+    ? filterAndSortAgents(Object.keys(profiles) as BaseCodingAgent[])
     : [];
   const selectedAgent = selectedExecutorProfile?.executor;
 

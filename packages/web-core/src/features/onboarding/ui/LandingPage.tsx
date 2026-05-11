@@ -35,6 +35,7 @@ import {
   type EditorConfig,
 } from 'shared/types';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
+import { filterAndSortAgents } from '@/shared/lib/agentOrder';
 import { useTheme } from '@/shared/hooks/useTheme';
 import { AgentIcon, getAgentName } from '@/shared/components/AgentIcon';
 import { IdeIcon } from '@/shared/components/IdeIcon';
@@ -86,13 +87,6 @@ const SOUND_OPTIONS: SoundOption[] = [
     label: 'Rooster',
     icon: BirdIcon,
   },
-];
-
-const AGENT_PRIORITY: BaseCodingAgent[] = [
-  BaseCodingAgent.CLAUDE_CODE,
-  BaseCodingAgent.CODEX,
-  BaseCodingAgent.OPENCODE,
-  BaseCodingAgent.GEMINI,
 ];
 
 const DiscordIcon: Icon = forwardRef<SVGSVGElement, IconProps>(
@@ -260,25 +254,10 @@ export function LandingPage() {
   }, [appNavigation, config?.remote_onboarding_acknowledged]);
 
   const executorOptions = useMemo(() => {
-    const compareAgents = (a: BaseCodingAgent, b: BaseCodingAgent) => {
-      const priorityA = AGENT_PRIORITY.indexOf(a);
-      const priorityB = AGENT_PRIORITY.indexOf(b);
-      const hasPriorityA = priorityA !== -1;
-      const hasPriorityB = priorityB !== -1;
-
-      if (hasPriorityA && hasPriorityB) {
-        return priorityA - priorityB;
-      }
-      if (hasPriorityA) return -1;
-      if (hasPriorityB) return 1;
-
-      return getAgentName(a).localeCompare(getAgentName(b));
-    };
-
-    if (profiles) {
-      return (Object.keys(profiles) as BaseCodingAgent[]).sort(compareAgents);
-    }
-    return [...Object.values(BaseCodingAgent)].sort(compareAgents);
+    const source = profiles
+      ? (Object.keys(profiles) as BaseCodingAgent[])
+      : [...Object.values(BaseCodingAgent)];
+    return filterAndSortAgents(source);
   }, [profiles]);
 
   const editorOptions = useMemo(() => Object.values(EditorType), []);

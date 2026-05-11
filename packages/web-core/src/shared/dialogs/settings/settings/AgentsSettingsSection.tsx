@@ -33,6 +33,7 @@ import { useSettingsDirty } from './SettingsDirtyContext';
 import { useSettingsMachineClient } from './SettingsHostContext';
 import { AgentIcon } from '@/shared/components/AgentIcon';
 import { getExecutorVariantKeys } from '@/shared/lib/executor';
+import { filterAndSortAgents } from '@/shared/lib/agentOrder';
 
 type ExecutorsMap = Record<string, Record<string, Record<string, unknown>>>;
 
@@ -387,7 +388,9 @@ export function AgentsSettingsSection() {
               label={t('settings.agents.editor.agentLabel')}
               isFirst
             >
-              {Object.keys(localParsedProfiles.executors).map((executor) => {
+              {filterAndSortAgents(
+                Object.keys(localParsedProfiles.executors) as BaseCodingAgent[]
+              ).map((executor) => {
                 const isDefault =
                   config?.executor_profile?.executor === executor;
                 return (
