@@ -229,6 +229,7 @@ pub async fn create_and_start_workspace(
     let use_worktree = use_worktree.unwrap_or(true);
 
     let pool = &deployment.db().pool;
+    let mut executor_config = executor_config;
     // Build the spawn-time provider injection if a provider was selected.
     // `Provider::build_agent_injection` dispatches per agent — Codex emits env
     // + ThreadStartParams overrides; every other agent uses env-only.
@@ -244,6 +245,10 @@ pub async fn create_and_start_workspace(
                 "Provider '{}' is disabled",
                 provider.name
             )));
+        }
+        if let Some(m) = executor_config.model_id.as_deref() {
+            executor_config.model_id =
+                Some(provider.prefix_opencode_model_id(executor_config.executor, m));
         }
         let model_id = executor_config.model_id.as_deref().unwrap_or("");
         provider

@@ -112,6 +112,15 @@ impl Opencode {
 
         let server_password = generate_server_password();
 
+        tracing::info!(
+            program = %program_path.display(),
+            args = ?args,
+            cwd = %current_dir.display(),
+            env = ?env.vars,
+            provider_env = ?env.provider_vars,
+            "Spawning OpenCode server"
+        );
+
         let mut command = Command::new(program_path);
         command
             .kill_on_drop(true)
@@ -274,7 +283,7 @@ impl Opencode {
                     .unwrap_or_default();
 
                 ModelInfo {
-                    id: m.id.clone(),
+                    id: format!("{}/{}", provider_id, m.id),
                     name: m.name.clone(),
                     provider_id: Some(provider_id.to_string()),
                     reasoning_options,

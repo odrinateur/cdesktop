@@ -137,7 +137,7 @@ pub struct ResetProcessRequest {
 pub async fn follow_up(
     Extension(session): Extension<Session>,
     State(deployment): State<DeploymentImpl>,
-    Json(payload): Json<CreateFollowUpAttempt>,
+    Json(mut payload): Json<CreateFollowUpAttempt>,
 ) -> Result<ResponseJson<ApiResponse<ExecutionProcess>>, ApiError> {
     let pool = &deployment.db().pool;
 
@@ -230,6 +230,34 @@ pub async fn follow_up(
         .filter(|dir| !dir.is_empty())
         .cloned();
 
+    // Resolve the provider up front so we can both prefix the OpenCode model
+    // id (see `Provider::prefix_opencode_model_id`) before the action_type is
+    // built AND reuse the loaded record to build the spawn injection.
+    // TODO(phase-G): map ProviderError variants to a structured ApiError code
+    // (e.g. PROVIDER_MISSING_API_KEY) so the picker can render a "configure
+    // API key for this provider" CTA instead of a generic 400.
+    let resolved_provider = if let Some(provider_id) = payload.selected_provider_id {
+        let provider = Provider::find_by_id(pool, provider_id)
+            .await
+            .map_err(|_| ApiError::BadRequest(format!("Provider '{provider_id}' not found")))?;
+
+        if !provider.enabled {
+            return Err(ApiError::BadRequest(format!(
+                "Provider '{}' is disabled",
+                provider.name
+            )));
+        }
+
+        if let Some(m) = payload.executor_config.model_id.as_deref() {
+            payload.executor_config.model_id =
+                Some(provider.prefix_opencode_model_id(payload.executor_config.executor, m));
+        }
+
+        Some(provider)
+    } else {
+        None
+    };
+
     let action_type = if let Some(info) = latest_session_info {
         let is_reset = payload.retry_process_id.is_some();
         ExecutorActionType::CodingAgentFollowUpRequest(CodingAgentFollowUpRequest {
@@ -252,21 +280,8 @@ pub async fn follow_up(
     // Build the spawn-time provider injection if a provider was selected for
     // this message. `Provider::build_agent_injection` dispatches per agent —
     // Codex emits env + ThreadStartParams overrides; every other agent uses
-    // env-only. TODO(phase-G): map ProviderError variants to a structured
-    // ApiError code (e.g. PROVIDER_MISSING_API_KEY) so the picker can render
-    // a "configure API key for this provider" CTA instead of a generic 400.
-    let injection = if let Some(provider_id) = payload.selected_provider_id {
-        let provider = Provider::find_by_id(pool, provider_id)
-            .await
-            .map_err(|_| ApiError::BadRequest(format!("Provider '{provider_id}' not found")))?;
-
-        if !provider.enabled {
-            return Err(ApiError::BadRequest(format!(
-                "Provider '{}' is disabled",
-                provider.name
-            )));
-        }
-
+    // env-only.
+    let injection = if let Some(provider) = resolved_provider {
         let model_id = payload.executor_config.model_id.as_deref().unwrap_or("");
         provider
             .build_agent_injection(payload.executor_config.executor, model_id)

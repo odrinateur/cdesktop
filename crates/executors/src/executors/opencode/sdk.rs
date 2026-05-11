@@ -630,6 +630,15 @@ async fn prompt(
         }],
     };
 
+    tracing::info!(
+        session_id = %session_id,
+        provider_id = ?req.model.as_ref().map(|m| &m.provider_id),
+        model_id = ?req.model.as_ref().map(|m| &m.model_id),
+        variant = ?req.variant,
+        agent = ?req.agent,
+        "OpenCode session.prompt"
+    );
+
     let resp = client
         .post(format!("{base_url}/session/{session_id}/message"))
         .query(&[("directory", directory)])
@@ -716,6 +725,15 @@ pub(super) async fn session_command(
         variant: model_variant,
     };
 
+    tracing::info!(
+        session_id = %session_id,
+        command = %req.command,
+        model = ?req.model,
+        variant = ?req.variant,
+        agent = ?req.agent,
+        "OpenCode session.command"
+    );
+
     let resp = client
         .post(format!("{base_url}/session/{session_id}/command"))
         .query(&[("directory", directory)])
@@ -787,6 +805,13 @@ pub(super) async fn session_summarize(
         model_id: model.model_id,
         auto: false,
     };
+
+    tracing::info!(
+        session_id = %session_id,
+        provider_id = %req.provider_id,
+        model_id = %req.model_id,
+        "OpenCode session.summarize"
+    );
 
     let resp = client
         .post(format!("{base_url}/session/{session_id}/summarize"))
