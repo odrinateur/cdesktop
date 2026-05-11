@@ -507,6 +507,30 @@ impl Provider {
         self.kind == AiProviderKind::Default
     }
 
+    /// OpenCode's session API requires `(provider_id, model_id)`; its only
+    /// signal for that split is `model.split_once('/')`. Cdesktop's
+    /// non-Default provider records store `enabled_models` as the raw vendor
+    /// ids (e.g. `openai/gpt-5.4-mini` for OpenRouter), so the picker emits
+    /// a single-slash string that splits to the wrong provider. Prefix with
+    /// the provider's OpenCode slug (`preset_id` or `"custom"` — matches
+    /// `build_opencode_injection`) so the first-slash split recovers
+    /// `(slug, full_vendor_model_id)`.
+    ///
+    /// No-op for: non-OpenCode agents, Default mode (picker already emits
+    /// prefixed ids sourced from executor discovery), and ids that already
+    /// carry the slug prefix.
+    pub fn prefix_opencode_model_id(&self, agent: BaseCodingAgent, model_id: &str) -> String {
+        if agent != BaseCodingAgent::Opencode || self.kind == AiProviderKind::Default {
+            return model_id.to_string();
+        }
+        let slug = self.preset_id.as_deref().unwrap_or("custom");
+        let prefix = format!("{slug}/");
+        if model_id.starts_with(&prefix) {
+            return model_id.to_string();
+        }
+        format!("{slug}/{model_id}")
+    }
+
     /// Per-agent credential resolution. Each per-agent payload may carry an
     /// `api_key` override; when present (and non-empty) it wins over the
     /// top-level `Provider::api_key`. Aggregators like Packy Code use this to
