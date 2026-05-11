@@ -6,6 +6,7 @@ import type {
   ExecutorProfileId,
 } from 'shared/types';
 import { getVariantOptions } from '@/shared/lib/executor';
+import { filterAndSortAgents } from '@/shared/lib/agentOrder';
 import { usePresetOptions } from '@/shared/hooks/usePresetOptions';
 
 function getProfileKey(
@@ -34,7 +35,7 @@ function useEffectiveExecutor(
   configExecutorProfile: ExecutorProfileId | null | undefined
 ) {
   const options = useMemo(
-    () => Object.keys(profiles ?? {}) as BaseCodingAgent[],
+    () => filterAndSortAgents(Object.keys(profiles ?? {}) as BaseCodingAgent[]),
     [profiles]
   );
 
