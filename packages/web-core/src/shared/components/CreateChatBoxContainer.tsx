@@ -62,7 +62,9 @@ function AgentChip({
         {options.map((agent) => (
           <DropdownMenuItem
             key={agent}
-            icon={selected === agent ? CheckIcon : undefined}
+            badge={
+              selected === agent ? <CheckIcon weight="bold" /> : undefined
+            }
             onSelect={() => onChange(agent)}
           >
             <span className="flex items-center gap-2">
@@ -86,6 +88,7 @@ import {
 } from '@/shared/hooks/useWorkspacePickerSelection';
 import { useProviders } from '@/shared/hooks/useProviders';
 import { useModelSelectorConfig } from '@/shared/hooks/useExecutorDiscovery';
+import { writeLastUsedAgent } from '@/shared/lib/lastUsedAgent';
 
 interface CreateChatBoxContainerProps {
   onWorkspaceCreated: (workspaceId: string) => void;
@@ -398,6 +401,7 @@ export function CreateChatBoxContainer({
           preferredEffortId,
         });
       }
+      writeLastUsedAgent(executorConfig.executor);
       seedWorkspacePicker(result.workspace.id);
       onWorkspaceCreated(result.workspace.id);
     }

@@ -9,6 +9,7 @@ import type {
   CreateModeInitialState,
   LinkedIssue,
 } from '@/shared/types/createMode';
+import { readLastUsedAgent } from '@/shared/lib/lastUsedAgent';
 
 export interface BootstrapSelectedRepo {
   repo: Repo;
@@ -179,11 +180,19 @@ export async function resolveCreateModeBootstrap({
     };
   }
 
+  const remembered = readLastUsedAgent();
+  const rememberedConfig: ExecutorConfig | null = remembered
+    ? { executor: remembered, variant: null }
+    : null;
+  const chosen =
+    rememberedConfig && isValidProfile(rememberedConfig)
+      ? rememberedConfig
+      : defaultExecutorConfig && isValidProfile(defaultExecutorConfig)
+        ? defaultExecutorConfig
+        : null;
+
   return {
     source: 'fresh',
-    data:
-      defaultExecutorConfig && isValidProfile(defaultExecutorConfig)
-        ? { executorConfig: defaultExecutorConfig }
-        : {},
+    data: chosen ? { executorConfig: chosen } : {},
   };
 }
