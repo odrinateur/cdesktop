@@ -29,6 +29,8 @@ export function getAgentName(
       return 'Copilot';
     case BaseCodingAgent.DROID:
       return 'Droid';
+    case BaseCodingAgent.DEEPSEEK_TUI:
+      return 'DeepSeek TUI';
   }
 }
 
@@ -72,6 +74,11 @@ export function AgentIcon({ agent, className = 'h-4 w-4' }: AgentIconProps) {
       break;
     case BaseCodingAgent.DROID:
       iconPath = `/agents/droid${suffix}.svg`;
+      break;
+    case BaseCodingAgent.DEEPSEEK_TUI:
+      // No DeepSeek-specific SVG ships yet; reuse a neutral icon so the row
+      // still renders. Designer can swap in `/agents/deepseek*.svg` later.
+      iconPath = `/agents/opencode${suffix}.svg`;
       break;
     default:
       return null;

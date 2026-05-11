@@ -54,7 +54,6 @@ const AGENT_KEYS = [
   'CLAUDE_CODE',
   'CODEX',
   'OPENCODE',
-  'DEEPSEEK_TUI',
   'GEMINI',
   'HERMES',
 ] as const;
@@ -64,7 +63,6 @@ const AGENT_LABEL: Record<AgentKey, string> = {
   CLAUDE_CODE: 'Claude',
   CODEX: 'Codex',
   OPENCODE: 'OpenCode',
-  DEEPSEEK_TUI: 'DeepSeek TUI',
   GEMINI: 'Gemini',
   HERMES: 'Hermes',
 };
@@ -677,46 +675,6 @@ export function ProviderForm({
                 value={envMapToText(opencodePayload.env)}
                 onChange={(v) =>
                   setOpencodePayload((p) => ({ ...p, env: textToEnvMap(v) }))
-                }
-                placeholder="KEY=value"
-                monospace
-                rows={3}
-              />
-            </SettingsField>
-          </AgentSection>
-
-          <AgentSection
-            agent="DEEPSEEK_TUI"
-            enabled={perAgentEnabled.DEEPSEEK_TUI === true}
-            onToggleEnabled={(v) =>
-              setPerAgentEnabled((p) => ({ ...p, DEEPSEEK_TUI: v }))
-            }
-            expanded={expandedAgents.has('DEEPSEEK_TUI')}
-            onToggleExpanded={() => toggleExpanded('DEEPSEEK_TUI')}
-          >
-            <SettingsField label={t('settings.providers.form.baseUrl')}>
-              <InputBase
-                value={deepseekTuiPayload.baseUrl ?? ''}
-                onChange={(v) =>
-                  setDeepseekTuiPayload((p) => ({ ...p, baseUrl: v || null }))
-                }
-                placeholder="https://api.example.com/v1"
-              />
-            </SettingsField>
-            <ApiKeyOverrideField
-              value={deepseekTuiPayload.apiKey ?? null}
-              onChange={(v) =>
-                setDeepseekTuiPayload((p) => ({ ...p, apiKey: v }))
-              }
-            />
-            <SettingsField label={t('settings.providers.form.extraEnvVars')}>
-              <SettingsTextarea
-                value={envMapToText(deepseekTuiPayload.env)}
-                onChange={(v) =>
-                  setDeepseekTuiPayload((p) => ({
-                    ...p,
-                    env: textToEnvMap(v),
-                  }))
                 }
                 placeholder="KEY=value"
                 monospace
