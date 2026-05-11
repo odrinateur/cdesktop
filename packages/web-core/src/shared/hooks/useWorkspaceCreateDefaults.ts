@@ -4,6 +4,7 @@ import type { ExecutorConfig, RepoWithTargetBranch } from 'shared/types';
 import { workspacesApi } from '@/shared/lib/api';
 import { useExecutionProcesses } from '@/shared/hooks/useExecutionProcesses';
 import { getLatestConfigFromProcesses } from '@/shared/lib/executor';
+import { readLastUsedAgent } from '@/shared/lib/lastUsedAgent';
 
 interface UseWorkspaceCreateDefaultsOptions {
   sourceWorkspaceId: string | null;
@@ -58,6 +59,8 @@ export function useWorkspaceCreateDefaults({
     if (data?.sourceSessionExecutor) {
       return { executor: data.sourceSessionExecutor };
     }
+    const remembered = readLastUsedAgent();
+    if (remembered) return { executor: remembered };
     return null;
   }, [executionProcesses, data?.sourceSessionExecutor]);
 
