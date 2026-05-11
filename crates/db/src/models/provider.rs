@@ -542,9 +542,10 @@ impl Provider {
             BaseCodingAgent::Codex => self.codex.api_key.as_deref(),
             BaseCodingAgent::Opencode => self.opencode.api_key.as_deref(),
             BaseCodingAgent::Gemini => self.gemini.api_key.as_deref(),
-            // Phase E (DeepSeek TUI) / Hermes will fall through to top-level
-            // until their executor enums land. Other agents (Amp, Cursor,
-            // Qwen, Copilot, Droid, QaMock) have no per-agent payload.
+            BaseCodingAgent::DeepseekTui => self.deepseek_tui.api_key.as_deref(),
+            // Hermes will fall through to top-level until its executor enum
+            // lands. Other agents (Amp, Cursor, Qwen, Copilot, Droid, QaMock)
+            // have no per-agent payload.
             _ => None,
         };
         override_key
@@ -566,9 +567,9 @@ impl Provider {
     /// the `--model` CLI flag the executor passes for the *main* model. See
     /// plan §3.2 spawn-time applier.
     ///
-    /// Codex / OpenCode / Gemini appliers ship as Phases C / D / F via
-    /// their own `build_*_injection` methods. DeepSeek TUI / Hermes still
-    /// pending.
+    /// Codex / OpenCode / Gemini / DeepSeek TUI appliers ship via their
+    /// own `build_*_injection` methods (Phases C / D / F / E). Hermes
+    /// still pending.
     pub fn build_spawn_env(&self, model_id: &str) -> HashMap<String, String> {
         if self.kind == AiProviderKind::Default {
             return HashMap::new();
@@ -841,21 +842,79 @@ impl Provider {
         Ok(Some(env))
     }
 
+    /// Build the DeepSeek TUI spawn injection: env-only.
+    ///
+    /// The runtime binary (`deepseek-tui`) reads provider/credentials/model
+    /// configuration exclusively from env vars — its own Cli struct does not
+    /// expose `--provider`/`--base-url`/`--api-key`/`--model` flags (those
+    /// live only on the dispatcher binary `deepseek`, which forwards them
+    /// to the runtime as env vars anyway). So our applier emits env vars
+    /// directly. Every cdesktop preset routes through the runtime's
+    /// `openai` provider mode (the documented OpenAI-compat path); when
+    /// that mode is active the runtime reads exclusively from the `openai`
+    /// secret + base-url slots (`related/DeepSeek-TUI/crates/secrets/src/lib.rs:460-487`
+    /// maps `"openai" => &["OPENAI_API_KEY"]`), so `DEEPSEEK_API_KEY` /
+    /// `DEEPSEEK_BASE_URL` are not consulted and we don't waste bytes
+    /// setting them.
+    ///
+    /// Picker-selected model is injected as `OPENAI_MODEL` — also the
+    /// `openai`-mode slot.
+    ///
+    /// Returns `Ok(None)` for the Default provider (the runtime uses its
+    /// own `~/.deepseek/config.toml` / keyring credentials in that path).
+    ///
+    /// Errors:
+    /// - `MissingApiKey("DEEPSEEK_TUI")` when the resolved API key is empty.
+    /// - `EnabledAgentMissingBaseUrl("DEEPSEEK_TUI")` when `record.deepseek_tui.base_url` is empty.
+    ///
+    /// `record.deepseek_tui.env` is overlaid first so the credential-bearing
+    /// vars we set last cannot be silently clobbered by a vendor-quirk env
+    /// entry — same defensive ordering as Phase C/D/F.
+    pub fn build_deepseek_tui_injection(
+        &self,
+        model_id: &str,
+    ) -> Result<Option<HashMap<String, String>>, ProviderError> {
+        if self.kind == AiProviderKind::Default {
+            return Ok(None);
+        }
+
+        let api_key = self
+            .resolved_api_key(BaseCodingAgent::DeepseekTui)
+            .ok_or_else(|| ProviderError::MissingApiKey("DEEPSEEK_TUI".to_string()))?;
+        let base_url = self
+            .deepseek_tui
+            .base_url
+            .as_deref()
+            .filter(|s| !s.is_empty())
+            .ok_or_else(|| ProviderError::EnabledAgentMissingBaseUrl("DEEPSEEK_TUI".to_string()))?;
+
+        let mut env = self.deepseek_tui.env.clone();
+        // Credential + endpoint env set LAST so vendor-quirk overlays above
+        // can't accidentally shadow them. Only the `openai`-mode slots are
+        // populated; `DEEPSEEK_PROVIDER=openai` selects the mode itself.
+        env.insert("DEEPSEEK_PROVIDER".to_string(), "openai".to_string());
+        env.insert("OPENAI_BASE_URL".to_string(), base_url.to_string());
+        env.insert("OPENAI_API_KEY".to_string(), api_key.to_string());
+        if !model_id.is_empty() {
+            env.insert("OPENAI_MODEL".to_string(), model_id.to_string());
+        }
+        Ok(Some(env))
+    }
+
     /// Per-agent spawn injection — the single dispatch point that route
     /// handlers call when a user picks a provider for a given message.
     ///
     /// Each agent gets its own applier (Codex via `build_codex_injection`,
     /// OpenCode via `build_opencode_injection`, Gemini via
-    /// `build_gemini_injection`, Claude via `build_spawn_env`). Phase E
-    /// will populate the remaining slot on `AgentInjection` (DeepSeek TUI
-    /// CLI flags — see plan §3.2 lines 192-260). Adding a new agent only
-    /// adds a match arm here and a field on `AgentInjection`; route
-    /// handlers stay put.
+    /// `build_gemini_injection`, DeepSeek TUI via
+    /// `build_deepseek_tui_injection`, Claude via `build_spawn_env`).
+    /// Adding a new agent only adds a match arm here and a field on
+    /// `AgentInjection`; route handlers stay put.
     ///
     /// The catch-all arm calls `build_spawn_env` (Claude env). Agents
-    /// without their own applier (DeepSeek TUI / Hermes today) still
-    /// land there; they are picker-gated off until their phase ships, so
-    /// the wrong-env injection is unreachable in practice.
+    /// without their own applier (Hermes today) still land there; they
+    /// are picker-gated off until their phase ships, so the wrong-env
+    /// injection is unreachable in practice.
     pub fn build_agent_injection(
         &self,
         agent: BaseCodingAgent,
@@ -875,6 +934,10 @@ impl Provider {
             }),
             BaseCodingAgent::Gemini => Ok(AgentInjection {
                 env: self.build_gemini_injection()?,
+                codex: None,
+            }),
+            BaseCodingAgent::DeepseekTui => Ok(AgentInjection {
+                env: self.build_deepseek_tui_injection(model_id)?,
                 codex: None,
             }),
             _ => {
@@ -900,8 +963,9 @@ pub struct AgentInjection {
     pub codex: Option<CodexProviderInjection>,
     // OpenCode (Phase D) ships its config via the `OPENCODE_CONFIG_CONTENT`
     // env var inside `env` — no dedicated slot needed. Gemini (Phase F)
-    // is env-only too. Future: deepseek_tui (Phase E) likely needs a
-    // dedicated argv slot since its applier emits CLI flags.
+    // and DeepSeek TUI (Phase E) are env-only too — the DeepSeek TUI
+    // runtime intentionally exposes no provider/credential CLI flags, so
+    // it never needs a dedicated argv slot.
 }
 
 #[cfg(test)]

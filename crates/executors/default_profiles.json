@@ -27,6 +27,13 @@
           "auto_approve": true
         }
       }
+    },
+    "DEEPSEEK_TUI": {
+      "DEFAULT": {
+        "DEEPSEEK_TUI": {
+          "yolo": true
+        }
+      }
     }
   }
 }
