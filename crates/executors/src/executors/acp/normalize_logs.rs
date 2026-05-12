@@ -17,7 +17,7 @@ use crate::{
     approvals::ToolCallMetadata,
     logs::{
         ActionType, FileChange, NormalizedEntry, NormalizedEntryError, NormalizedEntryType,
-        TodoItem, ToolResult, ToolResultValueType, ToolStatus as LogToolStatus,
+        TodoItem, TokenUsageInfo, ToolResult, ToolResultValueType, ToolStatus as LogToolStatus,
         plain_text_processor::PlainTextLogProcessor,
         stderr_processor::normalize_stderr_logs,
         utils::{ConversationPatch, EntryIndexProvider, shell_command_parsing::CommandCategory},
@@ -345,6 +345,25 @@ pub fn normalize_logs_with_stderr_filter(
                             msg_store
                                 .push_patch(ConversationPatch::add_normalized_entry(idx, entry));
                         }
+                    }
+                    AcpEvent::TokenUsage { used, size } => {
+                        // Saturating cast — ACP sends u64 but TokenUsageInfo
+                        // is u32. Context windows / used tokens always fit.
+                        let total_tokens = u32::try_from(used).unwrap_or(u32::MAX);
+                        let model_context_window = u32::try_from(size).unwrap_or(u32::MAX);
+                        let idx = entry_index.next();
+                        let entry = NormalizedEntry {
+                            timestamp: None,
+                            entry_type: NormalizedEntryType::TokenUsageInfo(TokenUsageInfo {
+                                total_tokens,
+                                model_context_window,
+                            }),
+                            content: format!(
+                                "Tokens used: {total_tokens} / Context window: {model_context_window}"
+                            ),
+                            metadata: None,
+                        };
+                        msg_store.push_patch(ConversationPatch::add_normalized_entry(idx, entry));
                     }
                     AcpEvent::User(_) | AcpEvent::Other(_) => (),
                 }
@@ -873,6 +892,10 @@ impl TryFrom<SessionNotification> for AcpEvent {
             acp::SessionUpdate::CurrentModeUpdate(update) => {
                 AcpEvent::CurrentMode(update.current_mode_id)
             }
+            acp::SessionUpdate::UsageUpdate(u) => AcpEvent::TokenUsage {
+                used: u.used,
+                size: u.size,
+            },
             _ => return Err(()),
         };
         Ok(event)
