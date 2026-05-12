@@ -5,6 +5,7 @@ export const AGENT_PRIORITY: BaseCodingAgent[] = [
   BaseCodingAgent.CODEX,
   BaseCodingAgent.OPENCODE,
   BaseCodingAgent.GEMINI,
+  BaseCodingAgent.HERMES,
 ];
 
 const PRIORITY_SET = new Set<string>(AGENT_PRIORITY);

@@ -31,6 +31,8 @@ export function getAgentName(
       return 'Droid';
     case BaseCodingAgent.DEEPSEEK_TUI:
       return 'DeepSeek TUI';
+    case BaseCodingAgent.HERMES:
+      return 'Hermes';
   }
 }
 
@@ -49,13 +51,13 @@ export function AgentIcon({ agent, className = 'h-4 w-4' }: AgentIconProps) {
 
   switch (agent) {
     case BaseCodingAgent.CLAUDE_CODE:
-      iconPath = `/agents/claude${suffix}.svg`;
+      iconPath = `/agents/claude.svg`;
       break;
     case BaseCodingAgent.AMP:
       iconPath = `/agents/amp${suffix}.svg`;
       break;
     case BaseCodingAgent.GEMINI:
-      iconPath = `/agents/gemini${suffix}.svg`;
+      iconPath = `/agents/gemini.svg`;
       break;
     case BaseCodingAgent.CODEX:
       iconPath = `/agents/codex${suffix}.svg`;
@@ -79,6 +81,9 @@ export function AgentIcon({ agent, className = 'h-4 w-4' }: AgentIconProps) {
       // No DeepSeek-specific SVG ships yet; reuse a neutral icon so the row
       // still renders. Designer can swap in `/agents/deepseek*.svg` later.
       iconPath = `/agents/opencode${suffix}.svg`;
+      break;
+    case BaseCodingAgent.HERMES:
+      iconPath = `/agents/hermes${suffix}.svg`;
       break;
     default:
       return null;
