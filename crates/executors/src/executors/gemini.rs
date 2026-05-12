@@ -109,7 +109,8 @@ impl StandardCodingAgentExecutor for Gemini {
         let combined_prompt = self.append_prompt.combine_prompt(prompt);
         let gemini_command = self.build_command_builder()?.build_initial()?;
         let env = with_workspace_trust(env);
-        tracing::info!(
+        // debug! (not info!) — env.provider_vars contains API keys.
+        tracing::debug!(
             command = ?gemini_command,
             cwd = %current_dir.display(),
             env = ?env.vars,
@@ -145,7 +146,8 @@ impl StandardCodingAgentExecutor for Gemini {
         let combined_prompt = self.append_prompt.combine_prompt(prompt);
         let gemini_command = self.build_command_builder()?.build_follow_up(&[])?;
         let env = with_workspace_trust(env);
-        tracing::info!(
+        // debug! (not info!) — env.provider_vars contains API keys.
+        tracing::debug!(
             command = ?gemini_command,
             cwd = %current_dir.display(),
             session_id = %session_id,

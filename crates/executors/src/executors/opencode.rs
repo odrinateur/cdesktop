@@ -112,7 +112,8 @@ impl Opencode {
 
         let server_password = generate_server_password();
 
-        tracing::info!(
+        // debug! (not info!) — env.provider_vars contains API keys.
+        tracing::debug!(
             program = %program_path.display(),
             args = ?args,
             cwd = %current_dir.display(),

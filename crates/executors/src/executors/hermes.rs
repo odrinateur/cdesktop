@@ -195,7 +195,8 @@ impl StandardCodingAgentExecutor for Hermes {
         let combined_prompt = self.append_prompt.combine_prompt(prompt);
         let hermes_command = self.build_command_builder()?.build_initial()?;
         let env = self.with_yolo_env(self.with_model_env(env));
-        tracing::info!(
+        // debug! (not info!) — env.provider_vars contains API keys.
+        tracing::debug!(
             command = ?hermes_command,
             cwd = %current_dir.display(),
             env = ?env.vars,
@@ -231,7 +232,8 @@ impl StandardCodingAgentExecutor for Hermes {
         let combined_prompt = self.append_prompt.combine_prompt(prompt);
         let hermes_command = self.build_command_builder()?.build_follow_up(&[])?;
         let env = self.with_yolo_env(self.with_model_env(env));
-        tracing::info!(
+        // debug! (not info!) — env.provider_vars contains API keys.
+        tracing::debug!(
             command = ?hermes_command,
             cwd = %current_dir.display(),
             session_id = %session_id,
