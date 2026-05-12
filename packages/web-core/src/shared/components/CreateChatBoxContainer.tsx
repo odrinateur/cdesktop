@@ -52,7 +52,7 @@ function AgentChip({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button type="button" disabled={disabled} className={agentChipClassName}>
-          <AgentIcon agent={selected} className="size-icon-xs" />
+          <AgentIcon agent={selected} className="h-[0.9rem] w-[0.9rem]" />
           <span className="max-w-[140px] truncate">
             {selected ? getAgentName(selected) : 'Agent'}
           </span>
@@ -68,7 +68,7 @@ function AgentChip({
             onSelect={() => onChange(agent)}
           >
             <span className="flex items-center gap-2">
-              <AgentIcon agent={agent} className="size-icon-xs" />
+              <AgentIcon agent={agent} className="h-[0.9rem] w-[0.9rem]" />
               <span>{getAgentName(agent)}</span>
             </span>
           </DropdownMenuItem>
