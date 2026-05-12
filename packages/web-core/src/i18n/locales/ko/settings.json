@@ -382,6 +382,7 @@
         "noModelsMatch": "일치하는 모델이 없습니다",
         "effort": "추론 강도",
         "effortTooltip": "{{label}} 강도",
+        "effortUnsupportedHermes": "Hermes는 ACP를 통한 추론 강도 설정을 지원하지 않습니다. ~/.hermes/config.yaml의 model.reasoning_effort에서 설정하세요.",
         "manageProviders": "제공자 관리 →",
         "defaultModel": "기본 모델"
       },

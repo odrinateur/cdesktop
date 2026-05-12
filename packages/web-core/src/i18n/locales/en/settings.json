@@ -390,6 +390,7 @@
         "noModelsMatch": "No models match",
         "effort": "Effort",
         "effortTooltip": "{{label}} effort",
+        "effortUnsupportedHermes": "Hermes doesn't accept effort over ACP. Set model.reasoning_effort in ~/.hermes/config.yaml.",
         "manageProviders": "Manage providers →",
         "defaultModel": "Default Model"
       },
