@@ -382,6 +382,7 @@
         "noModelsMatch": "没有匹配的模型",
         "effort": "思考深度",
         "effortTooltip": "{{label}} 强度",
+        "effortUnsupportedHermes": "Hermes 不支持通过 ACP 设置思考深度。请在 ~/.hermes/config.yaml 的 model.reasoning_effort 中配置。",
         "manageProviders": "管理服务商 →",
         "defaultModel": "默认模型"
       },

@@ -10,7 +10,8 @@ import {
   clampEffortToModel,
 } from '@/shared/lib/reasoningCapability';
 import { AGENT_DEFAULT_MODEL_ID } from '@/shared/lib/agentDefaultModel';
-import type { BaseCodingAgent, EnabledModel, Provider } from 'shared/types';
+import { BaseCodingAgent } from 'shared/types';
+import type { EnabledModel, Provider } from 'shared/types';
 import { cn } from '@/shared/lib/utils';
 import {
   DropdownMenu,
@@ -72,9 +73,11 @@ export function ProviderModelPicker({
   }, [agentModelConfig]);
 
   const modelsForProvider = (p: Provider): EnabledModel[] => {
-    if (p.kind === 'Default' && activeAgent && agentDefaultModels.length > 0) {
+    if (p.kind === 'Default' && activeAgent && agentModelConfig) {
       // Prepend the "agent default" virtual entry so users who configure
       // their own agent can opt out of cdesktop forcing a `--model` flag.
+      // Agents that report no models (e.g. Hermes, which has no
+      // scriptable listing surface) collapse to just this sentinel.
       const virtualDefault: EnabledModel = {
         id: AGENT_DEFAULT_MODEL_ID,
         displayName: t('settings.providers.picker.defaultModel'),
@@ -167,9 +170,18 @@ export function ProviderModelPicker({
   }, [recents, providers, activeAgent, agentDefaultModels]);
 
   const selectedProvider = providers.find((p) => p.id === selectedProviderId);
+  // Hermes's ACP adapter has no surface for reasoning effort: env vars
+  // are ignored, `set_session_model` only takes `provider:model`, and
+  // `set_config_option` is a write-only stub. Effort comes from
+  // ~/.hermes/config.yaml `model.reasoning_effort` only. Hide the
+  // picker and surface a hint instead.
+  const agentSuppressesEffort = activeAgent === BaseCodingAgent.HERMES;
   const currentReasoningOptions = useMemo<string[]>(
-    () => (selectedModelId ? inferReasoningOptions(selectedModelId) : []),
-    [selectedModelId]
+    () =>
+      agentSuppressesEffort || !selectedModelId
+        ? []
+        : inferReasoningOptions(selectedModelId),
+    [selectedModelId, agentSuppressesEffort]
   );
 
   const selectedModel = selectedProvider
@@ -180,9 +192,10 @@ export function ProviderModelPicker({
   const rawName = contextMatch ? contextMatch[1] : displayName;
   const namePart = rawName.includes('/') ? rawName.split('/').slice(1).join('/') : rawName;
   const contextSuffix = contextMatch ? contextMatch[2] : null;
-  const effortLabel = selectedReasoningId
-    ? t(`settings.providers.effort.${selectedReasoningId}`)
-    : null;
+  const effortLabel =
+    selectedReasoningId && !agentSuppressesEffort
+      ? t(`settings.providers.effort.${selectedReasoningId}`)
+      : null;
   // selectedModelId === '' is the AGENT_DEFAULT_MODEL_ID sentinel — a valid
   // pick. Use !== null so the trigger renders "Agent default" rather than
   // the "Model ▾" placeholder when the user opts into ambient agent config.
@@ -294,6 +307,12 @@ export function ProviderModelPicker({
             </div>
           )}
         </div>
+
+        {agentSuppressesEffort && (
+          <div className="border-t border-border px-2 py-1.5 text-[10px] text-low leading-snug">
+            {t('settings.providers.picker.effortUnsupportedHermes')}
+          </div>
+        )}
 
         {currentReasoningOptions.length > 0 && (
           <div className="border-t border-border px-2 py-1.5 flex items-center gap-2">

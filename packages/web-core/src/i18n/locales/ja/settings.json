@@ -382,6 +382,7 @@
         "noModelsMatch": "一致するモデルがありません",
         "effort": "推論レベル",
         "effortTooltip": "{{label}} 推論",
+        "effortUnsupportedHermes": "Hermes は ACP 経由での推論レベル設定に対応していません。~/.hermes/config.yaml の model.reasoning_effort で設定してください。",
         "manageProviders": "プロバイダーを管理 →",
         "defaultModel": "デフォルトモデル"
       },
