@@ -17,7 +17,7 @@ import type {
   ClaudePayload,
   CodexPayload,
   OpencodePayload,
-  DeepseekTuiPayload,
+  DeepseekTuiPayload, // DeepSeek TUI hidden for now; keep type for stub passthrough.
   GeminiPayload,
   HermesPayload,
 } from 'shared/types';
@@ -37,7 +37,7 @@ interface CatalogPreset {
   claude: ClaudePayload;
   codex: CodexPayload;
   opencode: OpencodePayload;
-  deepseekTui: DeepseekTuiPayload;
+  deepseekTui: DeepseekTuiPayload; // hidden from UI; preserved for stub passthrough
   gemini: GeminiPayload;
   hermes: HermesPayload;
   enabledModels: string[];
@@ -284,10 +284,15 @@ export function ProviderForm({
       env: {},
     }
   );
-  const [deepseekTuiPayload, setDeepseekTuiPayload] =
-    useState<DeepseekTuiPayload>(
-      provider?.deepseekTui ?? { baseUrl: null, apiKey: null, env: {} }
-    );
+  // DeepSeek TUI hidden from form (not supported yet). Keep payload as a
+  // pass-through stub so the required CreateProvider/UpdateProvider field is
+  // satisfied without exposing UI. Re-enable state + section when supported.
+  // const [deepseekTuiPayload, setDeepseekTuiPayload] =
+  //   useState<DeepseekTuiPayload>(
+  //     provider?.deepseekTui ?? { baseUrl: null, apiKey: null, env: {} }
+  //   );
+  const deepseekTuiPayload: DeepseekTuiPayload =
+    provider?.deepseekTui ?? { baseUrl: null, apiKey: null, env: {} };
   const [geminiPayload, setGeminiPayload] = useState<GeminiPayload>(
     provider?.gemini ?? { baseUrl: null, apiKey: null, env: {} }
   );
@@ -329,7 +334,7 @@ export function ProviderForm({
       setClaudePayload(preset.claude);
       setCodexPayload(preset.codex);
       setOpencodePayload(preset.opencode);
-      setDeepseekTuiPayload(preset.deepseekTui);
+      // setDeepseekTuiPayload(preset.deepseekTui); // DeepSeek TUI hidden
       setGeminiPayload(preset.gemini);
       setHermesPayload(preset.hermes);
       setHaikuFollowMain(preset.claude?.haikuModel == null);
@@ -373,7 +378,7 @@ export function ProviderForm({
         claudePayload.baseUrl ||
         opencodePayload.baseUrl ||
         codexPayload.baseUrl ||
-        deepseekTuiPayload.baseUrl ||
+        // deepseekTuiPayload.baseUrl || // DeepSeek TUI hidden
         '';
       if (!baseUrl) {
         throw new Error('No base URL configured for any agent');
