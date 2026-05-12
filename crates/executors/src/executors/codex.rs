@@ -335,38 +335,26 @@ impl StandardCodingAgentExecutor for Codex {
             model_selector: ModelSelectorConfig {
                 models: vec![
                     ModelInfo {
+                        id: "gpt-5.5".to_string(),
+                        name: "GPT-5.5".to_string(),
+                        provider_id: None,
+                        reasoning_options: xhigh_reasoning_options.clone(),
+                    },
+                    ModelInfo {
                         id: "gpt-5.4".to_string(),
                         name: "GPT-5.4".to_string(),
                         provider_id: None,
                         reasoning_options: xhigh_reasoning_options.clone(),
                     },
                     ModelInfo {
-                        id: "gpt-5.4-fast".to_string(),
-                        name: "GPT-5.4 Fast".to_string(),
+                        id: "gpt-5.4-mini".to_string(),
+                        name: "GPT-5.4 Mini".to_string(),
                         provider_id: None,
                         reasoning_options: xhigh_reasoning_options.clone(),
                     },
                     ModelInfo {
                         id: "gpt-5.3-codex".to_string(),
                         name: "GPT-5.3 Codex".to_string(),
-                        provider_id: None,
-                        reasoning_options: xhigh_reasoning_options.clone(),
-                    },
-                    ModelInfo {
-                        id: "gpt-5.2-codex".to_string(),
-                        name: "GPT-5.2 Codex".to_string(),
-                        provider_id: None,
-                        reasoning_options: xhigh_reasoning_options.clone(),
-                    },
-                    ModelInfo {
-                        id: "gpt-5.2".to_string(),
-                        name: "GPT-5.2".to_string(),
-                        provider_id: None,
-                        reasoning_options: xhigh_reasoning_options.clone(),
-                    },
-                    ModelInfo {
-                        id: "gpt-5.1-codex-max".to_string(),
-                        name: "GPT-5.1 Codex Max".to_string(),
                         provider_id: None,
                         reasoning_options: xhigh_reasoning_options,
                     },
