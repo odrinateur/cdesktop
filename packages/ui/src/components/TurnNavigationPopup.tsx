@@ -5,6 +5,7 @@ import {
   useLayoutEffect,
   type ReactNode,
 } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/cn';
 import { Popover, PopoverTrigger, PopoverContent } from './Popover';
 
@@ -34,6 +35,7 @@ export function TurnNavigationPopup({
   getActiveTurnPatchKey,
   children,
 }: TurnNavigationPopupProps) {
+  const { t } = useTranslation('common');
   const [open, setOpen] = useState(false);
   const [activePatchKey, setActivePatchKey] = useState<string | null>(null);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -135,9 +137,15 @@ export function TurnNavigationPopup({
       >
         <div className="flex flex-col gap-base min-h-0">
           <div className="flex items-center justify-between shrink-0">
-            <h4 className="text-sm font-medium text-normal">Your Messages</h4>
+            <h4 className="text-sm font-medium text-normal">
+              {t('turnNavigation.title', { defaultValue: 'Your Messages' })}
+            </h4>
             <span className="text-xs text-low">
-              {turns.length} turn{turns.length === 1 ? '' : 's'}
+              {t('turnNavigation.count', {
+                count: turns.length,
+                defaultValue_one: '{{count}} turn',
+                defaultValue_other: '{{count}} turns',
+              })}
             </span>
           </div>
 

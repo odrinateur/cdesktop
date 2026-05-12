@@ -79,7 +79,10 @@
     "subagent": {
       "defaultType": "サブエージェント"
     },
-    "loadingEarlierMessages": "以前のメッセージを読み込み中"
+    "loadingEarlierMessages": "以前のメッセージを読み込み中",
+    "toolName": {
+      "Skill": "スキル"
+    }
   },
   "changesPanel": {
     "notGitRepo": "Git リポジトリではありません — 差分はありません"
@@ -226,6 +229,10 @@
   },
   "empty": {
     "noChanges": "表示する変更がありません"
+  },
+  "turnNavigation": {
+    "title": "あなたのメッセージ",
+    "count_other": "{{count}} ターン"
   },
   "commandBar": {
     "noResults": "結果が見つかりません。",

@@ -66,7 +66,10 @@
     "subagent": {
       "defaultType": "子智能体"
     },
-    "loadingEarlierMessages": "正在載入先前的訊息"
+    "loadingEarlierMessages": "正在載入先前的訊息",
+    "toolName": {
+      "Skill": "技能"
+    }
   },
   "changesPanel": {
     "notGitRepo": "不是 Git 儲存庫 — 沒有可用的差異"
@@ -226,6 +229,10 @@
   },
   "empty": {
     "noChanges": "沒有要顯示的變更"
+  },
+  "turnNavigation": {
+    "title": "你的訊息",
+    "count_other": "{{count}} 輪"
   },
   "commandBar": {
     "noResults": "找不到結果。",

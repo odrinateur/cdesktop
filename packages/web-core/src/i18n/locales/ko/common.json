@@ -79,7 +79,10 @@
     "subagent": {
       "defaultType": "서브에이전트"
     },
-    "loadingEarlierMessages": "이전 메시지 불러오는 중"
+    "loadingEarlierMessages": "이전 메시지 불러오는 중",
+    "toolName": {
+      "Skill": "스킬"
+    }
   },
   "changesPanel": {
     "notGitRepo": "Git 저장소가 아닙니다 — diff를 사용할 수 없습니다"
@@ -226,6 +229,10 @@
   },
   "empty": {
     "noChanges": "표시할 변경사항이 없습니다"
+  },
+  "turnNavigation": {
+    "title": "내 메시지",
+    "count_other": "{{count}}턴"
   },
   "commandBar": {
     "noResults": "결과를 찾을 수 없습니다.",
