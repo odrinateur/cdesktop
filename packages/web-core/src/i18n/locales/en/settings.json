@@ -61,7 +61,12 @@
         "theme": {
           "label": "Theme",
           "placeholder": "Select theme",
-          "helper": "Choose your preferred color scheme."
+          "helper": "Choose your preferred color scheme.",
+          "options": {
+            "LIGHT": "Light",
+            "DARK": "Dark",
+            "SYSTEM": "Match system"
+          }
         },
         "language": {
           "label": "Language",

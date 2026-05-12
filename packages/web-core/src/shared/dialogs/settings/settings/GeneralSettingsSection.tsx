@@ -240,7 +240,9 @@ export function GeneralSettingsSection() {
 
   const themeOptions = Object.values(ThemeMode).map((theme) => ({
     value: theme,
-    label: toPrettyCase(theme),
+    label: t(`settings.general.appearance.theme.options.${theme}`, {
+      defaultValue: toPrettyCase(theme),
+    }),
   }));
 
   const editorOptions = Object.values(EditorType).map((editor) => ({
