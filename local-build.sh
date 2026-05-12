@@ -48,6 +48,9 @@ echo "🔧 Using target directory: $CARGO_TARGET_DIR"
 # export CDT_SHARED_API_BASE="..."
 # export VITE_CDT_SHARED_API_BASE="..."
 
+echo "📄 Syncing README to npx-cli (npm publishes this copy)..."
+cp README.md npx-cli/README.md
+
 echo "🧹 Cleaning previous builds..."
 rm -rf npx-cli/dist
 mkdir -p npx-cli/dist/$PLATFORM

@@ -1,14 +1,18 @@
 <p align="center">
   <a href="https://cdesktop.ai">
     <picture>
-      <source srcset="packages/public/vibe-kanban-logo-dark.svg" media="(prefers-color-scheme: dark)">
-      <source srcset="packages/public/vibe-kanban-logo.svg" media="(prefers-color-scheme: light)">
-      <img src="packages/public/vibe-kanban-logo.svg" alt="cdesktop Logo">
+      <source srcset="https://github.com/cdesktop-ai/cdesktop/raw/main/packages/public/vibe-kanban-logo-dark.svg" media="(prefers-color-scheme: dark)">
+      <source srcset="https://github.com/cdesktop-ai/cdesktop/raw/main/packages/public/vibe-kanban-logo.svg" media="(prefers-color-scheme: light)">
+      <img src="https://github.com/cdesktop-ai/cdesktop/raw/main/packages/public/vibe-kanban-logo.svg" alt="cdesktop Logo">
     </picture>
   </a>
 </p>
 
 <p align="center">An open-source alternative to Claude Code Desktop.</p>
+
+<p align="center">
+  <strong>English</strong> | <a href="https://github.com/cdesktop-ai/cdesktop/blob/main/README.zh-Hans.md">简体中文</a>
+</p>
 <!-- <p align="center">
   <a href="https://www.npmjs.com/package/cdesktop"><img alt="npm" src="https://img.shields.io/npm/v/cdesktop?style=flat-square" /></a>
   <a href="https://github.com/cdesktop-ai/cdesktop/blob/main/.github/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/cdesktop-ai/cdesktop/.github%2Fworkflows%2Fpublish.yml" /></a>
@@ -19,7 +23,7 @@
 
 Want your logo featured here? [Get in touch.](mailto:onlylakehouse@163.com)
 
-![](packages/public/vibe-kanban-screenshot-overview.png)
+![](https://github.com/cdesktop-ai/cdesktop/raw/main/packages/public/vibe-kanban-screenshot-overview.png)
 
 ## Overview
 
@@ -40,7 +44,7 @@ The layout is modeled after the Code tab of Anthropic's official desktop app: a 
 - **Works on your phone** — fully responsive UI; check progress, review diffs, and send follow-ups from any device
 - **Runs in your browser today** — start with `npx cdesktop` and open it in any modern browser; a Tauri desktop build is wired up but not yet shipped
 
-![](packages/public/vibe-kanban-screenshot-workspace.png)
+![](https://github.com/cdesktop-ai/cdesktop/raw/main/packages/public/vibe-kanban-screenshot-workspace.png)
 
 > **Beta software.** Expect bugs and rough edges. Please [file issues](https://github.com/cdesktop-ai/cdesktop/issues) when you hit them.
 
@@ -161,6 +165,6 @@ See the [documentation](https://cdesktop.ai) for detailed setup instructions.
 
 ## License
 
-Apache License 2.0 — see [`LICENSE`](./LICENSE).
+Apache License 2.0 — see [`LICENSE`](https://github.com/cdesktop-ai/cdesktop/blob/main/LICENSE).
 
-cdesktop is a derivative work of [BloopAI/vibe-kanban](https://github.com/BloopAI/vibe-kanban) (Apache 2.0). The provider preset catalog is derived from [farion1231/cc-switch](https://github.com/farion1231/cc-switch) (MIT). See [`NOTICE`](./NOTICE) for full attribution.
+cdesktop is a derivative work of [BloopAI/vibe-kanban](https://github.com/BloopAI/vibe-kanban) (Apache 2.0). The provider preset catalog is derived from [farion1231/cc-switch](https://github.com/farion1231/cc-switch) (MIT). See [`NOTICE`](https://github.com/cdesktop-ai/cdesktop/blob/main/NOTICE) for full attribution.
