@@ -72,6 +72,7 @@ impl SessionManager {
             AcpEvent::SessionStart(..)
             | AcpEvent::Error(..)
             | AcpEvent::Done(..)
+            | AcpEvent::TokenUsage { .. }
             | AcpEvent::Other(..) => return None,
 
             AcpEvent::User(..)

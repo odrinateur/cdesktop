@@ -32,6 +32,10 @@ pub enum AcpEvent {
     ApprovalResponse(ApprovalResponse),
     Error(String),
     Done(String),
+    TokenUsage {
+        used: u64,
+        size: u64,
+    },
     Other(agent_client_protocol::SessionNotification),
 }
 

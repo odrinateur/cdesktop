@@ -184,6 +184,10 @@ impl acp::Client for AcpClient {
             acp::SessionUpdate::ToolCall(tc) => Some(AcpEvent::ToolCall(tc)),
             acp::SessionUpdate::ToolCallUpdate(update) => Some(AcpEvent::ToolUpdate(update)),
             acp::SessionUpdate::Plan(plan) => Some(AcpEvent::Plan(plan)),
+            acp::SessionUpdate::UsageUpdate(u) => Some(AcpEvent::TokenUsage {
+                used: u.used,
+                size: u.size,
+            }),
             _ => Some(AcpEvent::Other(args)),
         };
 
