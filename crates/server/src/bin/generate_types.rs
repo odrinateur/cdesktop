@@ -243,6 +243,7 @@ fn generate_types_content() -> String {
         executors::executors::droid::Autonomy::decl(),
         executors::executors::droid::ReasoningEffortLevel::decl(),
         executors::executors::deepseek_tui::DeepseekTui::decl(),
+        executors::executors::hermes::Hermes::decl(),
         executors::executors::AppendPrompt::decl(),
         executors::actions::coding_agent_initial::CodingAgentInitialRequest::decl(),
         executors::actions::coding_agent_follow_up::CodingAgentFollowUpRequest::decl(),
@@ -371,6 +372,10 @@ fn generate_schemas() -> Result<HashMap<&'static str, String>, serde_json::Error
         (
             "deepseek_tui",
             generate_json_schema::<executors::executors::deepseek_tui::DeepseekTui>()?,
+        ),
+        (
+            "hermes",
+            generate_json_schema::<executors::executors::hermes::Hermes>()?,
         ),
     ]);
     println!(

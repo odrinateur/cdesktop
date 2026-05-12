@@ -543,9 +543,9 @@ impl Provider {
             BaseCodingAgent::Opencode => self.opencode.api_key.as_deref(),
             BaseCodingAgent::Gemini => self.gemini.api_key.as_deref(),
             BaseCodingAgent::DeepseekTui => self.deepseek_tui.api_key.as_deref(),
-            // Hermes will fall through to top-level until its executor enum
-            // lands. Other agents (Amp, Cursor, Qwen, Copilot, Droid, QaMock)
-            // have no per-agent payload.
+            BaseCodingAgent::Hermes => self.hermes.api_key.as_deref(),
+            // Other agents (Amp, Cursor, Qwen, Copilot, Droid, QaMock) have
+            // no per-agent payload.
             _ => None,
         };
         override_key
@@ -567,9 +567,8 @@ impl Provider {
     /// the `--model` CLI flag the executor passes for the *main* model. See
     /// plan §3.2 spawn-time applier.
     ///
-    /// Codex / OpenCode / Gemini / DeepSeek TUI appliers ship via their
-    /// own `build_*_injection` methods (Phases C / D / F / E). Hermes
-    /// still pending.
+    /// Codex / OpenCode / Gemini / DeepSeek TUI / Hermes appliers ship via
+    /// their own `build_*_injection` methods (Phases C / D / F / E / G).
     pub fn build_spawn_env(&self, model_id: &str) -> HashMap<String, String> {
         if self.kind == AiProviderKind::Default {
             return HashMap::new();
@@ -901,20 +900,92 @@ impl Provider {
         Ok(Some(env))
     }
 
+    /// Build the Hermes spawn injection: env-only.
+    ///
+    /// Hermes ACP (`hermes acp`) takes no CLI flags — provider selection
+    /// happens via env vars read at startup by `hermes_cli/runtime_provider.py`.
+    /// We force the active carrier with `HERMES_INFERENCE_PROVIDER=<slug>`
+    /// (resolution at `:311` of that file), then override that carrier's
+    /// hardcoded base URL with `<SLUG>_BASE_URL` (e.g. `OPENROUTER_BASE_URL`
+    /// at `:577`; the `*_BASE_URL` env-var fallback short-circuits the
+    /// hardcoded constant). Auth env var name matches the carrier slug's
+    /// own convention (e.g. `OPENROUTER_API_KEY`, `ANTHROPIC_API_KEY`).
+    ///
+    /// `HERMES_INFERENCE_MODEL` is read by the oneshot/TUI paths
+    /// (`hermes_cli/oneshot.py:228`) but **not** by `acp_adapter/`. The ACP
+    /// path applies model selection via `set_session_model`
+    /// (`acp_adapter/server.py:1651`), which `AcpAgentHarness` does not
+    /// currently emit — so this env var is a no-op for the ACP spawn until
+    /// the harness gains that call. We set it anyway so the same injection
+    /// stays correct if a future profile invokes Hermes via a non-ACP path.
+    ///
+    /// `apiMode` → carrier slug mapping (matches the cc-switch preset
+    /// distribution: 25 chat_completions + 19 anthropic_messages + 0
+    /// codex_responses presets at 2026-05-10 scan):
+    /// - `chat_completions` → openrouter
+    /// - `anthropic_messages` → anthropic
+    /// - `codex_responses` → xai
+    ///
+    /// Returns `Ok(None)` for the Default provider (Hermes uses its own
+    /// `~/.hermes/config.yaml` defaults in that path).
+    pub fn build_hermes_injection(
+        &self,
+        model_id: &str,
+    ) -> Result<Option<HashMap<String, String>>, ProviderError> {
+        if self.kind == AiProviderKind::Default {
+            return Ok(None);
+        }
+
+        let api_key = self
+            .resolved_api_key(BaseCodingAgent::Hermes)
+            .ok_or_else(|| ProviderError::MissingApiKey("HERMES".to_string()))?;
+        let base_url = self
+            .hermes
+            .base_url
+            .as_deref()
+            .filter(|s| !s.is_empty())
+            .ok_or_else(|| ProviderError::EnabledAgentMissingBaseUrl("HERMES".to_string()))?;
+        let api_mode = self
+            .hermes
+            .api_mode
+            .as_deref()
+            .filter(|s| !s.is_empty())
+            .unwrap_or("chat_completions");
+
+        let (slug, url_env, key_env) = match api_mode {
+            "anthropic_messages" => ("anthropic", "ANTHROPIC_BASE_URL", "ANTHROPIC_API_KEY"),
+            "codex_responses" => ("xai", "XAI_BASE_URL", "XAI_API_KEY"),
+            // chat_completions (default) and any unknown mode route through
+            // openrouter — the most common chat-completions carrier.
+            _ => ("openrouter", "OPENROUTER_BASE_URL", "OPENROUTER_API_KEY"),
+        };
+
+        let mut env = self.hermes.env.clone();
+        // Carrier + credential + endpoint set LAST so vendor-quirk overlays
+        // above can't accidentally shadow them.
+        env.insert("HERMES_INFERENCE_PROVIDER".to_string(), slug.to_string());
+        env.insert(url_env.to_string(), base_url.to_string());
+        env.insert(key_env.to_string(), api_key.to_string());
+        if !model_id.is_empty() {
+            env.insert("HERMES_INFERENCE_MODEL".to_string(), model_id.to_string());
+        }
+        Ok(Some(env))
+    }
+
     /// Per-agent spawn injection — the single dispatch point that route
     /// handlers call when a user picks a provider for a given message.
     ///
     /// Each agent gets its own applier (Codex via `build_codex_injection`,
     /// OpenCode via `build_opencode_injection`, Gemini via
     /// `build_gemini_injection`, DeepSeek TUI via
-    /// `build_deepseek_tui_injection`, Claude via `build_spawn_env`).
-    /// Adding a new agent only adds a match arm here and a field on
-    /// `AgentInjection`; route handlers stay put.
+    /// `build_deepseek_tui_injection`, Hermes via `build_hermes_injection`,
+    /// Claude via `build_spawn_env`). Adding a new agent only adds a match
+    /// arm here and a field on `AgentInjection`; route handlers stay put.
     ///
     /// The catch-all arm calls `build_spawn_env` (Claude env). Agents
-    /// without their own applier (Hermes today) still land there; they
-    /// are picker-gated off until their phase ships, so the wrong-env
-    /// injection is unreachable in practice.
+    /// without their own applier (Amp, Cursor, Qwen, Copilot, Droid)
+    /// land there with the Claude-shaped env, picker-gated off via
+    /// `record.perAgentEnabled` until each grows a dedicated applier.
     pub fn build_agent_injection(
         &self,
         agent: BaseCodingAgent,
@@ -938,6 +1009,10 @@ impl Provider {
             }),
             BaseCodingAgent::DeepseekTui => Ok(AgentInjection {
                 env: self.build_deepseek_tui_injection(model_id)?,
+                codex: None,
+            }),
+            BaseCodingAgent::Hermes => Ok(AgentInjection {
+                env: self.build_hermes_injection(model_id)?,
                 codex: None,
             }),
             _ => {
