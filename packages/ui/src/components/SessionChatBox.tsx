@@ -847,7 +847,7 @@ export function SessionChatBox<TExecutor extends string = string>({
                   />
                 </TurnNavigationPopup>
               )}
-              {renderAgentIcon?.(agent, 'size-icon-xl')}
+              {renderAgentIcon?.(agent, 'h-[1.1rem] w-[1.1rem]')}
             </>
           )}
           {/* Todo progress popup - always rendered, disabled when no todos */}
