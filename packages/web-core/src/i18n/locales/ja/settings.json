@@ -53,7 +53,12 @@
         "theme": {
           "label": "テーマ",
           "placeholder": "テーマを選択",
-          "helper": "お好みの色スキームを選択してください。"
+          "helper": "お好みの色スキームを選択してください。",
+          "options": {
+            "LIGHT": "ライト",
+            "DARK": "ダーク",
+            "SYSTEM": "システムに合わせる"
+          }
         },
         "language": {
           "label": "言語",

@@ -53,7 +53,12 @@
         "theme": {
           "label": "主題",
           "placeholder": "選擇主題",
-          "helper": "選擇您喜歡的配色方案。"
+          "helper": "選擇您喜歡的配色方案。",
+          "options": {
+            "LIGHT": "淺色",
+            "DARK": "深色",
+            "SYSTEM": "跟隨系統"
+          }
         },
         "language": {
           "label": "語言",

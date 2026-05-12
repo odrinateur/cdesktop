@@ -53,7 +53,12 @@
         "theme": {
           "label": "테마",
           "placeholder": "테마 선택",
-          "helper": "선호하는 색상 구성표를 선택하세요."
+          "helper": "선호하는 색상 구성표를 선택하세요.",
+          "options": {
+            "LIGHT": "라이트",
+            "DARK": "다크",
+            "SYSTEM": "시스템 설정 따르기"
+          }
         },
         "language": {
           "label": "언어",

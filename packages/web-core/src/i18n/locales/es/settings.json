@@ -53,7 +53,12 @@
         "theme": {
           "label": "Tema",
           "placeholder": "Seleccionar tema",
-          "helper": "Elige tus colores preferidos."
+          "helper": "Elige tus colores preferidos.",
+          "options": {
+            "LIGHT": "Claro",
+            "DARK": "Oscuro",
+            "SYSTEM": "Seguir el sistema"
+          }
         },
         "language": {
           "label": "Idioma",

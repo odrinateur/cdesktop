@@ -53,7 +53,12 @@
         "theme": {
           "label": "Thème",
           "placeholder": "Sélectionner un thème",
-          "helper": "Choisissez votre palette de couleurs préférée."
+          "helper": "Choisissez votre palette de couleurs préférée.",
+          "options": {
+            "LIGHT": "Clair",
+            "DARK": "Sombre",
+            "SYSTEM": "Suivre le système"
+          }
         },
         "language": {
           "label": "Langue",
