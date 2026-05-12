@@ -36,18 +36,45 @@ pub fn normalize_logs_with_suppressed_stderr_patterns(
     worktree_path: &Path,
     suppressed_stderr_patterns: &[&str],
 ) -> Vec<tokio::task::JoinHandle<()>> {
+    normalize_logs_with_stderr_filter(
+        msg_store,
+        worktree_path,
+        suppressed_stderr_patterns,
+        None,
+    )
+}
+
+/// Stderr normalization with optional state-machine suppression for
+/// multi-line log entries.
+///
+/// `suppressed_stderr_patterns` are substring matches: a line containing any
+/// of them is dropped.
+///
+/// `is_new_entry_marker` (when set) enables multi-line suppression: a line
+/// returning `true` is treated as the start of a fresh log entry; lines
+/// returning `false` are continuations of the previous entry and inherit
+/// the previous entry's suppress decision. Without this, continuation lines
+/// emitted by Python-style loggers (where only the first line carries the
+/// `[INFO]` prefix) would leak through the per-line substring filter.
+pub fn normalize_logs_with_stderr_filter(
+    msg_store: Arc<MsgStore>,
+    worktree_path: &Path,
+    suppressed_stderr_patterns: &[&str],
+    is_new_entry_marker: Option<fn(&str) -> bool>,
+) -> Vec<tokio::task::JoinHandle<()>> {
     // stderr normalization
     let entry_index = EntryIndexProvider::start_from(&msg_store);
-    let h1 = if suppressed_stderr_patterns.is_empty() {
+    let h1 = if suppressed_stderr_patterns.is_empty() && is_new_entry_marker.is_none() {
         normalize_stderr_logs(msg_store.clone(), entry_index.clone())
     } else {
-        normalize_acp_stderr_logs(
+        normalize_acp_stderr_logs_with_state(
             msg_store.clone(),
             entry_index.clone(),
             suppressed_stderr_patterns
                 .iter()
                 .map(|pattern| pattern.to_string())
                 .collect(),
+            is_new_entry_marker,
         )
     };
 
@@ -679,13 +706,20 @@ pub fn normalize_logs_with_suppressed_stderr_patterns(
     vec![h1, h2]
 }
 
-fn normalize_acp_stderr_logs(
+fn normalize_acp_stderr_logs_with_state(
     msg_store: Arc<MsgStore>,
     entry_index_provider: EntryIndexProvider,
     suppressed_patterns: Vec<String>,
+    is_new_entry_marker: Option<fn(&str) -> bool>,
 ) -> tokio::task::JoinHandle<()> {
     tokio::spawn(async move {
         let mut stderr = msg_store.stderr_chunked_stream();
+
+        // State for multi-line suppression: whether the current log entry
+        // (the most recent new-entry-marker line) is being dropped. Persists
+        // across `transform_lines` invocations so suppression spans chunk
+        // boundaries.
+        let mut suppress_current = false;
 
         let mut processor = PlainTextLogProcessor::builder()
             .normalized_entry_producer(Box::new(|content: String| NormalizedEntry {
@@ -700,9 +734,21 @@ fn normalize_acp_stderr_logs(
             .index_provider(entry_index_provider)
             .transform_lines(Box::new(move |lines: &mut Vec<String>| {
                 lines.retain(|line| {
-                    !suppressed_patterns
-                        .iter()
-                        .any(|pattern| line.contains(pattern))
+                    match is_new_entry_marker {
+                        Some(is_new) => {
+                            if is_new(line) {
+                                suppress_current = suppressed_patterns
+                                    .iter()
+                                    .any(|pattern| line.contains(pattern));
+                            }
+                            // Continuation lines inherit the most recent
+                            // entry's suppress decision.
+                            !suppress_current
+                        }
+                        None => !suppressed_patterns
+                            .iter()
+                            .any(|pattern| line.contains(pattern)),
+                    }
                 });
             }))
             .build();
