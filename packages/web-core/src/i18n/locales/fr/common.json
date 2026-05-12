@@ -66,7 +66,10 @@
     "subagent": {
       "defaultType": "Sous-agent"
     },
-    "loadingEarlierMessages": "Chargement des messages précédents"
+    "loadingEarlierMessages": "Chargement des messages précédents",
+    "toolName": {
+      "Skill": "Compétence"
+    }
   },
   "changesPanel": {
     "notGitRepo": "Pas un dépôt Git — aucun diff disponible"
@@ -226,6 +229,11 @@
   },
   "empty": {
     "noChanges": "Aucune modification à afficher"
+  },
+  "turnNavigation": {
+    "title": "Vos messages",
+    "count_one": "{{count}} tour",
+    "count_other": "{{count}} tours"
   },
   "commandBar": {
     "noResults": "Aucun résultat trouvé.",

@@ -66,7 +66,10 @@
     "subagent": {
       "defaultType": "子智能体"
     },
-    "loadingEarlierMessages": "正在加载早期消息"
+    "loadingEarlierMessages": "正在加载早期消息",
+    "toolName": {
+      "Skill": "技能"
+    }
   },
   "changesPanel": {
     "notGitRepo": "不是 Git 仓库 — 无可用 diff"
@@ -226,6 +229,10 @@
   },
   "empty": {
     "noChanges": "没有要显示的更改"
+  },
+  "turnNavigation": {
+    "title": "你的消息",
+    "count_other": "{{count}} 轮"
   },
   "commandBar": {
     "noResults": "未找到结果。",

@@ -110,10 +110,23 @@ function getToolSummary(
         operation: action_type.operation,
       });
     case 'tool':
-      return tool_name || t('conversation.tool');
+      return translateToolName(tool_name, t);
     default:
-      return tool_name || t('conversation.tool');
+      return translateToolName(tool_name, t);
   }
+}
+
+/**
+ * Map known generic tool names to localized labels. Unknown names pass through.
+ */
+function translateToolName(
+  tool_name: string | undefined,
+  t: TFunction<'common'>
+): string {
+  if (!tool_name) return t('conversation.tool');
+  const key = `conversation.toolName.${tool_name}`;
+  const translated = t(key, { defaultValue: tool_name });
+  return translated;
 }
 
 /**

@@ -79,7 +79,10 @@
     "subagent": {
       "defaultType": "Subagente"
     },
-    "loadingEarlierMessages": "Cargando mensajes anteriores"
+    "loadingEarlierMessages": "Cargando mensajes anteriores",
+    "toolName": {
+      "Skill": "Habilidad"
+    }
   },
   "changesPanel": {
     "notGitRepo": "No es un repositorio Git — sin diff disponible"
@@ -226,6 +229,11 @@
   },
   "empty": {
     "noChanges": "No hay cambios para mostrar"
+  },
+  "turnNavigation": {
+    "title": "Tus mensajes",
+    "count_one": "{{count}} turno",
+    "count_other": "{{count}} turnos"
   },
   "commandBar": {
     "noResults": "No se encontraron resultados.",
