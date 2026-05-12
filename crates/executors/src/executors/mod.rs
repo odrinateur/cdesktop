@@ -197,12 +197,12 @@ impl CodingAgent {
             Self::Gemini(_) | Self::QwenCode(_) => {
                 vec![BaseAgentCapability::SessionFork]
             }
+            Self::Hermes(_) => vec![BaseAgentCapability::ContextUsage],
             Self::CursorAgent(_) => vec![BaseAgentCapability::SetupHelper],
             Self::Amp(_)
             | Self::Copilot(_)
             | Self::Droid(_)
-            | Self::DeepseekTui(_)
-            | Self::Hermes(_) => vec![],
+            | Self::DeepseekTui(_) => vec![],
             #[cfg(feature = "qa-mode")]
             Self::QaMock(_) => vec![], // QA mock doesn't need special capabilities
         }
