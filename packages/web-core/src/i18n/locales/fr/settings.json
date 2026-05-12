@@ -57,7 +57,7 @@
           "options": {
             "LIGHT": "Clair",
             "DARK": "Sombre",
-            "SYSTEM": "Suivre le système"
+            "SYSTEM": "Système"
           }
         },
         "language": {

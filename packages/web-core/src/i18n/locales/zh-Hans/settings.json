@@ -55,8 +55,8 @@
           "placeholder": "选择主题",
           "helper": "选择您喜欢的配色方案。",
           "options": {
-            "LIGHT": "浅色",
-            "DARK": "深色",
+            "LIGHT": "亮色",
+            "DARK": "暗色",
             "SYSTEM": "跟随系统"
           }
         },
