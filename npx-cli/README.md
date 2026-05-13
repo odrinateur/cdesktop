@@ -27,12 +27,13 @@ Want your logo featured here? [Get in touch.](mailto:onlylakehouse@163.com)
 
 ## Overview
 
-cdesktop is an open-source alternative to Anthropic's [Claude Code Desktop](https://code.claude.com/docs/en/desktop-quickstart). It's a local client for [Claude Code](https://www.anthropic.com/claude-code) that wraps the CLI as a child process and gives you a session-oriented UI in your browser, with your code, transcripts, and worktrees all kept on disk.
+cdesktop is an open-source alternative to Anthropic's [Claude Code Desktop](https://code.claude.com/docs/en/desktop-quickstart). It's a web UI for 5 coding agents — Claude Code, Codex, Gemini CLI, OpenCode, and Hermes — wrapping each CLI as a child process on your machine, with your code, transcripts, and worktrees all kept on disk.
 
-The layout is modeled after the Code tab of Anthropic's official desktop app: a sessions sidebar, a transcript with an integrated terminal and diff viewer, and a right-side pane for plan, files, and app preview. Unlike the official app, cdesktop is local-only and provider-agnostic — no Chat tab, no Cowork tab, no cloud sessions; pick a provider from the built-in catalog or wire up your own.
+The layout is modeled after the Code tab of Anthropic's official desktop app: a sessions sidebar, a transcript with an integrated terminal and diff viewer, and a right-side pane for plan, files, and app preview. Unlike the official app, cdesktop is local-only, agent-agnostic, and provider-agnostic — pick an agent, pick a provider from the built-in catalog or wire up your own.
 
 **As of May 7, 2026, Anthropic's Claude Code Desktop no longer accepts third-party model names.** cdesktop fully supports third-party providers and models.
 
+- **5 coding agents in one UI** — Claude Code, Codex, Gemini, OpenCode, Hermes; pick per session, transcripts stay separate per agent
 - **Plug in any provider in one click** — 20+ built-in presets (OpenRouter, AWS Bedrock, DeepSeek, Kimi, ModelScope, MiniMax, Nvidia, …) or add a custom `ANTHROPIC_BASE_URL` endpoint; switch providers and tune reasoning effort per session
 - **Run sessions side by side** — split the workspace into up to 4 cells and drag any session into a new cell
 - **Switch between sessions instantly** — no reload between threads; transcripts stay where you left them
@@ -57,7 +58,6 @@ npx cdesktop
 ## Roadmap
 
 - **Desktop app build** — ship Tauri installers for macOS, Windows, and Linux
-- **More coding agents** — surface Codex, Gemini CLI, OpenCode, and Hermes alongside Claude Code (executor abstraction is already wired)
 - **Routines** — scheduled tasks for recurring work (daily code review, weekly dependency audit, morning briefings)
 - **Voice input** — push-to-talk dictation for hands-free prompts
 - **Files panel** — browse the full project file tree, not just the session working directory
