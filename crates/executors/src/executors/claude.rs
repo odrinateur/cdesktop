@@ -677,7 +677,10 @@ impl ClaudeCode {
             args.push(dir.to_string_lossy().into_owned());
         }
 
-        tracing::info!(
+        // debug! (not info!) — keep spawn details out of the default log.
+        // Args don't carry secrets today, but match the other executors so
+        // the default console stays clean.
+        tracing::debug!(
             program = %program_path.display(),
             args = ?args,
             cwd = %current_dir.display(),
