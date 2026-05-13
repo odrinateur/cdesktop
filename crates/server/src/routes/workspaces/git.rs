@@ -421,6 +421,13 @@ pub async fn get_workspace_branch_status(
         let Some(target_branch) = target_branches.get(&repo.id).cloned() else {
             continue;
         };
+        // Workspaces created against a non-git folder have empty branch
+        // strings. Once the folder later becomes a git repo (is_git
+        // self-heals to true), this loop would try `is_remote_branch("")`
+        // and 404. Nothing meaningful to report for that repo; skip it.
+        if target_branch.is_empty() || workspace.branch.is_empty() {
+            continue;
+        }
 
         let repo_merges = merges_by_repo.get(&repo.id).cloned().unwrap_or_default();
         let Some(worktree_path) = workspace.execution_dir(&repo) else {
