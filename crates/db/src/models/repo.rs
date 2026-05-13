@@ -175,7 +175,7 @@ impl Repo {
     }
 
     pub async fn find_by_id(pool: &SqlitePool, id: Uuid) -> Result<Option<Self>, sqlx::Error> {
-        sqlx::query_as!(
+        let mut repo = sqlx::query_as!(
             Repo,
             r#"SELECT id as "id!: Uuid",
                       path,
@@ -197,7 +197,46 @@ impl Repo {
             id
         )
         .fetch_optional(pool)
-        .await
+        .await?;
+
+        if let Some(r) = repo.as_mut() {
+            Self::refresh_repo_is_git(pool, r).await?;
+        }
+        Ok(repo)
+    }
+
+    /// Re-check `is_git` on disk for a repo currently flagged as non-git.
+    /// Flips DB + in-memory flag when `.git` now exists. No-op when already git.
+    pub async fn refresh_repo_is_git(
+        pool: &SqlitePool,
+        repo: &mut Repo,
+    ) -> Result<(), sqlx::Error> {
+        if repo.is_git {
+            return Ok(());
+        }
+        if !repo.path.join(".git").exists() {
+            return Ok(());
+        }
+        sqlx::query!(
+            "UPDATE repos SET is_git = $1, updated_at = datetime('now', 'subsec') WHERE id = $2",
+            true,
+            repo.id
+        )
+        .execute(pool)
+        .await?;
+        repo.is_git = true;
+        Ok(())
+    }
+
+    /// Slice helper around [`refresh_repo_is_git`].
+    pub async fn refresh_is_git_inplace(
+        pool: &SqlitePool,
+        repos: &mut [Repo],
+    ) -> Result<(), sqlx::Error> {
+        for r in repos.iter_mut() {
+            Self::refresh_repo_is_git(pool, r).await?;
+        }
+        Ok(())
     }
 
     pub async fn find_by_ids(pool: &SqlitePool, ids: &[Uuid]) -> Result<Vec<Self>, sqlx::Error> {
@@ -236,7 +275,7 @@ impl Repo {
             Repo,
             r#"INSERT INTO repos (id, path, name, display_name, is_git)
                VALUES ($1, $2, $3, $4, $5)
-               ON CONFLICT(path) DO UPDATE SET updated_at = updated_at
+               ON CONFLICT(path) DO UPDATE SET is_git = excluded.is_git, updated_at = updated_at
                RETURNING id as "id!: Uuid",
                          path,
                          name,
@@ -263,7 +302,7 @@ impl Repo {
     }
 
     pub async fn list_all(pool: &SqlitePool) -> Result<Vec<Self>, sqlx::Error> {
-        sqlx::query_as!(
+        let mut repos = sqlx::query_as!(
             Repo,
             r#"SELECT id as "id!: Uuid",
                       path,
@@ -284,13 +323,15 @@ impl Repo {
                ORDER BY display_name ASC"#
         )
         .fetch_all(pool)
-        .await
+        .await?;
+        Self::refresh_is_git_inplace(pool, &mut repos).await?;
+        Ok(repos)
     }
 
     pub async fn list_by_recent_workspace_usage(
         pool: &SqlitePool,
     ) -> Result<Vec<Self>, sqlx::Error> {
-        sqlx::query_as!(
+        let mut repos = sqlx::query_as!(
             Repo,
             r#"SELECT r.id as "id!: Uuid",
                       r.path,
@@ -316,7 +357,9 @@ impl Repo {
                ORDER BY wr.last_used_at DESC, r.display_name ASC"#
         )
         .fetch_all(pool)
-        .await
+        .await?;
+        Self::refresh_is_git_inplace(pool, &mut repos).await?;
+        Ok(repos)
     }
 
     /// Returns the names of active (non-archived) workspaces that reference this repo.
