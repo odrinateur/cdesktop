@@ -116,7 +116,7 @@ impl WorkspaceRepo {
         pool: &SqlitePool,
         workspace_id: Uuid,
     ) -> Result<Vec<Repo>, sqlx::Error> {
-        sqlx::query_as!(
+        let mut repos = sqlx::query_as!(
             Repo,
             r#"SELECT r.id as "id!: Uuid",
                       r.path,
@@ -140,7 +140,9 @@ impl WorkspaceRepo {
             workspace_id
         )
         .fetch_all(pool)
-        .await
+        .await?;
+        Repo::refresh_is_git_inplace(pool, &mut repos).await?;
+        Ok(repos)
     }
 
     pub async fn find_repos_with_target_branch_for_workspace(
@@ -173,7 +175,7 @@ impl WorkspaceRepo {
         .fetch_all(pool)
         .await?;
 
-        Ok(rows
+        let mut result: Vec<RepoWithTargetBranch> = rows
             .into_iter()
             .map(|row| RepoWithTargetBranch {
                 repo: Repo {
@@ -195,7 +197,11 @@ impl WorkspaceRepo {
                 },
                 target_branch: row.target_branch,
             })
-            .collect())
+            .collect();
+        for item in result.iter_mut() {
+            Repo::refresh_repo_is_git(pool, &mut item.repo).await?;
+        }
+        Ok(result)
     }
 
     pub async fn find_by_workspace_and_repo_id(
