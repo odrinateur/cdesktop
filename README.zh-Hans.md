@@ -27,12 +27,13 @@
 
 ## 概览
 
-cdesktop 是 Anthropic [Claude Code Desktop](https://code.claude.com/docs/en/desktop-quickstart) 的开源替代品。它在本地包装 [Claude Code](https://www.anthropic.com/claude-code) CLI 子进程，并在浏览器中提供以会话为中心的 UI，代码、对话记录和 worktree 全部保存在本地磁盘。
+cdesktop 是 Anthropic [Claude Code Desktop](https://code.claude.com/docs/en/desktop-quickstart) 的开源替代品。它是 5 款编码 agent —— Claude Code、Codex、Gemini CLI、OpenCode、Hermes —— 的 Web UI,在本地将各 CLI 作为子进程运行,代码、对话记录和 worktree 全部保存在本地磁盘。
 
-整体布局参考了官方桌面端的 Code 标签:左侧会话边栏、中间集成终端与 diff 查看器的对话区、右侧 plan / files / 应用预览面板。与官方应用不同的是,cdesktop 完全本地运行,且与模型供应商解耦 —— 没有 Chat 标签、没有 Cowork 标签、没有云端会话,可以从内置的供应商目录里选一个,也可以接入自定义端点。
+整体布局参考了官方桌面端的 Code 标签:左侧会话边栏、中间集成终端与 diff 查看器的对话区、右侧 plan / files / 应用预览面板。与官方应用不同的是,cdesktop 完全本地运行,与 agent、模型供应商均解耦 —— 可以挑 agent、从内置供应商目录里选一个,也可以接入自定义端点。
 
 **2026 年 5 月 7 日起,Anthropic Claude Code Desktop 已不再接受第三方模型名称。** cdesktop 对第三方供应商与模型提供完整支持。
 
+- **5 款编码 agent 一个 UI** —— Claude Code、Codex、Gemini、OpenCode、Hermes;每个会话独立选 agent,各 agent 对话记录互不干扰
 - **一键接入任意供应商** —— 内置 20+ 预设(OpenRouter、AWS Bedrock、DeepSeek、Kimi、ModelScope、MiniMax、Nvidia……),或自行配置 `ANTHROPIC_BASE_URL`;每个会话可独立切换供应商并调节推理强度
 - **多会话并排执行** —— 工作区可拆分为最多 4 个 cell,任意会话可拖拽到新 cell
 - **会话瞬时切换** —— 切换线程无需重载,对话状态保持在原位
@@ -57,7 +58,6 @@ npx cdesktop
 ## 路线图
 
 - **桌面端构建** —— 打包 macOS、Windows、Linux 的 Tauri 安装包
-- **更多编码 agent** —— 在 Claude Code 之外接入 Codex、Gemini CLI、OpenCode、Hermes(executor 抽象层已就位)
 - **Routines** —— 定时任务,用于周期性工作(每日代码评审、每周依赖审计、晨间简报)
 - **语音输入** —— 按住说话,免动手发送指令
 - **文件面板** —— 浏览整个项目目录树,不再只看会话工作目录
