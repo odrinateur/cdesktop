@@ -75,10 +75,13 @@
     "notGitRepo": "Pas un dépôt Git — aucun diff disponible"
   },
   "folderPicker": {
+    "defaultTitle": "Sélectionner un dossier",
+    "defaultDescription": "Choisissez un dossier pour votre projet",
     "legend": "Cliquez sur les noms de dossiers pour naviguer • Utilisez les boutons d'action pour sélectionner",
     "manualPathLabel": "Saisir le chemin manuellement :",
     "go": "Aller",
     "searchLabel": "Rechercher dans le répertoire actuel :",
+    "filterPlaceholder": "Filtrer les dossiers et fichiers...",
     "selectCurrent": "Sélectionner l'actuel",
     "gitRepo": "dépôt git",
     "selectPath": "Sélectionner le chemin"
@@ -223,8 +226,8 @@
     "defaultCancel": "Annuler"
   },
   "dialogs": {
-    "selectGitRepository": "Sélectionner un dépôt Git",
-    "chooseExistingRepo": "Choisissez un dépôt existant depuis votre système de fichiers",
+    "selectGitRepository": "Sélectionner un dossier",
+    "chooseExistingRepo": "Choisissez un dossier existant depuis votre système de fichiers",
     "errorTitle": "Erreur"
   },
   "empty": {

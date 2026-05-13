@@ -75,10 +75,13 @@
     "notGitRepo": "不是 Git 儲存庫 — 沒有可用的差異"
   },
   "folderPicker": {
+    "defaultTitle": "選擇資料夾",
+    "defaultDescription": "為您的專案選擇一個資料夾",
     "legend": "點擊資料夾名稱進行導覽 • 使用操作按鈕進行選擇",
     "manualPathLabel": "手動輸入路徑:",
     "go": "前往",
     "searchLabel": "搜尋目前目錄:",
+    "filterPlaceholder": "篩選資料夾和檔案...",
     "selectCurrent": "選取目前",
     "gitRepo": "Git 儲存庫",
     "selectPath": "選取路徑"
@@ -223,8 +226,8 @@
     "defaultCancel": "取消"
   },
   "dialogs": {
-    "selectGitRepository": "選擇 Git 儲存庫",
-    "chooseExistingRepo": "從檔案系統中選擇現有儲存庫",
+    "selectGitRepository": "選擇資料夾",
+    "chooseExistingRepo": "從檔案系統中選擇現有資料夾",
     "errorTitle": "錯誤"
   },
   "empty": {

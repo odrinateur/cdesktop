@@ -75,10 +75,13 @@
     "notGitRepo": "不是 Git 仓库 — 无可用 diff"
   },
   "folderPicker": {
+    "defaultTitle": "选择文件夹",
+    "defaultDescription": "为您的项目选择一个文件夹",
     "legend": "点击文件夹名称进行导航 • 使用操作按钮进行选择",
     "manualPathLabel": "手动输入路径:",
     "go": "前往",
     "searchLabel": "搜索当前目录:",
+    "filterPlaceholder": "筛选文件夹和文件...",
     "selectCurrent": "选择当前",
     "gitRepo": "git 仓库",
     "selectPath": "选择路径"
@@ -223,8 +226,8 @@
     "defaultCancel": "取消"
   },
   "dialogs": {
-    "selectGitRepository": "选择 Git 仓库",
-    "chooseExistingRepo": "从文件系统中选择现有仓库",
+    "selectGitRepository": "选择文件夹",
+    "chooseExistingRepo": "从文件系统中选择现有文件夹",
     "errorTitle": "错误"
   },
   "empty": {

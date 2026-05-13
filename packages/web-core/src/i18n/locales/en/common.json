@@ -80,10 +80,13 @@
     "notGitRepo": "Not a Git repo — no diff available"
   },
   "folderPicker": {
+    "defaultTitle": "Select Folder",
+    "defaultDescription": "Choose a folder for your project",
     "legend": "Click folder names to navigate • Use action buttons to select",
     "manualPathLabel": "Enter path manually:",
     "go": "Go",
     "searchLabel": "Search current directory:",
+    "filterPlaceholder": "Filter folders and files...",
     "selectCurrent": "Select Current",
     "gitRepo": "git repo",
     "selectPath": "Select Path"
@@ -280,8 +283,8 @@
     "defaultCancel": "Cancel"
   },
   "dialogs": {
-    "selectGitRepository": "Select Git Repository",
-    "chooseExistingRepo": "Choose an existing repository from your file system",
+    "selectGitRepository": "Select Folder",
+    "chooseExistingRepo": "Choose an existing folder from your file system",
     "errorTitle": "Error"
   },
   "empty": {

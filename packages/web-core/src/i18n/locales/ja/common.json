@@ -3,10 +3,13 @@
     "custom": "カスタム"
   },
   "folderPicker": {
+    "defaultTitle": "フォルダを選択",
+    "defaultDescription": "プロジェクト用のフォルダを選択してください",
     "legend": "フォルダ名をクリックして移動 • アクションボタンで選択",
     "manualPathLabel": "パスを手動入力:",
     "go": "移動",
     "searchLabel": "現在のディレクトリを検索:",
+    "filterPlaceholder": "フォルダとファイルを絞り込む...",
     "selectCurrent": "現在を選択",
     "gitRepo": "git リポジトリ",
     "selectPath": "パスを選択"
@@ -223,8 +226,8 @@
     "defaultCancel": "キャンセル"
   },
   "dialogs": {
-    "selectGitRepository": "Gitリポジトリを選択",
-    "chooseExistingRepo": "ファイルシステムから既存のリポジトリを選択してください",
+    "selectGitRepository": "フォルダを選択",
+    "chooseExistingRepo": "ファイルシステムから既存のフォルダを選択してください",
     "errorTitle": "エラー"
   },
   "empty": {

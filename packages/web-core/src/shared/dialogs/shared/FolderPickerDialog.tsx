@@ -32,13 +32,12 @@ export interface FolderPickerDialogProps {
 }
 
 const FolderPickerDialogImpl = create<FolderPickerDialogProps>(
-  ({
-    value = '',
-    title = 'Select Folder',
-    description = 'Choose a folder for your project',
-  }) => {
+  ({ value = '', title, description }) => {
     const modal = useModal();
     const { t } = useTranslation('common');
+    const resolvedTitle = title ?? t('folderPicker.defaultTitle');
+    const resolvedDescription =
+      description ?? t('folderPicker.defaultDescription');
     const [currentPath, setCurrentPath] = useState<string>('');
     const [entries, setEntries] = useState<DirectoryEntry[]>([]);
     const [loading, setLoading] = useState(false);
@@ -146,8 +145,8 @@ const FolderPickerDialogImpl = create<FolderPickerDialogProps>(
         <Dialog open={modal.visible} onOpenChange={handleOpenChange}>
           <DialogContent className="max-w-[600px] w-full h-[700px] flex flex-col overflow-hidden">
             <DialogHeader>
-              <DialogTitle>{title}</DialogTitle>
-              <DialogDescription>{description}</DialogDescription>
+              <DialogTitle>{resolvedTitle}</DialogTitle>
+              <DialogDescription>{resolvedDescription}</DialogDescription>
             </DialogHeader>
 
             <div className="flex-1 flex flex-col space-y-4 overflow-hidden">
@@ -189,7 +188,7 @@ const FolderPickerDialogImpl = create<FolderPickerDialogProps>(
                   <Input
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Filter folders and files..."
+                    placeholder={t('folderPicker.filterPlaceholder')}
                     className="pl-10"
                   />
                 </div>
