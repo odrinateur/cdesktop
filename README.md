@@ -1,12 +1,6 @@
-<p align="center">
-  <a href="https://cdesktop.ai">
-    <picture>
-      <source srcset="https://github.com/cdesktop-ai/cdesktop/raw/main/packages/public/vibe-kanban-logo-dark.svg" media="(prefers-color-scheme: dark)">
-      <source srcset="https://github.com/cdesktop-ai/cdesktop/raw/main/packages/public/vibe-kanban-logo.svg" media="(prefers-color-scheme: light)">
-      <img src="https://github.com/cdesktop-ai/cdesktop/raw/main/packages/public/vibe-kanban-logo.svg" alt="cdesktop Logo">
-    </picture>
-  </a>
-</p>
+![](https://github.com/cdesktop-ai/cdesktop/raw/main/packages/public/cdesktop-hero.png)
+
+<h1 align="center">cdesktop</h1>
 
 <p align="center">An open-source alternative to Claude Code Desktop.</p>
 
@@ -19,11 +13,13 @@
   <a href="https://deepwiki.com/cdesktop-ai/cdesktop"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 </p> -->
 
+<p align="center">
+  <video src="https://github.com/user-attachments/assets/50829c85-ef25-4635-89f1-60f5597040cd" controls></video>
+</p>
+
 ## Sponsors
 
 Want your logo featured here? [Get in touch.](mailto:onlylakehouse@163.com)
-
-![](https://github.com/cdesktop-ai/cdesktop/raw/main/packages/public/vibe-kanban-screenshot-overview.png)
 
 ## Overview
 
@@ -44,8 +40,6 @@ The layout is modeled after the Code tab of Anthropic's official desktop app: a 
 - **Speaks your language** — built-in support for English, Simplified/Traditional Chinese, Spanish, French, Japanese, and Korean
 - **Works on your phone** — fully responsive UI; check progress, review diffs, and send follow-ups from any device
 - **Runs in your browser today** — start with `npx cdesktop` and open it in any modern browser; a Tauri desktop build is wired up but not yet shipped
-
-![](https://github.com/cdesktop-ai/cdesktop/raw/main/packages/public/vibe-kanban-screenshot-workspace.png)
 
 > **Beta software.** Expect bugs and rough edges. Please [file issues](https://github.com/cdesktop-ai/cdesktop/issues) when you hit them.
 

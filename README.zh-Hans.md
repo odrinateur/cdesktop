@@ -1,12 +1,6 @@
-<p align="center">
-  <a href="https://cdesktop.ai">
-    <picture>
-      <source srcset="https://github.com/cdesktop-ai/cdesktop/raw/main/packages/public/vibe-kanban-logo-dark.svg" media="(prefers-color-scheme: dark)">
-      <source srcset="https://github.com/cdesktop-ai/cdesktop/raw/main/packages/public/vibe-kanban-logo.svg" media="(prefers-color-scheme: light)">
-      <img src="https://github.com/cdesktop-ai/cdesktop/raw/main/packages/public/vibe-kanban-logo.svg" alt="cdesktop Logo">
-    </picture>
-  </a>
-</p>
+![](https://github.com/cdesktop-ai/cdesktop/raw/main/packages/public/cdesktop-hero.png)
+
+<h1 align="center">cdesktop</h1>
 
 <p align="center">开源版 Claude Code Desktop。</p>
 
@@ -19,11 +13,13 @@
   <a href="https://deepwiki.com/cdesktop-ai/cdesktop"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 </p> -->
 
+<p align="center">
+  <video src="https://github.com/user-attachments/assets/50829c85-ef25-4635-89f1-60f5597040cd" controls></video>
+</p>
+
 ## 赞助商
 
 想在这里展示你的 Logo？[联系我们](mailto:onlylakehouse@163.com)。
-
-![](https://github.com/cdesktop-ai/cdesktop/raw/main/packages/public/vibe-kanban-screenshot-overview.png)
 
 ## 概览
 
@@ -44,8 +40,6 @@ cdesktop 是 Anthropic [Claude Code Desktop](https://code.claude.com/docs/en/des
 - **多语言界面** —— 内置英文、简体中文、繁体中文、西班牙文、法文、日文、韩文
 - **手机可用** —— 完全响应式 UI,在任何设备上查看进度、审阅 diff、追加指令
 - **浏览器即开即用** —— `npx cdesktop` 启动后在任意现代浏览器打开;Tauri 桌面版已接好但尚未发布
-
-![](https://github.com/cdesktop-ai/cdesktop/raw/main/packages/public/vibe-kanban-screenshot-workspace.png)
 
 > **Beta 软件。** 预期会遇到 bug 与粗糙之处,欢迎 [提交 issue](https://github.com/cdesktop-ai/cdesktop/issues)。
 
