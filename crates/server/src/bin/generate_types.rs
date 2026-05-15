@@ -113,6 +113,8 @@ fn generate_types_content() -> String {
         relay_types::RefreshRelaySigningSessionRequest::decl(),
         relay_types::RefreshRelaySigningSessionResponse::decl(),
         server::routes::sessions::CreateFollowUpAttempt::decl(),
+        server::routes::teammates::SpawnTeammateRequest::decl(),
+        server::routes::teammates::SpawnTeammateResponse::decl(),
         db::models::provider::Provider::decl(),
         db::models::coding_agent_turn::RecentModelProviderPair::decl(),
         db::models::coding_agent_turn::TurnSelection::decl(),

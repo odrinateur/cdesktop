@@ -3,6 +3,7 @@ use axum::Router;
 use deployment::{Deployment, DeploymentError};
 use server::{
     DeploymentImpl, middleware::origin::validate_origin, routes, runtime::relay_registration,
+    skill_install,
 };
 use services::services::container::ContainerService;
 use sqlx::Error as SqlxError;
@@ -53,6 +54,11 @@ async fn main() -> Result<(), VibeKanbanError> {
     if !asset_dir().exists() {
         std::fs::create_dir_all(asset_dir())?;
     }
+
+    // Install the bundled `cdesktop` skill into `~/.agent/skills/cdesktop/`
+    // and symlink it into every supported agent-config dir. Errors are
+    // logged inside the helper; never fatal.
+    skill_install::install();
 
     // Copy old database to new location for safe downgrades
     let old_db = asset_dir().join("db.sqlite");

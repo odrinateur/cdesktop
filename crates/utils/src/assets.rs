@@ -59,3 +59,11 @@ pub struct SoundAssets;
 #[derive(RustEmbed)]
 #[folder = "../../assets/scripts"]
 pub struct ScriptAssets;
+
+/// Skill markdown bundled with the cdesktop binary. Currently exposes
+/// `cdesktop/SKILL.md` (the agent-teams playbook). Installed to
+/// `~/.agent/skills/cdesktop/` and symlinked into every agent-config dir
+/// at server startup by `server::skill_install`.
+#[derive(RustEmbed)]
+#[folder = "../../assets/skills"]
+pub struct SkillAssets;

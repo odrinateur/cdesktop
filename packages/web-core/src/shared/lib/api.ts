@@ -100,6 +100,8 @@ import {
   OpenRemoteWorkspaceInEditorRequest,
   OpenRemoteEditorResponse,
   ProfileResponse,
+  SpawnTeammateRequest,
+  SpawnTeammateResponse,
 } from 'shared/types';
 import type { Project as RemoteProject } from 'shared/remote-types';
 import type { WorkspaceWithSession } from '@/shared/types/attempt';
@@ -393,6 +395,20 @@ export const sessionsApi = {
       body: JSON.stringify(data),
     });
     return handleApiResponse<Session>(response);
+  },
+
+  spawnTeammate: async (
+    workspaceId: string,
+    data: SpawnTeammateRequest
+  ): Promise<SpawnTeammateResponse> => {
+    const response = await makeRequest(
+      `/api/workspaces/${workspaceId}/teammates`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
+    return handleApiResponse<SpawnTeammateResponse>(response);
   },
 };
 

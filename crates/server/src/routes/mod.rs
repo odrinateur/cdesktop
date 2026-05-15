@@ -30,6 +30,7 @@ pub mod search;
 pub mod sessions;
 pub mod ssh_session;
 pub mod tags;
+pub mod teammates;
 pub mod terminal;
 pub mod webrtc;
 pub mod workspaces;

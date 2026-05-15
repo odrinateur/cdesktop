@@ -324,7 +324,16 @@ export type RefreshRelaySigningSessionRequest = { client_id: string, timestamp: 
 
 export type RefreshRelaySigningSessionResponse = { signing_session_id: string, };
 
-export type CreateFollowUpAttempt = { prompt: string, executor_config: ExecutorConfig, retry_process_id: string | null, force_when_dirty: boolean | null, perform_git_reset: boolean | null, 
+export type CreateFollowUpAttempt = { prompt: string, 
+/**
+ * Executor + model + permission + reasoning config for this turn.
+ * Optional — when omitted the server inherits the recipient session's
+ * last config via `ExecutionProcess::latest_executor_config_for_session`.
+ * Frontend callers still send a full config; the `cdesktop team send`
+ * CLI omits it so peers don't accidentally swap a teammate's model
+ * mid-stream.
+ */
+executor_config?: ExecutorConfig, retry_process_id: string | null, force_when_dirty: boolean | null, perform_git_reset: boolean | null, 
 /**
  * Optional branch to check out in worktree-disabled mode before spawning.
  */
@@ -334,9 +343,36 @@ branch?: string,
  */
 create_new_branch?: boolean, 
 /**
- * Provider to route this message through. None = use Default (ambient auth).
+ * Provider to route this message through. `None` = inherit from the
+ * recipient's last execution (same fallback as `executor_config`).
  */
 selected_provider_id?: string, };
+
+export type SpawnTeammateRequest = { 
+/**
+ * Display name (also serves as role label). Required, ≤24 chars,
+ * no embedded newlines.
+ */
+name: string, 
+/**
+ * Initial bootstrap prompt. Optional — when omitted, the teammate
+ * boots with the fallback message from the wrap template.
+ */
+prompt?: string, 
+/**
+ * Executor config (executor + variant + model + reasoning +
+ * permission policy). Optional — when omitted, the server inherits
+ * from the caller's last execution.
+ */
+executor_config?: ExecutorConfig, 
+/**
+ * Provider id for routing this teammate's API calls. Optional —
+ * inherited from caller when omitted. Required when the spawn
+ * changes executor type relative to the caller.
+ */
+selected_provider_id?: string, };
+
+export type SpawnTeammateResponse = { session_id: string, };
 
 export type Provider = { id: string, name: string, kind: AiProviderKind, presetId: string | null, enabled: boolean, apiKey: string | null, 
 /**

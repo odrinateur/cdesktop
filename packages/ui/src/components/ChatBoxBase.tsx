@@ -39,6 +39,12 @@ interface ChatBoxBaseProps {
   // new-session composer for its folder/branch/worktree/+ chip row.
   chipRow?: ReactNode;
 
+  // Team pill row rendered above the editor (between header and chip
+  // row, or above the textarea when chip row is absent). Used by the
+  // existing-session composer to show the workspace's team roster and
+  // a "+ teammate" button. See `plans/agent-teams-mvp.md` UI section.
+  teamPillRow?: ReactNode;
+
   // Footer left content (additional toolbar items like attach button)
   footerLeft?: ReactNode;
 
@@ -83,6 +89,7 @@ export function ChatBoxBase({
   headerRight,
   headerLeft,
   chipRow,
+  teamPillRow,
   footerLeft,
   footerRight,
   modelSelector,
@@ -141,6 +148,13 @@ export function ChatBoxBase({
             {headerLeft}
           </div>
           <Toolbar className="gap-[9px]">{headerRight}</Toolbar>
+        </div>
+      )}
+
+      {/* Team pill row (existing-session composer: lead + teammates). */}
+      {teamPillRow && (
+        <div className="flex flex-wrap items-center gap-half py-half">
+          {teamPillRow}
         </div>
       )}
 
