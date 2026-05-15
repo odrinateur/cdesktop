@@ -1,16 +1,16 @@
 /**
  * Spawn-teammate modal.
  *
- * Visually mirrors the composer card: stacked Name + Prompt fields above
- * a control rail that mounts `ModelSelectorContainer` (preset / permission /
- * model / reasoning / provider). Initial state inherits from the caller
- * session's last executor config.
+ * Visually mirrors the existing-session composer: header + name/prompt
+ * fields, then a control rail with executor chip + preset/permission
+ * (left slot) + provider/model picker (right slot). Initial picker state
+ * is shared with the caller workspace via `useWorkspacePickerSelection`.
  *
  * POSTs to `/api/workspaces/{id}/teammates` and surfaces structured
  * `TeammateError.code`s inline. See `plans/agent-teams-mvp.md` UI section.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -20,17 +20,30 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@vibe/ui/components/Dialog';
+} from '@vibe/ui/components/KeyboardDialog';
 import { Input } from '@vibe/ui/components/Input';
 import { PrimaryButton } from '@vibe/ui/components/PrimaryButton';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@vibe/ui/components/Dropdown';
+import { CheckIcon } from '@phosphor-icons/react';
 import { ModelSelectorContainer } from '@/shared/components/ModelSelectorContainer';
+import { ProviderModelPicker } from '@/shared/components/ProviderModelPicker';
+import { AgentIcon, getAgentName } from '@/shared/components/AgentIcon';
+import { SettingsDialog } from '@/shared/dialogs/settings/SettingsDialog';
 import { sessionsApi } from '@/shared/lib/api';
 import { ApiError } from '@/shared/lib/api';
 import { useExecutorConfig } from '@/shared/hooks/useExecutorConfig';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
 import { useHostId } from '@/shared/providers/HostIdProvider';
+import { useWorkspacePickerSelection } from '@/shared/hooks/useWorkspacePickerSelection';
+import { isAgentDefaultModelId } from '@/shared/lib/agentDefaultModel';
 import { workspaceSessionKeys } from '@/shared/hooks/workspaceSessionKeys';
 import type {
+  BaseCodingAgent,
   ExecutorConfig,
   ExecutorProfileId,
   SpawnTeammateRequest,
@@ -48,6 +61,56 @@ export interface SpawnTeammateModalProps {
   configExecutorProfile?: ExecutorProfileId | null;
   /** Called after successful spawn with the new session id. */
   onSpawned?: (sessionId: string) => void;
+}
+
+const agentChipClassName =
+  'inline-flex items-center gap-half rounded-md bg-secondary px-base py-half ' +
+  'min-h-7 text-sm text-normal hover:bg-panel ' +
+  'disabled:cursor-not-allowed disabled:opacity-50 ' +
+  'focus:outline-none focus-visible:ring-1 focus-visible:ring-brand';
+
+function AgentChip({
+  selected,
+  options,
+  onChange,
+  disabled,
+}: {
+  selected: BaseCodingAgent | null;
+  options: BaseCodingAgent[];
+  onChange: (agent: BaseCodingAgent) => void;
+  disabled?: boolean;
+}) {
+  if (options.length === 0) return null;
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          disabled={disabled}
+          className={agentChipClassName}
+        >
+          <AgentIcon agent={selected} className="h-[0.9rem] w-[0.9rem]" />
+          <span className="max-w-[140px] truncate">
+            {selected ? getAgentName(selected) : 'Agent'}
+          </span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
+        {options.map((agent) => (
+          <DropdownMenuItem
+            key={agent}
+            badge={selected === agent ? <CheckIcon weight="bold" /> : undefined}
+            onSelect={() => onChange(agent)}
+          >
+            <span className="flex items-center gap-2">
+              <AgentIcon agent={agent} className="h-[0.9rem] w-[0.9rem]" />
+              <span>{getAgentName(agent)}</span>
+            </span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }
 
 /** Map server-side `TeammateError.code` to a localized inline message. */
@@ -72,11 +135,6 @@ function translateTeammateError(
   }
 }
 
-/**
- * Server returns errors shaped like `"TeammateError: EXECUTOR_REQUIRES_PROVIDER: …"`
- * — see `ErrorInfo::with_status` in `crates/server/src/error.rs`. Parse the
- * code so we can render a localized CTA instead of the raw message.
- */
 function parseCode(message: string | undefined): string | null {
   if (!message) return null;
   const match = message.match(/(?:TeammateError:\s*)?([A-Z_]+):/);
@@ -100,14 +158,14 @@ export function SpawnTeammateModal({
   const [prompt, setPrompt] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Mirror the composer's executor-config state so the modal's picker
-  // behaves identically to the bottom-rail picker in SessionChatBox.
   const {
     executorConfig,
     effectiveExecutor,
     selectedVariant,
+    executorOptions,
     variantOptions,
     presetOptions,
+    setExecutor,
     setVariant,
     setOverrides,
   } = useExecutorConfig({
@@ -116,6 +174,15 @@ export function SpawnTeammateModal({
     configExecutorProfile,
   });
 
+  const {
+    selectedProviderId,
+    selectedModelId,
+    selectedReasoningId,
+    preferredEffortId,
+    setSelection,
+    setPreferredEffort,
+  } = useWorkspacePickerSelection(workspaceId);
+
   const nameTooLong = name.length > MAX_NAME_LEN;
   const canSubmit = name.trim().length > 0 && !nameTooLong;
 
@@ -123,7 +190,6 @@ export function SpawnTeammateModal({
     mutationFn: async (body: SpawnTeammateRequest) =>
       sessionsApi.spawnTeammate(workspaceId, body),
     onSuccess: (data) => {
-      // Invalidate the workspace-sessions cache so the new pill appears.
       queryClient.invalidateQueries({
         queryKey: workspaceSessionKeys.byWorkspace(workspaceId, hostId),
       });
@@ -147,28 +213,51 @@ export function SpawnTeammateModal({
   const handleSubmit = useCallback(() => {
     if (!canSubmit || mutation.isPending) return;
     setErrorMessage(null);
+    // Resolve the "agent default" sentinel (empty-string model id) to
+    // `null` so the spawn applier skips `--model` instead of sending
+    // `--model ""`, which Claude rejects with `400: model: String should
+    // have at least 1 character`.
+    const resolvedModelId = isAgentDefaultModelId(selectedModelId)
+      ? null
+      : (selectedModelId ?? executorConfig?.model_id ?? null);
+    const resolvedReasoningId =
+      selectedReasoningId ?? executorConfig?.reasoning_id ?? null;
+    const cfg: ExecutorConfig | null = executorConfig
+      ? {
+          ...executorConfig,
+          model_id: resolvedModelId,
+          reasoning_id: resolvedReasoningId,
+        }
+      : null;
     const body: SpawnTeammateRequest = {
       name: name.trim(),
     };
     if (prompt.trim().length > 0) body.prompt = prompt;
-    if (executorConfig) body.executor_config = executorConfig;
+    if (cfg) body.executor_config = cfg;
+    if (selectedProviderId) body.selected_provider_id = selectedProviderId;
     mutation.mutate(body);
-  }, [canSubmit, executorConfig, mutation, name, prompt]);
-
-  const titleNode = useMemo(() => t('conversation.team.spawnTitle'), [t]);
+  }, [
+    canSubmit,
+    executorConfig,
+    mutation,
+    name,
+    prompt,
+    selectedModelId,
+    selectedProviderId,
+    selectedReasoningId,
+  ]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{titleNode}</DialogTitle>
+          <DialogTitle>{t('conversation.team.spawnTitle')}</DialogTitle>
           <DialogDescription>
             {t('conversation.team.spawnDescription')}
           </DialogDescription>
         </DialogHeader>
 
-        {/* Composer-styled body: stacked text fields above a control rail. */}
-        <div className="flex flex-col gap-base px-double pb-base">
+        <div className="flex flex-col gap-base">
           <label className="flex flex-col gap-half">
             <span className="text-sm font-medium">
               {t('conversation.team.nameLabel')}
@@ -199,22 +288,43 @@ export function SpawnTeammateModal({
             />
           </label>
 
-          {/* Control rail — mirrors the composer's bottom toolbar. */}
           {effectiveExecutor && (
-            <div className="flex flex-wrap items-center gap-base border-t border-border pt-base">
-              <ModelSelectorContainer
-                slot="all"
-                agent={effectiveExecutor}
-                workspaceId={workspaceId}
-                onAdvancedSettings={() => {
-                  /* spawn modal: no advanced-settings link */
-                }}
-                presets={variantOptions}
-                selectedPreset={selectedVariant}
-                onPresetSelect={setVariant}
-                onOverrideChange={setOverrides}
-                executorConfig={executorConfig}
-                presetOptions={presetOptions}
+            <div className="flex flex-wrap items-center justify-between gap-base border-t border-border pt-base">
+              <div className="flex flex-wrap items-center gap-base">
+                <AgentChip
+                  selected={effectiveExecutor}
+                  options={executorOptions}
+                  onChange={setExecutor}
+                  disabled={mutation.isPending}
+                />
+                <ModelSelectorContainer
+                  slot="left"
+                  agent={effectiveExecutor}
+                  workspaceId={workspaceId}
+                  onAdvancedSettings={() =>
+                    SettingsDialog.show({ initialSection: 'agents' })
+                  }
+                  presets={variantOptions}
+                  selectedPreset={selectedVariant}
+                  onPresetSelect={setVariant}
+                  onOverrideChange={setOverrides}
+                  executorConfig={executorConfig}
+                  presetOptions={presetOptions}
+                />
+              </div>
+              <ProviderModelPicker
+                selectedProviderId={selectedProviderId}
+                selectedModelId={selectedModelId}
+                selectedReasoningId={selectedReasoningId}
+                preferredEffortId={preferredEffortId}
+                activeAgent={effectiveExecutor}
+                onManageProviders={() =>
+                  SettingsDialog.show({ initialSection: 'providers' })
+                }
+                onSelectionChange={(providerId, modelId, reasoningId) =>
+                  setSelection(providerId, modelId, reasoningId)
+                }
+                onPreferredEffortChange={setPreferredEffort}
               />
             </div>
           )}

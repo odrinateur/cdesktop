@@ -478,6 +478,28 @@
       "renamePlaceholder": "输入会话名称",
       "renaming": "正在重命名..."
     },
+    "team": {
+      "main": "主",
+      "addTeammate": "+ 队友",
+      "addTeammateAriaLabel": "添加队友",
+      "spawnTitle": "创建队友",
+      "spawnDescription": "在此工作区中创建一个队友会话。队友共享您的工作目录。",
+      "nameLabel": "名称",
+      "namePlaceholder": "researcher",
+      "namePlaceholderHelp": "必填。最多 24 个字符。也用作标签。",
+      "promptLabel": "初始提示词",
+      "promptPlaceholder": "可选。此队友应首先处理什么？",
+      "submit": "创建",
+      "submitting": "创建中…",
+      "cancel": "取消",
+      "errorGeneric": "创建队友失败。",
+      "errorProviderNotConfigured": "提供商缺失或已禁用。请在设置中配置提供商。",
+      "errorExecutorRequiresProvider": "跨执行器创建需要提供商 + 模型。请使用 CLI `cdesktop team spawn`。",
+      "errorNameInvalid": "名称为空、过长或包含换行符。",
+      "errorWorkspaceArchived": "无法在已归档的工作区中创建队友。",
+      "errorNotLead": "只有主会话才能从 CLI 创建队友。",
+      "successToast": "已创建队友 '{{name}}'"
+    },
     "reviewComments": {
       "count_one": "{{count}} 条审查评论将被包含",
       "count_other": "{{count}} 条审查评论将被包含"

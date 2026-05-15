@@ -167,6 +167,28 @@
       "renamePlaceholder": "Entrez le nom de la session",
       "renaming": "Renommage..."
     },
+    "team": {
+      "main": "principal",
+      "addTeammate": "+ coéquipier",
+      "addTeammateAriaLabel": "Ajouter un coéquipier",
+      "spawnTitle": "Créer un coéquipier",
+      "spawnDescription": "Créez une session de coéquipier dans cet espace de travail. Les coéquipiers partagent votre répertoire de travail.",
+      "nameLabel": "Nom",
+      "namePlaceholder": "chercheur",
+      "namePlaceholderHelp": "Obligatoire. Jusqu'à 24 caractères. Sert aussi d'étiquette de pastille.",
+      "promptLabel": "Invite initiale",
+      "promptPlaceholder": "Facultatif. Sur quoi ce coéquipier doit-il travailler en premier ?",
+      "submit": "Créer",
+      "submitting": "Création…",
+      "cancel": "Annuler",
+      "errorGeneric": "Échec de la création du coéquipier.",
+      "errorProviderNotConfigured": "Le fournisseur est manquant ou désactivé. Configurez les fournisseurs dans Paramètres.",
+      "errorExecutorRequiresProvider": "La création inter-exécuteurs nécessite un fournisseur + modèle. Utilisez le CLI `cdesktop team spawn` pour cela.",
+      "errorNameInvalid": "Le nom est vide, trop long ou contient des sauts de ligne.",
+      "errorWorkspaceArchived": "Impossible de créer des coéquipiers dans un espace de travail archivé.",
+      "errorNotLead": "Seule la session principale peut créer des coéquipiers depuis le CLI.",
+      "successToast": "Coéquipier « {{name}} » créé"
+    },
     "reviewComments": {
       "count_one": "{{count}} commentaire de révision sera inclus",
       "count_other": "{{count}} commentaires de révision seront inclus"

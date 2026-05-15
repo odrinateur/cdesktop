@@ -127,20 +127,52 @@ pub struct ExecutorConfig {
     #[serde(alias = "profile", deserialize_with = "de_base_coding_agent_kebab")]
     pub executor: BaseCodingAgent,
     /// Optional variant/preset name (e.g., "PLAN", "ROUTER")
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "de_empty_string_as_none",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub variant: Option<String>,
-    /// Model override (e.g., "anthropic/claude-sonnet-4-20250514")
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    /// Model override (e.g., "anthropic/claude-sonnet-4-20250514"). The
+    /// frontend's `ProviderModelPicker` uses an empty string sentinel to
+    /// mean "use the agent's ambient default (no `--model` flag)"; we
+    /// normalize that at deserialization so executor arg-builders never
+    /// see `Some("")`, which would otherwise produce `--model ""` and
+    /// trip a 400 from agents like Claude.
+    #[serde(
+        default,
+        deserialize_with = "de_empty_string_as_none",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub model_id: Option<String>,
     /// Agent mode override
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "de_empty_string_as_none",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub agent_id: Option<String>,
     /// Reasoning effort override (e.g., "high", "medium")
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "de_empty_string_as_none",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub reasoning_id: Option<String>,
     /// Permission policy override
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub permission_policy: Option<PermissionPolicy>,
+}
+
+/// Coerces `Some("")` (and missing field) to `None`. Frontend pickers can
+/// emit empty-string sentinels; downstream executor arg-builders only
+/// distinguish `Some(non_empty)` vs `None`.
+fn de_empty_string_as_none<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let opt = Option::<String>::deserialize(deserializer)?;
+    Ok(opt.filter(|s| !s.is_empty()))
 }
 
 impl ExecutorConfig {
