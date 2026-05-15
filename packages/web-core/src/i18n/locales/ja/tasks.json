@@ -496,6 +496,28 @@
       "renamePlaceholder": "セッション名を入力",
       "renaming": "名前を変更中..."
     },
+    "team": {
+      "main": "メイン",
+      "addTeammate": "+ チームメイト",
+      "addTeammateAriaLabel": "チームメイトを追加",
+      "spawnTitle": "チームメイトを作成",
+      "spawnDescription": "このワークスペースにチームメイトセッションを作成します。チームメイトは作業ディレクトリを共有します。",
+      "nameLabel": "名前",
+      "namePlaceholder": "researcher",
+      "namePlaceholderHelp": "必須。最大24文字。ピルのラベルにもなります。",
+      "promptLabel": "初期プロンプト",
+      "promptPlaceholder": "任意。このチームメイトが最初に取り組む内容は？",
+      "submit": "作成",
+      "submitting": "作成中…",
+      "cancel": "キャンセル",
+      "errorGeneric": "チームメイトの作成に失敗しました。",
+      "errorProviderNotConfigured": "プロバイダーが未設定または無効です。設定でプロバイダーを構成してください。",
+      "errorExecutorRequiresProvider": "異なるエグゼキュータでの作成にはプロバイダーとモデルが必要です。CLI `cdesktop team spawn` を使用してください。",
+      "errorNameInvalid": "名前が空、長すぎる、または改行を含んでいます。",
+      "errorWorkspaceArchived": "アーカイブ済みワークスペースではチームメイトを作成できません。",
+      "errorNotLead": "CLIからチームメイトを作成できるのはリードセッションのみです。",
+      "successToast": "チームメイト「{{name}}」を作成しました"
+    },
     "reviewComments": {
       "count_one": "{{count}}件のレビューコメントが含まれます",
       "count_other": "{{count}}件のレビューコメントが含まれます"

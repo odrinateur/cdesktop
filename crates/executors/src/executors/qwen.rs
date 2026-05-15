@@ -59,7 +59,9 @@ impl QwenCode {
 #[async_trait]
 impl StandardCodingAgentExecutor for QwenCode {
     fn apply_overrides(&mut self, executor_config: &ExecutorConfig) {
-        if let Some(model_id) = executor_config.model_id.as_ref() {
+        if let Some(model_id) = executor_config.model_id.as_ref()
+            && !model_id.is_empty()
+        {
             self.model = Some(model_id.clone());
         }
 

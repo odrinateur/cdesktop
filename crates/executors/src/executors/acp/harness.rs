@@ -72,7 +72,9 @@ impl AcpAgentHarness {
     }
 
     pub fn apply_overrides(&mut self, executor_config: &crate::profile::ExecutorConfig) {
-        if let Some(model_id) = &executor_config.model_id {
+        if let Some(model_id) = &executor_config.model_id
+            && !model_id.is_empty()
+        {
             self.model = Some(model_id.clone());
         }
 
@@ -484,8 +486,7 @@ impl AcpAgentHarness {
                                 }
                                 Err(e) => {
                                     tracing::debug!("error {} {e} {:?}", e.code, e.data);
-                                    if e.code
-                                        == agent_client_protocol::ErrorCode::InternalError
+                                    if e.code == agent_client_protocol::ErrorCode::InternalError
                                         && e.data
                                             .as_ref()
                                             .is_some_and(|d| d == "server shut down unexpectedly")

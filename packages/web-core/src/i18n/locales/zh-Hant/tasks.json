@@ -496,6 +496,28 @@
       "renamePlaceholder": "輸入工作階段名稱",
       "renaming": "正在重新命名..."
     },
+    "team": {
+      "main": "主要",
+      "addTeammate": "+ 隊友",
+      "addTeammateAriaLabel": "新增隊友",
+      "spawnTitle": "建立隊友",
+      "spawnDescription": "在此工作區中建立一個隊友工作階段。隊友共用您的工作目錄。",
+      "nameLabel": "名稱",
+      "namePlaceholder": "researcher",
+      "namePlaceholderHelp": "必填。最多 24 個字元。也作為標籤使用。",
+      "promptLabel": "初始提示詞",
+      "promptPlaceholder": "選填。此隊友應該先處理什麼？",
+      "submit": "建立",
+      "submitting": "建立中…",
+      "cancel": "取消",
+      "errorGeneric": "建立隊友失敗。",
+      "errorProviderNotConfigured": "提供者缺失或已停用。請在設定中設定提供者。",
+      "errorExecutorRequiresProvider": "跨執行器建立需要提供者 + 模型。請使用 CLI `cdesktop team spawn`。",
+      "errorNameInvalid": "名稱為空、過長或包含換行符號。",
+      "errorWorkspaceArchived": "無法在已封存的工作區中建立隊友。",
+      "errorNotLead": "只有主要工作階段才能從 CLI 建立隊友。",
+      "successToast": "已建立隊友「{{name}}」"
+    },
     "reviewComments": {
       "count_one": "{{count}} 則審查評論將被包含",
       "count_other": "{{count}} 則審查評論將被包含"

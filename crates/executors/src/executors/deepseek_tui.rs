@@ -143,15 +143,19 @@ impl DeepseekTui {
     }
 
     fn bypass_approvals(&self) -> bool {
-        matches!(self.approval_policy, Some(PermissionPolicy::BypassPermissions))
-            || self.yolo.unwrap_or(false)
+        matches!(
+            self.approval_policy,
+            Some(PermissionPolicy::BypassPermissions)
+        ) || self.yolo.unwrap_or(false)
     }
 }
 
 #[async_trait]
 impl StandardCodingAgentExecutor for DeepseekTui {
     fn apply_overrides(&mut self, executor_config: &ExecutorConfig) {
-        if let Some(model_id) = &executor_config.model_id {
+        if let Some(model_id) = &executor_config.model_id
+            && !model_id.is_empty()
+        {
             self.model = Some(model_id.clone());
         }
         if let Some(policy) = executor_config.permission_policy.clone() {

@@ -496,6 +496,28 @@
       "renamePlaceholder": "Ingrese el nombre de la sesión",
       "renaming": "Renombrando..."
     },
+    "team": {
+      "main": "principal",
+      "addTeammate": "+ compañero",
+      "addTeammateAriaLabel": "Añadir compañero",
+      "spawnTitle": "Crear compañero",
+      "spawnDescription": "Crea una sesión de compañero en este espacio de trabajo. Los compañeros comparten tu directorio de trabajo.",
+      "nameLabel": "Nombre",
+      "namePlaceholder": "investigador",
+      "namePlaceholderHelp": "Obligatorio. Hasta 24 caracteres. Sirve también como etiqueta de la pastilla.",
+      "promptLabel": "Mensaje inicial",
+      "promptPlaceholder": "Opcional. ¿En qué debe trabajar primero este compañero?",
+      "submit": "Crear",
+      "submitting": "Creando…",
+      "cancel": "Cancelar",
+      "errorGeneric": "No se pudo crear el compañero.",
+      "errorProviderNotConfigured": "El proveedor falta o está desactivado. Configura proveedores en Ajustes.",
+      "errorExecutorRequiresProvider": "La creación con otro ejecutor requiere proveedor + modelo. Usa el CLI `cdesktop team spawn` para esto.",
+      "errorNameInvalid": "El nombre está vacío, es demasiado largo o contiene saltos de línea.",
+      "errorWorkspaceArchived": "No se pueden crear compañeros en un espacio de trabajo archivado.",
+      "errorNotLead": "Solo la sesión principal puede crear compañeros desde el CLI.",
+      "successToast": "Compañero '{{name}}' creado"
+    },
     "reviewComments": {
       "count_one": "{{count}} comentario de revisión será incluido",
       "count_other": "{{count}} comentarios de revisión serán incluidos"

@@ -147,7 +147,9 @@ impl Hermes {
 #[async_trait]
 impl StandardCodingAgentExecutor for Hermes {
     fn apply_overrides(&mut self, executor_config: &ExecutorConfig) {
-        if let Some(model_id) = &executor_config.model_id {
+        if let Some(model_id) = &executor_config.model_id
+            && !model_id.is_empty()
+        {
             self.model = Some(model_id.clone());
         }
         if let Some(policy) = executor_config.permission_policy.clone() {
@@ -379,7 +381,10 @@ mod tests {
     fn bypass_policy_injects_yolo_env() {
         let agent = hermes_with_policy(Some(PermissionPolicy::BypassPermissions));
         let env = agent.with_yolo_env(empty_env());
-        assert_eq!(env.vars.get("HERMES_YOLO_MODE").map(String::as_str), Some("1"));
+        assert_eq!(
+            env.vars.get("HERMES_YOLO_MODE").map(String::as_str),
+            Some("1")
+        );
     }
 
     #[test]

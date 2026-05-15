@@ -714,7 +714,6 @@ export function SessionChatBox<TExecutor extends string = string>({
       isRunning={showRunningAnimation}
       dropzone={dropzone}
       modelSelector={modelSelector}
-      teamPillRow={teamPillRow}
       contextGauge={
         supportsContextUsage ? (
           <ContextUsageGauge tokenUsageInfo={tokenUsageInfo} />
@@ -830,6 +829,7 @@ export function SessionChatBox<TExecutor extends string = string>({
                   ) : null}
                 </>
               )}
+              {teamPillRow}
             </>
           )}
         </>

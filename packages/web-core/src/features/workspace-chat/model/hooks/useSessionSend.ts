@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import type { ExecutorConfig } from 'shared/types';
 import { sessionsApi } from '@/shared/lib/api';
+import { isAgentDefaultModelId } from '@/shared/lib/agentDefaultModel';
 import { useCreateSession } from './useCreateSession';
 
 interface UseSessionSendOptions {
@@ -70,10 +71,14 @@ export function useSessionSend({
 
       // Picker is authoritative for model_id / reasoning_id; overlay them
       // onto executor_config right before send so any leftover values from
-      // scratch/lastUsed/preset can't leak through.
+      // scratch/lastUsed/preset can't leak through. The empty-string sentinel
+      // from ProviderModelPicker's "Default Model" entry maps to null so the
+      // spawn applier skips `--model` instead of sending `--model ""`.
       const effectiveConfig: ExecutorConfig = {
         ...executorConfig,
-        model_id: selectedModelId ?? executorConfig.model_id ?? null,
+        model_id: isAgentDefaultModelId(selectedModelId ?? null)
+          ? null
+          : (selectedModelId ?? executorConfig.model_id ?? null),
         reasoning_id:
           selectedReasoningId ?? executorConfig.reasoning_id ?? null,
       };
