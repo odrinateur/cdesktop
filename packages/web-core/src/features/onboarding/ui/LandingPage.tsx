@@ -219,9 +219,7 @@ export function LandingPage() {
   );
 
   const logoSrc =
-    resolveTheme(theme) === 'dark'
-      ? '/favicon.svg'
-      : '/favicon.svg';
+    resolveTheme(theme) === 'dark' ? '/favicon.svg' : '/favicon.svg';
 
   useEffect(() => {
     if (!config || initialized) return;

@@ -291,8 +291,11 @@ export function ProviderForm({
   //   useState<DeepseekTuiPayload>(
   //     provider?.deepseekTui ?? { baseUrl: null, apiKey: null, env: {} }
   //   );
-  const deepseekTuiPayload: DeepseekTuiPayload =
-    provider?.deepseekTui ?? { baseUrl: null, apiKey: null, env: {} };
+  const deepseekTuiPayload: DeepseekTuiPayload = provider?.deepseekTui ?? {
+    baseUrl: null,
+    apiKey: null,
+    env: {},
+  };
   const [geminiPayload, setGeminiPayload] = useState<GeminiPayload>(
     provider?.gemini ?? { baseUrl: null, apiKey: null, env: {} }
   );

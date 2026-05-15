@@ -41,7 +41,10 @@ export function buildSwitchMarkers(
       curr.provider_id !== prev.provider_id
     ) {
       const providerName = providers.get(curr.provider_id) ?? curr.provider_id;
-      markers.set(curr.execution_process_id, format(curr.model_id, providerName));
+      markers.set(
+        curr.execution_process_id,
+        format(curr.model_id, providerName)
+      );
     }
   }
   return markers;

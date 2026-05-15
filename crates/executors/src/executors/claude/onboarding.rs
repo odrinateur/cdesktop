@@ -5,12 +5,7 @@
 //! waiting for keyboard input that never arrives. We patch the flag once
 //! per cdesktop process before the first spawn.
 
-use std::{
-    fs,
-    io::Write,
-    path::PathBuf,
-    sync::OnceLock,
-};
+use std::{fs, io::Write, path::PathBuf, sync::OnceLock};
 
 use serde_json::{Map, Value};
 
@@ -22,7 +17,10 @@ static ENSURED: OnceLock<()> = OnceLock::new();
 pub fn ensure_completed() {
     ENSURED.get_or_init(|| {
         if let Err(err) = patch() {
-            tracing::warn!(?err, "Failed to ensure ~/.claude.json hasCompletedOnboarding");
+            tracing::warn!(
+                ?err,
+                "Failed to ensure ~/.claude.json hasCompletedOnboarding"
+            );
         }
     });
 }
@@ -65,7 +63,8 @@ fn patch() -> Result<(), String> {
     let tmp = path.with_extension("json.cdesktop-tmp");
     {
         let mut f = fs::File::create(&tmp).map_err(|e| format!("create tmp: {e}"))?;
-        f.write_all(&serialized).map_err(|e| format!("write tmp: {e}"))?;
+        f.write_all(&serialized)
+            .map_err(|e| format!("write tmp: {e}"))?;
         f.sync_all().ok();
     }
     fs::rename(&tmp, &path).map_err(|e| format!("rename: {e}"))?;

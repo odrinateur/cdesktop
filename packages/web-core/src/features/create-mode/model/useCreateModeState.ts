@@ -531,8 +531,7 @@ export function useCreateModeState({
             const branches = await repoApi.getBranches(repo.id);
             if (cancelled) return;
             const current = branches.find((b) => b.is_current);
-            targetBranch =
-              current?.name ?? repo.default_target_branch ?? null;
+            targetBranch = current?.name ?? repo.default_target_branch ?? null;
           } catch {
             targetBranch = repo.default_target_branch ?? null;
           }

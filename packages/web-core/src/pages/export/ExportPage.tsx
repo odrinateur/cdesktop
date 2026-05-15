@@ -44,9 +44,7 @@ export function ExportPage({
   const { theme } = useTheme();
 
   const logoSrc =
-    resolveTheme(theme) === 'dark'
-      ? '/favicon.svg'
-      : '/favicon.svg';
+    resolveTheme(theme) === 'dark' ? '/favicon.svg' : '/favicon.svg';
 
   return (
     <div className="h-full overflow-auto bg-primary">

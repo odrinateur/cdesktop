@@ -33,9 +33,21 @@ const THEME_OPTIONS: Array<{
   icon: LucideIcon;
   labelKey: string;
 }> = [
-  { mode: ThemeMode.LIGHT, icon: Sun, labelKey: 'sidebar.controlPanel.theme.light' },
-  { mode: ThemeMode.DARK, icon: Moon, labelKey: 'sidebar.controlPanel.theme.dark' },
-  { mode: ThemeMode.SYSTEM, icon: Monitor, labelKey: 'sidebar.controlPanel.theme.system' },
+  {
+    mode: ThemeMode.LIGHT,
+    icon: Sun,
+    labelKey: 'sidebar.controlPanel.theme.light',
+  },
+  {
+    mode: ThemeMode.DARK,
+    icon: Moon,
+    labelKey: 'sidebar.controlPanel.theme.dark',
+  },
+  {
+    mode: ThemeMode.SYSTEM,
+    icon: Monitor,
+    labelKey: 'sidebar.controlPanel.theme.system',
+  },
 ];
 
 export function ControlPanelMenu({

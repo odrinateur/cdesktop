@@ -87,8 +87,9 @@ export function ExecutorConfigForm({
     const ui: Record<string, Record<string, unknown>> = {
       env: { 'ui:field': 'KeyValueField' },
     };
-    const props = (schema as { properties?: Record<string, unknown> } | undefined)
-      ?.properties;
+    const props = (
+      schema as { properties?: Record<string, unknown> } | undefined
+    )?.properties;
     if (props) {
       for (const fieldName of Object.keys(props)) {
         const titleKey = `settings.agents.fields.${fieldName}.title`;

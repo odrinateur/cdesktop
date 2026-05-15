@@ -199,10 +199,7 @@ impl CodingAgent {
             }
             Self::Hermes(_) => vec![BaseAgentCapability::ContextUsage],
             Self::CursorAgent(_) => vec![BaseAgentCapability::SetupHelper],
-            Self::Amp(_)
-            | Self::Copilot(_)
-            | Self::Droid(_)
-            | Self::DeepseekTui(_) => vec![],
+            Self::Amp(_) | Self::Copilot(_) | Self::Droid(_) | Self::DeepseekTui(_) => vec![],
             #[cfg(feature = "qa-mode")]
             Self::QaMock(_) => vec![], // QA mock doesn't need special capabilities
         }

@@ -36,12 +36,7 @@ pub fn normalize_logs_with_suppressed_stderr_patterns(
     worktree_path: &Path,
     suppressed_stderr_patterns: &[&str],
 ) -> Vec<tokio::task::JoinHandle<()>> {
-    normalize_logs_with_stderr_filter(
-        msg_store,
-        worktree_path,
-        suppressed_stderr_patterns,
-        None,
-    )
+    normalize_logs_with_stderr_filter(msg_store, worktree_path, suppressed_stderr_patterns, None)
 }
 
 /// Stderr normalization with optional state-machine suppression for
