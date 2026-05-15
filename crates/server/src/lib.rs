@@ -3,6 +3,7 @@ pub mod middleware;
 pub mod relay_pairing;
 pub mod routes;
 pub mod runtime;
+pub mod skill_install;
 pub mod startup;
 
 // #[cfg(feature = "cloud")]

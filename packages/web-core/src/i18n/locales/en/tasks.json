@@ -167,6 +167,28 @@
       "renamePlaceholder": "Enter session name",
       "renaming": "Renaming..."
     },
+    "team": {
+      "main": "main",
+      "addTeammate": "+ teammate",
+      "addTeammateAriaLabel": "Add teammate",
+      "spawnTitle": "Spawn teammate",
+      "spawnDescription": "Spawn a teammate session in this workspace. Teammates share your working directory.",
+      "nameLabel": "Name",
+      "namePlaceholder": "researcher",
+      "namePlaceholderHelp": "Required. Up to 24 characters. Doubles as the pill label.",
+      "promptLabel": "Initial prompt",
+      "promptPlaceholder": "Optional. What should this teammate work on first?",
+      "submit": "Spawn",
+      "submitting": "Spawning…",
+      "cancel": "Cancel",
+      "errorGeneric": "Failed to spawn teammate.",
+      "errorProviderNotConfigured": "Provider is missing or disabled. Configure providers in Settings.",
+      "errorExecutorRequiresProvider": "Cross-executor spawn requires provider + model. Use the `cdesktop team spawn` CLI for this.",
+      "errorNameInvalid": "Name is empty, too long, or contains newlines.",
+      "errorWorkspaceArchived": "Cannot spawn teammates in an archived workspace.",
+      "errorNotLead": "Only the lead session can spawn teammates from the CLI.",
+      "successToast": "Teammate '{{name}}' spawned"
+    },
     "reviewComments": {
       "count_one": "{{count}} review comment will be included",
       "count_other": "{{count}} review comments will be included"

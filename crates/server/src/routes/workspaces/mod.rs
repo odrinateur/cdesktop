@@ -19,7 +19,9 @@ use axum::{
     routing::{get, post},
 };
 
-use crate::{DeploymentImpl, middleware::load_workspace_middleware};
+use crate::{
+    DeploymentImpl, middleware::load_workspace_middleware, routes::teammates::spawn_via_workspace,
+};
 
 pub fn router(deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
     let workspace_id_router = Router::new()
@@ -36,6 +38,7 @@ pub fn router(deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
         .nest("/integration", integration::router())
         .nest("/repos", repos::router())
         .nest("/pull-requests", pr::router())
+        .route("/teammates", post(spawn_via_workspace))
         .layer(from_fn_with_state(
             deployment.clone(),
             load_workspace_middleware,

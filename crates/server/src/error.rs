@@ -89,6 +89,8 @@ pub enum ApiError {
     Pty(#[from] PtyError),
     #[error(transparent)]
     WebRtc(#[from] WebRtcError),
+    #[error(transparent)]
+    Teammate(#[from] crate::routes::teammates::TeammateError),
 }
 
 impl From<&'static str> for ApiError {
@@ -497,6 +499,11 @@ impl IntoResponse for ApiError {
             ),
             ApiError::Config(_) => ErrorInfo::internal("ConfigError"),
             ApiError::Io(_) => ErrorInfo::internal("IoError"),
+            ApiError::Teammate(err) => ErrorInfo::with_status(
+                err.status(),
+                "TeammateError",
+                format!("{}: {}", err.code(), err),
+            ),
             ApiError::WebRtc(err) => match err {
                 WebRtcError::SessionNotFound { .. } => {
                     ErrorInfo::not_found("WebRtcError", err.to_string())

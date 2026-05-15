@@ -11,6 +11,7 @@ import {
   R2_BASE_URL,
   getLatestVersion,
 } from "./download";
+import { runTeam } from "./team";
 
 const CLI_VERSION: string = require("../package.json").version;
 
@@ -283,6 +284,15 @@ function runOrExit(task: Promise<void>): void {
 
 async function main(): Promise<void> {
   fs.mkdirSync(versionCacheDir, { recursive: true });
+
+  // `team` short-circuits cac because we own the subcommand grammar in
+  // `team.ts` (cac would otherwise consume our --flags before they reach
+  // `runTeam`).
+  if (process.argv[2] === "team") {
+    runOrExit(runTeam(process.argv.slice(3)));
+    return;
+  }
+
   const cli = cac("cdesktop");
 
   cli

@@ -50,6 +50,7 @@ import {
   type SessionChatBoxEditorRenderProps,
 } from '@vibe/ui/components/SessionChatBox';
 import { ModelSelectorContainer } from '@/shared/components/ModelSelectorContainer';
+import { TeamPillRowContainer } from './TeamPillRowContainer';
 import { ProviderModelPicker } from '@/shared/components/ProviderModelPicker';
 import {
   useWorkspacePickerSelection,
@@ -508,9 +509,8 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
   // Legacy / never-picked sessions: seed from last-used (or the active agent's
   // first canonical model) so the pill matches what will actually run on send.
   const { data: providers = [] } = useProviders();
-  const { config: agentModelConfig } = useModelSelectorConfig(
-    effectiveExecutor
-  );
+  const { config: agentModelConfig } =
+    useModelSelectorConfig(effectiveExecutor);
   const agentDefaultModels = useMemo(
     () =>
       (agentModelConfig?.models ?? []).map((m) => ({
@@ -632,8 +632,7 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
       model_id: isAgentDefaultModelId(selectedModelId)
         ? null
         : (selectedModelId ?? executorConfig.model_id ?? null),
-      reasoning_id:
-        selectedReasoningId ?? executorConfig.reasoning_id ?? null,
+      reasoning_id: selectedReasoningId ?? executorConfig.reasoning_id ?? null,
     };
 
     cancelDebouncedSave();
@@ -767,8 +766,7 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
       model_id: isAgentDefaultModelId(selectedModelId)
         ? null
         : (selectedModelId ?? executorConfig.model_id ?? null),
-      reasoning_id:
-        selectedReasoningId ?? executorConfig.reasoning_id ?? null,
+      reasoning_id: selectedReasoningId ?? executorConfig.reasoning_id ?? null,
     };
     editRetryMutation.mutate({
       message: localMessage,
@@ -1238,6 +1236,18 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
       dropzone={{ getRootProps, getInputProps, isDragActive }}
       modelSelector={modelSelectorNode}
       modelSelectorLeft={modelSelectorLeftNode}
+      teamPillRow={
+        workspaceId ? (
+          <TeamPillRowContainer
+            workspaceId={workspaceId}
+            currentSessionId={sessionId}
+            onSelectSession={onSelectSession ?? (() => {})}
+            lastUsedConfig={latestConfig ?? null}
+            configExecutorProfile={config?.executor_profile ?? null}
+            visible={!needsExecutorSelection}
+          />
+        ) : undefined
+      }
     />
   );
 }

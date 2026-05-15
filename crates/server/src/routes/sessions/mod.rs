@@ -4,6 +4,7 @@ pub mod review;
 use axum::{
     Extension, Json, Router,
     extract::{Query, State},
+    http::HeaderMap,
     middleware::from_fn_with_state,
     response::Json as ResponseJson,
     routing::{get, post},
@@ -32,8 +33,10 @@ use utils::response::ApiResponse;
 use uuid::Uuid;
 
 use crate::{
-    DeploymentImpl, error::ApiError, middleware::load_session_middleware,
-    routes::workspaces::execution::RunScriptError,
+    DeploymentImpl,
+    error::ApiError,
+    middleware::load_session_middleware,
+    routes::{teammates::spawn_via_session, workspaces::execution::RunScriptError},
 };
 
 #[derive(Debug, Deserialize)]
@@ -109,7 +112,15 @@ pub async fn update_session(
 #[derive(Debug, Deserialize, TS)]
 pub struct CreateFollowUpAttempt {
     pub prompt: String,
-    pub executor_config: ExecutorConfig,
+    /// Executor + model + permission + reasoning config for this turn.
+    /// Optional — when omitted the server inherits the recipient session's
+    /// last config via `ExecutionProcess::latest_executor_config_for_session`.
+    /// Frontend callers still send a full config; the `cdesktop team send`
+    /// CLI omits it so peers don't accidentally swap a teammate's model
+    /// mid-stream.
+    #[serde(default)]
+    #[ts(optional)]
+    pub executor_config: Option<ExecutorConfig>,
     pub retry_process_id: Option<Uuid>,
     pub force_when_dirty: Option<bool>,
     pub perform_git_reset: Option<bool>,
@@ -121,7 +132,8 @@ pub struct CreateFollowUpAttempt {
     #[serde(default)]
     #[ts(optional)]
     pub create_new_branch: Option<bool>,
-    /// Provider to route this message through. None = use Default (ambient auth).
+    /// Provider to route this message through. `None` = inherit from the
+    /// recipient's last execution (same fallback as `executor_config`).
     #[serde(default)]
     #[ts(optional)]
     pub selected_provider_id: Option<Uuid>,
@@ -137,9 +149,18 @@ pub struct ResetProcessRequest {
 pub async fn follow_up(
     Extension(session): Extension<Session>,
     State(deployment): State<DeploymentImpl>,
+    headers: HeaderMap,
     Json(mut payload): Json<CreateFollowUpAttempt>,
 ) -> Result<ResponseJson<ApiResponse<ExecutionProcess>>, ApiError> {
     let pool = &deployment.db().pool;
+
+    // `cdesktop team send` sets this header so the server can attribute the
+    // peer message in telemetry. The UI omits the header (its sends are
+    // not part of the team-coordination flow).
+    let team_from_session: Option<Uuid> = headers
+        .get("x-cdesktop-from-session")
+        .and_then(|v| v.to_str().ok())
+        .and_then(|s| s.parse().ok());
 
     // Load workspace from session
     let mut workspace = Workspace::find_by_id(pool, session.workspace_id)
@@ -187,7 +208,35 @@ pub async fn follow_up(
         .ensure_container_exists(&workspace)
         .await?;
 
-    let executor_profile_id = payload.executor_config.profile_id();
+    // Inherit executor_config + provider from the recipient's last execution
+    // when the caller omits them — used by the `cdesktop team send` CLI so a
+    // peer cannot accidentally swap a teammate's model mid-stream. Frontend
+    // callers always send a config, so the inheritance path is a no-op for
+    // them.
+    let inherited_config_provider =
+        if payload.executor_config.is_none() || payload.selected_provider_id.is_none() {
+            ExecutionProcess::latest_executor_config_for_session(pool, session.id).await?
+        } else {
+            None
+        };
+
+    if payload.executor_config.is_none() {
+        payload.executor_config = inherited_config_provider
+            .as_ref()
+            .map(|(cfg, _)| cfg.clone());
+    }
+    if payload.selected_provider_id.is_none() {
+        payload.selected_provider_id = inherited_config_provider
+            .as_ref()
+            .and_then(|(_, pid)| pid.as_deref().and_then(|s| s.parse().ok()));
+    }
+
+    let mut executor_config = payload.executor_config.ok_or_else(|| {
+        ApiError::BadRequest(
+            "executor_config required: session has no prior execution to inherit from".into(),
+        )
+    })?;
+    let executor_profile_id = executor_config.profile_id();
 
     // Validate executor matches session if session has prior executions
     let expected_executor: Option<String> =
@@ -223,6 +272,7 @@ pub async fn follow_up(
     let latest_session_info = CodingAgentTurn::find_latest_session_info(pool, session.id).await?;
 
     let prompt = payload.prompt;
+    let prompt_byte_count = prompt.len();
 
     let working_dir = session
         .agent_working_dir
@@ -248,9 +298,9 @@ pub async fn follow_up(
             )));
         }
 
-        if let Some(m) = payload.executor_config.model_id.as_deref() {
-            payload.executor_config.model_id =
-                Some(provider.prefix_opencode_model_id(payload.executor_config.executor, m));
+        if let Some(m) = executor_config.model_id.as_deref() {
+            executor_config.model_id =
+                Some(provider.prefix_opencode_model_id(executor_config.executor, m));
         }
 
         Some(provider)
@@ -264,14 +314,14 @@ pub async fn follow_up(
             prompt: prompt.clone(),
             session_id: info.session_id,
             reset_to_message_id: if is_reset { info.message_id } else { None },
-            executor_config: payload.executor_config.clone(),
+            executor_config: executor_config.clone(),
             working_dir: working_dir.clone(),
         })
     } else {
         ExecutorActionType::CodingAgentInitialRequest(
             executors::actions::coding_agent_initial::CodingAgentInitialRequest {
                 prompt,
-                executor_config: payload.executor_config.clone(),
+                executor_config: executor_config.clone(),
                 working_dir,
             },
         )
@@ -282,16 +332,16 @@ pub async fn follow_up(
     // Codex emits env + ThreadStartParams overrides; every other agent uses
     // env-only.
     let injection = if let Some(provider) = resolved_provider {
-        let model_id = payload.executor_config.model_id.as_deref().unwrap_or("");
+        let model_id = executor_config.model_id.as_deref().unwrap_or("");
         provider
-            .build_agent_injection(payload.executor_config.executor, model_id)
+            .build_agent_injection(executor_config.executor, model_id)
             .map_err(|e| ApiError::BadRequest(e.to_string()))?
     } else {
         AgentInjection::default()
     };
 
     let selected_provider_id_str = payload.selected_provider_id.map(|id| id.to_string());
-    let selected_model_id_str = payload.executor_config.model_id.clone();
+    let selected_model_id_str = executor_config.model_id.clone();
 
     let action = {
         let mut a = ExecutorAction::new(action_type, None);
@@ -323,6 +373,25 @@ pub async fn follow_up(
             session.id,
             e
         );
+    }
+
+    // Peer-send telemetry. Only emitted when the `cdesktop team send` CLI
+    // tagged the request with the X-Cdesktop-From-Session header — UI
+    // follow-ups go untracked here (in MVP, the UI never sends to a peer;
+    // it switches the active pill and the user types into that session).
+    if let Some(from_id) = team_from_session {
+        deployment
+            .track_if_analytics_allowed(
+                "team_message_sent",
+                serde_json::json!({
+                    "workspace_id": session.workspace_id.to_string(),
+                    "source": "cli",
+                    "from_session": from_id.to_string(),
+                    "to_session": session.id.to_string(),
+                    "byte_count": prompt_byte_count,
+                }),
+            )
+            .await;
     }
 
     Ok(ResponseJson(ApiResponse::success(execution_process)))
@@ -433,6 +502,7 @@ pub fn router(deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
         .route("/reset", post(reset_process))
         .route("/setup", post(run_setup_script))
         .route("/review", post(review::start_review))
+        .route("/teammates", post(spawn_via_session))
         .layer(from_fn_with_state(
             deployment.clone(),
             load_session_middleware,

@@ -206,6 +206,12 @@ interface SessionChatBoxProps<TExecutor extends string = string> {
    * Defaults to true for upstream vibe-kanban parity.
    */
   showSessionSwitcher?: boolean;
+  /**
+   * Team pill row rendered above the textarea. cdesktop v1 renders the
+   * workspace's session roster + a "+ teammate" button here; vibe-kanban
+   * does not use this slot.
+   */
+  teamPillRow?: ReactNode;
 }
 
 function defaultExecutorLabel(executor: string) {
@@ -270,6 +276,7 @@ export function SessionChatBox<TExecutor extends string = string>({
   supportsContextUsage,
   dropzone,
   showSessionSwitcher = true,
+  teamPillRow,
 }: SessionChatBoxProps<TExecutor>) {
   const { t } = useTranslation('tasks');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -707,6 +714,7 @@ export function SessionChatBox<TExecutor extends string = string>({
       isRunning={showRunningAnimation}
       dropzone={dropzone}
       modelSelector={modelSelector}
+      teamPillRow={teamPillRow}
       contextGauge={
         supportsContextUsage ? (
           <ContextUsageGauge tokenUsageInfo={tokenUsageInfo} />

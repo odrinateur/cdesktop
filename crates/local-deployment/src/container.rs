@@ -1381,6 +1381,13 @@ impl ContainerService for LocalContainerService {
         // Always inject workspace/session context
         env.insert("VK_WORKSPACE_ID", workspace.id.to_string());
         env.insert("VK_WORKSPACE_BRANCH", &workspace.branch);
+        // CDESKTOP_SESSION_ID lets the `cdesktop team` CLI identify the caller
+        // session — used for lead-only spawn enforcement and to attribute peer
+        // sends. Read by `npx-cli/src/cli.ts` team subcommand.
+        env.insert(
+            "CDESKTOP_SESSION_ID",
+            execution_process.session_id.to_string(),
+        );
 
         // Provider env goes into provider_vars so it overrides profile/cmd env
         // (applied last in ExecutionEnv::apply_to_command — highest precedence).

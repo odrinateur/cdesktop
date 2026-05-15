@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use chrono::{DateTime, Utc};
 use executors::{
     actions::{ExecutorAction, ExecutorActionType},
-    profile::ExecutorProfileId,
+    profile::{ExecutorConfig, ExecutorProfileId},
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -605,6 +605,63 @@ impl ExecutionProcess {
                 "Couldn't find profile from initial request".to_string(),
             )),
         }
+    }
+
+    /// Fetch the latest CodingAgent `ExecutorConfig` + provider id for a session.
+    /// Returns `None` if no CodingAgent execution process exists. Used by team-
+    /// spawn / team-send paths to inherit the caller's or recipient's last
+    /// model/preset/permission/provider when the request omits them.
+    pub async fn latest_executor_config_for_session(
+        pool: &SqlitePool,
+        session_id: Uuid,
+    ) -> Result<Option<(ExecutorConfig, Option<String>)>, ExecutionProcessError> {
+        let latest_execution_process = sqlx::query_as!(
+            ExecutionProcess,
+            r#"SELECT
+                    ep.id as "id!: Uuid",
+                    ep.session_id as "session_id!: Uuid",
+                    ep.run_reason as "run_reason!: ExecutionProcessRunReason",
+                    ep.executor_action as "executor_action!: sqlx::types::Json<ExecutorActionField>",
+                    ep.status as "status!: ExecutionProcessStatus",
+                    ep.exit_code,
+                    ep.dropped as "dropped!: bool",
+                    ep.started_at as "started_at!: DateTime<Utc>",
+                    ep.completed_at as "completed_at?: DateTime<Utc>",
+                    ep.created_at as "created_at!: DateTime<Utc>",
+                    ep.updated_at as "updated_at!: DateTime<Utc>"
+               FROM execution_processes ep
+               WHERE ep.session_id = ? AND ep.run_reason = ? AND ep.dropped = FALSE
+               ORDER BY ep.created_at DESC LIMIT 1"#,
+            session_id,
+            ExecutionProcessRunReason::CodingAgent
+        )
+        .fetch_optional(pool)
+        .await?;
+
+        let Some(latest_execution_process) = latest_execution_process else {
+            return Ok(None);
+        };
+
+        let action = latest_execution_process
+            .executor_action()
+            .map_err(|e| ExecutionProcessError::ValidationError(e.to_string()))?;
+
+        let cfg = match &action.typ {
+            ExecutorActionType::CodingAgentInitialRequest(request) => {
+                request.executor_config.clone()
+            }
+            ExecutorActionType::CodingAgentFollowUpRequest(request) => {
+                request.executor_config.clone()
+            }
+            ExecutorActionType::ReviewRequest(request) => request.executor_config.clone(),
+            _ => {
+                return Err(ExecutionProcessError::ValidationError(
+                    "Couldn't find executor config from initial request".to_string(),
+                ));
+            }
+        };
+
+        Ok(Some((cfg, action.selected_provider_id.clone())))
     }
 
     /// Fetch latest execution process info for all workspaces with the given archived status.
