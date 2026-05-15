@@ -22,7 +22,10 @@ fn main() {
         println!("cargo:rustc-env=POSTHOG_API_ENDPOINT={}", api_endpoint);
     }
     if let Ok(cdt_shared_api_base) = std::env::var("CDT_SHARED_API_BASE") {
-        println!("cargo:rustc-env=CDT_SHARED_API_BASE={}", cdt_shared_api_base);
+        println!(
+            "cargo:rustc-env=CDT_SHARED_API_BASE={}",
+            cdt_shared_api_base
+        );
     }
     if let Ok(cdt_shared_relay_api_base) = std::env::var("CDT_SHARED_RELAY_API_BASE") {
         println!(

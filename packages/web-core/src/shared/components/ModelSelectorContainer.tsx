@@ -509,35 +509,36 @@ export function ModelSelectorContainer({
     </DropdownMenu>
   );
 
-  const modelNode = showModelSelector && config ? (
-    <ModelSelectorPopover
-      isOpen={isOpen}
-      onOpenChange={handleOpenChange}
-      trigger={
-        <DropdownMenuTriggerButton
-          size="sm"
-          label={modelLabel}
-          disabled={loadingModels}
-        />
-      }
-      config={config}
-      error={streamError}
-      selectedProviderId={selectedProviderId}
-      selectedModelId={selectedModelId}
-      selectedReasoningId={selectedReasoningId}
-      searchQuery={searchQuery}
-      onSearchChange={setSearchQuery}
-      onModelSelect={handleModelSelect}
-      onReasoningSelect={handleReasoningSelect}
-      recentModelEntries={recentModelEntries}
-      showDefaultOption={showDefaultOption}
-      onSelectDefault={() => handleModelSelect(null)}
-      scrollRef={scrollRef}
-      expandedProviderId={expandedProviderId}
-      onExpandedProviderIdChange={setExpandedProviderId}
-      resolvedTheme={resolvedTheme}
-    />
-  ) : null;
+  const modelNode =
+    showModelSelector && config ? (
+      <ModelSelectorPopover
+        isOpen={isOpen}
+        onOpenChange={handleOpenChange}
+        trigger={
+          <DropdownMenuTriggerButton
+            size="sm"
+            label={modelLabel}
+            disabled={loadingModels}
+          />
+        }
+        config={config}
+        error={streamError}
+        selectedProviderId={selectedProviderId}
+        selectedModelId={selectedModelId}
+        selectedReasoningId={selectedReasoningId}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onModelSelect={handleModelSelect}
+        onReasoningSelect={handleReasoningSelect}
+        recentModelEntries={recentModelEntries}
+        showDefaultOption={showDefaultOption}
+        onSelectDefault={() => handleModelSelect(null)}
+        scrollRef={scrollRef}
+        expandedProviderId={expandedProviderId}
+        onExpandedProviderIdChange={setExpandedProviderId}
+        resolvedTheme={resolvedTheme}
+      />
+    ) : null;
 
   const permissionNode =
     permissionPolicy && availablePermissions.length > 0 ? (

@@ -113,9 +113,7 @@ export function OnboardingSignInPage() {
   );
 
   const logoSrc =
-    resolveTheme(theme) === 'dark'
-      ? '/favicon.svg'
-      : '/favicon.svg';
+    resolveTheme(theme) === 'dark' ? '/favicon.svg' : '/favicon.svg';
 
   const isLoggedIn = loginStatus?.status === 'loggedin';
 

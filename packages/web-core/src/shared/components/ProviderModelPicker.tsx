@@ -190,7 +190,9 @@ export function ProviderModelPicker({
   const displayName = selectedModel?.displayName ?? selectedModelId ?? '';
   const contextMatch = displayName.match(/^(.*) \((\d+M) context\)$/);
   const rawName = contextMatch ? contextMatch[1] : displayName;
-  const namePart = rawName.includes('/') ? rawName.split('/').slice(1).join('/') : rawName;
+  const namePart = rawName.includes('/')
+    ? rawName.split('/').slice(1).join('/')
+    : rawName;
   const contextSuffix = contextMatch ? contextMatch[2] : null;
   const effortLabel =
     selectedReasoningId && !agentSuppressesEffort
@@ -204,9 +206,7 @@ export function ProviderModelPicker({
       <>
         {namePart}
         {contextSuffix && <span className="text-low"> {contextSuffix}</span>}
-        {effortLabel && (
-          <span className="text-low"> · {effortLabel}</span>
-        )}
+        {effortLabel && <span className="text-low"> · {effortLabel}</span>}
       </>
     ) : (
       <>{t('settings.providers.picker.triggerPlaceholder')}</>

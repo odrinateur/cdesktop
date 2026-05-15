@@ -62,7 +62,9 @@ export function ProvidersSettingsSection() {
   const handleDelete = async (provider: Provider) => {
     if (provider.kind === 'Default') return;
     if (
-      !confirm(t('settings.providers.section.deleteConfirm', { name: provider.name }))
+      !confirm(
+        t('settings.providers.section.deleteConfirm', { name: provider.name })
+      )
     )
       return;
     await deleteProvider.mutateAsync(provider.id);

@@ -51,7 +51,11 @@ function AgentChip({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button type="button" disabled={disabled} className={agentChipClassName}>
+        <button
+          type="button"
+          disabled={disabled}
+          className={agentChipClassName}
+        >
           <AgentIcon agent={selected} className="h-[0.9rem] w-[0.9rem]" />
           <span className="max-w-[140px] truncate">
             {selected ? getAgentName(selected) : 'Agent'}
@@ -62,9 +66,7 @@ function AgentChip({
         {options.map((agent) => (
           <DropdownMenuItem
             key={agent}
-            badge={
-              selected === agent ? <CheckIcon weight="bold" /> : undefined
-            }
+            badge={selected === agent ? <CheckIcon weight="bold" /> : undefined}
             onSelect={() => onChange(agent)}
           >
             <span className="flex items-center gap-2">
@@ -200,9 +202,8 @@ export function CreateChatBoxContainer({
   // Per-agent canonical model list (executor discovery is the source of
   // truth — Default's DB-synthesized enabledModels is Claude-only and
   // misleads downstream picker code without this substitution).
-  const { config: agentModelConfig } = useModelSelectorConfig(
-    effectiveExecutor
-  );
+  const { config: agentModelConfig } =
+    useModelSelectorConfig(effectiveExecutor);
   const agentDefaultModels = useMemo(
     () =>
       (agentModelConfig?.models ?? []).map((m) => ({
@@ -265,8 +266,7 @@ export function CreateChatBoxContainer({
 
     const eligible = providers.filter(
       (p) =>
-        p.kind === 'Default' ||
-        p.perAgentEnabled?.[effectiveExecutor] === true
+        p.kind === 'Default' || p.perAgentEnabled?.[effectiveExecutor] === true
     );
     const resolved = resolveDefaultSelection(eligible, agentDefaultModels);
     if (!resolved) {
@@ -462,117 +462,117 @@ export function CreateChatBoxContainer({
       </div>
       <div className="shrink-0 flex justify-center pb-[12px] @container">
         <div className="w-chat max-w-full px-[35px]">
-            <CreateChatBox
-              editor={{
-                value: message,
-                onChange: setMessage,
-              }}
-              renderEditor={({
-                value,
-                onChange,
-                onCmdEnter,
-                repoIds,
-                repoId,
-                executor,
-                onPasteFiles,
-                localAttachments,
-              }) => (
-                // Editor stays enabled even without repos selected so the
-                // user can start typing immediately. canSubmit / displayError
-                // gate the actual submit on hasSelectedRepos.
-                <WYSIWYGEditor
-                  ref={editorRef}
-                  placeholder={t('createMode.placeholder.typeForCommands')}
-                  value={value}
-                  onChange={onChange}
-                  onCmdEnter={onCmdEnter}
-                  disabled={false}
-                  // !cursor-text overrides any inherited copy/drag cursor
-                  // from the surrounding dropzone wrapper on macOS.
-                  className="min-h-double max-h-[10rem] overflow-y-auto !cursor-text"
-                  repoIds={repoIds}
-                  repoId={repoId}
-                  executor={executor}
-                  autoFocus
-                  onPasteFiles={onPasteFiles}
-                  localAttachments={localAttachments}
-                  sendShortcut={config?.send_message_shortcut}
+          <CreateChatBox
+            editor={{
+              value: message,
+              onChange: setMessage,
+            }}
+            renderEditor={({
+              value,
+              onChange,
+              onCmdEnter,
+              repoIds,
+              repoId,
+              executor,
+              onPasteFiles,
+              localAttachments,
+            }) => (
+              // Editor stays enabled even without repos selected so the
+              // user can start typing immediately. canSubmit / displayError
+              // gate the actual submit on hasSelectedRepos.
+              <WYSIWYGEditor
+                ref={editorRef}
+                placeholder={t('createMode.placeholder.typeForCommands')}
+                value={value}
+                onChange={onChange}
+                onCmdEnter={onCmdEnter}
+                disabled={false}
+                // !cursor-text overrides any inherited copy/drag cursor
+                // from the surrounding dropzone wrapper on macOS.
+                className="min-h-double max-h-[10rem] overflow-y-auto !cursor-text"
+                repoIds={repoIds}
+                repoId={repoId}
+                executor={executor}
+                autoFocus
+                onPasteFiles={onPasteFiles}
+                localAttachments={localAttachments}
+                sendShortcut={config?.send_message_shortcut}
+              />
+            )}
+            onSend={handleSubmit}
+            isSending={createWorkspace.isPending}
+            disabled={!hasSelectedRepos}
+            executor={{
+              selected: effectiveExecutor,
+              // Header dropdown suppressed (length<=1) — agent picker lives
+              // in the chip row below alongside folder/branch.
+              options: [],
+              onChange: handleExecutorChange,
+            }}
+            formatExecutorLabel={toPrettyCase}
+            error={displayError}
+            repoIds={repos.map((r) => r.id)}
+            repoId={repoId}
+            modelSelector={
+              effectiveExecutor ? (
+                <ProviderModelPicker
+                  selectedProviderId={selectedProviderId}
+                  selectedModelId={selectedModelId}
+                  selectedReasoningId={selectedReasoningId}
+                  preferredEffortId={preferredEffortId}
+                  activeAgent={effectiveExecutor}
+                  onManageProviders={() =>
+                    SettingsDialog.show({ initialSection: 'providers' })
+                  }
+                  onSelectionChange={(providerId, modelId, reasoningId) =>
+                    setSelection(providerId, modelId, reasoningId)
+                  }
+                  onPreferredEffortChange={setPreferredEffort}
                 />
-              )}
-              onSend={handleSubmit}
-              isSending={createWorkspace.isPending}
-              disabled={!hasSelectedRepos}
-              executor={{
-                selected: effectiveExecutor,
-                // Header dropdown suppressed (length<=1) — agent picker lives
-                // in the chip row below alongside folder/branch.
-                options: [],
-                onChange: handleExecutorChange,
-              }}
-              formatExecutorLabel={toPrettyCase}
-              error={displayError}
-              repoIds={repos.map((r) => r.id)}
-              repoId={repoId}
-              modelSelector={
-                effectiveExecutor ? (
-                  <ProviderModelPicker
-                    selectedProviderId={selectedProviderId}
-                    selectedModelId={selectedModelId}
-                    selectedReasoningId={selectedReasoningId}
-                    preferredEffortId={preferredEffortId}
-                    activeAgent={effectiveExecutor}
-                    onManageProviders={() =>
-                      SettingsDialog.show({ initialSection: 'providers' })
-                    }
-                    onSelectionChange={(providerId, modelId, reasoningId) =>
-                      setSelection(providerId, modelId, reasoningId)
-                    }
-                    onPreferredEffortChange={setPreferredEffort}
-                  />
-                ) : undefined
-              }
-              modelSelectorLeft={
-                effectiveExecutor ? (
-                  <ModelSelectorContainer
-                    slot="left"
-                    agent={effectiveExecutor}
-                    workspaceId={undefined}
-                    onAdvancedSettings={handleCustomise}
-                    presets={variantOptions}
-                    selectedPreset={selectedVariant}
-                    onPresetSelect={handlePresetSelect}
-                    onOverrideChange={setExecutorOverrides}
-                    executorConfig={executorConfig}
-                    presetOptions={presetOptions}
-                  />
-                ) : undefined
-              }
-              onPasteFiles={uploadFiles}
-              localAttachments={localAttachments}
-              dropzone={{ getRootProps, getInputProps, isDragActive }}
-              chipRow={
-                <>
-                  <AgentChip
-                    selected={effectiveExecutor}
-                    options={executorOptions}
-                    onChange={handleExecutorChange}
-                    disabled={createWorkspace.isPending}
-                  />
-                  <ComposerChipRow disabled={createWorkspace.isPending} />
-                </>
-              }
-              linkedIssue={
-                linkedIssue?.simpleId
-                  ? {
-                      simpleId: linkedIssue.simpleId,
-                      title: linkedIssue.title ?? '',
-                      onRemove: clearLinkedIssue,
-                    }
-                  : null
-              }
-            />
-          </div>
+              ) : undefined
+            }
+            modelSelectorLeft={
+              effectiveExecutor ? (
+                <ModelSelectorContainer
+                  slot="left"
+                  agent={effectiveExecutor}
+                  workspaceId={undefined}
+                  onAdvancedSettings={handleCustomise}
+                  presets={variantOptions}
+                  selectedPreset={selectedVariant}
+                  onPresetSelect={handlePresetSelect}
+                  onOverrideChange={setExecutorOverrides}
+                  executorConfig={executorConfig}
+                  presetOptions={presetOptions}
+                />
+              ) : undefined
+            }
+            onPasteFiles={uploadFiles}
+            localAttachments={localAttachments}
+            dropzone={{ getRootProps, getInputProps, isDragActive }}
+            chipRow={
+              <>
+                <AgentChip
+                  selected={effectiveExecutor}
+                  options={executorOptions}
+                  onChange={handleExecutorChange}
+                  disabled={createWorkspace.isPending}
+                />
+                <ComposerChipRow disabled={createWorkspace.isPending} />
+              </>
+            }
+            linkedIssue={
+              linkedIssue?.simpleId
+                ? {
+                    simpleId: linkedIssue.simpleId,
+                    title: linkedIssue.title ?? '',
+                    onRemove: clearLinkedIssue,
+                  }
+                : null
+            }
+          />
         </div>
       </div>
+    </div>
   );
 }

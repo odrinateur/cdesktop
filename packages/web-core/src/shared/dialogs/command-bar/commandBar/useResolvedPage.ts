@@ -43,7 +43,10 @@ type Translator = (key: string) => string;
 // i18next returns the key when no translation is found, so non-key labels
 // pass through unchanged. Only flagged labels (with a "namespace:" prefix or
 // dotted key form) get looked up.
-function maybeTranslate(value: string | undefined, t: Translator): string | undefined {
+function maybeTranslate(
+  value: string | undefined,
+  t: Translator
+): string | undefined {
   if (!value) return value;
   if (value.includes(':') || value.includes('.')) {
     return t(value);
