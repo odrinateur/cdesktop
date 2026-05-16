@@ -75,6 +75,23 @@ export function TeamPillRowContainer({
     });
   };
 
+  const requestDelete = (sessionId: string) => {
+    const target = sorted.find((s) => s.id === sessionId);
+    if (!target) return;
+    const label = target.name ?? sessionId.slice(0, 8);
+    if (
+      !window.confirm(
+        t('conversation.team.deleteConfirm', {
+          name: label,
+          defaultValue: `Delete teammate "${label}"? This cannot be undone.`,
+        })
+      )
+    ) {
+      return;
+    }
+    void sessionsApi.delete(sessionId);
+  };
+
   // Single-session workspace: defer to the @vibe/ui presentational
   // component so the "+ teammate" button stays one source of truth.
   if (sorted.length <= 1) {
@@ -117,8 +134,15 @@ export function TeamPillRowContainer({
           isLead={idx === 0}
           isActive={s.id === currentSessionId}
           leadLabel={t('conversation.team.main')}
+          renameLabel={t('conversation.team.renameAction', {
+            defaultValue: 'Rename',
+          })}
+          deleteLabel={t('conversation.team.deleteAction', {
+            defaultValue: 'Delete',
+          })}
           onSelect={() => onSelectSession(s.id)}
-          onContextMenu={() => requestRename(s.id)}
+          onRequestRename={() => requestRename(s.id)}
+          onRequestDelete={idx === 0 ? undefined : () => requestDelete(s.id)}
         />
       ))}
       <button

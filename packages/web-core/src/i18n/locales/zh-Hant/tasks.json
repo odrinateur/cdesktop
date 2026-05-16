@@ -516,7 +516,10 @@
       "errorNameInvalid": "名稱為空、過長或包含換行符號。",
       "errorWorkspaceArchived": "無法在已封存的工作區中建立隊友。",
       "errorNotLead": "只有主要工作階段才能從 CLI 建立隊友。",
-      "successToast": "已建立隊友「{{name}}」"
+      "successToast": "已建立隊友「{{name}}」",
+      "renameAction": "重新命名",
+      "deleteAction": "刪除",
+      "deleteConfirm": "刪除隊友「{{name}}」？此操作無法復原。"
     },
     "reviewComments": {
       "count_one": "{{count}} 則審查評論將被包含",

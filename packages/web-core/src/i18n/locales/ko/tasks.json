@@ -516,7 +516,10 @@
       "errorNameInvalid": "이름이 비어 있거나, 너무 길거나, 줄바꿈을 포함합니다.",
       "errorWorkspaceArchived": "보관된 워크스페이스에서는 팀원을 생성할 수 없습니다.",
       "errorNotLead": "CLI에서 팀원을 생성할 수 있는 것은 리드 세션뿐입니다.",
-      "successToast": "팀원 '{{name}}' 생성됨"
+      "successToast": "팀원 '{{name}}' 생성됨",
+      "renameAction": "이름 변경",
+      "deleteAction": "삭제",
+      "deleteConfirm": "팀원 '{{name}}'을(를) 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
     },
     "reviewComments": {
       "count_one": "{{count}}개의 리뷰 댓글이 포함됩니다",

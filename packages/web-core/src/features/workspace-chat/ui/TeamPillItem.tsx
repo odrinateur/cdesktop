@@ -6,8 +6,14 @@
  * can shed its loop.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { MouseEvent } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@vibe/ui/components/Dropdown';
 import { useExecutionProcesses } from '@/shared/hooks/useExecutionProcesses';
 import { getSessionSnapshot } from '@/features/workspace-chat/model/sessionSnapshotCache';
 import { cn } from '@vibe/ui/lib/cn';
@@ -25,8 +31,13 @@ export interface TeamPillItemProps {
   isActive: boolean;
   /** Literal label for the lead pill ("main" in English). */
   leadLabel: string;
+  /** Localized menu labels. */
+  renameLabel: string;
+  deleteLabel: string;
   onSelect: () => void;
-  onContextMenu?: () => void;
+  onRequestRename?: () => void;
+  /** Omit to hide the Delete item (e.g. for the lead pill). */
+  onRequestDelete?: () => void;
 }
 
 export function TeamPillItem({
@@ -35,9 +46,13 @@ export function TeamPillItem({
   isLead,
   isActive,
   leadLabel,
+  renameLabel,
+  deleteLabel,
   onSelect,
-  onContextMenu,
+  onRequestRename,
+  onRequestDelete,
 }: TeamPillItemProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const { executionProcesses, isLoading } = useExecutionProcesses(sessionId);
 
   // Session-switch remounts this component (EntriesProvider is keyed by
@@ -76,16 +91,17 @@ export function TeamPillItem({
   }, [effective]);
 
   const label = isLead ? leadLabel : truncate(name ?? '', MAX_LABEL_CHARS);
+  const hasMenu = !!onRequestRename || !!onRequestDelete;
 
-  return (
+  const pill = (
     <button
       type="button"
       onClick={onSelect}
       onContextMenu={
-        onContextMenu
+        hasMenu
           ? (e: MouseEvent) => {
               e.preventDefault();
-              onContextMenu();
+              setMenuOpen(true);
             }
           : undefined
       }
@@ -100,6 +116,42 @@ export function TeamPillItem({
       <StatusDot status={status} />
       <span className="max-w-[160px] truncate">{label}</span>
     </button>
+  );
+
+  if (!hasMenu) return pill;
+
+  // The DropdownMenuTrigger is a hidden, non-interactive anchor that
+  // overlays the pill purely for positioning the menu. The pill itself
+  // owns click (select) + right-click (open menu via state) — left click
+  // must NOT open the menu.
+  return (
+    <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+      <span className="relative inline-block">
+        {pill}
+        <DropdownMenuTrigger asChild>
+          <span
+            aria-hidden="true"
+            tabIndex={-1}
+            className="pointer-events-none absolute inset-0"
+          />
+        </DropdownMenuTrigger>
+      </span>
+      <DropdownMenuContent align="start" className="min-w-[140px]">
+        {onRequestRename && (
+          <DropdownMenuItem onSelect={() => onRequestRename()}>
+            {renameLabel}
+          </DropdownMenuItem>
+        )}
+        {onRequestDelete && (
+          <DropdownMenuItem
+            onSelect={() => onRequestDelete()}
+            className="text-error focus:text-error"
+          >
+            {deleteLabel}
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

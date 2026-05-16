@@ -516,7 +516,10 @@
       "errorNameInvalid": "El nombre está vacío, es demasiado largo o contiene saltos de línea.",
       "errorWorkspaceArchived": "No se pueden crear compañeros en un espacio de trabajo archivado.",
       "errorNotLead": "Solo la sesión principal puede crear compañeros desde el CLI.",
-      "successToast": "Compañero '{{name}}' creado"
+      "successToast": "Compañero '{{name}}' creado",
+      "renameAction": "Renombrar",
+      "deleteAction": "Eliminar",
+      "deleteConfirm": "¿Eliminar al compañero «{{name}}»? Esta acción no se puede deshacer."
     },
     "reviewComments": {
       "count_one": "{{count}} comentario de revisión será incluido",
