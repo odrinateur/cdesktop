@@ -516,7 +516,10 @@
       "errorNameInvalid": "名前が空、長すぎる、または改行を含んでいます。",
       "errorWorkspaceArchived": "アーカイブ済みワークスペースではチームメイトを作成できません。",
       "errorNotLead": "CLIからチームメイトを作成できるのはリードセッションのみです。",
-      "successToast": "チームメイト「{{name}}」を作成しました"
+      "successToast": "チームメイト「{{name}}」を作成しました",
+      "renameAction": "名前を変更",
+      "deleteAction": "削除",
+      "deleteConfirm": "チームメイト「{{name}}」を削除しますか？この操作は元に戻せません。"
     },
     "reviewComments": {
       "count_one": "{{count}}件のレビューコメントが含まれます",

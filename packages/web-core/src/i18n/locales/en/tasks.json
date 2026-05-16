@@ -187,7 +187,10 @@
       "errorNameInvalid": "Name is empty, too long, or contains newlines.",
       "errorWorkspaceArchived": "Cannot spawn teammates in an archived workspace.",
       "errorNotLead": "Only the lead session can spawn teammates from the CLI.",
-      "successToast": "Teammate '{{name}}' spawned"
+      "successToast": "Teammate '{{name}}' spawned",
+      "renameAction": "Rename",
+      "deleteAction": "Delete",
+      "deleteConfirm": "Delete teammate \"{{name}}\"? This cannot be undone."
     },
     "reviewComments": {
       "count_one": "{{count}} review comment will be included",

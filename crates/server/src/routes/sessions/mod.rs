@@ -109,6 +109,15 @@ pub async fn update_session(
     Ok(ResponseJson(ApiResponse::success(updated)))
 }
 
+pub async fn delete_session(
+    Extension(session): Extension<Session>,
+    State(deployment): State<DeploymentImpl>,
+) -> Result<ResponseJson<ApiResponse<()>>, ApiError> {
+    let pool = &deployment.db().pool;
+    Session::delete(pool, session.id).await?;
+    Ok(ResponseJson(ApiResponse::success(())))
+}
+
 #[derive(Debug, Deserialize, TS)]
 pub struct CreateFollowUpAttempt {
     pub prompt: String,
@@ -496,7 +505,10 @@ pub async fn run_setup_script(
 
 pub fn router(deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
     let session_id_router = Router::new()
-        .route("/", get(get_session).put(update_session))
+        .route(
+            "/",
+            get(get_session).put(update_session).delete(delete_session),
+        )
         .route("/follow-up", post(follow_up))
         .route("/turn-selections", get(get_turn_selections))
         .route("/reset", post(reset_process))

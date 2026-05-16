@@ -187,7 +187,10 @@
       "errorNameInvalid": "Le nom est vide, trop long ou contient des sauts de ligne.",
       "errorWorkspaceArchived": "Impossible de créer des coéquipiers dans un espace de travail archivé.",
       "errorNotLead": "Seule la session principale peut créer des coéquipiers depuis le CLI.",
-      "successToast": "Coéquipier « {{name}} » créé"
+      "successToast": "Coéquipier « {{name}} » créé",
+      "renameAction": "Renommer",
+      "deleteAction": "Supprimer",
+      "deleteConfirm": "Supprimer le coéquipier « {{name}} » ? Cette action est irréversible."
     },
     "reviewComments": {
       "count_one": "{{count}} commentaire de révision sera inclus",
