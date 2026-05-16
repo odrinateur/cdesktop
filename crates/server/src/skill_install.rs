@@ -20,31 +20,18 @@ use std::path::{Path, PathBuf};
 
 use utils::assets::SkillAssets;
 
-/// Per-user agent-config dirs we install a symlink into. The directory
-/// must already exist on the user's machine — we never create the parent
-/// (that's the agent's job).
+/// Per-user agent-config dirs we install a symlink into. Only agents that
+/// don't already read from the universal `.agent/skills` directory need a
+/// dedicated entry. The five UI-visible agents
+/// (packages/web-core/src/shared/lib/agentOrder.ts AGENT_PRIORITY) are
+/// Claude Code, Codex, OpenCode, Gemini, Hermes — Codex/OpenCode/Gemini
+/// pick up `.agent/skills` for free, so we only symlink for Claude Code
+/// and Hermes.
 fn agent_skill_dirs(home: &Path) -> Vec<PathBuf> {
-    // The Claude Code / Hermes mappings ship in cdesktop's `npx skills`
-    // story; the rest mirror the install paths from
-    // <https://github.com/anthropics/skills>. Add or rename entries here
-    // when an agent changes its on-disk config layout.
     [
-        ".agent/skills",       // canonical
-        ".claude/skills",      // Claude Code
-        ".hermes/skills",      // Hermes
-        ".amp/skills",         // Amp
-        ".antigravity/skills", // Antigravity
-        ".cline/skills",       // Cline
-        ".codex/skills",       // Codex
-        ".cursor/skills",      // Cursor
-        ".deep-agents/skills", // Deep Agents
-        ".dexto/skills",       // Dexto
-        ".firebender/skills",  // Firebender
-        ".gemini/skills",      // Gemini CLI
-        ".copilot/skills",     // GitHub Copilot
-        ".kimi/skills",        // Kimi Code CLI
-        ".opencode/skills",    // OpenCode
-        ".warp/skills",        // Warp
+        ".agent/skills",  // canonical (universal — read by most agents)
+        ".claude/skills", // Claude Code
+        ".hermes/skills", // Hermes
     ]
     .iter()
     .map(|p| home.join(p))
