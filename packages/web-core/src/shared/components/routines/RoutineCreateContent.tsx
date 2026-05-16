@@ -4,13 +4,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CaretRightIcon } from '@phosphor-icons/react';
 import type { CreateRoutine, Routine } from 'shared/types';
 import { routinesApi } from '@/shared/lib/api';
-import {
-  RoutineForm,
-  type RoutineFormValues,
-} from '@/shared/components/routines/RoutineForm';
-import { RoutinesLayout } from './RoutinesLayout';
+import { RoutineForm, type RoutineFormValues } from './RoutineForm';
 
-export function RoutineCreatePage() {
+/**
+ * Inner routines-create view, mounted inside SessionGrid's anchor cell.
+ */
+export function RoutineCreateContent() {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -44,9 +43,8 @@ export function RoutineCreatePage() {
   };
 
   return (
-    <RoutinesLayout>
-      <div className="h-full overflow-auto bg-primary">
-        <div className="mx-auto w-full max-w-3xl px-double py-double flex flex-col gap-double">
+    <div className="h-full overflow-auto bg-primary">
+      <div className="mx-auto w-full max-w-3xl px-double py-double flex flex-col gap-double">
         <header className="flex items-center gap-half text-sm text-low">
           <button
             type="button"
@@ -71,8 +69,7 @@ export function RoutineCreatePage() {
             {createMutation.error?.message ?? 'Failed to create routine'}
           </p>
         )}
-        </div>
       </div>
-    </RoutinesLayout>
+    </div>
   );
 }

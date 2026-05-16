@@ -5,8 +5,7 @@ import { PlusIcon } from '@phosphor-icons/react';
 import type { Routine } from 'shared/types';
 import { routinesApi } from '@/shared/lib/api';
 import { Button } from '@vibe/ui/components/Button';
-import { formatScheduleSummary } from '@/shared/components/routines/scheduleFormat';
-import { RoutinesLayout } from './RoutinesLayout';
+import { formatScheduleSummary } from './scheduleFormat';
 
 function formatNextRun(nextRunAt: string | null): string | null {
   if (!nextRunAt) return null;
@@ -21,7 +20,12 @@ function formatNextRun(nextRunAt: string | null): string | null {
   });
 }
 
-export function RoutinesListPage() {
+/**
+ * Inner routines-list view, intended to be mounted inside SessionGrid's
+ * anchor cell. The outer cell shell (sidebar, focus/opacity) is provided by
+ * WorkspacesLayout + SessionGrid.
+ */
+export function RoutinesListContent() {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
 
@@ -32,9 +36,8 @@ export function RoutinesListPage() {
   });
 
   return (
-    <RoutinesLayout>
-      <div className="h-full overflow-auto bg-primary">
-        <div className="mx-auto w-full max-w-3xl px-double py-double flex flex-col gap-double">
+    <div className="h-full overflow-auto bg-primary">
+      <div className="mx-auto w-full max-w-3xl px-double py-double flex flex-col gap-double">
         <header className="flex items-start justify-between gap-base">
           <div className="flex flex-col gap-half">
             <h1 className="text-2xl font-semibold text-high">
@@ -42,10 +45,7 @@ export function RoutinesListPage() {
             </h1>
             <p className="text-sm text-low">{t('routines.subtitle')}</p>
           </div>
-          <Button
-            type="button"
-            onClick={() => navigate({ to: '/routines/new' })}
-          >
+          <Button type="button" onClick={() => navigate({ to: '/routines/new' })}>
             <PlusIcon className="size-icon-xs mr-half" weight="bold" />
             {t('routines.newButton')}
           </Button>
@@ -98,8 +98,7 @@ export function RoutinesListPage() {
             })}
           </ul>
         )}
-        </div>
       </div>
-    </RoutinesLayout>
+    </div>
   );
 }

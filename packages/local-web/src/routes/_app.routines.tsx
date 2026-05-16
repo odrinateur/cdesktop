@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { RoutinesListPage } from '@/pages/routines/RoutinesListPage';
+import { WorkspacesLayout } from '@/pages/workspaces/WorkspacesLayout';
 
 export const Route = createFileRoute('/_app/routines')({
-  component: RoutinesListPage,
+  component: WorkspacesLayout,
 });
