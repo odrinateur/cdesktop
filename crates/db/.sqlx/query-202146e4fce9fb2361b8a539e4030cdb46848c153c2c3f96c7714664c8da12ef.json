@@ -1,0 +1,68 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO routine_runs (id, routine_id, scheduled_at, status, skip_reason)\n               VALUES ($1, $2, $3, $4, $5)\n               RETURNING id AS \"id!: Uuid\",\n                         routine_id AS \"routine_id!: Uuid\",\n                         workspace_id AS \"workspace_id: Uuid\",\n                         scheduled_at AS \"scheduled_at!: DateTime<Utc>\",\n                         started_at AS \"started_at: DateTime<Utc>\",\n                         finished_at AS \"finished_at: DateTime<Utc>\",\n                         status AS \"status!: RoutineRunStatus\",\n                         skip_reason,\n                         created_at AS \"created_at!: DateTime<Utc>\"",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!: Uuid",
+        "ordinal": 0,
+        "type_info": "Blob"
+      },
+      {
+        "name": "routine_id!: Uuid",
+        "ordinal": 1,
+        "type_info": "Blob"
+      },
+      {
+        "name": "workspace_id: Uuid",
+        "ordinal": 2,
+        "type_info": "Blob"
+      },
+      {
+        "name": "scheduled_at!: DateTime<Utc>",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "started_at: DateTime<Utc>",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "finished_at: DateTime<Utc>",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "status!: RoutineRunStatus",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "skip_reason",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at!: DateTime<Utc>",
+        "ordinal": 8,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "202146e4fce9fb2361b8a539e4030cdb46848c153c2c3f96c7714664c8da12ef"
+}

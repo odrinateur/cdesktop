@@ -809,5 +809,107 @@
     "terminal": "Terminal",
     "openPanelMenu": "Abrir menú de paneles",
     "closePanel": "Cerrar panel {{panel}}"
+  },
+  "routines": {
+    "title": "Rutinas",
+    "subtitle": "Crea rutinas con plantillas que se ejecutan según un horario o manualmente.",
+    "banner": "Las rutinas locales solo se ejecutan mientras tu computadora está encendida.",
+    "newButton": "Nueva rutina",
+    "newPageTitle": "Nueva rutina local",
+    "empty": "Aún no hay rutinas.",
+    "runNow": "Ejecutar ahora",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deleteConfirmTitle": "Eliminar rutina",
+    "deleteConfirm": "¿Eliminar la rutina \"{{name}}\" y {{count}} ejecuciones ({{count}} sesiones y worktrees)?",
+    "nextRun": "Próxima ejecución {{when}}",
+    "nextRunNever": "Sin próxima ejecución",
+    "lastRun": "Última ejecución {{when}}",
+    "neverRun": "Nunca ejecutada",
+    "history": {
+      "title": "Historial",
+      "empty": "Aún no hay ejecuciones."
+    },
+    "sections": {
+      "description": "Descripción",
+      "status": "Estado",
+      "folder": "Carpeta",
+      "repeats": "Repeticiones",
+      "instructions": "Instrucciones"
+    },
+    "status": {
+      "pending": "Pendiente",
+      "running": "En ejecución",
+      "done": "Completada",
+      "skipped": "Omitida",
+      "failed": "Fallida"
+    },
+    "skipReason": {
+      "appOffline": "La aplicación estaba desconectada",
+      "prevStillRunning": "La ejecución anterior aún está en curso"
+    },
+    "enabled": "Activada",
+    "disabled": "Desactivada",
+    "fields": {
+      "name": "Nombre",
+      "namePlaceholder": "Un nombre breve para esta rutina",
+      "description": "Descripción",
+      "descriptionPlaceholder": "¿Qué hace esta rutina?",
+      "instructions": "Instrucciones",
+      "instructionsPlaceholder": "El prompt enviado al agente en cada ejecución.",
+      "folder": "Carpeta",
+      "folderPlaceholder": "Selecciona una carpeta",
+      "worktree": "Usar worktree",
+      "executor": "Agente",
+      "variant": "Preajuste",
+      "model": "Modelo",
+      "permission": "Permisos",
+      "schedule": "Horario",
+      "time": "Hora",
+      "minute": "Minuto",
+      "dow": "Día de la semana"
+    },
+    "schedule": {
+      "manual": "Manual",
+      "hourly": "Cada hora",
+      "daily": "Diaria",
+      "weekdays": "Días laborables",
+      "weekly": "Semanal",
+      "summary": {
+        "manual": "Solo manual",
+        "hourly": "Cada hora a las :{{minute}}",
+        "daily": "Todos los días a las {{time}}",
+        "weekdays": "Lun–Vie a las {{time}}",
+        "weekly": "Cada {{day}} a las {{time}}"
+      }
+    },
+    "days": {
+      "sun": "Domingo",
+      "mon": "Lunes",
+      "tue": "Martes",
+      "wed": "Miércoles",
+      "thu": "Jueves",
+      "fri": "Viernes",
+      "sat": "Sábado"
+    },
+    "form": {
+      "submitCreate": "Crear rutina",
+      "submitSave": "Guardar",
+      "cancel": "Cancelar",
+      "validation": {
+        "nameRequired": "El nombre es obligatorio",
+        "descriptionRequired": "La descripción es obligatoria",
+        "instructionsRequired": "Las instrucciones son obligatorias",
+        "folderRequired": "Selecciona una carpeta",
+        "modelRequired": "Selecciona un modelo",
+        "permissionRequired": "Selecciona una política de permisos",
+        "timeRequired": "Selecciona una hora",
+        "minuteRequired": "Selecciona un minuto",
+        "dowRequired": "Selecciona un día"
+      }
+    },
+    "sidebar": {
+      "nav": "Rutinas"
+    }
   }
 }

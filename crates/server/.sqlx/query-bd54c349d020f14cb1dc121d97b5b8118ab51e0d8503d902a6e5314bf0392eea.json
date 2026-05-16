@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE repos SET is_git = $1, updated_at = datetime('now', 'subsec') WHERE id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "bd54c349d020f14cb1dc121d97b5b8118ab51e0d8503d902a6e5314bf0392eea"
+}

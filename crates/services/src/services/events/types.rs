@@ -1,6 +1,7 @@
 use anyhow::Error as AnyhowError;
 use db::models::{
-    execution_process::ExecutionProcess, scratch::Scratch, session::Session, workspace::Workspace,
+    execution_process::ExecutionProcess, routine::Routine, routine_run::RoutineRun,
+    scratch::Scratch, session::Session, workspace::Workspace,
 };
 use serde::{Deserialize, Serialize};
 use sqlx::Error as SqlxError;
@@ -29,6 +30,10 @@ pub enum HookTables {
     Scratch,
     #[strum(to_string = "sessions")]
     Sessions,
+    #[strum(to_string = "routines")]
+    Routines,
+    #[strum(to_string = "routine_runs")]
+    RoutineRuns,
 }
 
 #[derive(Serialize, Deserialize, TS)]
@@ -38,6 +43,8 @@ pub enum RecordTypes {
     ExecutionProcess(ExecutionProcess),
     Scratch(Scratch),
     Session(Session),
+    Routine(Routine),
+    RoutineRun(RoutineRun),
     DeletedWorkspace {
         rowid: i64,
     },
@@ -55,6 +62,15 @@ pub enum RecordTypes {
         rowid: i64,
         session_id: Option<Uuid>,
         workspace_id: Option<Uuid>,
+    },
+    DeletedRoutine {
+        rowid: i64,
+        routine_id: Option<Uuid>,
+    },
+    DeletedRoutineRun {
+        rowid: i64,
+        routine_run_id: Option<Uuid>,
+        routine_id: Option<Uuid>,
     },
 }
 

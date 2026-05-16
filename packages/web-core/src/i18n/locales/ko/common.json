@@ -808,5 +808,107 @@
     "terminal": "터미널",
     "openPanelMenu": "패널 메뉴 열기",
     "closePanel": "{{panel}} 패널 닫기"
+  },
+  "routines": {
+    "title": "루틴",
+    "subtitle": "일정에 따라 또는 수동으로 실행되는 템플릿 루틴을 만듭니다.",
+    "banner": "로컬 루틴은 컴퓨터가 켜져 있는 동안에만 실행됩니다.",
+    "newButton": "새 루틴",
+    "newPageTitle": "새 로컬 루틴",
+    "empty": "아직 루틴이 없습니다.",
+    "runNow": "지금 실행",
+    "edit": "편집",
+    "delete": "삭제",
+    "deleteConfirmTitle": "루틴 삭제",
+    "deleteConfirm": "루틴 \"{{name}}\"과(와) 실행 {{count}}건({{count}}개 세션 및 worktree)을 삭제하시겠습니까?",
+    "nextRun": "다음 실행 {{when}}",
+    "nextRunNever": "예정된 실행 없음",
+    "lastRun": "마지막 실행 {{when}}",
+    "neverRun": "실행된 적 없음",
+    "history": {
+      "title": "기록",
+      "empty": "아직 실행 기록이 없습니다."
+    },
+    "sections": {
+      "description": "설명",
+      "status": "상태",
+      "folder": "폴더",
+      "repeats": "반복",
+      "instructions": "지시사항"
+    },
+    "status": {
+      "pending": "대기 중",
+      "running": "실행 중",
+      "done": "완료",
+      "skipped": "건너뜀",
+      "failed": "실패"
+    },
+    "skipReason": {
+      "appOffline": "앱이 오프라인 상태였습니다",
+      "prevStillRunning": "이전 실행이 아직 진행 중입니다"
+    },
+    "enabled": "사용",
+    "disabled": "사용 안 함",
+    "fields": {
+      "name": "이름",
+      "namePlaceholder": "이 루틴의 짧은 이름",
+      "description": "설명",
+      "descriptionPlaceholder": "이 루틴은 어떤 작업을 하나요?",
+      "instructions": "지시사항",
+      "instructionsPlaceholder": "각 실행 시 에이전트에 전송되는 프롬프트입니다.",
+      "folder": "폴더",
+      "folderPlaceholder": "폴더 선택",
+      "worktree": "worktree 사용",
+      "executor": "에이전트",
+      "variant": "프리셋",
+      "model": "모델",
+      "permission": "권한",
+      "schedule": "일정",
+      "time": "시간",
+      "minute": "분",
+      "dow": "요일"
+    },
+    "schedule": {
+      "manual": "수동",
+      "hourly": "매시간",
+      "daily": "매일",
+      "weekdays": "평일",
+      "weekly": "매주",
+      "summary": {
+        "manual": "수동 실행만",
+        "hourly": "매시 :{{minute}}분",
+        "daily": "매일 {{time}}",
+        "weekdays": "월–금 {{time}}",
+        "weekly": "매주 {{day}} {{time}}"
+      }
+    },
+    "days": {
+      "sun": "일요일",
+      "mon": "월요일",
+      "tue": "화요일",
+      "wed": "수요일",
+      "thu": "목요일",
+      "fri": "금요일",
+      "sat": "토요일"
+    },
+    "form": {
+      "submitCreate": "루틴 만들기",
+      "submitSave": "저장",
+      "cancel": "취소",
+      "validation": {
+        "nameRequired": "이름은 필수입니다",
+        "descriptionRequired": "설명은 필수입니다",
+        "instructionsRequired": "지시사항은 필수입니다",
+        "folderRequired": "폴더를 선택하세요",
+        "modelRequired": "모델을 선택하세요",
+        "permissionRequired": "권한 정책을 선택하세요",
+        "timeRequired": "시간을 선택하세요",
+        "minuteRequired": "분을 선택하세요",
+        "dowRequired": "요일을 선택하세요"
+      }
+    },
+    "sidebar": {
+      "nav": "루틴"
+    }
   }
 }

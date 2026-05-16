@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT workspace_id AS \"workspace_id!: Uuid\"\n               FROM routine_runs\n               WHERE routine_id = $1 AND workspace_id IS NOT NULL",
+  "describe": {
+    "columns": [
+      {
+        "name": "workspace_id!: Uuid",
+        "ordinal": 0,
+        "type_info": "Blob"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "2c91e379046bb66cc826396f24b3fc46c2f5e9ed1d5d1d4a4ed8cc1dc47daea9"
+}

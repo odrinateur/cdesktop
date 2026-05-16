@@ -9,6 +9,8 @@ pub mod provider;
 pub mod pull_request;
 pub mod repo;
 pub mod requests;
+pub mod routine;
+pub mod routine_run;
 pub mod scratch;
 pub mod session;
 pub mod tag;

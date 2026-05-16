@@ -1,0 +1,104 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id as \"id!: Uuid\",\n                      path,\n                      name,\n                      display_name,\n                      setup_script,\n                      cleanup_script,\n                      archive_script,\n                      copy_files,\n                      parallel_setup_script as \"parallel_setup_script!: bool\",\n                      dev_server_script,\n                      default_target_branch,\n                      default_working_dir,\n                      is_git as \"is_git!: bool\",\n                      created_at as \"created_at!: DateTime<Utc>\",\n                      updated_at as \"updated_at!: DateTime<Utc>\"\n               FROM repos\n               WHERE name = '__NEEDS_BACKFILL__'",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!: Uuid",
+        "ordinal": 0,
+        "type_info": "Blob"
+      },
+      {
+        "name": "path",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "name",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "display_name",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "setup_script",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "cleanup_script",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "archive_script",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "copy_files",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "parallel_setup_script!: bool",
+        "ordinal": 8,
+        "type_info": "Integer"
+      },
+      {
+        "name": "dev_server_script",
+        "ordinal": 9,
+        "type_info": "Text"
+      },
+      {
+        "name": "default_target_branch",
+        "ordinal": 10,
+        "type_info": "Text"
+      },
+      {
+        "name": "default_working_dir",
+        "ordinal": 11,
+        "type_info": "Text"
+      },
+      {
+        "name": "is_git!: bool",
+        "ordinal": 12,
+        "type_info": "Bool"
+      },
+      {
+        "name": "created_at!: DateTime<Utc>",
+        "ordinal": 13,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at!: DateTime<Utc>",
+        "ordinal": 14,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      true,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "86943a080457f836cf0126df34dec1881f9a7f1d2487ffd66188a07850821dda"
+}

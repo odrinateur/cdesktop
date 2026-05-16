@@ -142,7 +142,9 @@ impl EventService {
                                 (HookTables::Workspaces, SqliteOperation::Delete)
                                 | (HookTables::ExecutionProcesses, SqliteOperation::Delete)
                                 | (HookTables::Scratch, SqliteOperation::Delete)
-                                | (HookTables::Sessions, SqliteOperation::Delete) => {
+                                | (HookTables::Sessions, SqliteOperation::Delete)
+                                | (HookTables::Routines, SqliteOperation::Delete)
+                                | (HookTables::RoutineRuns, SqliteOperation::Delete) => {
                                     return;
                                 }
                                 (HookTables::Workspaces, _) => {
@@ -202,6 +204,44 @@ impl EventService {
                                         Err(e) => {
                                             tracing::error!(
                                                 "Failed to fetch session: {:?}",
+                                                e
+                                            );
+                                            return;
+                                        }
+                                    }
+                                }
+                                (HookTables::Routines, _) => {
+                                    match db::models::routine::Routine::find_by_rowid(
+                                        &db.pool, rowid,
+                                    )
+                                    .await
+                                    {
+                                        Ok(Some(routine)) => RecordTypes::Routine(routine),
+                                        Ok(None) => RecordTypes::DeletedRoutine {
+                                            rowid,
+                                            routine_id: None,
+                                        },
+                                        Err(e) => {
+                                            tracing::error!("Failed to fetch routine: {:?}", e);
+                                            return;
+                                        }
+                                    }
+                                }
+                                (HookTables::RoutineRuns, _) => {
+                                    match db::models::routine_run::RoutineRun::find_by_rowid(
+                                        &db.pool, rowid,
+                                    )
+                                    .await
+                                    {
+                                        Ok(Some(run)) => RecordTypes::RoutineRun(run),
+                                        Ok(None) => RecordTypes::DeletedRoutineRun {
+                                            rowid,
+                                            routine_run_id: None,
+                                            routine_id: None,
+                                        },
+                                        Err(e) => {
+                                            tracing::error!(
+                                                "Failed to fetch routine_run: {:?}",
                                                 e
                                             );
                                             return;

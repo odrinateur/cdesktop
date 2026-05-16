@@ -160,7 +160,7 @@ pinned: boolean,
 /**
  * Position in the pinned list (0 = top). NULL for unpinned workspaces.
  */
-pin_order: bigint | null, name: string | null, worktree_deleted: boolean, use_worktree: boolean, };
+pin_order: bigint | null, name: string | null, worktree_deleted: boolean, use_worktree: boolean, source: WorkspaceSource, };
 
 export type WorkspaceWithStatus = { is_running: boolean, is_errored: boolean, id: string, task_id: string | null, container_ref: string | null, branch: string, setup_completed_at: string | null, created_at: string, updated_at: string, archived: boolean, 
 /**
@@ -170,7 +170,27 @@ pinned: boolean,
 /**
  * Position in the pinned list (0 = top). NULL for unpinned workspaces.
  */
-pin_order: bigint | null, name: string | null, worktree_deleted: boolean, use_worktree: boolean, };
+pin_order: bigint | null, name: string | null, worktree_deleted: boolean, use_worktree: boolean, source: WorkspaceSource, };
+
+export type WorkspaceSource = "user" | "routine";
+
+export type Routine = { id: string, name: string, description: string, instructions: string, repo_id: string, target_branch: string | null, use_worktree: boolean, 
+/**
+ * JSON-serialized `ExecutorConfig` (see crates/executors/src/profile.rs).
+ */
+executor_config: string, schedule_kind: ScheduleKind, schedule_time: string | null, schedule_dow: bigint | null, enabled: boolean, next_run_at: string | null, last_run_at: string | null, created_at: string, updated_at: string, };
+
+export type CreateRoutine = { name: string, description: string, instructions: string, repo_id: string, target_branch?: string | null, use_worktree: boolean, executor_config: ExecutorConfig, schedule_kind: ScheduleKind, schedule_time?: string | null, schedule_dow?: number | null, enabled: boolean, };
+
+export type UpdateRoutine = { name?: string | null, description?: string | null, instructions?: string | null, target_branch?: string | null, use_worktree?: boolean | null, executor_config?: ExecutorConfig, schedule_kind?: ScheduleKind, schedule_time?: string | null, schedule_dow?: number | null, enabled?: boolean | null, };
+
+export type ScheduleKind = "manual" | "hourly" | "daily" | "weekdays" | "weekly";
+
+export type RoutineRun = { id: string, routine_id: string, workspace_id: string | null, scheduled_at: string, started_at: string | null, finished_at: string | null, status: RoutineRunStatus, skip_reason: string | null, created_at: string, };
+
+export type RoutineRunStatus = "pending" | "running" | "done" | "skipped" | "failed";
+
+export type RunNowResponse = { routine_run: RoutineRun, workspace_id: string | null, skipped: boolean, skip_reason: string | null, };
 
 export type Session = { id: string, workspace_id: string, name: string | null, executor: string | null, agent_working_dir: string | null, created_at: string, updated_at: string, };
 

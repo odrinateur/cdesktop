@@ -1,0 +1,68 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id AS \"id!: Uuid\",\n                      routine_id AS \"routine_id!: Uuid\",\n                      workspace_id AS \"workspace_id: Uuid\",\n                      scheduled_at AS \"scheduled_at!: DateTime<Utc>\",\n                      started_at AS \"started_at: DateTime<Utc>\",\n                      finished_at AS \"finished_at: DateTime<Utc>\",\n                      status AS \"status!: RoutineRunStatus\",\n                      skip_reason,\n                      created_at AS \"created_at!: DateTime<Utc>\"\n               FROM routine_runs\n               WHERE routine_id = $1\n               ORDER BY scheduled_at DESC",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!: Uuid",
+        "ordinal": 0,
+        "type_info": "Blob"
+      },
+      {
+        "name": "routine_id!: Uuid",
+        "ordinal": 1,
+        "type_info": "Blob"
+      },
+      {
+        "name": "workspace_id: Uuid",
+        "ordinal": 2,
+        "type_info": "Blob"
+      },
+      {
+        "name": "scheduled_at!: DateTime<Utc>",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "started_at: DateTime<Utc>",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "finished_at: DateTime<Utc>",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "status!: RoutineRunStatus",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "skip_reason",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at!: DateTime<Utc>",
+        "ordinal": 8,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      true,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "b8294b6a39853ea9cbdab2846ae2966b482b32ade01b7f70f2631d35d618628f"
+}

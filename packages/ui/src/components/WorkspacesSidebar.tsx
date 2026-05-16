@@ -5,6 +5,7 @@ import {
   StackIcon,
   SpinnerIcon,
   CaretDownIcon,
+  ClockIcon,
 } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/cn';
@@ -152,6 +153,10 @@ export interface WorkspacesSidebarProps {
   topActions?: ReactNode;
   /** Action buttons rendered in the footer next to the archive toggle. */
   bottomActions?: ReactNode;
+  /** Open the Routines page (rendered as a top-level nav row). */
+  onOpenRoutines?: () => void;
+  /** Whether the Routines nav row should render as active. */
+  isRoutinesActive?: boolean;
 }
 
 export interface WorkspacesSidebarReopenTagProps {
@@ -326,6 +331,31 @@ function NewSessionRow({ onAddWorkspace }: { onAddWorkspace?: () => void }) {
     >
       <PlusIcon className="size-icon-sm" weight="bold" />
       <span>{t('sidebar.newSession', { defaultValue: 'New session' })}</span>
+    </button>
+  );
+}
+
+function RoutinesNavRow({
+  onOpenRoutines,
+  isActive,
+}: {
+  onOpenRoutines?: () => void;
+  isActive?: boolean;
+}) {
+  const { t } = useTranslation('common');
+  return (
+    <button
+      type="button"
+      onClick={onOpenRoutines}
+      className={cn(
+        'w-full flex items-center gap-base px-double py-half text-base text-normal hover:bg-tertiary/60 transition-colors',
+        isActive && 'bg-tertiary/60'
+      )}
+    >
+      <ClockIcon className="size-icon-sm" weight="bold" />
+      <span>
+        {t('routines.sidebar.nav', { defaultValue: 'Routines' })}
+      </span>
     </button>
   );
 }
@@ -581,6 +611,8 @@ export function WorkspacesSidebar({
   openInGridWorkspaceIds,
   topActions,
   bottomActions,
+  onOpenRoutines,
+  isRoutinesActive,
 }: WorkspacesSidebarProps) {
   const { t } = useTranslation(['tasks', 'common']);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -661,6 +693,14 @@ export function WorkspacesSidebar({
       {/* New Session row */}
       {!isLoading && !showArchive && (
         <NewSessionRow onAddWorkspace={onAddWorkspace} />
+      )}
+
+      {/* Routines nav row */}
+      {!isLoading && !showArchive && onOpenRoutines && (
+        <RoutinesNavRow
+          onOpenRoutines={onOpenRoutines}
+          isActive={isRoutinesActive}
+        />
       )}
 
       {activeRemoteHost && (

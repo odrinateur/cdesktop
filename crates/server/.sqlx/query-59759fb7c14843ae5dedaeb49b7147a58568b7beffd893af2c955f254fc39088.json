@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE routines SET\n            name           = COALESCE($2, name),\n            description    = COALESCE($3, description),\n            instructions   = COALESCE($4, instructions),\n            target_branch  = COALESCE($5, target_branch),\n            use_worktree   = COALESCE($6, use_worktree),\n            executor_config = COALESCE($7, executor_config),\n            schedule_kind  = COALESCE($8, schedule_kind),\n            schedule_time  = COALESCE($9, schedule_time),\n            schedule_dow   = COALESCE($10, schedule_dow),\n            enabled        = COALESCE($11, enabled),\n            updated_at     = datetime('now','subsec')\n           WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 11
+    },
+    "nullable": []
+  },
+  "hash": "59759fb7c14843ae5dedaeb49b7147a58568b7beffd893af2c955f254fc39088"
+}

@@ -5,8 +5,8 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use db::models::{
-    execution_process::ExecutionProcessError, repo::RepoError, scratch::ScratchError,
-    session::SessionError, workspace::WorkspaceError,
+    execution_process::ExecutionProcessError, repo::RepoError, routine::RoutineError,
+    scratch::ScratchError, session::SessionError, workspace::WorkspaceError,
 };
 use deployment::{DeploymentError, RelayHostsNotConfigured, RemoteClientNotConfigured};
 use executors::{command::CommandBuildError, executors::ExecutorError};
@@ -91,6 +91,8 @@ pub enum ApiError {
     WebRtc(#[from] WebRtcError),
     #[error(transparent)]
     Teammate(#[from] crate::routes::teammates::TeammateError),
+    #[error(transparent)]
+    Routine(#[from] RoutineError),
 }
 
 impl From<&'static str> for ApiError {
@@ -504,6 +506,13 @@ impl IntoResponse for ApiError {
                 "TeammateError",
                 format!("{}: {}", err.code(), err),
             ),
+            ApiError::Routine(RoutineError::NotFound) => {
+                ErrorInfo::not_found("RoutineError", "Routine not found.")
+            }
+            ApiError::Routine(RoutineError::Validation(msg)) => {
+                ErrorInfo::bad_request("RoutineError", msg.clone())
+            }
+            ApiError::Routine(_) => ErrorInfo::internal("RoutineError"),
             ApiError::WebRtc(err) => match err {
                 WebRtcError::SessionNotFound { .. } => {
                     ErrorInfo::not_found("WebRtcError", err.to_string())

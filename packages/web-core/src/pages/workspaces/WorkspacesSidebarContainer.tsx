@@ -4,7 +4,7 @@ import {
   useDraggingWorkspaceId,
 } from '@/shared/stores/usePillDragStore';
 import { useSessionGridStore } from '@/shared/stores/useSessionGridStore';
-import { useParams } from '@tanstack/react-router';
+import { useLocation, useNavigate, useParams } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { workspacesApi } from '@/shared/lib/api';
 import { workspaceSummaryKeys } from '@/shared/hooks/workspaceSummaryKeys';
@@ -329,6 +329,9 @@ export function WorkspacesSidebarContainer({
   const isMobile = useIsMobile();
   const { hosts: remoteCloudHosts } = useRemoteCloudHostsAppBarModel();
   const { hostId: routeHostId } = useParams({ strict: false });
+  const routerNavigate = useNavigate();
+  const location = useLocation();
+  const isRoutinesActive = location.pathname.startsWith('/routines');
   const setMobileActiveTab = useUiPreferencesStore((s) => s.setMobileActiveTab);
   const searchQuery = useUiPreferencesStore((s) => s.sidebarSearchQuery);
   const [showArchive, setShowArchive] = usePersistedExpanded(
@@ -649,6 +652,16 @@ export function WorkspacesSidebarContainer({
     }
   }, [navigateToCreate, isMobile, setMobileActiveTab]);
 
+  const handleOpenRoutines = useCallback(() => {
+    // web-core is shared between local-web and remote-web; remote-web's
+    // routeTree doesn't include /routines, so we widen `to` to break the
+    // typed-router strict check. Local-web ignores this on its own routeTree.
+    routerNavigate({ to: '/routines' as unknown as '/' });
+    if (isMobile) {
+      setMobileActiveTab('chat');
+    }
+  }, [routerNavigate, isMobile, setMobileActiveTab]);
+
   const setPendingFolderSeed = useFolderSeedStore((s) => s.setPending);
   const handleCreateInFolder = useCallback(
     (repoId: string) => {
@@ -902,6 +915,8 @@ export function WorkspacesSidebarContainer({
         onSelectWorkspace={handleSelectWorkspace}
         onAddWorkspace={handleAddWorkspace}
         onCreateInFolder={handleCreateInFolder}
+        onOpenRoutines={handleOpenRoutines}
+        isRoutinesActive={isRoutinesActive}
         isCreateMode={isCreateMode}
         draftTitle={persistedDraftTitle}
         onSelectCreate={navigateToCreate}

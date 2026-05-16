@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE routines SET next_run_at = $1, updated_at = datetime('now','subsec') WHERE id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "e19c2249c371b6fb0242b8d532e9050362679ff07686e072fc8feb42f41f8df3"
+}

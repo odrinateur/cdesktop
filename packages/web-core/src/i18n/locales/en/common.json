@@ -809,5 +809,107 @@
     "terminal": "Terminal",
     "openPanelMenu": "Open panel menu",
     "closePanel": "Close {{panel}} panel"
+  },
+  "routines": {
+    "title": "Routines",
+    "subtitle": "Create templated routines that run on schedule or manually.",
+    "banner": "Local routines only run while your computer is awake.",
+    "newButton": "New routine",
+    "newPageTitle": "New local routine",
+    "empty": "No routines yet.",
+    "runNow": "Run now",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirmTitle": "Delete routine",
+    "deleteConfirm": "Delete routine \"{{name}}\" and {{count}} runs ({{count}} workspaces and worktrees)?",
+    "nextRun": "Next run {{when}}",
+    "nextRunNever": "No upcoming run",
+    "lastRun": "Last run {{when}}",
+    "neverRun": "Never run",
+    "history": {
+      "title": "History",
+      "empty": "No runs yet."
+    },
+    "sections": {
+      "description": "Description",
+      "status": "Status",
+      "folder": "Folder",
+      "repeats": "Repeats",
+      "instructions": "Instructions"
+    },
+    "status": {
+      "pending": "Pending",
+      "running": "Running",
+      "done": "Done",
+      "skipped": "Skipped",
+      "failed": "Failed"
+    },
+    "skipReason": {
+      "appOffline": "App was offline",
+      "prevStillRunning": "Previous run still running"
+    },
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "A short name for this routine",
+      "description": "Description",
+      "descriptionPlaceholder": "What does this routine do?",
+      "instructions": "Instructions",
+      "instructionsPlaceholder": "The prompt sent to the agent on each run.",
+      "folder": "Folder",
+      "folderPlaceholder": "Pick a folder",
+      "worktree": "Use worktree",
+      "executor": "Agent",
+      "variant": "Preset",
+      "model": "Model",
+      "permission": "Permission",
+      "schedule": "Schedule",
+      "time": "Time",
+      "minute": "Minute",
+      "dow": "Day of week"
+    },
+    "schedule": {
+      "manual": "Manual",
+      "hourly": "Hourly",
+      "daily": "Daily",
+      "weekdays": "Weekdays",
+      "weekly": "Weekly",
+      "summary": {
+        "manual": "Manual only",
+        "hourly": "Every hour at :{{minute}}",
+        "daily": "Every day at {{time}}",
+        "weekdays": "Mon–Fri at {{time}}",
+        "weekly": "Every {{day}} at {{time}}"
+      }
+    },
+    "days": {
+      "sun": "Sunday",
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday"
+    },
+    "form": {
+      "submitCreate": "Create routine",
+      "submitSave": "Save",
+      "cancel": "Cancel",
+      "validation": {
+        "nameRequired": "Name is required",
+        "descriptionRequired": "Description is required",
+        "instructionsRequired": "Instructions are required",
+        "folderRequired": "Pick a folder",
+        "modelRequired": "Pick a model",
+        "permissionRequired": "Pick a permission policy",
+        "timeRequired": "Pick a time",
+        "minuteRequired": "Pick a minute",
+        "dowRequired": "Pick a day"
+      }
+    },
+    "sidebar": {
+      "nav": "Routines"
+    }
   }
 }

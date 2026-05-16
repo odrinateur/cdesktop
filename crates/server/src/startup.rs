@@ -179,6 +179,9 @@ pub async fn initialize_deployment(
         executors::executors::utils::preload_global_executor_options_cache().await;
     });
 
+    // Spawn the in-process routine scheduler (60s tick + boot missed-run handler).
+    crate::routines_scheduler::spawn(deployment.clone());
+
     Ok(deployment)
 }
 
