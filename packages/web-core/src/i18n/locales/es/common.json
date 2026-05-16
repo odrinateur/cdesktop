@@ -83,6 +83,8 @@
       "defaultType": "Subagente"
     },
     "loadingEarlierMessages": "Cargando mensajes anteriores",
+    "emptyTitle": "Envía un mensaje para iniciar la conversación.",
+    "emptyDescription": "La conversación de tu sesión aparecerá aquí cuando comience un nuevo turno.",
     "toolName": {
       "Skill": "Habilidad"
     }
@@ -791,6 +793,17 @@
       },
       "settings": "Configuración",
       "viewArchive": "Ver archivo"
+    }
+  },
+  "navbar": {
+    "board": "Tablero",
+    "mobileTabs": {
+      "workspaces": "Sesiones",
+      "chat": "Chat",
+      "changes": "Cambios",
+      "logs": "Registros",
+      "preview": "Vista",
+      "git": "Git"
     }
   },
   "time": {

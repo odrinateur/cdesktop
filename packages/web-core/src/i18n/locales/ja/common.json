@@ -83,6 +83,8 @@
       "defaultType": "サブエージェント"
     },
     "loadingEarlierMessages": "以前のメッセージを読み込み中",
+    "emptyTitle": "メッセージを送信して会話を始めましょう。",
+    "emptyDescription": "新しいターンが始まると、ワークスペースの会話がここに表示されます。",
     "toolName": {
       "Skill": "スキル"
     }
@@ -790,6 +792,17 @@
       },
       "settings": "設定",
       "viewArchive": "アーカイブを表示"
+    }
+  },
+  "navbar": {
+    "board": "ボード",
+    "mobileTabs": {
+      "workspaces": "セッション",
+      "chat": "チャット",
+      "changes": "差分",
+      "logs": "ログ",
+      "preview": "プレビュー",
+      "git": "Git"
     }
   },
   "time": {

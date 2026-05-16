@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import type { Icon } from '@phosphor-icons/react';
+import { useTranslation } from 'react-i18next';
 import {
   Layout as LayoutIcon,
   ChatsTeardrop as ChatsTeardropIcon,
@@ -206,6 +207,7 @@ export function Navbar({
   showMobileTabs,
   mobileShowBack,
 }: NavbarProps) {
+  const { t } = useTranslation('common');
   const renderItem = (item: NavbarSectionItem, key: string) => {
     // Render divider
     if (isDivider(item)) {
@@ -320,7 +322,7 @@ export function Navbar({
                         weight={isActive ? 'fill' : 'regular'}
                       />
                       <span className="hidden min-[480px]:inline">
-                        {tab.label}
+                        {t(`navbar.mobileTabs.${tab.id}`, tab.label)}
                       </span>
                     </button>
                   );
@@ -332,7 +334,9 @@ export function Navbar({
                   onClick={onNavigateToBoard}
                 >
                   <KanbanIcon className="size-icon-sm" />
-                  <span className="hidden min-[480px]:inline">Board</span>
+                  <span className="hidden min-[480px]:inline">
+                    {t('navbar.board', 'Board')}
+                  </span>
                 </button>
               )}
             </div>

@@ -67,6 +67,8 @@
       "defaultType": "Sous-agent"
     },
     "loadingEarlierMessages": "Chargement des messages précédents",
+    "emptyTitle": "Envoyez un message pour démarrer la conversation.",
+    "emptyDescription": "La conversation de votre session apparaîtra ici dès qu'un nouveau tour commencera.",
     "toolName": {
       "Skill": "Compétence"
     }
@@ -791,6 +793,17 @@
       },
       "settings": "Paramètres",
       "viewArchive": "Voir les archives"
+    }
+  },
+  "navbar": {
+    "board": "Tableau",
+    "mobileTabs": {
+      "workspaces": "Sess.",
+      "chat": "Chat",
+      "changes": "Diff",
+      "logs": "Journ.",
+      "preview": "Aperçu",
+      "git": "Git"
     }
   },
   "time": {

@@ -83,6 +83,8 @@
       "defaultType": "서브에이전트"
     },
     "loadingEarlierMessages": "이전 메시지 불러오는 중",
+    "emptyTitle": "대화를 시작하려면 메시지를 보내세요.",
+    "emptyDescription": "새 턴이 시작되면 세션 대화가 여기에 표시됩니다.",
     "toolName": {
       "Skill": "스킬"
     }
@@ -790,6 +792,17 @@
       },
       "settings": "설정",
       "viewArchive": "보관함 보기"
+    }
+  },
+  "navbar": {
+    "board": "보드",
+    "mobileTabs": {
+      "workspaces": "세션",
+      "chat": "채팅",
+      "changes": "차이",
+      "logs": "로그",
+      "preview": "미리보기",
+      "git": "Git"
     }
   },
   "time": {

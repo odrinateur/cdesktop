@@ -72,6 +72,8 @@
       "defaultType": "Subagent"
     },
     "loadingEarlierMessages": "Loading earlier messages",
+    "emptyTitle": "Send a message to start the conversation.",
+    "emptyDescription": "Your workspace conversation will appear here once a new turn starts.",
     "toolName": {
       "Skill": "Skill"
     }
@@ -245,6 +247,17 @@
       },
       "settings": "Settings",
       "viewArchive": "View archive"
+    }
+  },
+  "navbar": {
+    "board": "Board",
+    "mobileTabs": {
+      "workspaces": "Wksps",
+      "chat": "Chat",
+      "changes": "Diff",
+      "logs": "Logs",
+      "preview": "Preview",
+      "git": "Git"
     }
   },
   "sections": {
