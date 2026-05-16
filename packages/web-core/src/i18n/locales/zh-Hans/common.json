@@ -67,6 +67,8 @@
       "defaultType": "子智能体"
     },
     "loadingEarlierMessages": "正在加载早期消息",
+    "emptyTitle": "发送消息以开始对话。",
+    "emptyDescription": "新一轮开始后，会话内容将在此处显示。",
     "toolName": {
       "Skill": "技能"
     }
@@ -790,6 +792,17 @@
       },
       "settings": "设置",
       "viewArchive": "查看归档"
+    }
+  },
+  "navbar": {
+    "board": "看板",
+    "mobileTabs": {
+      "workspaces": "会话",
+      "chat": "聊天",
+      "changes": "差异",
+      "logs": "日志",
+      "preview": "预览",
+      "git": "Git"
     }
   },
   "time": {

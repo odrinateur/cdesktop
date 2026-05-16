@@ -67,6 +67,8 @@
       "defaultType": "子智能体"
     },
     "loadingEarlierMessages": "正在載入先前的訊息",
+    "emptyTitle": "傳送訊息以開始對話。",
+    "emptyDescription": "新一輪開始後，工作階段對話將顯示於此。",
     "toolName": {
       "Skill": "技能"
     }
@@ -790,6 +792,17 @@
       },
       "settings": "設定",
       "viewArchive": "檢視封存"
+    }
+  },
+  "navbar": {
+    "board": "看板",
+    "mobileTabs": {
+      "workspaces": "工作階段",
+      "chat": "聊天",
+      "changes": "差異",
+      "logs": "日誌",
+      "preview": "預覽",
+      "git": "Git"
     }
   },
   "time": {
