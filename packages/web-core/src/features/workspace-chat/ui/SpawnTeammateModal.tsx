@@ -12,7 +12,7 @@
 
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import {
   Dialog,
   DialogContent,
@@ -38,10 +38,8 @@ import { sessionsApi } from '@/shared/lib/api';
 import { ApiError } from '@/shared/lib/api';
 import { useExecutorConfig } from '@/shared/hooks/useExecutorConfig';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
-import { useHostId } from '@/shared/providers/HostIdProvider';
 import { useWorkspacePickerSelection } from '@/shared/hooks/useWorkspacePickerSelection';
 import { isAgentDefaultModelId } from '@/shared/lib/agentDefaultModel';
-import { workspaceSessionKeys } from '@/shared/hooks/workspaceSessionKeys';
 import type {
   BaseCodingAgent,
   ExecutorConfig,
@@ -150,8 +148,6 @@ export function SpawnTeammateModal({
   onSpawned,
 }: SpawnTeammateModalProps) {
   const { t } = useTranslation(['tasks']);
-  const queryClient = useQueryClient();
-  const hostId = useHostId();
   const { profiles } = useUserSystem();
 
   const [name, setName] = useState('');
@@ -190,9 +186,6 @@ export function SpawnTeammateModal({
     mutationFn: async (body: SpawnTeammateRequest) =>
       sessionsApi.spawnTeammate(workspaceId, body),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({
-        queryKey: workspaceSessionKeys.byWorkspace(workspaceId, hostId),
-      });
       setName('');
       setPrompt('');
       setErrorMessage(null);

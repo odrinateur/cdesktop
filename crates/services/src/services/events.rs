@@ -20,7 +20,7 @@ mod streams;
 #[path = "events/types.rs"]
 pub mod types;
 
-pub use patches::{execution_process_patch, scratch_patch, workspace_patch};
+pub use patches::{execution_process_patch, scratch_patch, session_patch, workspace_patch};
 pub use types::{EventError, EventPatch, EventPatchInner, HookTables, RecordTypes};
 
 #[derive(Clone)]
@@ -111,6 +111,19 @@ impl EventService {
                                     msg_store_for_preupdate.push_patch(patch);
                                 }
                             }
+                            "sessions" => {
+                                // Need both id (col 0) and workspace_id (col 1) so the
+                                // patch path can route to the per-workspace stream.
+                                if let Ok(id_val) = preupdate.get_old_column_value(0)
+                                    && let Ok(session_id) = <Uuid as Decode<Sqlite>>::decode(id_val)
+                                    && let Ok(ws_val) = preupdate.get_old_column_value(1)
+                                    && let Ok(workspace_id) =
+                                        <Uuid as Decode<Sqlite>>::decode(ws_val)
+                                {
+                                    let patch = session_patch::remove(workspace_id, session_id);
+                                    msg_store_for_preupdate.push_patch(patch);
+                                }
+                            }
                             _ => {}
                         }
                     }
@@ -128,7 +141,8 @@ impl EventService {
                             let record_type: RecordTypes = match (table, hook.operation.clone()) {
                                 (HookTables::Workspaces, SqliteOperation::Delete)
                                 | (HookTables::ExecutionProcesses, SqliteOperation::Delete)
-                                | (HookTables::Scratch, SqliteOperation::Delete) => {
+                                | (HookTables::Scratch, SqliteOperation::Delete)
+                                | (HookTables::Sessions, SqliteOperation::Delete) => {
                                     return;
                                 }
                                 (HookTables::Workspaces, _) => {
@@ -173,6 +187,23 @@ impl EventService {
                                         },
                                         Err(e) => {
                                             tracing::error!("Failed to fetch scratch: {:?}", e);
+                                            return;
+                                        }
+                                    }
+                                }
+                                (HookTables::Sessions, _) => {
+                                    match Session::find_by_rowid(&db.pool, rowid).await {
+                                        Ok(Some(session)) => RecordTypes::Session(session),
+                                        Ok(None) => RecordTypes::DeletedSession {
+                                            rowid,
+                                            session_id: None,
+                                            workspace_id: None,
+                                        },
+                                        Err(e) => {
+                                            tracing::error!(
+                                                "Failed to fetch session: {:?}",
+                                                e
+                                            );
                                             return;
                                         }
                                     }
@@ -250,6 +281,18 @@ impl EventService {
                                         );
                                     }
 
+                                    return;
+                                }
+                                RecordTypes::Session(session) => {
+                                    let patch = match hook.operation {
+                                        SqliteOperation::Insert => session_patch::add(session),
+                                        SqliteOperation::Update => session_patch::replace(session),
+                                        _ => session_patch::replace(session),
+                                    };
+                                    msg_store_for_hook.push_patch(patch);
+                                    return;
+                                }
+                                RecordTypes::DeletedSession { .. } => {
                                     return;
                                 }
                                 RecordTypes::DeletedExecutionProcess {

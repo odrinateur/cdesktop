@@ -53,6 +53,24 @@ impl Session {
         .await
     }
 
+    pub async fn find_by_rowid(pool: &SqlitePool, rowid: i64) -> Result<Option<Self>, sqlx::Error> {
+        sqlx::query_as!(
+            Session,
+            r#"SELECT id AS "id!: Uuid",
+                      workspace_id AS "workspace_id!: Uuid",
+                      name,
+                      executor,
+                      agent_working_dir,
+                      created_at AS "created_at!: DateTime<Utc>",
+                      updated_at AS "updated_at!: DateTime<Utc>"
+               FROM sessions
+               WHERE rowid = $1"#,
+            rowid
+        )
+        .fetch_optional(pool)
+        .await
+    }
+
     /// Find all sessions for a workspace, ordered by most recently used.
     /// "Most recently used" is defined as the most recent non-dev server execution process.
     /// Sessions with no executions fall back to created_at for ordering.

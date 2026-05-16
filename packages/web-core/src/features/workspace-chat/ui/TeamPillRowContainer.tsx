@@ -1,9 +1,15 @@
 /**
  * Renders the team-pill row inline with the composer header. Owns:
- *  - Session-list fetch (`useWorkspaceSessions`)
  *  - Lead detection (oldest by `created_at`)
  *  - Spawn-modal open state
  *  - Rename dispatch
+ *
+ * Sessions come from `useWorkspaceContext` so the row reads from the
+ * WorkspaceProvider's single session-list subscription instead of opening
+ * its own. This matters because TeamPillRowContainer is mounted inside the
+ * `<EntriesProvider key={…}>` boundary, which remounts on session switch —
+ * a hook-local WS would tear down and re-snapshot on every switch, causing
+ * the pill row to flash empty.
  *
  * Each multi-session pill self-subscribes to live status via
  * `TeamPillItem`. Single-session workspaces show only the `+ teammate`
@@ -12,15 +18,12 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useQueryClient } from '@tanstack/react-query';
 import { PlusIcon } from '@phosphor-icons/react';
 import { TeamPillRow } from '@vibe/ui/components/TeamPillRow';
 import { RenameSessionDialog } from '@vibe/ui/components/RenameSessionDialog';
 import { cn } from '@vibe/ui/lib/cn';
-import { useHostId } from '@/shared/providers/HostIdProvider';
-import { useWorkspaceSessions } from '@/shared/hooks/useWorkspaceSessions';
-import { workspaceSessionKeys } from '@/shared/hooks/workspaceSessionKeys';
 import { sessionsApi } from '@/shared/lib/api';
+import { useWorkspaceContext } from '@/shared/hooks/useWorkspaceContext';
 import { SpawnTeammateModal } from './SpawnTeammateModal';
 import { TeamPillItem } from './TeamPillItem';
 import type { ExecutorConfig, ExecutorProfileId } from 'shared/types';
@@ -45,9 +48,7 @@ export function TeamPillRowContainer({
   visible,
 }: TeamPillRowContainerProps) {
   const { t } = useTranslation(['tasks']);
-  const queryClient = useQueryClient();
-  const hostId = useHostId();
-  const { sessions } = useWorkspaceSessions(workspaceId);
+  const { sessions } = useWorkspaceContext();
   const [spawnOpen, setSpawnOpen] = useState(false);
 
   // Sort by created_at ASC so the lead (oldest) is first. The hook
@@ -67,10 +68,9 @@ export function TeamPillRowContainer({
     void RenameSessionDialog.show({
       currentName: target.name ?? '',
       onRename: async (newName: string) => {
+        // The workspace sessions WS streams the rename back live, so no
+        // manual cache invalidation needed.
         await sessionsApi.update(sessionId, { name: newName });
-        await queryClient.invalidateQueries({
-          queryKey: workspaceSessionKeys.byWorkspace(workspaceId, hostId),
-        });
       },
     });
   };
