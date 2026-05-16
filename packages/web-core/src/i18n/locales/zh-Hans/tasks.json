@@ -479,7 +479,7 @@
       "renaming": "正在重命名..."
     },
     "team": {
-      "main": "主",
+      "main": "领队",
       "addTeammate": "+ 队友",
       "addTeammateAriaLabel": "添加队友",
       "spawnTitle": "创建队友",
