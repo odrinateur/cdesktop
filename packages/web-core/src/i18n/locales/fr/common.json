@@ -809,5 +809,107 @@
     "terminal": "Terminal",
     "openPanelMenu": "Ouvrir le menu des panneaux",
     "closePanel": "Fermer le panneau {{panel}}"
+  },
+  "routines": {
+    "title": "Routines",
+    "subtitle": "Créez des routines basées sur des modèles qui s'exécutent selon un horaire ou manuellement.",
+    "banner": "Les routines locales ne s'exécutent que lorsque votre ordinateur est allumé.",
+    "newButton": "Nouvelle routine",
+    "newPageTitle": "Nouvelle routine locale",
+    "empty": "Aucune routine pour le moment.",
+    "runNow": "Exécuter maintenant",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "deleteConfirmTitle": "Supprimer la routine",
+    "deleteConfirm": "Supprimer la routine « {{name}} » et {{count}} exécutions ({{count}} sessions et worktrees) ?",
+    "nextRun": "Prochaine exécution {{when}}",
+    "nextRunNever": "Aucune exécution prévue",
+    "lastRun": "Dernière exécution {{when}}",
+    "neverRun": "Jamais exécutée",
+    "history": {
+      "title": "Historique",
+      "empty": "Aucune exécution pour le moment."
+    },
+    "sections": {
+      "description": "Description",
+      "status": "Statut",
+      "folder": "Dossier",
+      "repeats": "Récurrence",
+      "instructions": "Instructions"
+    },
+    "status": {
+      "pending": "En attente",
+      "running": "En cours",
+      "done": "Terminée",
+      "skipped": "Ignorée",
+      "failed": "Échouée"
+    },
+    "skipReason": {
+      "appOffline": "L'application était hors ligne",
+      "prevStillRunning": "L'exécution précédente est toujours en cours"
+    },
+    "enabled": "Activée",
+    "disabled": "Désactivée",
+    "fields": {
+      "name": "Nom",
+      "namePlaceholder": "Un nom court pour cette routine",
+      "description": "Description",
+      "descriptionPlaceholder": "Que fait cette routine ?",
+      "instructions": "Instructions",
+      "instructionsPlaceholder": "Le prompt envoyé à l'agent à chaque exécution.",
+      "folder": "Dossier",
+      "folderPlaceholder": "Choisir un dossier",
+      "worktree": "Utiliser un worktree",
+      "executor": "Agent",
+      "variant": "Préréglage",
+      "model": "Modèle",
+      "permission": "Permission",
+      "schedule": "Planification",
+      "time": "Heure",
+      "minute": "Minute",
+      "dow": "Jour de la semaine"
+    },
+    "schedule": {
+      "manual": "Manuel",
+      "hourly": "Toutes les heures",
+      "daily": "Quotidien",
+      "weekdays": "Jours ouvrés",
+      "weekly": "Hebdomadaire",
+      "summary": {
+        "manual": "Manuel uniquement",
+        "hourly": "Chaque heure à :{{minute}}",
+        "daily": "Chaque jour à {{time}}",
+        "weekdays": "Lun–Ven à {{time}}",
+        "weekly": "Chaque {{day}} à {{time}}"
+      }
+    },
+    "days": {
+      "sun": "Dimanche",
+      "mon": "Lundi",
+      "tue": "Mardi",
+      "wed": "Mercredi",
+      "thu": "Jeudi",
+      "fri": "Vendredi",
+      "sat": "Samedi"
+    },
+    "form": {
+      "submitCreate": "Créer la routine",
+      "submitSave": "Enregistrer",
+      "cancel": "Annuler",
+      "validation": {
+        "nameRequired": "Le nom est requis",
+        "descriptionRequired": "La description est requise",
+        "instructionsRequired": "Les instructions sont requises",
+        "folderRequired": "Choisissez un dossier",
+        "modelRequired": "Choisissez un modèle",
+        "permissionRequired": "Choisissez une politique de permission",
+        "timeRequired": "Choisissez une heure",
+        "minuteRequired": "Choisissez une minute",
+        "dowRequired": "Choisissez un jour"
+      }
+    },
+    "sidebar": {
+      "nav": "Routines"
+    }
   }
 }

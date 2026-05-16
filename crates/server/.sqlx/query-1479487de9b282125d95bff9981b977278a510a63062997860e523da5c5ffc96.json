@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE workspaces\n               SET pin_order = sub.rn - 1\n               FROM (\n                   SELECT id, ROW_NUMBER() OVER (ORDER BY pin_order ASC) AS rn\n                   FROM workspaces\n                   WHERE pin_order IS NOT NULL\n               ) sub\n               WHERE workspaces.id = sub.id",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": []
+  },
+  "hash": "1479487de9b282125d95bff9981b977278a510a63062997860e523da5c5ffc96"
+}

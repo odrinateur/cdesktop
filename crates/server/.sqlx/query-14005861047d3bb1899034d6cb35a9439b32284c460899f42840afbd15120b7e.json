@@ -1,0 +1,110 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id AS \"id!: Uuid\",\n                      name,\n                      description,\n                      instructions,\n                      repo_id AS \"repo_id!: Uuid\",\n                      target_branch,\n                      use_worktree AS \"use_worktree!: bool\",\n                      executor_config,\n                      schedule_kind AS \"schedule_kind!: ScheduleKind\",\n                      schedule_time,\n                      schedule_dow,\n                      enabled AS \"enabled!: bool\",\n                      next_run_at AS \"next_run_at: DateTime<Utc>\",\n                      last_run_at AS \"last_run_at: DateTime<Utc>\",\n                      created_at AS \"created_at!: DateTime<Utc>\",\n                      updated_at AS \"updated_at!: DateTime<Utc>\"\n               FROM routines\n               WHERE enabled = TRUE\n                 AND next_run_at IS NOT NULL\n                 AND next_run_at <= $1",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!: Uuid",
+        "ordinal": 0,
+        "type_info": "Blob"
+      },
+      {
+        "name": "name",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "description",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "instructions",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "repo_id!: Uuid",
+        "ordinal": 4,
+        "type_info": "Blob"
+      },
+      {
+        "name": "target_branch",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "use_worktree!: bool",
+        "ordinal": 6,
+        "type_info": "Bool"
+      },
+      {
+        "name": "executor_config",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "schedule_kind!: ScheduleKind",
+        "ordinal": 8,
+        "type_info": "Text"
+      },
+      {
+        "name": "schedule_time",
+        "ordinal": 9,
+        "type_info": "Text"
+      },
+      {
+        "name": "schedule_dow",
+        "ordinal": 10,
+        "type_info": "Integer"
+      },
+      {
+        "name": "enabled!: bool",
+        "ordinal": 11,
+        "type_info": "Bool"
+      },
+      {
+        "name": "next_run_at: DateTime<Utc>",
+        "ordinal": 12,
+        "type_info": "Text"
+      },
+      {
+        "name": "last_run_at: DateTime<Utc>",
+        "ordinal": 13,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at!: DateTime<Utc>",
+        "ordinal": 14,
+        "type_info": "Text"
+      },
+      {
+        "name": "updated_at!: DateTime<Utc>",
+        "ordinal": 15,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "14005861047d3bb1899034d6cb35a9439b32284c460899f42840afbd15120b7e"
+}

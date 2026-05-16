@@ -808,5 +808,107 @@
     "terminal": "ターミナル",
     "openPanelMenu": "パネルメニューを開く",
     "closePanel": "{{panel}} パネルを閉じる"
+  },
+  "routines": {
+    "title": "ルーティン",
+    "subtitle": "テンプレートからスケジュール実行または手動実行できるルーティンを作成します。",
+    "banner": "ローカルルーティンはコンピュータが起動している間のみ実行されます。",
+    "newButton": "新規ルーティン",
+    "newPageTitle": "新規ローカルルーティン",
+    "empty": "ルーティンはまだありません。",
+    "runNow": "今すぐ実行",
+    "edit": "編集",
+    "delete": "削除",
+    "deleteConfirmTitle": "ルーティンを削除",
+    "deleteConfirm": "ルーティン「{{name}}」と {{count}} 件の実行（{{count}} 件のセッションと worktree）を削除しますか？",
+    "nextRun": "次回実行 {{when}}",
+    "nextRunNever": "今後の実行予定なし",
+    "lastRun": "前回実行 {{when}}",
+    "neverRun": "未実行",
+    "history": {
+      "title": "履歴",
+      "empty": "実行履歴はまだありません。"
+    },
+    "sections": {
+      "description": "説明",
+      "status": "ステータス",
+      "folder": "フォルダ",
+      "repeats": "繰り返し",
+      "instructions": "指示"
+    },
+    "status": {
+      "pending": "待機中",
+      "running": "実行中",
+      "done": "完了",
+      "skipped": "スキップ",
+      "failed": "失敗"
+    },
+    "skipReason": {
+      "appOffline": "アプリがオフラインでした",
+      "prevStillRunning": "前回の実行がまだ進行中です"
+    },
+    "enabled": "有効",
+    "disabled": "無効",
+    "fields": {
+      "name": "名前",
+      "namePlaceholder": "このルーティンの短い名前",
+      "description": "説明",
+      "descriptionPlaceholder": "このルーティンは何をしますか？",
+      "instructions": "指示",
+      "instructionsPlaceholder": "各実行時にエージェントへ送信されるプロンプト。",
+      "folder": "フォルダ",
+      "folderPlaceholder": "フォルダを選択",
+      "worktree": "worktree を使用",
+      "executor": "エージェント",
+      "variant": "プリセット",
+      "model": "モデル",
+      "permission": "権限",
+      "schedule": "スケジュール",
+      "time": "時刻",
+      "minute": "分",
+      "dow": "曜日"
+    },
+    "schedule": {
+      "manual": "手動",
+      "hourly": "1時間ごと",
+      "daily": "毎日",
+      "weekdays": "平日",
+      "weekly": "毎週",
+      "summary": {
+        "manual": "手動のみ",
+        "hourly": "毎時 :{{minute}} 分",
+        "daily": "毎日 {{time}}",
+        "weekdays": "月〜金 {{time}}",
+        "weekly": "毎週{{day}} {{time}}"
+      }
+    },
+    "days": {
+      "sun": "日曜日",
+      "mon": "月曜日",
+      "tue": "火曜日",
+      "wed": "水曜日",
+      "thu": "木曜日",
+      "fri": "金曜日",
+      "sat": "土曜日"
+    },
+    "form": {
+      "submitCreate": "ルーティンを作成",
+      "submitSave": "保存",
+      "cancel": "キャンセル",
+      "validation": {
+        "nameRequired": "名前は必須です",
+        "descriptionRequired": "説明は必須です",
+        "instructionsRequired": "指示は必須です",
+        "folderRequired": "フォルダを選択してください",
+        "modelRequired": "モデルを選択してください",
+        "permissionRequired": "権限ポリシーを選択してください",
+        "timeRequired": "時刻を選択してください",
+        "minuteRequired": "分を選択してください",
+        "dowRequired": "曜日を選択してください"
+      }
+    },
+    "sidebar": {
+      "nav": "ルーティン"
+    }
   }
 }

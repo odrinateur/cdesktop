@@ -102,6 +102,11 @@ import {
   ProfileResponse,
   SpawnTeammateRequest,
   SpawnTeammateResponse,
+  Routine,
+  RoutineRun,
+  CreateRoutine,
+  UpdateRoutine,
+  RunNowResponse,
 } from 'shared/types';
 import type { Project as RemoteProject } from 'shared/remote-types';
 import type { WorkspaceWithSession } from '@/shared/types/attempt';
@@ -1728,5 +1733,46 @@ export const searchApi = {
       options
     );
     return handleApiResponse<SearchResult[]>(response);
+  },
+};
+
+export const routinesApi = {
+  list: async (): Promise<Routine[]> => {
+    const response = await makeRequest('/api/routines');
+    return handleApiResponse<Routine[]>(response);
+  },
+  get: async (id: string): Promise<Routine> => {
+    const response = await makeRequest(`/api/routines/${id}`);
+    return handleApiResponse<Routine>(response);
+  },
+  create: async (data: CreateRoutine): Promise<Routine> => {
+    const response = await makeRequest('/api/routines', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    return handleApiResponse<Routine>(response);
+  },
+  update: async (id: string, data: UpdateRoutine): Promise<Routine> => {
+    const response = await makeRequest(`/api/routines/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+    return handleApiResponse<Routine>(response);
+  },
+  delete: async (id: string): Promise<void> => {
+    const response = await makeRequest(`/api/routines/${id}`, {
+      method: 'DELETE',
+    });
+    return handleApiResponse<void>(response);
+  },
+  runNow: async (id: string): Promise<RunNowResponse> => {
+    const response = await makeRequest(`/api/routines/${id}/run`, {
+      method: 'POST',
+    });
+    return handleApiResponse<RunNowResponse>(response);
+  },
+  listRuns: async (id: string): Promise<RoutineRun[]> => {
+    const response = await makeRequest(`/api/routines/${id}/runs`);
+    return handleApiResponse<RoutineRun[]>(response);
   },
 };

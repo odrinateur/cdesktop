@@ -2,7 +2,9 @@ pub mod error;
 pub mod middleware;
 pub mod relay_pairing;
 pub mod routes;
+pub mod routines_scheduler;
 pub mod runtime;
+pub mod scheduling;
 pub mod skill_install;
 pub mod startup;
 

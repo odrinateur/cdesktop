@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE routine_runs SET workspace_id = $1 WHERE id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "b77d42eff31b9326f840ac02935151ec0ebae01bcd59d239d7dd8d54cca0fbab"
+}

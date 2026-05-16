@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE routine_runs SET status = 'running', started_at = $1 WHERE id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "3d41cfcbf0ae49a4da6baf0b31ac1034cffc7f69f0339bff50d753628c9bb0a5"
+}

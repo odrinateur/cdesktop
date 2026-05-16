@@ -808,5 +808,107 @@
     "terminal": "终端",
     "openPanelMenu": "打开面板菜单",
     "closePanel": "关闭 {{panel}} 面板"
+  },
+  "routines": {
+    "title": "例程",
+    "subtitle": "创建按计划或手动运行的模板化例程。",
+    "banner": "本地例程仅在您的计算机开启时运行。",
+    "newButton": "新建例程",
+    "newPageTitle": "新建本地例程",
+    "empty": "暂无例程。",
+    "runNow": "立即运行",
+    "edit": "编辑",
+    "delete": "删除",
+    "deleteConfirmTitle": "删除例程",
+    "deleteConfirm": "确定要删除例程 \"{{name}}\" 及其 {{count}} 次运行（{{count}} 个会话和 worktree）吗？",
+    "nextRun": "下次运行 {{when}}",
+    "nextRunNever": "无即将运行",
+    "lastRun": "上次运行 {{when}}",
+    "neverRun": "从未运行",
+    "history": {
+      "title": "历史记录",
+      "empty": "暂无运行记录。"
+    },
+    "sections": {
+      "description": "描述",
+      "status": "状态",
+      "folder": "文件夹",
+      "repeats": "重复",
+      "instructions": "指令"
+    },
+    "status": {
+      "pending": "等待中",
+      "running": "运行中",
+      "done": "已完成",
+      "skipped": "已跳过",
+      "failed": "失败"
+    },
+    "skipReason": {
+      "appOffline": "应用处于离线状态",
+      "prevStillRunning": "上次运行仍在进行中"
+    },
+    "enabled": "已启用",
+    "disabled": "已禁用",
+    "fields": {
+      "name": "名称",
+      "namePlaceholder": "此例程的简短名称",
+      "description": "描述",
+      "descriptionPlaceholder": "此例程的作用是什么？",
+      "instructions": "指令",
+      "instructionsPlaceholder": "每次运行时发送给智能体的提示词。",
+      "folder": "文件夹",
+      "folderPlaceholder": "选择文件夹",
+      "worktree": "使用 worktree",
+      "executor": "智能体",
+      "variant": "预设",
+      "model": "模型",
+      "permission": "权限",
+      "schedule": "计划",
+      "time": "时间",
+      "minute": "分钟",
+      "dow": "星期"
+    },
+    "schedule": {
+      "manual": "手动",
+      "hourly": "每小时",
+      "daily": "每天",
+      "weekdays": "工作日",
+      "weekly": "每周",
+      "summary": {
+        "manual": "仅手动",
+        "hourly": "每小时 :{{minute}} 分",
+        "daily": "每天 {{time}}",
+        "weekdays": "周一至周五 {{time}}",
+        "weekly": "每{{day}} {{time}}"
+      }
+    },
+    "days": {
+      "sun": "星期日",
+      "mon": "星期一",
+      "tue": "星期二",
+      "wed": "星期三",
+      "thu": "星期四",
+      "fri": "星期五",
+      "sat": "星期六"
+    },
+    "form": {
+      "submitCreate": "创建例程",
+      "submitSave": "保存",
+      "cancel": "取消",
+      "validation": {
+        "nameRequired": "请输入名称",
+        "descriptionRequired": "请输入描述",
+        "instructionsRequired": "请输入指令",
+        "folderRequired": "请选择文件夹",
+        "modelRequired": "请选择模型",
+        "permissionRequired": "请选择权限策略",
+        "timeRequired": "请选择时间",
+        "minuteRequired": "请选择分钟",
+        "dowRequired": "请选择日期"
+      }
+    },
+    "sidebar": {
+      "nav": "例程"
+    }
   }
 }

@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT\n                (SELECT COUNT(1) FROM workspace_repos WHERE workspace_id = ?) AS \"total!: i64\",\n                (\n                    SELECT COUNT(DISTINCT wr.repo_id)\n                    FROM workspace_repos wr\n                    WHERE wr.workspace_id = ?\n                      AND (\n                        EXISTS (\n                            SELECT 1 FROM merges m\n                            WHERE m.workspace_id = wr.workspace_id\n                              AND m.repo_id = wr.repo_id\n                              AND m.merge_type = 'direct'\n                        )\n                        OR EXISTS (\n                            SELECT 1 FROM pull_requests pr\n                            WHERE pr.workspace_id = wr.workspace_id\n                              AND pr.repo_id = wr.repo_id\n                              AND pr.pr_status = 'merged'\n                        )\n                      )\n                ) AS \"merged!: i64\",\n                (SELECT COUNT(1) FROM pull_requests WHERE workspace_id = ? AND pr_status = 'open') AS \"open_prs!: i64\"\n            ",
+  "describe": {
+    "columns": [
+      {
+        "name": "total!: i64",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "merged!: i64",
+        "ordinal": 1,
+        "type_info": "Integer"
+      },
+      {
+        "name": "open_prs!: i64",
+        "ordinal": 2,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "bc35a020d447dae4476099e6af286ed4ea36143f034063efb57917db818c4070"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE workspaces SET\n                archived = COALESCE($1, archived),\n                name = CASE WHEN $2 THEN $3 ELSE name END,\n                updated_at = datetime('now', 'subsec')\n            WHERE id = $4",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "6073f318e34a7d07c79ab232647b1367cc9275b8042ca7583ecda75df07b7cde"
+}

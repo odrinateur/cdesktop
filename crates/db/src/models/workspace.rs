@@ -41,6 +41,27 @@ struct WorkspaceContainerRefRow {
     container_ref: String,
 }
 
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize,
+    TS,
+    sqlx::Type,
+    strum_macros::Display,
+    strum_macros::EnumString,
+)]
+#[serde(rename_all = "lowercase")]
+#[sqlx(rename_all = "lowercase")]
+#[strum(serialize_all = "lowercase")]
+pub enum WorkspaceSource {
+    User,
+    Routine,
+}
+
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize, TS)]
 pub struct Workspace {
     pub id: Uuid,
@@ -58,6 +79,7 @@ pub struct Workspace {
     pub name: Option<String>,
     pub worktree_deleted: bool,
     pub use_worktree: bool,
+    pub source: WorkspaceSource,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -127,7 +149,8 @@ impl Workspace {
                           pin_order AS "pin_order: i64",
                           name,
                           worktree_deleted AS "worktree_deleted!: bool",
-                          use_worktree AS "use_worktree!: bool"
+                          use_worktree AS "use_worktree!: bool",
+                          source AS "source!: WorkspaceSource"
                    FROM workspaces
                    ORDER BY created_at DESC"#
         )
@@ -231,7 +254,8 @@ impl Workspace {
                        pin_order         AS "pin_order: i64",
                        name,
                        worktree_deleted  AS "worktree_deleted!: bool",
-                       use_worktree      AS "use_worktree!: bool"
+                       use_worktree      AS "use_worktree!: bool",
+                       source            AS "source!: WorkspaceSource"
                FROM    workspaces
                WHERE   id = $1"#,
             id
@@ -255,7 +279,8 @@ impl Workspace {
                        pin_order         AS "pin_order: i64",
                        name,
                        worktree_deleted  AS "worktree_deleted!: bool",
-                       use_worktree      AS "use_worktree!: bool"
+                       use_worktree      AS "use_worktree!: bool",
+                       source            AS "source!: WorkspaceSource"
                FROM    workspaces
                WHERE   rowid = $1"#,
             rowid
@@ -300,7 +325,8 @@ impl Workspace {
                 w.pin_order as "pin_order: i64",
                 w.name,
                 w.worktree_deleted as "worktree_deleted!: bool",
-                w.use_worktree as "use_worktree!: bool"
+                w.use_worktree as "use_worktree!: bool",
+                w.source as "source!: WorkspaceSource"
             FROM workspaces w
             LEFT JOIN sessions s ON w.id = s.workspace_id
             LEFT JOIN execution_processes ep ON s.id = ep.session_id AND ep.completed_at IS NOT NULL
@@ -348,7 +374,7 @@ impl Workspace {
             Workspace,
             r#"INSERT INTO workspaces (id, task_id, container_ref, branch, setup_completed_at, name, use_worktree)
                VALUES ($1, $2, $3, $4, $5, $6, $7)
-               RETURNING id as "id!: Uuid", task_id as "task_id: Uuid", container_ref, branch, setup_completed_at as "setup_completed_at: DateTime<Utc>", created_at as "created_at!: DateTime<Utc>", updated_at as "updated_at!: DateTime<Utc>", archived as "archived!: bool", (pin_order IS NOT NULL) as "pinned!: bool", pin_order as "pin_order: i64", name, worktree_deleted as "worktree_deleted!: bool", use_worktree as "use_worktree!: bool""#,
+               RETURNING id as "id!: Uuid", task_id as "task_id: Uuid", container_ref, branch, setup_completed_at as "setup_completed_at: DateTime<Utc>", created_at as "created_at!: DateTime<Utc>", updated_at as "updated_at!: DateTime<Utc>", archived as "archived!: bool", (pin_order IS NOT NULL) as "pinned!: bool", pin_order as "pin_order: i64", name, worktree_deleted as "worktree_deleted!: bool", use_worktree as "use_worktree!: bool", source as "source!: WorkspaceSource""#,
             id,
             Option::<Uuid>::None,
             Option::<String>::None,
@@ -359,6 +385,22 @@ impl Workspace {
         )
         .fetch_one(pool)
         .await?)
+    }
+
+    pub async fn set_source(
+        pool: &SqlitePool,
+        workspace_id: Uuid,
+        source: WorkspaceSource,
+    ) -> Result<(), sqlx::Error> {
+        let source_str = source.to_string();
+        sqlx::query!(
+            "UPDATE workspaces SET source = $1, updated_at = datetime('now','subsec') WHERE id = $2",
+            source_str,
+            workspace_id
+        )
+        .execute(pool)
+        .await?;
+        Ok(())
     }
 
     pub async fn update_branch_name(
@@ -624,6 +666,7 @@ impl Workspace {
                 w.name,
                 w.worktree_deleted AS "worktree_deleted!: bool",
                 w.use_worktree AS "use_worktree!: bool",
+                w.source AS "source!: WorkspaceSource",
 
                 CASE WHEN EXISTS (
                     SELECT 1
@@ -646,6 +689,7 @@ impl Workspace {
                 ) IN ('failed','killed') THEN 1 ELSE 0 END AS "is_errored!: i64"
 
             FROM workspaces w
+            WHERE w.source = 'user'
             ORDER BY w.updated_at DESC"#
         )
         .fetch_all(pool)
@@ -668,6 +712,7 @@ impl Workspace {
                     name: rec.name,
                     worktree_deleted: rec.worktree_deleted,
                     use_worktree: rec.use_worktree,
+                    source: rec.source,
                 },
                 is_running: rec.is_running != 0,
                 is_errored: rec.is_errored != 0,
@@ -722,6 +767,7 @@ impl Workspace {
                 w.name,
                 w.worktree_deleted AS "worktree_deleted!: bool",
                 w.use_worktree AS "use_worktree!: bool",
+                w.source AS "source!: WorkspaceSource",
 
                 CASE WHEN EXISTS (
                     SELECT 1
@@ -769,6 +815,7 @@ impl Workspace {
                 name: rec.name,
                 worktree_deleted: rec.worktree_deleted,
                 use_worktree: rec.use_worktree,
+                source: rec.source,
             },
             is_running: rec.is_running != 0,
             is_errored: rec.is_errored != 0,

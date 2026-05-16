@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE coding_agent_turns\n               SET selected_model_id = $1, selected_provider_id = $2, updated_at = $3\n               WHERE execution_process_id = $4",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "f5552fb4bc77912332fae3d03fdd98f5f370a1ee4ac52547d84782dde4c7988c"
+}

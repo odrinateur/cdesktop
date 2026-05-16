@@ -350,9 +350,11 @@ impl Repo {
                       r.updated_at as "updated_at!: DateTime<Utc>"
                FROM repos r
                LEFT JOIN (
-                   SELECT repo_id, MAX(updated_at) AS last_used_at
-                   FROM workspace_repos
-                   GROUP BY repo_id
+                   SELECT wr.repo_id, MAX(wr.updated_at) AS last_used_at
+                   FROM workspace_repos wr
+                   JOIN workspaces w ON w.id = wr.workspace_id
+                   WHERE w.source = 'user'
+                   GROUP BY wr.repo_id
                ) wr ON wr.repo_id = r.id
                ORDER BY wr.last_used_at DESC, r.display_name ASC"#
         )
@@ -372,7 +374,8 @@ impl Repo {
                FROM workspaces w
                JOIN workspace_repos wr ON wr.workspace_id = w.id
                WHERE wr.repo_id = $1
-                 AND w.archived = FALSE"#,
+                 AND w.archived = FALSE
+                 AND w.source = 'user'"#,
             repo_id
         )
         .fetch_all(pool)

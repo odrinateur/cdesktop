@@ -457,6 +457,7 @@ mod tests {
 
     fn make_test_workspace(name: &str) -> Workspace {
         use chrono::Utc;
+        use db::models::workspace::WorkspaceSource;
         Workspace {
             id: Uuid::nil(),
             task_id: None,
@@ -471,6 +472,7 @@ mod tests {
             name: Some(name.into()),
             worktree_deleted: false,
             use_worktree: false,
+            source: WorkspaceSource::User,
         }
     }
 }
