@@ -4,7 +4,9 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
+  type ReactNode,
 } from 'react';
+import { useLocation } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import type { CreateModeInitialState } from '@/shared/types/createMode';
 import { useWorkspaceContext } from '@/shared/hooks/useWorkspaceContext';
@@ -34,10 +36,12 @@ import { ChangesPanelContainer } from './ChangesPanelContainer';
 import { CreateChatBoxContainer } from '@/shared/components/CreateChatBoxContainer';
 import { PreviewBrowserContainer } from './PreviewBrowserContainer';
 import { SessionGrid } from './cells/SessionGrid';
+import { CreateFirstCellSlot } from './cells/CreateFirstCellSlot';
 import { scrollFirstCellToBottom } from './cells/firstCellScroll';
 import { WorkspacesGuideDialog } from '@/shared/dialogs/shared/WorkspacesGuideDialog';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
 import { useAppNavigation } from '@/shared/hooks/useAppNavigation';
+import { RoutinesFirstCellSlot } from '@/shared/components/routines/RoutinesFirstCellSlot';
 
 const WORKSPACES_GUIDE_ID = 'workspaces-guide';
 
@@ -104,6 +108,9 @@ export function WorkspacesLayout() {
       ? `create-mode-seed-${createModeSeed.version}`
       : 'create-mode-seed-default';
 
+  const location = useLocation();
+  const isRoutinesMode = location.pathname.startsWith('/routines');
+
   const isMobile = useIsMobile();
   const [mobileTab] = useMobileActiveTab();
   const mainContainerRef = useRef<WorkspacesMainContainerHandle>(null);
@@ -133,7 +140,7 @@ export function WorkspacesLayout() {
   // panel layout now live inside CellHost via useWorkspacePanelState /
   // useWorkspacePanelLayout, scoped to each cell's workspace.
   const { isLeftSidebarVisible } = useWorkspacePanelState(
-    isCreateMode ? undefined : workspaceId
+    isCreateMode || isRoutinesMode ? undefined : workspaceId
   );
 
   const {
@@ -188,7 +195,9 @@ export function WorkspacesLayout() {
                 mobileTab !== 'chat' && 'hidden'
               )}
             >
-              {isCreateMode ? (
+              {isRoutinesMode ? (
+                <RoutinesFirstCellSlot />
+              ) : isCreateMode ? (
                 <CreateChatBoxContainer
                   onWorkspaceCreated={handleWorkspaceCreated}
                 />
@@ -287,18 +296,23 @@ export function WorkspacesLayout() {
     );
   }
 
-  // Always route create mode through SessionGrid so the create form lives in
-  // the anchor cell (with CellDropOverlay) instead of a special full-page
-  // path. CreateCellHost wraps its own CreateModeProvider, so no page-level
-  // wrap is needed.
-  const mainContent = (
-    <SessionGrid
-      createInFirstCell={isCreateMode}
-      onWorkspaceCreated={handleWorkspaceCreated}
-      createModeProviderKey={isCreateMode ? createModeProviderKey : undefined}
-      createModeInitialState={isCreateMode ? createModeSeed.state : undefined}
-    />
-  );
+  // Anchor-cell slot resolver: create mode and routines pages mount inside
+  // SessionGrid's group-0/cell-0 instead of replacing the whole shell, so
+  // sibling cells (other workspaces) keep their state.
+  let firstCellSlot: ReactNode | null = null;
+  if (isCreateMode) {
+    firstCellSlot = (
+      <CreateFirstCellSlot
+        onWorkspaceCreated={handleWorkspaceCreated}
+        providerKey={createModeProviderKey}
+        initialState={createModeSeed.state}
+      />
+    );
+  } else if (isRoutinesMode) {
+    firstCellSlot = <RoutinesFirstCellSlot />;
+  }
+
+  const mainContent = <SessionGrid firstCellSlot={firstCellSlot} />;
 
   return (
     <div

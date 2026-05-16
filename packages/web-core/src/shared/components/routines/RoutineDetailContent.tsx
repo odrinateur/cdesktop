@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowClockwiseIcon,
@@ -20,10 +20,10 @@ import { repoApi, routinesApi } from '@/shared/lib/api';
 import { Button } from '@vibe/ui/components/Button';
 import { Switch } from '@vibe/ui/components/Switch';
 import { ConfirmDialog } from '@/shared/dialogs/shared/ConfirmDialog';
-import { formatScheduleSummary } from '@/shared/components/routines/scheduleFormat';
-import { RoutineFormModal } from '@/shared/components/routines/RoutineFormModal';
-import type { RoutineFormValues } from '@/shared/components/routines/RoutineForm';
-import { RoutinesLayout } from './RoutinesLayout';
+import { useSessionGridStore } from '@/shared/stores/useSessionGridStore';
+import { formatScheduleSummary } from './scheduleFormat';
+import { RoutineFormModal } from './RoutineFormModal';
+import type { RoutineFormValues } from './RoutineForm';
 
 function formatTimestamp(value: string | null | undefined): string {
   if (!value) return '—';
@@ -55,10 +55,21 @@ function statusBadgeClass(status: RoutineRunStatus): string {
   }
 }
 
-export function RoutineDetailPage() {
+interface RoutineDetailContentProps {
+  routineId: string;
+}
+
+/**
+ * Inner routine-detail view, mounted inside SessionGrid's anchor cell.
+ *
+ * History rows open the matching workspace in cell 1 of the grid (next to
+ * this routines anchor) rather than navigating the whole page to
+ * /workspaces/$workspaceId — so the user stays on the routines page and can
+ * jump between runs without losing the detail context.
+ */
+export function RoutineDetailContent({ routineId }: RoutineDetailContentProps) {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
-  const { routineId } = useParams({ strict: false }) as { routineId: string };
   const queryClient = useQueryClient();
   const [isEditOpen, setIsEditOpen] = useState(false);
 
@@ -82,6 +93,73 @@ export function RoutineDetailPage() {
     enabled: !!routine?.repo_id,
   });
 
+  const openWorkspaceInSecondCell = (workspaceId: string) => {
+    useSessionGridStore.setState((state) => {
+      const grid = state.grid;
+      const firstGroup = grid.groups[0];
+      if (!firstGroup) return state;
+
+      // Already mounted somewhere → focus that cell without rearranging.
+      for (const group of grid.groups) {
+        for (const cell of group.cells) {
+          if (cell.sessionId === workspaceId) {
+            return { grid: { ...grid, focusedCellId: cell.id } };
+          }
+        }
+      }
+
+      const newCell = {
+        id:
+          typeof crypto !== 'undefined' && 'randomUUID' in crypto
+            ? crypto.randomUUID()
+            : `cell-${Math.random().toString(36).slice(2)}-${Date.now()}`,
+        sessionId: workspaceId,
+      };
+
+      // If there's already a second group / second cell, replace the cell
+      // immediately to the right of the anchor so the click always lands in
+      // the same visual slot.
+      if (grid.groups.length === 2) {
+        const otherGroup = grid.groups[1];
+        const replaced = {
+          ...otherGroup,
+          cells: [newCell, ...otherGroup.cells.slice(1)],
+        };
+        return {
+          grid: {
+            ...grid,
+            groups: [firstGroup, replaced],
+            focusedCellId: newCell.id,
+          },
+        };
+      }
+      if (firstGroup.cells.length === 2) {
+        const replaced = {
+          ...firstGroup,
+          cells: [firstGroup.cells[0], newCell],
+        };
+        return {
+          grid: {
+            ...grid,
+            groups: [replaced, ...grid.groups.slice(1)],
+            focusedCellId: newCell.id,
+          },
+        };
+      }
+
+      // Single anchor cell only → grow into a side-by-side layout. Match
+      // splitFromPill's default for `right`: vertical primary orientation.
+      return {
+        grid: {
+          ...grid,
+          primaryOrientation: 'vertical',
+          groups: [firstGroup, { cells: [newCell], splitRatio: 0.5 }],
+          focusedCellId: newCell.id,
+        },
+      };
+    });
+  };
+
   const runNowMutation = useMutation({
     mutationFn: () => routinesApi.runNow(routineId),
     onSuccess: (response) => {
@@ -90,10 +168,7 @@ export function RoutineDetailPage() {
       });
       queryClient.invalidateQueries({ queryKey: ['routines', routineId] });
       if (response.workspace_id) {
-        navigate({
-          to: '/workspaces/$workspaceId',
-          params: { workspaceId: response.workspace_id },
-        });
+        openWorkspaceInSecondCell(response.workspace_id);
       }
     },
   });
@@ -158,21 +233,17 @@ export function RoutineDetailPage() {
 
   if (isLoading) {
     return (
-      <RoutinesLayout>
-        <div className="h-full bg-primary flex items-center justify-center">
-          <p className="text-sm text-low">…</p>
-        </div>
-      </RoutinesLayout>
+      <div className="h-full bg-primary flex items-center justify-center">
+        <p className="text-sm text-low">…</p>
+      </div>
     );
   }
 
   if (!routine) {
     return (
-      <RoutinesLayout>
-        <div className="h-full bg-primary flex items-center justify-center">
-          <p className="text-sm text-low">Routine not found.</p>
-        </div>
-      </RoutinesLayout>
+      <div className="h-full bg-primary flex items-center justify-center">
+        <p className="text-sm text-low">Routine not found.</p>
+      </div>
     );
   }
 
@@ -181,9 +252,8 @@ export function RoutineDetailPage() {
     : t('routines.nextRunNever');
 
   return (
-    <RoutinesLayout>
-      <div className="h-full overflow-auto bg-primary">
-        <div className="mx-auto w-full max-w-5xl px-double py-double flex flex-col gap-double">
+    <div className="h-full overflow-auto bg-primary">
+      <div className="mx-auto w-full max-w-5xl px-double py-double flex flex-col gap-double">
         {/* Header */}
         <header className="flex items-center justify-between gap-base">
           <div className="flex items-center gap-half text-sm text-low min-w-0">
@@ -314,13 +384,18 @@ export function RoutineDetailPage() {
                       <button
                         type="button"
                         disabled={!run.workspace_id}
-                        onClick={() => {
-                          if (run.workspace_id) {
+                        onClick={(event) => {
+                          if (!run.workspace_id) return;
+                          // cmd/ctrl-click → navigate away (full-page);
+                          // plain click → open in cell 1 next to routines.
+                          if (event.metaKey || event.ctrlKey) {
                             navigate({
                               to: '/workspaces/$workspaceId',
                               params: { workspaceId: run.workspace_id },
                             });
+                            return;
                           }
+                          openWorkspaceInSecondCell(run.workspace_id);
                         }}
                         className="w-full flex items-center justify-between gap-base rounded-sm border border-border bg-secondary px-base py-half text-left hover:bg-panel transition-colors disabled:cursor-default disabled:hover:bg-secondary focus:outline-none focus-visible:ring-1 focus-visible:ring-brand"
                       >
@@ -365,8 +440,7 @@ export function RoutineDetailPage() {
           submitting={updateMutation.isPending}
           onSubmit={handleEditSubmit}
         />
-        </div>
       </div>
-    </RoutinesLayout>
+    </div>
   );
 }

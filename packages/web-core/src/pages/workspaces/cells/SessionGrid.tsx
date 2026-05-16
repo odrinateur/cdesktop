@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import {
   Group,
   Layout,
@@ -11,11 +11,6 @@ import {
   type SessionGroup,
   type CellId,
 } from '@/shared/stores/useSessionGridStore';
-import { ReviewProvider } from '@/shared/hooks/ReviewProvider';
-import { ChangesViewProvider } from '@/shared/hooks/ChangesViewProvider';
-import { CreateChatBoxContainer } from '@/shared/components/CreateChatBoxContainer';
-import { CreateModeProvider } from '@/features/create-mode/model/CreateModeProvider';
-import type { CreateModeInitialState } from '@/shared/types/createMode';
 import { cn } from '@/shared/lib/utils';
 import { CellHost } from './CellHost';
 import { CellDropOverlay } from './CellDropOverlay';
@@ -34,30 +29,18 @@ import { ResizeHandle } from '../panels';
  *   the other group via the imperative ref.
  */
 export function SessionGrid({
-  createInFirstCell,
-  onWorkspaceCreated,
-  createModeProviderKey,
-  createModeInitialState,
+  firstCellSlot,
 }: {
   /**
-   * When true, the anchor cell (group 0, cell 0) renders the
-   * CreateChatBoxContainer instead of its workspace's CellHost — used so
-   * that "New Session" can land inside the existing grid instead of
-   * tearing it down for a full-page create form.
+   * When provided, the anchor cell (group 0, cell 0) renders this slot
+   * instead of its workspace's CellHost — used so that pages like "new
+   * session" or routines can mount in the existing grid shell.
    */
-  createInFirstCell?: boolean;
-  onWorkspaceCreated?: (workspaceId: string) => void;
-  /**
-   * `key` to pass to the inner `CreateModeProvider` so it remounts when
-   * the create-mode seed changes (matches the wrapping done at the page
-   * level for the full-screen create form).
-   */
-  createModeProviderKey?: string;
-  createModeInitialState?: CreateModeInitialState | null;
+  firstCellSlot?: ReactNode;
 } = {}) {
   const grid = useSessionGrid();
 
-  if (!grid.groups[0]?.cells[0]?.sessionId && !createInFirstCell) {
+  if (!grid.groups[0]?.cells[0]?.sessionId && !firstCellSlot) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
         No session selected.
@@ -107,10 +90,7 @@ export function SessionGrid({
             groupIndex={index}
             isLastGroup={isLast}
             primaryOrientation={grid.primaryOrientation}
-            createInFirstCell={createInFirstCell}
-            onWorkspaceCreated={onWorkspaceCreated}
-            createModeProviderKey={createModeProviderKey}
-            createModeInitialState={createModeInitialState}
+            firstCellSlot={firstCellSlot}
           />
         );
       })}
@@ -124,20 +104,14 @@ function PrimaryGroupSlot({
   groupIndex,
   isLastGroup,
   primaryOrientation,
-  createInFirstCell,
-  onWorkspaceCreated,
-  createModeProviderKey,
-  createModeInitialState,
+  firstCellSlot,
 }: {
   id: string;
   group: SessionGroup;
   groupIndex: number;
   isLastGroup: boolean;
   primaryOrientation: 'vertical' | 'horizontal';
-  createInFirstCell?: boolean;
-  onWorkspaceCreated?: (workspaceId: string) => void;
-  createModeProviderKey?: string;
-  createModeInitialState?: CreateModeInitialState | null;
+  firstCellSlot?: ReactNode;
 }) {
   return (
     <>
@@ -146,10 +120,7 @@ function PrimaryGroupSlot({
           group={group}
           groupIndex={groupIndex}
           primaryOrientation={primaryOrientation}
-          createInFirstCell={createInFirstCell}
-          onWorkspaceCreated={onWorkspaceCreated}
-          createModeProviderKey={createModeProviderKey}
-          createModeInitialState={createModeInitialState}
+          firstCellSlot={firstCellSlot}
         />
       </Panel>
       {!isLastGroup && (
@@ -169,18 +140,12 @@ function GroupBody({
   group,
   groupIndex,
   primaryOrientation,
-  createInFirstCell,
-  onWorkspaceCreated,
-  createModeProviderKey,
-  createModeInitialState,
+  firstCellSlot,
 }: {
   group: SessionGroup;
   groupIndex: number;
   primaryOrientation: 'vertical' | 'horizontal';
-  createInFirstCell?: boolean;
-  onWorkspaceCreated?: (workspaceId: string) => void;
-  createModeProviderKey?: string;
-  createModeInitialState?: CreateModeInitialState | null;
+  firstCellSlot?: ReactNode;
 }) {
   const focusedCellId = useSessionGridStore((s) => s.grid.focusedCellId);
   const otherGroupCellCount = useSessionGridStore(
@@ -263,15 +228,14 @@ function GroupBody({
         minSize="20%"
         className="min-w-0 min-h-0 overflow-hidden"
       >
-        {isAnchor(0) && createInFirstCell && onWorkspaceCreated ? (
-          <CreateCellHost
+        {isAnchor(0) && firstCellSlot ? (
+          <FirstCellSlotHost
             cellId={group.cells[0].id}
             isFocused={focusedCellId === group.cells[0].id}
             onFocus={() => focusCell(group.cells[0].id)}
-            onWorkspaceCreated={onWorkspaceCreated}
-            providerKey={createModeProviderKey}
-            initialState={createModeInitialState}
-          />
+          >
+            {firstCellSlot}
+          </FirstCellSlotHost>
         ) : (
           <CellWrapper
             cell={group.cells[0]}
@@ -339,26 +303,21 @@ function CellWrapper({
 }
 
 /**
- * Stand-in for CellHost in the anchor slot when the user is creating a new
- * workspace from inside the grid (e.g. clicked "New Session" while ≥2 cells
- * exist). Mounts the same providers CellHost would, minus WorkspaceProvider
- * (no workspaceId yet) — the surrounding layout already provides
- * CreateModeProvider.
+ * Wraps an arbitrary anchor-cell slot (create form, routines page, etc.) with
+ * the same focus/opacity behavior as CellHost so sibling cells dim when this
+ * slot isn't focused. Also mounts a CellDropOverlay so the anchor remains a
+ * valid drop target.
  */
-function CreateCellHost({
+function FirstCellSlotHost({
   cellId,
   isFocused,
   onFocus,
-  onWorkspaceCreated,
-  providerKey,
-  initialState,
+  children,
 }: {
   cellId: CellId;
   isFocused: boolean;
   onFocus: () => void;
-  onWorkspaceCreated: (workspaceId: string) => void;
-  providerKey?: string;
-  initialState?: CreateModeInitialState | null;
+  children: ReactNode;
 }) {
   return (
     <div
@@ -370,13 +329,7 @@ function CreateCellHost({
         !isFocused && 'opacity-70'
       )}
     >
-      <CreateModeProvider key={providerKey} initialState={initialState ?? null}>
-        <ReviewProvider workspaceId={undefined}>
-          <ChangesViewProvider>
-            <CreateChatBoxContainer onWorkspaceCreated={onWorkspaceCreated} />
-          </ChangesViewProvider>
-        </ReviewProvider>
-      </CreateModeProvider>
+      {children}
       <CellDropOverlay cellId={cellId} />
     </div>
   );
