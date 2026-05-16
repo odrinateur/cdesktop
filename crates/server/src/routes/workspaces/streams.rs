@@ -37,6 +37,60 @@ pub async fn stream_workspaces_ws(
     })
 }
 
+pub async fn stream_workspace_sessions_ws(
+    ws: SignedWsUpgrade,
+    Extension(workspace): Extension<db::models::workspace::Workspace>,
+    State(deployment): State<DeploymentImpl>,
+) -> impl IntoResponse {
+    ws.on_upgrade(move |socket| async move {
+        if let Err(e) = handle_workspace_sessions_ws(socket, deployment, workspace.id).await {
+            tracing::warn!("workspace sessions WS closed: {}", e);
+        }
+    })
+}
+
+async fn handle_workspace_sessions_ws(
+    mut socket: MaybeSignedWebSocket,
+    deployment: DeploymentImpl,
+    workspace_id: uuid::Uuid,
+) -> anyhow::Result<()> {
+    use futures_util::{StreamExt, TryStreamExt};
+
+    let mut stream = deployment
+        .events()
+        .stream_sessions_for_workspace_raw(workspace_id)
+        .await?
+        .map_ok(|msg| msg.to_ws_message_unchecked());
+
+    loop {
+        tokio::select! {
+            item = stream.next() => {
+                match item {
+                    Some(Ok(msg)) => {
+                        if socket.send(msg).await.is_err() {
+                            break;
+                        }
+                    }
+                    Some(Err(e)) => {
+                        tracing::error!("stream error: {}", e);
+                        break;
+                    }
+                    None => break,
+                }
+            }
+            msg = socket.recv() => {
+                match msg {
+                    Ok(Some(Message::Close(_))) => break,
+                    Ok(Some(_)) => {}
+                    Ok(None) => break,
+                    Err(_) => break,
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
 pub async fn stream_workspace_diff_ws(
     ws: SignedWsUpgrade,
     Query(params): Query<DiffStreamQuery>,

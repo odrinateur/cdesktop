@@ -1,4 +1,6 @@
-use db::models::{execution_process::ExecutionProcess, scratch::Scratch, workspace::Workspace};
+use db::models::{
+    execution_process::ExecutionProcess, scratch::Scratch, session::Session, workspace::Workspace,
+};
 use futures::StreamExt;
 use serde_json::json;
 use tokio_stream::wrappers::BroadcastStream;
@@ -7,7 +9,7 @@ use uuid::Uuid;
 
 use super::{
     EventService,
-    patches::execution_process_patch,
+    patches::{execution_process_patch, session_patch},
     types::{EventPatch, RecordTypes},
 };
 
@@ -314,4 +316,106 @@ impl EventService {
         let initial_stream = futures::stream::iter(vec![Ok(initial_msg), Ok(LogMsg::Ready)]);
         Ok(initial_stream.chain(filtered_stream).boxed())
     }
+
+    /// Stream sessions for a single workspace with initial snapshot.
+    ///
+    /// Patches are rewritten to root-relative paths (`/sessions` and
+    /// `/sessions/{id}`) before being sent over the wire, so the client can
+    /// model state as a flat `{ sessions: Record<id, Session> }` without
+    /// nesting under workspace_id.
+    pub async fn stream_sessions_for_workspace_raw(
+        &self,
+        workspace_id: Uuid,
+    ) -> Result<
+        futures::stream::BoxStream<'static, Result<LogMsg, std::io::Error>>,
+        super::types::EventError,
+    > {
+        let sessions = Session::find_by_workspace_id(&self.db.pool, workspace_id).await?;
+        let sessions_map: serde_json::Map<String, serde_json::Value> = sessions
+            .into_iter()
+            .map(|s| (s.id.to_string(), serde_json::to_value(s).unwrap()))
+            .collect();
+
+        let initial_patch = json!([{
+            "op": "replace",
+            "path": "/sessions",
+            "value": sessions_map
+        }]);
+        let initial_msg = LogMsg::JsonPatch(serde_json::from_value(initial_patch).unwrap());
+
+        // Server-side prefix used for filtering broadcast patches.
+        let server_prefix = {
+            let nil_path = session_patch::session_path(workspace_id, Uuid::nil());
+            nil_path
+                .rsplit_once('/')
+                .map(|(dir, _)| format!("{dir}/"))
+                .unwrap_or(nil_path)
+        };
+
+        let filtered_stream =
+            BroadcastStream::new(self.msg_store.get_receiver()).filter_map(move |msg_result| {
+                let server_prefix = server_prefix.clone();
+                async move {
+                    match msg_result {
+                        Ok(LogMsg::JsonPatch(patch)) => {
+                            if let Some(op) = patch.0.first()
+                                && op.path().starts_with(&server_prefix)
+                            {
+                                // Rewrite path: /workspaces/{wsid}/sessions/{sid}
+                                //          → /sessions/{sid}
+                                let rewritten = rewrite_patch_paths(&patch, &server_prefix);
+                                return Some(Ok(LogMsg::JsonPatch(rewritten)));
+                            }
+                            None
+                        }
+                        Ok(other) => Some(Ok(other)),
+                        Err(_) => None,
+                    }
+                }
+            });
+
+        let initial_stream = futures::stream::iter(vec![Ok(initial_msg), Ok(LogMsg::Ready)]);
+        Ok(initial_stream.chain(filtered_stream).boxed())
+    }
+}
+
+fn rewrite_patch_paths(patch: &json_patch::Patch, server_prefix: &str) -> json_patch::Patch {
+    use json_patch::PatchOperation;
+    let new_ops: Vec<PatchOperation> = patch
+        .0
+        .iter()
+        .map(|op| {
+            let old_path = op.path().to_string();
+            let suffix = old_path
+                .strip_prefix(server_prefix)
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| old_path.clone());
+            let new_path_str = format!("/sessions/{suffix}");
+            match op {
+                PatchOperation::Add(o) => PatchOperation::Add(json_patch::AddOperation {
+                    path: new_path_str
+                        .clone()
+                        .try_into()
+                        .expect("rewritten session path should be valid"),
+                    value: o.value.clone(),
+                }),
+                PatchOperation::Replace(o) => {
+                    PatchOperation::Replace(json_patch::ReplaceOperation {
+                        path: new_path_str
+                            .clone()
+                            .try_into()
+                            .expect("rewritten session path should be valid"),
+                        value: o.value.clone(),
+                    })
+                }
+                PatchOperation::Remove(_) => PatchOperation::Remove(json_patch::RemoveOperation {
+                    path: new_path_str
+                        .try_into()
+                        .expect("rewritten session path should be valid"),
+                }),
+                _ => op.clone(),
+            }
+        })
+        .collect();
+    json_patch::Patch(new_ops)
 }

@@ -1,5 +1,6 @@
 use db::models::{
-    execution_process::ExecutionProcess, scratch::Scratch, workspace::WorkspaceWithStatus,
+    execution_process::ExecutionProcess, scratch::Scratch, session::Session,
+    workspace::WorkspaceWithStatus,
 };
 use json_patch::{AddOperation, Patch, PatchOperation, RemoveOperation, ReplaceOperation};
 use uuid::Uuid;
@@ -88,6 +89,49 @@ pub mod workspace_patch {
             path: workspace_path(workspace_id)
                 .try_into()
                 .expect("Workspace path should be valid"),
+        })])
+    }
+}
+
+/// Helper functions for creating session-specific patches.
+///
+/// Patch path is `/workspaces/{workspace_id}/sessions/{session_id}` so the
+/// per-workspace sessions stream can filter by prefix without needing to
+/// inspect the patch value.
+pub mod session_patch {
+    use super::*;
+
+    pub fn session_path(workspace_id: Uuid, session_id: Uuid) -> String {
+        format!(
+            "/workspaces/{}/sessions/{}",
+            escape_pointer_segment(&workspace_id.to_string()),
+            escape_pointer_segment(&session_id.to_string()),
+        )
+    }
+
+    pub fn add(session: &Session) -> Patch {
+        Patch(vec![PatchOperation::Add(AddOperation {
+            path: session_path(session.workspace_id, session.id)
+                .try_into()
+                .expect("Session path should be valid"),
+            value: serde_json::to_value(session).expect("Session serialization should not fail"),
+        })])
+    }
+
+    pub fn replace(session: &Session) -> Patch {
+        Patch(vec![PatchOperation::Replace(ReplaceOperation {
+            path: session_path(session.workspace_id, session.id)
+                .try_into()
+                .expect("Session path should be valid"),
+            value: serde_json::to_value(session).expect("Session serialization should not fail"),
+        })])
+    }
+
+    pub fn remove(workspace_id: Uuid, session_id: Uuid) -> Patch {
+        Patch(vec![PatchOperation::Remove(RemoveOperation {
+            path: session_path(workspace_id, session_id)
+                .try_into()
+                .expect("Session path should be valid"),
         })])
     }
 }

@@ -39,6 +39,7 @@ pub fn router(deployment: &DeploymentImpl) -> Router<DeploymentImpl> {
         .nest("/repos", repos::router())
         .nest("/pull-requests", pr::router())
         .route("/teammates", post(spawn_via_workspace))
+        .route("/sessions/ws", get(streams::stream_workspace_sessions_ws))
         .layer(from_fn_with_state(
             deployment.clone(),
             load_workspace_middleware,
