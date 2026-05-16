@@ -170,6 +170,7 @@
     "deleteConfirmMessage": "Êtes-vous sûr de vouloir supprimer cette session ? Cela la dissociera du problème et supprimera la session locale. Cette action est irréversible.",
     "unlinkError": "Échec de la dissociation de la session",
     "deleteError": "Échec de la suppression de la session",
+    "branchRequiredError": "Sélectionnez une branche pour chaque dépôt avant de créer une session",
     "filesChanged": "{{count}} fichiers",
     "deleteDialog": {
       "title": "Supprimer la session",

@@ -170,6 +170,7 @@
     "deleteConfirmMessage": "このセッションを削除してもよろしいですか？これにより課題からのリンクが解除され、ローカルセッションが削除されます。この操作は元に戻せません。",
     "unlinkError": "セッションのリンク解除に失敗しました",
     "deleteError": "セッションの削除に失敗しました",
+    "branchRequiredError": "セッションを作成する前に、すべてのリポジトリでブランチを選択してください",
     "filesChanged": "{{count}}ファイル",
     "deleteDialog": {
       "title": "セッションを削除",

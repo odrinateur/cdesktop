@@ -170,6 +170,7 @@
     "deleteConfirmMessage": "确定要删除此会话吗？这将取消与问题的关联并删除本地会话。此操作无法撤销。",
     "unlinkError": "取消关联会话失败",
     "deleteError": "删除会话失败",
+    "branchRequiredError": "在创建会话之前，请为每个仓库选择一个分支",
     "filesChanged": "{{count}} 个文件",
     "deleteDialog": {
       "title": "删除会话",
