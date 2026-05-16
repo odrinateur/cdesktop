@@ -199,6 +199,35 @@ impl RoutineRun {
         Ok(())
     }
 
+    /// Find the most recent non-terminal (pending / running) run attached to
+    /// the given workspace. Used by the container's completion hook to mark
+    /// a routine run done when its workspace finishes.
+    pub async fn find_active_by_workspace(
+        pool: &SqlitePool,
+        workspace_id: Uuid,
+    ) -> Result<Option<Self>, sqlx::Error> {
+        sqlx::query_as!(
+            RoutineRun,
+            r#"SELECT id AS "id!: Uuid",
+                      routine_id AS "routine_id!: Uuid",
+                      workspace_id AS "workspace_id: Uuid",
+                      status AS "status!: RoutineRunStatus",
+                      scheduled_at AS "scheduled_at!: DateTime<Utc>",
+                      started_at AS "started_at: DateTime<Utc>",
+                      finished_at AS "finished_at: DateTime<Utc>",
+                      skip_reason,
+                      created_at AS "created_at!: DateTime<Utc>"
+               FROM routine_runs
+               WHERE workspace_id = $1
+                 AND status IN ('pending', 'running')
+               ORDER BY created_at DESC
+               LIMIT 1"#,
+            workspace_id
+        )
+        .fetch_optional(pool)
+        .await
+    }
+
     pub async fn workspace_ids_for_routine(
         pool: &SqlitePool,
         routine_id: Uuid,

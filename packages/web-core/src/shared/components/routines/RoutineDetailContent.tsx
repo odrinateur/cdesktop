@@ -224,6 +224,7 @@ export function RoutineDetailContent({ routineId }: RoutineDetailContentProps) {
         count: runs.length,
       }),
       confirmText: t('routines.delete'),
+      cancelText: t('routines.form.cancel'),
       variant: 'destructive',
     });
     if (result === 'confirmed') {
@@ -252,8 +253,8 @@ export function RoutineDetailContent({ routineId }: RoutineDetailContentProps) {
     : t('routines.nextRunNever');
 
   return (
-    <div className="h-full overflow-auto bg-primary">
-      <div className="mx-auto w-full max-w-5xl px-double py-double flex flex-col gap-double">
+    <div className="flex-1 min-w-0 h-full overflow-auto bg-primary flex justify-center">
+      <div className="w-chat max-w-full px-[35px] py-double flex flex-col gap-double">
         {/* Header */}
         <header className="flex items-center justify-between gap-base">
           <div className="flex items-center gap-half text-sm text-low min-w-0">
@@ -345,7 +346,7 @@ export function RoutineDetailContent({ routineId }: RoutineDetailContentProps) {
                 {t('routines.sections.repeats')}
               </h2>
               <p className="text-sm text-normal">
-                {formatScheduleSummary(routine)}
+                {formatScheduleSummary(routine, t)}
               </p>
             </section>
           </div>

@@ -43,8 +43,8 @@ export function RoutineCreateContent() {
   };
 
   return (
-    <div className="h-full overflow-auto bg-primary">
-      <div className="mx-auto w-full max-w-3xl px-double py-double flex flex-col gap-double">
+    <div className="flex-1 min-w-0 h-full overflow-auto bg-primary flex justify-center">
+      <div className="w-chat max-w-full px-[35px] py-double flex flex-col gap-double">
         <header className="flex items-center gap-half text-sm text-low">
           <button
             type="button"

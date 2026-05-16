@@ -27,7 +27,7 @@ export function RoutineFormModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-double">
         <DialogHeader className="mb-base">
           <DialogTitle>
             {initial ? t('routines.edit') : t('routines.newButton')}

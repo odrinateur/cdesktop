@@ -877,9 +877,15 @@
       "summary": {
         "manual": "手動のみ",
         "hourly": "毎時 :{{minute}} 分",
+        "hourlyNoTime": "毎時",
         "daily": "毎日 {{time}}",
+        "dailyNoTime": "毎日",
         "weekdays": "月〜金 {{time}}",
-        "weekly": "毎週{{day}} {{time}}"
+        "weekdaysNoTime": "月〜金",
+        "weekly": "毎週{{day}} {{time}}",
+        "weeklyDayOnly": "毎週{{day}}",
+        "weeklyAt": "毎週 {{time}}",
+        "weeklyNoTime": "毎週"
       }
     },
     "days": {

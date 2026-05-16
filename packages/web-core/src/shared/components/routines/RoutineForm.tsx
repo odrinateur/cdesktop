@@ -2,14 +2,28 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { BaseCodingAgent, PermissionPolicy } from 'shared/types';
-import type { ExecutorConfig, Repo, Routine, ScheduleKind } from 'shared/types';
-import { repoApi } from '@/shared/lib/api';
+import type { ExecutorConfig, Routine, ScheduleKind } from 'shared/types';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
-import { useModelSelectorConfig } from '@/shared/hooks/useExecutorDiscovery';
+import { repoApi } from '@/shared/lib/api';
+import type { Repo } from 'shared/types';
 import { getVariantOptions } from '@/shared/lib/executor';
 import { filterAndSortAgents } from '@/shared/lib/agentOrder';
+import { usePresetOptions } from '@/shared/hooks/usePresetOptions';
+import { AgentChip } from '@/shared/components/AgentChip';
+import { FolderChip } from '@/shared/components/FolderChip';
+import { ModelSelectorContainer } from '@/shared/components/ModelSelectorContainer';
+import { ProviderModelPicker } from '@/shared/components/ProviderModelPicker';
+import { useProviders } from '@/shared/hooks/useProviders';
+import { useModelSelectorConfig } from '@/shared/hooks/useExecutorDiscovery';
+import {
+  isAgentDefaultModelId,
+  AGENT_DEFAULT_MODEL_ID,
+} from '@/shared/lib/agentDefaultModel';
+import { resolveDefaultSelection } from '@/shared/hooks/useWorkspacePickerSelection';
+import { SettingsDialog } from '@/shared/dialogs/settings/SettingsDialog';
 import { Button } from '@vibe/ui/components/Button';
 import { Switch } from '@vibe/ui/components/Switch';
+import { Checkbox } from '@vibe/ui/components/Checkbox';
 
 const SCHEDULE_KINDS: ScheduleKind[] = [
   'manual',
@@ -18,24 +32,6 @@ const SCHEDULE_KINDS: ScheduleKind[] = [
   'weekdays',
   'weekly',
 ];
-
-// Permission lists per agent. Claude has a stable hardcoded set; for other
-// agents we read from discovered options. Mirrors ModelSelectorContainer.
-const CLAUDE_PERMISSIONS: PermissionPolicy[] = [
-  PermissionPolicy.SUPERVISED,
-  PermissionPolicy.ACCEPT_EDITS,
-  PermissionPolicy.PLAN,
-  PermissionPolicy.AUTO_MODE,
-  PermissionPolicy.BYPASS_PERMISSIONS,
-];
-
-const PERMISSION_LABELS: Record<PermissionPolicy, string> = {
-  [PermissionPolicy.SUPERVISED]: 'Ask',
-  [PermissionPolicy.ACCEPT_EDITS]: 'Accept edits',
-  [PermissionPolicy.PLAN]: 'Plan',
-  [PermissionPolicy.AUTO_MODE]: 'Auto',
-  [PermissionPolicy.BYPASS_PERMISSIONS]: 'Bypass permissions',
-};
 
 export interface RoutineFormValues {
   name: string;
@@ -73,7 +69,7 @@ function defaultExecutorConfig(): ExecutorConfig {
     model_id: null,
     agent_id: null,
     reasoning_id: null,
-    permission_policy: PermissionPolicy.SUPERVISED,
+    permission_policy: PermissionPolicy.BYPASS_PERMISSIONS,
   };
 }
 
@@ -106,20 +102,13 @@ export function RoutineForm({
   const { t } = useTranslation('common');
   const { profiles } = useUserSystem();
 
-  // Repo list for the folder picker.
-  const { data: repos = [] } = useQuery<Repo[]>({
-    queryKey: ['repos'],
-    queryFn: () => repoApi.list(),
-    staleTime: 30_000,
-  });
-
   // ---- Form state ----
   const [name, setName] = useState(initial?.name ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
   const [instructions, setInstructions] = useState(initial?.instructions ?? '');
   const [repoId, setRepoId] = useState<string>(initial?.repo_id ?? '');
   const [useWorktree, setUseWorktree] = useState<boolean>(
-    initial?.use_worktree ?? true
+    initial?.use_worktree ?? false
   );
   const [executorConfig, setExecutorConfig] = useState<ExecutorConfig>(() => {
     if (initial?.executor_config) {
@@ -131,6 +120,47 @@ export function RoutineForm({
     }
     return defaultExecutorConfig();
   });
+  const initialPickerState = useMemo(() => {
+    if (!initial?.executor_config) return null;
+    try {
+      const parsed = JSON.parse(initial.executor_config) as ExecutorConfig;
+      const raw = parsed.model_id ?? null;
+      if (!raw) {
+        return {
+          providerId: null,
+          modelId: AGENT_DEFAULT_MODEL_ID,
+          reasoningId: parsed.reasoning_id ?? null,
+        };
+      }
+      const slash = raw.indexOf('/');
+      if (slash === -1) {
+        return {
+          providerId: null,
+          modelId: raw,
+          reasoningId: parsed.reasoning_id ?? null,
+        };
+      }
+      return {
+        providerId: raw.substring(0, slash),
+        modelId: raw.substring(slash + 1),
+        reasoningId: parsed.reasoning_id ?? null,
+      };
+    } catch {
+      return null;
+    }
+  }, [initial?.executor_config]);
+  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(
+    initialPickerState?.providerId ?? null
+  );
+  const [selectedModelId, setSelectedModelId] = useState<string | null>(
+    initialPickerState?.modelId ?? null
+  );
+  const [selectedReasoningId, setSelectedReasoningId] = useState<string | null>(
+    initialPickerState?.reasoningId ?? null
+  );
+  const [preferredEffortId, setPreferredEffortId] = useState<string | null>(
+    null
+  );
   const [scheduleKind, setScheduleKind] = useState<ScheduleKind>(
     initial?.schedule_kind ?? 'daily'
   );
@@ -154,16 +184,9 @@ export function RoutineForm({
 
   const [touched, setTouched] = useState(false);
 
-  // Default repo: when creating, pre-select the first repo so the form lands
-  // with a sensible value.
-  useEffect(() => {
-    if (!repoId && repos.length > 0) {
-      setRepoId(repos[0]!.id);
-    }
-  }, [repos, repoId]);
-
-  // ---- Executor / model discovery ----
+  // ---- Executor wiring ----
   const agent = executorConfig.executor;
+  const variant = executorConfig.variant ?? null;
   const agentOptions = useMemo(
     () => filterAndSortAgents(Object.keys(profiles ?? {}) as BaseCodingAgent[]),
     [profiles]
@@ -172,61 +195,89 @@ export function RoutineForm({
     () => getVariantOptions(agent, profiles ?? null),
     [agent, profiles]
   );
-  const { config: discovery, loadingModels } = useModelSelectorConfig(agent);
+  const { data: presetOptions } = usePresetOptions(agent, variant);
 
-  const availablePermissions: PermissionPolicy[] =
-    agent === BaseCodingAgent.CLAUDE_CODE
-      ? CLAUDE_PERMISSIONS
-      : (discovery?.permissions ?? []);
+  // Provider+model picker state, mirroring composer's wiring.
+  const { data: providers = [] } = useProviders();
+  const { config: agentModelConfig } = useModelSelectorConfig(agent);
+  const agentDefaultModels = useMemo(
+    () =>
+      (agentModelConfig?.models ?? []).map((m) => ({
+        id: m.id,
+        displayName: m.name,
+        ownedBy: null,
+      })),
+    [agentModelConfig]
+  );
 
-  // Build the flat list of model options as "provider/model" strings.
-  const modelOptions = useMemo(() => {
-    if (!discovery) return [];
-    return discovery.models.map((m) => {
-      const id = m.provider_id ? `${m.provider_id}/${m.id}` : m.id;
-      return { id, label: m.name };
-    });
-  }, [discovery]);
-
-  // Seed the variant when switching agents and the current variant isn't valid.
+  // Seed default selection when none exists. Mirrors composer's effect.
   useEffect(() => {
-    if (variantOptions.length === 0) return;
-    const current = executorConfig.variant ?? null;
-    if (current && variantOptions.includes(current)) return;
-    const next = variantOptions.includes('DEFAULT')
+    if (selectedProviderId || selectedModelId) return;
+    if (agent && agentDefaultModels.length === 0) return;
+    const resolved = resolveDefaultSelection(providers, agentDefaultModels);
+    if (!resolved) return;
+    setSelectedProviderId(resolved.providerId);
+    setSelectedModelId(resolved.modelId);
+    setSelectedReasoningId(resolved.reasoningId);
+    setPreferredEffortId(resolved.preferredEffortId);
+  }, [
+    providers,
+    agent,
+    agentDefaultModels,
+    selectedProviderId,
+    selectedModelId,
+  ]);
+
+  const handlePickerSelectionChange = (
+    providerId: string,
+    modelId: string,
+    reasoningId: string | null
+  ) => {
+    setSelectedProviderId(providerId);
+    setSelectedModelId(modelId);
+    setSelectedReasoningId(reasoningId);
+  };
+
+  const handleExecutorChange = (next: BaseCodingAgent) => {
+    const variants = getVariantOptions(next, profiles ?? null);
+    const nextVariant = variants.includes('DEFAULT')
       ? 'DEFAULT'
-      : (variantOptions[0] ?? null);
-    setExecutorConfig((prev) => ({ ...prev, variant: next }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [variantOptions.join('|')]);
+      : (variants[0] ?? null);
+    setExecutorConfig({
+      executor: next,
+      variant: nextVariant,
+      model_id: null,
+      agent_id: null,
+      reasoning_id: null,
+      permission_policy: null,
+    });
+  };
 
-  // Seed permission when switching agents and the current isn't valid.
-  useEffect(() => {
-    if (availablePermissions.length === 0) return;
-    const current = executorConfig.permission_policy;
-    if (current && availablePermissions.includes(current)) return;
-    setExecutorConfig((prev) => ({
-      ...prev,
-      permission_policy: availablePermissions[0] ?? null,
-    }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [availablePermissions.join('|')]);
+  const handlePresetSelect = (presetId: string | null) => {
+    setExecutorConfig((prev) => ({ ...prev, variant: presetId }));
+  };
 
-  // Seed the model when discovery loads and we have no model yet, or the
-  // current model doesn't exist for the new agent.
+  const handleOverrideChange = (partial: Partial<ExecutorConfig>) => {
+    setExecutorConfig((prev) => ({ ...prev, ...partial }));
+  };
+
+  const handleAdvancedSettings = () => {
+    SettingsDialog.show({ initialSection: 'agents' });
+  };
+
+  // ---- Default repo (first-load) ----
+  // Repos are fetched inside FolderChip; we just need any repo id so the
+  // first-load form lands with a selection. Pull from the same cache key.
+  const { data: repos = [] } = useQuery<Repo[]>({
+    queryKey: ['repos'],
+    queryFn: () => repoApi.list(),
+    staleTime: 30_000,
+  });
   useEffect(() => {
-    if (!discovery) return;
-    if (modelOptions.length === 0) return;
-    const current = executorConfig.model_id;
-    if (current && modelOptions.some((m) => m.id === current)) return;
-    const defaultId = discovery.default_model
-      ? discovery.providers[0]
-        ? `${discovery.providers[0].id}/${discovery.default_model}`
-        : discovery.default_model
-      : (modelOptions[0]?.id ?? null);
-    setExecutorConfig((prev) => ({ ...prev, model_id: defaultId }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agent, modelOptions.length]);
+    if (!repoId && repos.length > 0) {
+      setRepoId(repos[0]!.id);
+    }
+  }, [repos, repoId]);
 
   // ---- Validation ----
   const errors = useMemo(() => {
@@ -237,12 +288,6 @@ export function RoutineForm({
     if (!instructions.trim())
       out.instructions = t('routines.form.validation.instructionsRequired');
     if (!repoId) out.repo_id = t('routines.form.validation.folderRequired');
-    if (!executorConfig.model_id) {
-      out.model_id = t('routines.form.validation.modelRequired');
-    }
-    if (availablePermissions.length > 0 && !executorConfig.permission_policy) {
-      out.permission_policy = t('routines.form.validation.permissionRequired');
-    }
     if (scheduleKind === 'hourly') {
       if (!/^\d{2}$/.test(scheduleMinute)) {
         out.schedule_time = t('routines.form.validation.minuteRequired');
@@ -262,9 +307,6 @@ export function RoutineForm({
     description,
     instructions,
     repoId,
-    executorConfig.model_id,
-    executorConfig.permission_policy,
-    availablePermissions.length,
     scheduleKind,
     scheduleMinute,
     scheduleTime,
@@ -290,13 +332,28 @@ export function RoutineForm({
     }
     if (scheduleKind === 'weekly') dowValue = scheduleDow;
 
+    // Combine provider+model into "provider/model" so the routine is
+    // replayable. Sentinel → null model_id (agent's ambient default).
+    const combinedModelId =
+      selectedModelId && !isAgentDefaultModelId(selectedModelId)
+        ? selectedProviderId
+          ? `${selectedProviderId}/${selectedModelId}`
+          : selectedModelId
+        : null;
+
+    const submitConfig: ExecutorConfig = {
+      ...executorConfig,
+      model_id: combinedModelId,
+      reasoning_id: selectedReasoningId ?? executorConfig.reasoning_id ?? null,
+    };
+
     onSubmit({
       name: name.trim(),
       description: description.trim(),
       instructions,
       repo_id: repoId,
       use_worktree: useWorktree,
-      executor_config: executorConfig,
+      executor_config: submitConfig,
       schedule_kind: scheduleKind,
       schedule_time: timeValue,
       schedule_dow: dowValue,
@@ -359,151 +416,62 @@ export function RoutineForm({
         {showError('instructions')}
       </div>
 
-      {/* Folder + worktree */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-base">
-        <div>
-          <label className={fieldLabelClass()} htmlFor="routine-folder">
-            {t('routines.fields.folder')}
-          </label>
-          <select
-            id="routine-folder"
-            className={`${selectClass()} w-full`}
-            value={repoId}
-            onChange={(e) => setRepoId(e.target.value)}
+      {/* Composer-style picker row: folder · agent · worktree
+          and model/permission/preset/sub-agent via ModelSelectorContainer */}
+      <div>
+        <label className={fieldLabelClass()}>
+          {t('routines.fields.executor')}
+        </label>
+        <div className="flex flex-wrap items-center gap-half">
+          <FolderChip
+            selectedRepoId={repoId || null}
+            onSelect={setRepoId}
+            disabled={submitting}
+          />
+          <AgentChip
+            selected={agent}
+            options={agentOptions}
+            onChange={handleExecutorChange}
+            disabled={submitting}
+          />
+          <ModelSelectorContainer
+            slot="left"
+            agent={agent}
+            workspaceId={undefined}
+            onAdvancedSettings={handleAdvancedSettings}
+            presets={variantOptions}
+            selectedPreset={variant}
+            onPresetSelect={handlePresetSelect}
+            onOverrideChange={handleOverrideChange}
+            executorConfig={executorConfig}
+            presetOptions={presetOptions}
+          />
+          <ProviderModelPicker
+            selectedProviderId={selectedProviderId}
+            selectedModelId={selectedModelId}
+            selectedReasoningId={selectedReasoningId}
+            preferredEffortId={preferredEffortId}
+            activeAgent={agent}
+            onManageProviders={() =>
+              SettingsDialog.show({ initialSection: 'providers' })
+            }
+            onSelectionChange={handlePickerSelectionChange}
+            onPreferredEffortChange={setPreferredEffortId}
+          />
+          <label
+            className="inline-flex items-center gap-half rounded-md bg-secondary px-base py-half min-h-7 text-sm text-normal hover:bg-panel cursor-pointer"
+            title={t('routines.fields.worktree')}
           >
-            <option value="" disabled>
-              {t('routines.fields.folderPlaceholder')}
-            </option>
-            {repos.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.display_name || r.name}
-              </option>
-            ))}
-          </select>
-          {showError('repo_id')}
-        </div>
-        <div>
-          <label className={fieldLabelClass()}>
-            {t('routines.fields.worktree')}
-          </label>
-          <div className="flex items-center gap-base py-half">
-            <Switch
+            <Checkbox
               checked={useWorktree}
-              onCheckedChange={setUseWorktree}
-              id="routine-worktree"
+              onCheckedChange={(v) => setUseWorktree(v === true)}
+              className="h-3.5 w-3.5"
+              disabled={submitting}
             />
-            <span className="text-sm text-low">
-              {useWorktree ? t('routines.enabled') : t('routines.disabled')}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Executor picker: agent, variant, permission, model */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-base">
-        <div>
-          <label className={fieldLabelClass()} htmlFor="routine-agent">
-            {t('routines.fields.executor')}
+            <span>{t('routines.fields.worktree')}</span>
           </label>
-          <select
-            id="routine-agent"
-            className={`${selectClass()} w-full`}
-            value={agent}
-            onChange={(e) =>
-              setExecutorConfig((prev) => ({
-                ...prev,
-                executor: e.target.value as BaseCodingAgent,
-                variant: null,
-                model_id: null,
-                permission_policy: null,
-              }))
-            }
-          >
-            {agentOptions.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </select>
         </div>
-        <div>
-          <label className={fieldLabelClass()} htmlFor="routine-variant">
-            {t('routines.fields.variant')}
-          </label>
-          <select
-            id="routine-variant"
-            className={`${selectClass()} w-full`}
-            value={executorConfig.variant ?? ''}
-            onChange={(e) =>
-              setExecutorConfig((prev) => ({
-                ...prev,
-                variant: e.target.value || null,
-              }))
-            }
-            disabled={variantOptions.length === 0}
-          >
-            {variantOptions.length === 0 && <option value="">DEFAULT</option>}
-            {variantOptions.map((v) => (
-              <option key={v} value={v}>
-                {v}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className={fieldLabelClass()} htmlFor="routine-permission">
-            {t('routines.fields.permission')}
-          </label>
-          <select
-            id="routine-permission"
-            className={`${selectClass()} w-full`}
-            value={executorConfig.permission_policy ?? ''}
-            onChange={(e) =>
-              setExecutorConfig((prev) => ({
-                ...prev,
-                permission_policy: (e.target.value as PermissionPolicy) || null,
-              }))
-            }
-            disabled={availablePermissions.length === 0}
-          >
-            <option value="" disabled>
-              —
-            </option>
-            {availablePermissions.map((p) => (
-              <option key={p} value={p}>
-                {PERMISSION_LABELS[p] ?? p}
-              </option>
-            ))}
-          </select>
-          {showError('permission_policy')}
-        </div>
-        <div>
-          <label className={fieldLabelClass()} htmlFor="routine-model">
-            {t('routines.fields.model')}
-          </label>
-          <select
-            id="routine-model"
-            className={`${selectClass()} w-full`}
-            value={executorConfig.model_id ?? ''}
-            onChange={(e) =>
-              setExecutorConfig((prev) => ({
-                ...prev,
-                model_id: e.target.value || null,
-              }))
-            }
-            disabled={loadingModels || modelOptions.length === 0}
-          >
-            <option value="" disabled>
-              {loadingModels ? '…' : '—'}
-            </option>
-            {modelOptions.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.label}
-              </option>
-            ))}
-          </select>
-          {showError('model_id')}
-        </div>
+        {showError('repo_id')}
       </div>
 
       {/* Schedule */}
@@ -519,7 +487,7 @@ export function RoutineForm({
               onClick={() => setScheduleKind(kind)}
               className={`px-base py-half rounded-md border text-sm transition-colors ${
                 scheduleKind === kind
-                  ? 'bg-foreground text-primary-foreground border-foreground'
+                  ? 'bg-foreground text-background border-foreground'
                   : 'bg-secondary border-border text-normal hover:bg-panel'
               }`}
             >

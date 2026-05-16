@@ -40,7 +40,7 @@ function resolveLocalDestinationFromPath(path: string): AppDestination | null {
       return { kind: 'onboarding' };
     case '/onboarding_/sign-in':
       return { kind: 'onboarding-sign-in' };
-    case '/_app/workspaces':
+    case '/_app/_shell/workspaces':
       return { kind: 'workspaces' };
     case '/_app/export':
       return { kind: 'export' };
@@ -48,7 +48,7 @@ function resolveLocalDestinationFromPath(path: string): AppDestination | null {
       const hostId = getPathParam(routeParams, 'hostId');
       return hostId ? { kind: 'workspaces', hostId } : null;
     }
-    case '/_app/workspaces_/$workspaceId': {
+    case '/_app/_shell/workspaces_/$workspaceId': {
       const workspaceId = getPathParam(routeParams, 'workspaceId');
       // "create" is a sentinel — same route component as a real workspace
       // so the SessionGrid (and its sibling cells) stay mounted across the

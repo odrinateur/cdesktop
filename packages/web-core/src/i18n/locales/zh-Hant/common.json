@@ -810,17 +810,17 @@
     "closePanel": "關閉 {{panel}} 面板"
   },
   "routines": {
-    "title": "例程",
-    "subtitle": "建立可依排程或手動執行的範本化例程。",
-    "banner": "本機例程僅在您的電腦開啟時執行。",
-    "newButton": "新增例程",
-    "newPageTitle": "新增本機例程",
-    "empty": "尚無例程。",
+    "title": "定時任務",
+    "subtitle": "建立可依排程或手動執行的範本化定時任務。",
+    "banner": "本機定時任務僅在您的電腦開啟時執行。",
+    "newButton": "新增定時任務",
+    "newPageTitle": "新增本機定時任務",
+    "empty": "尚無定時任務。",
     "runNow": "立即執行",
     "edit": "編輯",
     "delete": "刪除",
-    "deleteConfirmTitle": "刪除例程",
-    "deleteConfirm": "確定要刪除例程「{{name}}」及其 {{count}} 次執行（{{count}} 個工作階段和 worktree）嗎？",
+    "deleteConfirmTitle": "刪除定時任務",
+    "deleteConfirm": "確定要刪除定時任務「{{name}}」及其 {{count}} 次執行（{{count}} 個工作階段和 worktree）嗎？",
     "nextRun": "下次執行 {{when}}",
     "nextRunNever": "無即將執行",
     "lastRun": "上次執行 {{when}}",
@@ -851,9 +851,9 @@
     "disabled": "已停用",
     "fields": {
       "name": "名稱",
-      "namePlaceholder": "此例程的簡短名稱",
+      "namePlaceholder": "此定時任務的簡短名稱",
       "description": "描述",
-      "descriptionPlaceholder": "此例程的用途是什麼？",
+      "descriptionPlaceholder": "此定時任務的用途是什麼？",
       "instructions": "指令",
       "instructionsPlaceholder": "每次執行時傳送給智能体的提示詞。",
       "folder": "資料夾",
@@ -877,9 +877,15 @@
       "summary": {
         "manual": "僅手動",
         "hourly": "每小時 :{{minute}} 分",
+        "hourlyNoTime": "每小時",
         "daily": "每天 {{time}}",
+        "dailyNoTime": "每天",
         "weekdays": "週一至週五 {{time}}",
-        "weekly": "每{{day}} {{time}}"
+        "weekdaysNoTime": "週一至週五",
+        "weekly": "每{{day}} {{time}}",
+        "weeklyDayOnly": "每{{day}}",
+        "weeklyAt": "每週 {{time}}",
+        "weeklyNoTime": "每週"
       }
     },
     "days": {
@@ -892,7 +898,7 @@
       "sat": "星期六"
     },
     "form": {
-      "submitCreate": "建立例程",
+      "submitCreate": "建立定時任務",
       "submitSave": "儲存",
       "cancel": "取消",
       "validation": {
@@ -908,7 +914,7 @@
       }
     },
     "sidebar": {
-      "nav": "例程"
+      "nav": "定時任務"
     }
   }
 }

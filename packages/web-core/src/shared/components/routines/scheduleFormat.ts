@@ -1,33 +1,23 @@
+import type { TFunction } from 'i18next';
 import type { Routine, ScheduleKind } from 'shared/types';
 
-const DOW_LABELS: Record<number, string> = {
-  0: 'Sunday',
-  1: 'Monday',
-  2: 'Tuesday',
-  3: 'Wednesday',
-  4: 'Thursday',
-  5: 'Friday',
-  6: 'Saturday',
+const DOW_KEYS: Record<number, string> = {
+  0: 'sun',
+  1: 'mon',
+  2: 'tue',
+  3: 'wed',
+  4: 'thu',
+  5: 'fri',
+  6: 'sat',
 };
 
-const DOW_SHORT: Record<number, string> = {
-  0: 'Sun',
-  1: 'Mon',
-  2: 'Tue',
-  3: 'Wed',
-  4: 'Thu',
-  5: 'Fri',
-  6: 'Sat',
-};
-
-export function getDayOfWeekLabel(dow: number | null | undefined): string {
+export function getDayOfWeekLabel(
+  dow: number | null | undefined,
+  t: TFunction
+): string {
   if (dow === null || dow === undefined) return '';
-  return DOW_LABELS[dow] ?? '';
-}
-
-export function getDayOfWeekShort(dow: number | null | undefined): string {
-  if (dow === null || dow === undefined) return '';
-  return DOW_SHORT[dow] ?? '';
+  const key = DOW_KEYS[dow];
+  return key ? t(`routines.days.${key}`) : '';
 }
 
 interface ScheduleSummaryInput {
@@ -42,7 +32,8 @@ function dowToNumber(dow: number | bigint | null | undefined): number | null {
 }
 
 export function formatScheduleSummary(
-  routine: ScheduleSummaryInput | Routine
+  routine: ScheduleSummaryInput | Routine,
+  t: TFunction
 ): string {
   const kind = routine.schedule_kind;
   const time = routine.schedule_time ?? '';
@@ -50,18 +41,28 @@ export function formatScheduleSummary(
 
   switch (kind) {
     case 'manual':
-      return 'Manual only';
+      return t('routines.schedule.summary.manual');
     case 'hourly':
-      return time ? `Every hour at :${time}` : 'Every hour';
+      return time
+        ? t('routines.schedule.summary.hourly', { minute: time })
+        : t('routines.schedule.summary.hourlyNoTime');
     case 'daily':
-      return time ? `Every day at ${time}` : 'Every day';
+      return time
+        ? t('routines.schedule.summary.daily', { time })
+        : t('routines.schedule.summary.dailyNoTime');
     case 'weekdays':
-      return time ? `Mon–Fri at ${time}` : 'Mon–Fri';
+      return time
+        ? t('routines.schedule.summary.weekdays', { time })
+        : t('routines.schedule.summary.weekdaysNoTime');
     case 'weekly': {
-      const dayLabel = getDayOfWeekLabel(dow);
-      if (dayLabel && time) return `Every ${dayLabel} at ${time}`;
-      if (dayLabel) return `Every ${dayLabel}`;
-      return time ? `Weekly at ${time}` : 'Weekly';
+      const dayLabel = getDayOfWeekLabel(dow, t);
+      if (dayLabel && time)
+        return t('routines.schedule.summary.weekly', { day: dayLabel, time });
+      if (dayLabel)
+        return t('routines.schedule.summary.weeklyDayOnly', { day: dayLabel });
+      return time
+        ? t('routines.schedule.summary.weeklyAt', { time })
+        : t('routines.schedule.summary.weeklyNoTime');
     }
     default:
       return '';
