@@ -170,6 +170,7 @@
     "deleteConfirmMessage": "¿Estás seguro de que deseas eliminar esta sesión? Esto lo desvinculará del problema y eliminará la sesión local. Esta acción no se puede deshacer.",
     "unlinkError": "Error al desvincular la sesión",
     "deleteError": "Error al eliminar la sesión",
+    "branchRequiredError": "Selecciona una rama para cada repositorio antes de crear una sesión",
     "filesChanged": "{{count}} archivos",
     "deleteDialog": {
       "title": "Eliminar sesión",

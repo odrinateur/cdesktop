@@ -185,6 +185,7 @@
     "unlinkError": "Failed to unlink session",
     "deleteError": "Failed to delete session",
     "linkError": "Failed to link session",
+    "branchRequiredError": "Select a branch for every repository before creating a workspace",
     "filesChanged": "{{count}} files",
     "deleteDialog": {
       "title": "Delete Session",
