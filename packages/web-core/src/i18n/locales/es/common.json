@@ -878,9 +878,15 @@
       "summary": {
         "manual": "Solo manual",
         "hourly": "Cada hora a las :{{minute}}",
+        "hourlyNoTime": "Cada hora",
         "daily": "Todos los días a las {{time}}",
+        "dailyNoTime": "Todos los días",
         "weekdays": "Lun–Vie a las {{time}}",
-        "weekly": "Cada {{day}} a las {{time}}"
+        "weekdaysNoTime": "Lun–Vie",
+        "weekly": "Cada {{day}} a las {{time}}",
+        "weeklyDayOnly": "Cada {{day}}",
+        "weeklyAt": "Semanal a las {{time}}",
+        "weeklyNoTime": "Semanal"
       }
     },
     "days": {

@@ -33,11 +33,9 @@ pub struct RunNowResponse {
 }
 
 fn validate_executor_config(cfg: &ExecutorConfig) -> Result<(), ApiError> {
-    if cfg.model_id.as_deref().unwrap_or("").is_empty() {
-        return Err(ApiError::BadRequest(
-            "executor_config.model_id is required".into(),
-        ));
-    }
+    // model_id is optional — null means "use the agent's ambient default
+    // model" (the AGENT_DEFAULT sentinel from the picker). When set, it
+    // may be "provider/model" or a bare model id; spawn parses it.
     if cfg.permission_policy.is_none() {
         return Err(ApiError::BadRequest(
             "executor_config.permission_policy is required".into(),
@@ -326,9 +324,27 @@ pub(crate) async fn spawn_routine_run(
             .unwrap_or_default(),
     };
 
-    let executor_config: ExecutorConfig = routine
+    let mut executor_config: ExecutorConfig = routine
         .executor_config_parsed()
         .map_err(|e| ApiError::BadRequest(format!("Routine has invalid executor_config: {e}")))?;
+
+    // The picker stores "provider/model" (or just "model" if no provider was
+    // selected) in executor_config.model_id. Split here so start_workspace
+    // can receive selected_provider_id + selected_model_id like the workspace
+    // create flow does. Null model_id passes through as "agent default".
+    let (selected_provider_id, selected_model_id) = match executor_config.model_id.clone() {
+        Some(raw) if !raw.is_empty() => match raw.split_once('/') {
+            Some((provider, model)) if !provider.is_empty() && !model.is_empty() => {
+                executor_config.model_id = Some(model.to_string());
+                (Some(provider.to_string()), Some(model.to_string()))
+            }
+            _ => (None, Some(raw)),
+        },
+        _ => {
+            executor_config.model_id = None;
+            (None, None)
+        }
+    };
 
     let workspace =
         create_workspace_record(deployment, Some(routine.name.clone()), routine.use_worktree)
@@ -385,8 +401,8 @@ pub(crate) async fn spawn_routine_run(
             routine.instructions.clone(),
             None,
             None,
-            None,
-            None,
+            selected_provider_id,
+            selected_model_id,
         )
         .await?;
 

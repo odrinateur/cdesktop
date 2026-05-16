@@ -1,0 +1,68 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT id AS \"id!: Uuid\",\n                      routine_id AS \"routine_id!: Uuid\",\n                      workspace_id AS \"workspace_id: Uuid\",\n                      status AS \"status!: RoutineRunStatus\",\n                      scheduled_at AS \"scheduled_at!: DateTime<Utc>\",\n                      started_at AS \"started_at: DateTime<Utc>\",\n                      finished_at AS \"finished_at: DateTime<Utc>\",\n                      skip_reason,\n                      created_at AS \"created_at!: DateTime<Utc>\"\n               FROM routine_runs\n               WHERE workspace_id = $1\n                 AND status IN ('pending', 'running')\n               ORDER BY created_at DESC\n               LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "name": "id!: Uuid",
+        "ordinal": 0,
+        "type_info": "Blob"
+      },
+      {
+        "name": "routine_id!: Uuid",
+        "ordinal": 1,
+        "type_info": "Blob"
+      },
+      {
+        "name": "workspace_id: Uuid",
+        "ordinal": 2,
+        "type_info": "Blob"
+      },
+      {
+        "name": "status!: RoutineRunStatus",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "scheduled_at!: DateTime<Utc>",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "started_at: DateTime<Utc>",
+        "ordinal": 5,
+        "type_info": "Text"
+      },
+      {
+        "name": "finished_at: DateTime<Utc>",
+        "ordinal": 6,
+        "type_info": "Text"
+      },
+      {
+        "name": "skip_reason",
+        "ordinal": 7,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at!: DateTime<Utc>",
+        "ordinal": 8,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "c643191b6716aabca511bf564111875db9fb4768aa1eba35e0bf4ad033608814"
+}

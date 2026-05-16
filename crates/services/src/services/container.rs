@@ -18,8 +18,9 @@ use db::{
             CreateExecutionProcessRepoState, ExecutionProcessRepoState,
         },
         repo::Repo,
+        routine_run::RoutineRun,
         session::{CreateSession, Session, SessionError},
-        workspace::{Workspace, WorkspaceError},
+        workspace::{Workspace, WorkspaceError, WorkspaceSource},
         workspace_repo::WorkspaceRepo,
     },
 };
@@ -247,6 +248,41 @@ pub trait ContainerService {
 
     /// Finalize workspace execution by sending notifications
     async fn finalize_task(&self, ctx: &ExecutionContext) {
+        // Routine completion side-effect: when a coding-agent process for a
+        // routine-owned workspace terminates, flip the matching routine_run
+        // to Done/Failed so the detail page stops showing "running".
+        if matches!(
+            ctx.execution_process.run_reason,
+            ExecutionProcessRunReason::CodingAgent
+        ) && ctx.workspace.source == WorkspaceSource::Routine
+        {
+            let pool = &self.db().pool;
+            match RoutineRun::find_active_by_workspace(pool, ctx.workspace.id).await {
+                Ok(Some(run)) => {
+                    let failed = matches!(
+                        ctx.execution_process.status,
+                        ExecutionProcessStatus::Failed
+                    );
+                    if let Err(e) =
+                        RoutineRun::mark_done(pool, run.id, chrono::Utc::now(), failed).await
+                    {
+                        tracing::error!(
+                            "Failed to mark routine_run {} done after workspace {} finished: {:?}",
+                            run.id,
+                            ctx.workspace.id,
+                            e
+                        );
+                    }
+                }
+                Ok(None) => {}
+                Err(e) => tracing::error!(
+                    "Failed to look up routine_run for workspace {}: {:?}",
+                    ctx.workspace.id,
+                    e
+                ),
+            }
+        }
+
         // Skip notification if process was intentionally killed by user
         if matches!(ctx.execution_process.status, ExecutionProcessStatus::Killed) {
             return;

@@ -877,9 +877,15 @@
       "summary": {
         "manual": "수동 실행만",
         "hourly": "매시 :{{minute}}분",
+        "hourlyNoTime": "매시",
         "daily": "매일 {{time}}",
+        "dailyNoTime": "매일",
         "weekdays": "월–금 {{time}}",
-        "weekly": "매주 {{day}} {{time}}"
+        "weekdaysNoTime": "월–금",
+        "weekly": "매주 {{day}} {{time}}",
+        "weeklyDayOnly": "매주 {{day}}",
+        "weeklyAt": "매주 {{time}}",
+        "weeklyNoTime": "매주"
       }
     },
     "days": {

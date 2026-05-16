@@ -1,14 +1,6 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useSyncExternalStore,
-  type ReactNode,
-} from 'react';
-import { useLocation } from '@tanstack/react-router';
+import { useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { Outlet, useLocation } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import type { CreateModeInitialState } from '@/shared/types/createMode';
 import { useWorkspaceContext } from '@/shared/hooks/useWorkspaceContext';
 import { usePageTitle } from '@/shared/hooks/usePageTitle';
 import { useIsMobile } from '@/shared/hooks/useIsMobile';
@@ -18,11 +10,7 @@ import {
 } from '@/shared/stores/useUiPreferencesStore';
 import { cn } from '@/shared/lib/utils';
 import { CreateModeProvider } from '@/features/create-mode/model/CreateModeProvider';
-import {
-  consumeCreateModeSeedState,
-  getCreateModeSeedVersion,
-  subscribeCreateModeSeedState,
-} from '@/features/create-mode/model/createModeSeedStore';
+import { useCreateModeSeed } from '@/features/create-mode/model/useCreateModeSeed';
 import { ReviewProvider } from '@/shared/hooks/ReviewProvider';
 import { ChangesViewProvider } from '@/shared/hooks/ChangesViewProvider';
 import { WorkspacesSidebarContainer } from './WorkspacesSidebarContainer';
@@ -36,7 +24,6 @@ import { ChangesPanelContainer } from './ChangesPanelContainer';
 import { CreateChatBoxContainer } from '@/shared/components/CreateChatBoxContainer';
 import { PreviewBrowserContainer } from './PreviewBrowserContainer';
 import { SessionGrid } from './cells/SessionGrid';
-import { CreateFirstCellSlot } from './cells/CreateFirstCellSlot';
 import { scrollFirstCellToBottom } from './cells/firstCellScroll';
 import { WorkspacesGuideDialog } from '@/shared/dialogs/shared/WorkspacesGuideDialog';
 import { useUserSystem } from '@/shared/hooks/useUserSystem';
@@ -46,7 +33,6 @@ import { RoutinesFirstCellSlot } from '@/shared/components/routines/RoutinesFirs
 const WORKSPACES_GUIDE_ID = 'workspaces-guide';
 
 export function WorkspacesLayout() {
-  const appNavigation = useAppNavigation();
   const {
     workspaceId,
     workspace: selectedWorkspace,
@@ -67,46 +53,21 @@ export function WorkspacesLayout() {
     isCreateMode ? t('workspaces.newWorkspace') : selectedWorkspace?.name
   );
 
-  const seedVersion = useSyncExternalStore(
-    subscribeCreateModeSeedState,
-    getCreateModeSeedVersion,
-    getCreateModeSeedVersion
+  // Mobile branch still mounts CreateModeProvider at root level when in
+  // create mode, so it needs the seed key + initialState. Desktop now mounts
+  // CreateFirstCellSlot inside the matching leaf route under _shell, which
+  // owns its own useCreateModeSeed call there.
+  const {
+    providerKey: createModeProviderKey,
+    initialState: createModeSeedState,
+  } = useCreateModeSeed();
+  const appNavigation = useAppNavigation();
+  const handleWorkspaceCreated = useCallback(
+    (workspaceId: string) => {
+      appNavigation.goToWorkspace(workspaceId);
+    },
+    [appNavigation]
   );
-  const consumedSeedVersionRef = useRef(0);
-  const [createModeSeed, setCreateModeSeed] = useState<{
-    version: number;
-    state: CreateModeInitialState | null;
-  }>({
-    version: 0,
-    state: null,
-  });
-
-  useEffect(() => {
-    if (!isCreateMode) {
-      consumedSeedVersionRef.current = 0;
-      setCreateModeSeed((current) =>
-        current.version === 0 && current.state === null
-          ? current
-          : { version: 0, state: null }
-      );
-      return;
-    }
-
-    if (seedVersion === 0 || seedVersion === consumedSeedVersionRef.current) {
-      return;
-    }
-
-    consumedSeedVersionRef.current = seedVersion;
-    setCreateModeSeed({
-      version: seedVersion,
-      state: consumeCreateModeSeedState(),
-    });
-  }, [isCreateMode, seedVersion]);
-
-  const createModeProviderKey =
-    createModeSeed.version > 0
-      ? `create-mode-seed-${createModeSeed.version}`
-      : 'create-mode-seed-default';
 
   const location = useLocation();
   const isRoutinesMode = location.pathname.startsWith('/routines');
@@ -127,13 +88,6 @@ export function WorkspacesLayout() {
       scrollFirstCellToBottom(behavior);
     },
     [isMobile]
-  );
-
-  const handleWorkspaceCreated = useCallback(
-    (workspaceId: string) => {
-      appNavigation.goToWorkspace(workspaceId);
-    },
-    [appNavigation]
   );
 
   // Sidebar visibility lives at the layout level. Per-cell panel state and
@@ -284,7 +238,7 @@ export function WorkspacesLayout() {
           {isCreateMode ? (
             <CreateModeProvider
               key={createModeProviderKey}
-              initialState={createModeSeed.state}
+              initialState={createModeSeedState}
             >
               {mobileContent}
             </CreateModeProvider>
@@ -296,21 +250,11 @@ export function WorkspacesLayout() {
     );
   }
 
-  // Anchor-cell slot resolver: create mode and routines pages mount inside
-  // SessionGrid's group-0/cell-0 instead of replacing the whole shell, so
-  // sibling cells (other workspaces) keep their state.
-  let firstCellSlot: ReactNode | null = null;
-  if (isCreateMode) {
-    firstCellSlot = (
-      <CreateFirstCellSlot
-        onWorkspaceCreated={handleWorkspaceCreated}
-        providerKey={createModeProviderKey}
-        initialState={createModeSeed.state}
-      />
-    );
-  } else if (isRoutinesMode) {
-    firstCellSlot = <RoutinesFirstCellSlot />;
-  }
+  // Anchor-cell slot for create + routines now comes from the matched leaf
+  // route under _shell (rendered through <Outlet/>). Other paths return null
+  // here so SessionGrid falls back to showing the workspace from the store.
+  const firstCellSlot: ReactNode | null =
+    isCreateMode || isRoutinesMode ? <Outlet /> : null;
 
   const mainContent = <SessionGrid firstCellSlot={firstCellSlot} />;
 

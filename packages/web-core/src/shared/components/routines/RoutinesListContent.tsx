@@ -36,8 +36,8 @@ export function RoutinesListContent() {
   });
 
   return (
-    <div className="h-full overflow-auto bg-primary">
-      <div className="mx-auto w-full max-w-3xl px-double py-double flex flex-col gap-double">
+    <div className="flex-1 min-w-0 h-full overflow-auto bg-primary flex justify-center">
+      <div className="w-chat max-w-full px-[35px] py-double flex flex-col gap-double">
         <header className="flex items-start justify-between gap-base">
           <div className="flex flex-col gap-half">
             <h1 className="text-2xl font-semibold text-high">
@@ -83,7 +83,7 @@ export function RoutinesListContent() {
                           {routine.name}
                         </span>
                         <span className="text-sm text-low">
-                          {formatScheduleSummary(routine)}
+                          {formatScheduleSummary(routine, t)}
                         </span>
                       </div>
                       <div className="shrink-0 text-xs text-low">
