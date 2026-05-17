@@ -176,11 +176,15 @@ export function ProviderModelPicker({
   // ~/.hermes/config.yaml `model.reasoning_effort` only. Hide the
   // picker and surface a hint instead.
   const agentSuppressesEffort = activeAgent === BaseCodingAgent.HERMES;
+  // selectedModelId === '' is the AGENT_DEFAULT_MODEL_ID sentinel. We
+  // don't know what model the agent's ambient config will resolve to, so
+  // fall back to inferReasoningOptions('') — the universal 3-tier set
+  // (low/medium/high). Codex honors it via `-c model_reasoning_effort`;
+  // Claude/Gemini/etc. ignore it without a model flag. Saving the
+  // preference still helps when the user later picks a concrete model.
   const currentReasoningOptions = useMemo<string[]>(
     () =>
-      agentSuppressesEffort || !selectedModelId
-        ? []
-        : inferReasoningOptions(selectedModelId),
+      agentSuppressesEffort ? [] : inferReasoningOptions(selectedModelId ?? ''),
     [selectedModelId, agentSuppressesEffort]
   );
 
@@ -243,14 +247,14 @@ export function ProviderModelPicker({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t('settings.providers.picker.searchPlaceholder')}
-            className="flex-1 text-xs bg-transparent outline-none"
+            className="flex-1 text-[13px] bg-transparent outline-none"
           />
         </div>
 
         <div className="overflow-y-auto max-h-72">
           {!search && recentItems.length > 0 && (
             <div>
-              <div className="px-2 py-1 text-xs font-medium text-low">
+              <div className="px-2 py-1 text-[13px] font-medium text-low">
                 {t('settings.providers.picker.recentlyUsed')}
               </div>
               {recentItems.map((item) => (
@@ -300,7 +304,7 @@ export function ProviderModelPicker({
             ))}
 
           {allItems.length === 0 && (
-            <div className="px-2 py-3 text-xs text-low text-center">
+            <div className="px-2 py-3 text-[13px] text-low text-center">
               {providers.filter((p) => p.enabled).length === 0
                 ? t('settings.providers.picker.noProvidersEnabled')
                 : t('settings.providers.picker.noModelsMatch')}
@@ -309,14 +313,14 @@ export function ProviderModelPicker({
         </div>
 
         {agentSuppressesEffort && (
-          <div className="border-t border-border px-2 py-1.5 text-[10px] text-low leading-snug">
+          <div className="border-t border-border px-2 py-1.5 text-[11px] text-low leading-snug">
             {t('settings.providers.picker.effortUnsupportedHermes')}
           </div>
         )}
 
         {currentReasoningOptions.length > 0 && (
           <div className="border-t border-border px-2 py-1.5 flex items-center gap-2">
-            <span className="text-[10px] text-low uppercase tracking-wide flex-shrink-0">
+            <span className="text-[11px] text-low uppercase tracking-wide flex-shrink-0">
               {t('settings.providers.picker.effort')}
             </span>
             <div className="flex items-center gap-0.5 flex-1 justify-end">
@@ -328,7 +332,7 @@ export function ProviderModelPicker({
                     label: t(`settings.providers.effort.${id}`),
                   })}
                   className={cn(
-                    'px-1.5 py-0.5 text-[10px] rounded border border-border/60',
+                    'px-1.5 py-0.5 text-[11px] rounded border border-border/60',
                     selectedReasoningId === id
                       ? 'bg-brand text-white border-brand'
                       : 'text-low hover:bg-secondary hover:text-high'
@@ -347,7 +351,7 @@ export function ProviderModelPicker({
               setOpen(false);
               onManageProviders();
             }}
-            className="w-full flex items-center gap-2 px-2 py-1.5 text-xs text-low hover:text-high hover:bg-muted"
+            className="w-full flex items-center gap-2 px-2 py-1.5 text-[13px] text-low hover:text-high hover:bg-muted"
           >
             <GearIcon className="w-3.5 h-3.5" />
             {t('settings.providers.picker.manageProviders')}
@@ -379,7 +383,7 @@ function ProviderGroup({
       : group.provider.name;
   return (
     <div>
-      <div className="px-2 py-1 text-xs font-medium text-low">
+      <div className="px-2 py-1 text-[13px] font-medium text-low">
         {providerLabel}
       </div>
       {group.models.map((m) => {
@@ -417,7 +421,7 @@ function ModelRow({
     <button
       onClick={onClick}
       className={cn(
-        'w-full flex items-start justify-between gap-2 px-3 py-1.5 text-xs hover:bg-muted text-left',
+        'w-full flex items-start justify-between gap-2 px-3 py-1.5 text-[13px] hover:bg-muted text-left',
         isSelected && 'bg-muted font-medium'
       )}
     >
