@@ -8,10 +8,13 @@ const THREE = FIVE.slice(0, 3);
  * - haiku → none
  * - opus | sonnet | deepseek-v4 → 5 levels (low → max)
  * - gpt-5* → 4 levels (low → xhigh)
+ * - empty (AGENT_DEFAULT_MODEL_ID sentinel) → 5 levels (widest;
+ *   user can dial anywhere and the agent applies what it supports)
  * - everything else → 3 levels (low/med/high)
  */
 export function inferReasoningOptions(modelId: string): string[] {
   const id = modelId.toLowerCase();
+  if (id === '') return FIVE;
   if (id.includes('haiku')) return [];
   if (id.includes('opus') || id.includes('sonnet')) return FIVE;
   if (id.includes('deepseek-v4')) return FIVE;
