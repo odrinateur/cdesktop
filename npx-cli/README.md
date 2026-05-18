@@ -31,8 +31,10 @@ The layout is modeled after the Code tab of Anthropic's official desktop app: a 
 
 - **5 coding agents in one UI** — Claude Code, Codex, Gemini, OpenCode, Hermes; pick per session, transcripts stay separate per agent
 - **Plug in any provider in one click** — 20+ built-in presets (OpenRouter, AWS Bedrock, DeepSeek, Kimi, ModelScope, MiniMax, Nvidia, …) or add a custom `ANTHROPIC_BASE_URL` endpoint; switch providers and tune reasoning effort per session
+- **Agent teams** — spawn teammates that share your workspace and divide work; mix agents and models per teammate; lead delegates via `npx cdesktop team spawn`
 - **Run sessions side by side** — split the workspace into up to 4 cells and drag any session into a new cell
 - **Switch between sessions instantly** — no reload between threads; transcripts stay where you left them
+- **Routines** — schedule recurring agent runs (hourly, daily, weekdays, weekly) or save manual-fire templates; each run spawns its own workspace you can open and review
 - **Optional Git worktrees** — opt in per project for an isolated branch per session, or work directly in the folder; non-Git directories work too
 - **Review diffs and leave inline comments** — send feedback directly to the agent without leaving the UI
 - **Preview your app** — built-in browser with devtools, inspect mode, and device emulation
@@ -52,7 +54,6 @@ npx cdesktop
 ## Roadmap
 
 - **Desktop app build** — ship Tauri installers for macOS, Windows, and Linux
-- **Routines** — scheduled tasks for recurring work (daily code review, weekly dependency audit, morning briefings)
 - **Voice input** — push-to-talk dictation for hands-free prompts
 - **Files panel** — browse the full project file tree, not just the session working directory
 - **Performance optimization** — faster cold start, smaller bundle, lower idle CPU
