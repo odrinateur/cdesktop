@@ -10,7 +10,7 @@
  * `TeammateError.code`s inline. See `plans/agent-teams-mvp.md` UI section.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
 import {
@@ -153,6 +153,15 @@ export function SpawnTeammateModal({
   const [name, setName] = useState('');
   const [prompt, setPrompt] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  // `autoFocus` on the input can lose to portal mount timing; re-focus on
+  // every open so the name field is always the landing focus target.
+  useEffect(() => {
+    if (open) {
+      requestAnimationFrame(() => nameInputRef.current?.focus());
+    }
+  }, [open]);
 
   const {
     executorConfig,
@@ -256,6 +265,7 @@ export function SpawnTeammateModal({
               {t('conversation.team.nameLabel')}
             </span>
             <Input
+              ref={nameInputRef}
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value.replace(/[\r\n]+/g, ' '))}
@@ -277,12 +287,12 @@ export function SpawnTeammateModal({
               onChange={(e) => setPrompt(e.target.value)}
               placeholder={t('conversation.team.promptPlaceholder')}
               rows={5}
-              className="rounded-sm border border-border bg-white px-base py-half text-sm dark:bg-secondary"
+              className="rounded-sm bg-white px-base py-half text-sm dark:bg-secondary focus:outline-none"
             />
           </label>
 
           {effectiveExecutor && (
-            <div className="flex flex-wrap items-center justify-between gap-base border-t border-border pt-base">
+            <div className="flex flex-wrap items-center justify-between gap-base">
               <div className="flex flex-wrap items-center gap-base">
                 <AgentChip
                   selected={effectiveExecutor}

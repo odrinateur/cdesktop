@@ -151,9 +151,8 @@ export function TeamPillRowContainer({
         aria-label={t('conversation.team.addTeammateAriaLabel')}
         title={t('conversation.team.addTeammateAriaLabel')}
         className={cn(
-          'inline-flex items-center justify-center rounded-full',
-          'border border-border bg-secondary/40 size-6',
-          'text-low hover:bg-panel hover:text-high transition-colors'
+          'inline-flex items-center justify-center rounded-sm px-base py-half',
+          'bg-secondary text-low hover:bg-panel hover:text-high transition-colors'
         )}
       >
         <PlusIcon className="size-icon-xs" weight="bold" />

@@ -63,9 +63,8 @@ export function TeamPillRow({
         type="button"
         onClick={onSpawnTeammate}
         className={cn(
-          'inline-flex items-center gap-1 rounded-full',
-          'border border-border bg-secondary/40 px-3 py-0.5 text-xs',
-          'text-low hover:bg-panel hover:text-high transition-colors'
+          'inline-flex items-center gap-half rounded-sm px-base py-half text-sm',
+          'bg-secondary text-low hover:bg-panel hover:text-high transition-colors'
         )}
       >
         <PlusIcon className="size-icon-xs" weight="bold" />
@@ -95,10 +94,10 @@ export function TeamPillRow({
                 : undefined
             }
             className={cn(
-              'inline-flex items-center gap-1 rounded-full px-3 py-0.5 text-xs transition-colors',
+              'inline-flex items-center gap-half rounded-sm px-base py-half text-sm transition-colors',
               isActive
-                ? 'bg-brand/15 text-high border border-brand/40'
-                : 'bg-secondary/40 text-low border border-border hover:bg-panel hover:text-high'
+                ? 'bg-panel font-semibold text-high'
+                : 'bg-secondary text-low hover:bg-panel hover:text-high'
             )}
             title={s.name ?? label}
           >
@@ -113,9 +112,8 @@ export function TeamPillRow({
         aria-label={addTeammateAriaLabel}
         title={addTeammateAriaLabel}
         className={cn(
-          'inline-flex items-center justify-center rounded-full',
-          'border border-border bg-secondary/40 size-6',
-          'text-low hover:bg-panel hover:text-high transition-colors'
+          'inline-flex items-center justify-center rounded-sm px-base py-half',
+          'bg-secondary text-low hover:bg-panel hover:text-high transition-colors'
         )}
       >
         <PlusIcon className="size-icon-xs" weight="bold" />

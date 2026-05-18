@@ -169,7 +169,7 @@
     },
     "team": {
       "main": "principal",
-      "addTeammate": "+ coéquipier",
+      "addTeammate": "coéquipier",
       "addTeammateAriaLabel": "Ajouter un coéquipier",
       "spawnTitle": "Créer un coéquipier",
       "spawnDescription": "Créez une session de coéquipier dans cet espace de travail. Les coéquipiers partagent votre répertoire de travail.",

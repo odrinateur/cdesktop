@@ -106,10 +106,10 @@ export function TeamPillItem({
           : undefined
       }
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-3 py-0.5 text-xs transition-colors',
+        'inline-flex items-center gap-half rounded-sm px-base py-half text-sm transition-colors',
         isActive
-          ? 'bg-brand/15 text-high border border-brand/40'
-          : 'bg-secondary/40 text-low border border-border hover:bg-panel hover:text-high'
+          ? 'bg-panel font-semibold text-high'
+          : 'bg-secondary text-low hover:bg-panel hover:text-high'
       )}
       title={name ?? label}
     >

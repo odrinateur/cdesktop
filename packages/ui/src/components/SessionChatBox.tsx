@@ -783,10 +783,10 @@ export function SessionChatBox<TExecutor extends string = string>({
                       className="min-w-0"
                     />
                   ) : onViewCode && showStats ? (
-                    <PrimaryButton
-                      variant="tertiary"
+                    <button
+                      type="button"
                       onClick={onViewCode}
-                      className="min-w-0"
+                      className="rounded-sm px-base py-half text-cta min-h-cta flex gap-half items-center bg-secondary hover:bg-panel text-normal min-w-0"
                     >
                       <span className="text-sm space-x-half whitespace-nowrap truncate">
                         <span>
@@ -808,7 +808,7 @@ export function SessionChatBox<TExecutor extends string = string>({
                           </span>
                         )}
                       </span>
-                    </PrimaryButton>
+                    </button>
                   ) : showStats ? (
                     <span className="text-sm text-low space-x-half whitespace-nowrap truncate min-w-0">
                       <span>
