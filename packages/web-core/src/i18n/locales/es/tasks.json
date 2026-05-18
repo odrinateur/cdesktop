@@ -498,7 +498,7 @@
     },
     "team": {
       "main": "principal",
-      "addTeammate": "+ compañero",
+      "addTeammate": "compañero",
       "addTeammateAriaLabel": "Añadir compañero",
       "spawnTitle": "Crear compañero",
       "spawnDescription": "Crea una sesión de compañero en este espacio de trabajo. Los compañeros comparten tu directorio de trabajo.",

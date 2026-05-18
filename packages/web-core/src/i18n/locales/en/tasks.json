@@ -169,7 +169,7 @@
     },
     "team": {
       "main": "main",
-      "addTeammate": "+ teammate",
+      "addTeammate": "teammate",
       "addTeammateAriaLabel": "Add teammate",
       "spawnTitle": "Spawn teammate",
       "spawnDescription": "Spawn a teammate session in this workspace. Teammates share your working directory.",
