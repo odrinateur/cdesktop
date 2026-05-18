@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@tanstack/react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { CaretRightIcon } from '@phosphor-icons/react';
+import { CaretRightIcon, LightningIcon } from '@phosphor-icons/react';
 import type { CreateRoutine, Routine } from 'shared/types';
 import { routinesApi } from '@/shared/lib/api';
 import { RoutineForm, type RoutineFormValues } from './RoutineForm';
@@ -31,44 +31,47 @@ export function RoutineCreateContent() {
       description: values.description,
       instructions: values.instructions,
       repo_id: values.repo_id,
+      target_branch: values.target_branch,
       use_worktree: values.use_worktree,
       executor_config: values.executor_config,
       schedule_kind: values.schedule_kind,
       schedule_time: values.schedule_time,
       schedule_dow: values.schedule_dow,
       enabled: values.enabled,
-      // target_branch left undefined → backend resolves repo HEAD at run time
     };
     createMutation.mutate(payload);
   };
 
   return (
-    <div className="flex-1 min-w-0 h-full overflow-auto bg-primary flex justify-center">
-      <div className="w-chat max-w-full px-[35px] py-double flex flex-col gap-double">
-        <header className="flex items-center gap-half text-sm text-low">
-          <button
-            type="button"
-            onClick={() => navigate({ to: '/routines' })}
-            className="hover:text-normal transition-colors"
-          >
-            {t('routines.title')}
-          </button>
-          <CaretRightIcon className="size-icon-xs" weight="bold" />
-          <span className="text-normal">{t('routines.newPageTitle')}</span>
-        </header>
+    <div className="flex-1 min-w-0 h-full overflow-auto bg-primary flex flex-col">
+      <header className="flex items-center gap-half px-double pt-double text-base text-low">
+        <button
+          type="button"
+          onClick={() => navigate({ to: '/routines' })}
+          className="flex items-center gap-half hover:text-normal transition-colors"
+        >
+          <LightningIcon className="size-icon-xs" />
+          {t('routines.title')}
+        </button>
+        <CaretRightIcon className="size-icon-xs" weight="bold" />
+        <span className="text-normal">{t('routines.newPageTitle')}</span>
+      </header>
 
-        <RoutineForm
-          submitLabel={t('routines.form.submitCreate')}
-          submitting={createMutation.isPending}
-          onSubmit={handleSubmit}
-          onCancel={() => navigate({ to: '/routines' })}
-        />
+      <div className="flex justify-center">
+        <div className="w-chat max-w-full px-[35px] pt-[6vh] pb-[6vh] flex flex-col gap-double">
+          <RoutineForm
+            submitLabel={t('routines.form.submitCreate')}
+            submitting={createMutation.isPending}
+            onSubmit={handleSubmit}
+            onCancel={() => navigate({ to: '/routines' })}
+          />
 
-        {createMutation.isError && (
-          <p className="text-sm text-error">
-            {createMutation.error?.message ?? 'Failed to create routine'}
-          </p>
-        )}
+          {createMutation.isError && (
+            <p className="text-sm text-error">
+              {createMutation.error?.message ?? 'Failed to create routine'}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

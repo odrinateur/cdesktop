@@ -765,6 +765,7 @@
       "unpin": "取消固定会话"
     },
     "newSession": "新建会话",
+    "newSessionInFolder": "在 {{folder}} 中新建会话",
     "pinned": {
       "emptyHint": "从会话菜单中固定它们以保留在此处。",
       "sectionHeader": "已固定",
@@ -871,6 +872,7 @@
       "instructionsPlaceholder": "每次运行时发送给智能体的提示词。",
       "folder": "文件夹",
       "folderPlaceholder": "选择文件夹",
+      "currentBranch": "当前分支",
       "worktree": "使用 worktree",
       "executor": "智能体",
       "variant": "预设",

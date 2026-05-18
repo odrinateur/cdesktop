@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowClockwiseIcon,
   CaretRightIcon,
+  LightningIcon,
   PencilSimpleIcon,
   PlayIcon,
   TrashIcon,
@@ -18,6 +19,7 @@ import type {
 } from 'shared/types';
 import { repoApi, routinesApi } from '@/shared/lib/api';
 import { Button } from '@vibe/ui/components/Button';
+import { IconButton } from '@vibe/ui/components/IconButton';
 import { Switch } from '@vibe/ui/components/Switch';
 import { ConfirmDialog } from '@/shared/dialogs/shared/ConfirmDialog';
 import { useSessionGridStore } from '@/shared/stores/useSessionGridStore';
@@ -199,6 +201,7 @@ export function RoutineDetailContent({ routineId }: RoutineDetailContentProps) {
       name: values.name,
       description: values.description,
       instructions: values.instructions,
+      target_branch: values.target_branch,
       use_worktree: values.use_worktree,
       executor_config: values.executor_config,
       schedule_kind: values.schedule_kind,
@@ -235,7 +238,7 @@ export function RoutineDetailContent({ routineId }: RoutineDetailContentProps) {
   if (isLoading) {
     return (
       <div className="h-full bg-primary flex items-center justify-center">
-        <p className="text-sm text-low">…</p>
+        <p className="text-base text-low">…</p>
       </div>
     );
   }
@@ -243,7 +246,7 @@ export function RoutineDetailContent({ routineId }: RoutineDetailContentProps) {
   if (!routine) {
     return (
       <div className="h-full bg-primary flex items-center justify-center">
-        <p className="text-sm text-low">Routine not found.</p>
+        <p className="text-base text-low">Routine not found.</p>
       </div>
     );
   }
@@ -253,68 +256,65 @@ export function RoutineDetailContent({ routineId }: RoutineDetailContentProps) {
     : t('routines.nextRunNever');
 
   return (
-    <div className="flex-1 min-w-0 h-full overflow-auto bg-primary flex justify-center">
-      <div className="w-chat max-w-full px-[35px] py-double flex flex-col gap-double">
-        {/* Header */}
-        <header className="flex items-center justify-between gap-base">
-          <div className="flex items-center gap-half text-sm text-low min-w-0">
-            <button
-              type="button"
-              onClick={() => navigate({ to: '/routines' })}
-              className="hover:text-normal transition-colors"
-            >
-              {t('routines.title')}
-            </button>
-            <CaretRightIcon className="size-icon-xs" weight="bold" />
-            <span className="text-normal truncate">{routine.name}</span>
-          </div>
-          <div className="flex items-center gap-half">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEditOpen(true)}
-            >
-              <PencilSimpleIcon className="size-icon-xs mr-half" />
-              {t('routines.edit')}
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              onClick={handleDelete}
-              disabled={deleteMutation.isPending}
-            >
-              <TrashIcon className="size-icon-xs mr-half" />
-              {t('routines.delete')}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => runNowMutation.mutate()}
-              disabled={runNowMutation.isPending}
-            >
-              <PlayIcon className="size-icon-xs mr-half" weight="fill" />
-              {t('routines.runNow')}
-            </Button>
-          </div>
-        </header>
+    <div className="flex-1 min-w-0 h-full overflow-auto bg-primary flex flex-col">
+      {/* Full-width header pinned to the corners */}
+      <header className="flex items-center justify-between gap-base px-double pt-double">
+        <div className="flex items-center gap-half text-base text-low min-w-0">
+          <button
+            type="button"
+            onClick={() => navigate({ to: '/routines' })}
+            className="flex items-center gap-half hover:text-normal transition-colors"
+          >
+            <LightningIcon className="size-icon-xs" />
+            {t('routines.title')}
+          </button>
+          <CaretRightIcon className="size-icon-xs" weight="bold" />
+          <span className="text-normal truncate">{routine.name}</span>
+        </div>
+        <div className="flex items-center gap-double">
+          <IconButton
+            icon={PencilSimpleIcon}
+            onClick={() => setIsEditOpen(true)}
+            aria-label={t('routines.edit')}
+            title={t('routines.edit')}
+          />
+          <IconButton
+            icon={TrashIcon}
+            onClick={handleDelete}
+            disabled={deleteMutation.isPending}
+            aria-label={t('routines.delete')}
+            title={t('routines.delete')}
+          />
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => runNowMutation.mutate()}
+            disabled={runNowMutation.isPending}
+          >
+            <PlayIcon className="size-icon-xs mr-half" weight="fill" />
+            {t('routines.runNow')}
+          </Button>
+        </div>
+      </header>
 
+      {/* Centered body */}
+      <div className="flex justify-center">
+        <div className="w-chat max-w-full px-[35px] pt-[6vh] pb-[6vh] flex flex-col gap-double">
         {/* Two-column body */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-double">
           {/* Left column */}
           <div className="flex flex-col gap-double">
             <section>
-              <h2 className="text-xs uppercase tracking-wide text-low mb-half">
+              <h2 className="text-sm uppercase tracking-wide text-low mb-half">
                 {t('routines.sections.description')}
               </h2>
-              <p className="text-sm text-normal whitespace-pre-wrap">
+              <p className="text-base text-normal whitespace-pre-wrap">
                 {routine.description}
               </p>
             </section>
 
             <section>
-              <h2 className="text-xs uppercase tracking-wide text-low mb-half">
+              <h2 className="text-sm uppercase tracking-wide text-low mb-half">
                 {t('routines.sections.status')}
               </h2>
               <div className="flex items-center gap-base">
@@ -323,29 +323,31 @@ export function RoutineDetailContent({ routineId }: RoutineDetailContentProps) {
                   onCheckedChange={handleToggleEnabled}
                   disabled={updateMutation.isPending}
                 />
-                <span className="text-sm text-normal">
+                <span className="text-base text-normal">
                   {routine.enabled
                     ? t('routines.enabled')
                     : t('routines.disabled')}
                 </span>
               </div>
-              <p className="mt-half text-sm text-low">
-                {t('routines.nextRun', { when: nextRunStr })}
-              </p>
+              {routine.enabled && (
+                <p className="mt-half text-base text-low">
+                  {t('routines.nextRun', { when: nextRunStr })}
+                </p>
+              )}
             </section>
 
             <section>
-              <h2 className="text-xs uppercase tracking-wide text-low mb-half">
+              <h2 className="text-sm uppercase tracking-wide text-low mb-half">
                 {t('routines.sections.folder')}
               </h2>
-              <p className="text-sm text-normal">{folderLabel}</p>
+              <p className="text-base text-normal">{folderLabel}</p>
             </section>
 
             <section>
-              <h2 className="text-xs uppercase tracking-wide text-low mb-half">
+              <h2 className="text-sm uppercase tracking-wide text-low mb-half">
                 {t('routines.sections.repeats')}
               </h2>
-              <p className="text-sm text-normal">
+              <p className="text-base text-normal">
                 {formatScheduleSummary(routine, t)}
               </p>
             </section>
@@ -354,17 +356,17 @@ export function RoutineDetailContent({ routineId }: RoutineDetailContentProps) {
           {/* Right column */}
           <div className="flex flex-col gap-double">
             <section>
-              <h2 className="text-xs uppercase tracking-wide text-low mb-half">
+              <h2 className="text-sm uppercase tracking-wide text-low mb-half">
                 {t('routines.sections.instructions')}
               </h2>
-              <pre className="rounded-sm border border-border bg-secondary p-base text-sm text-normal whitespace-pre-wrap font-sans">
+              <pre className="rounded-sm bg-secondary p-base text-base text-normal whitespace-pre-wrap font-sans">
                 {routine.instructions}
               </pre>
             </section>
 
             <section>
               <div className="flex items-center justify-between mb-half">
-                <h2 className="text-xs uppercase tracking-wide text-low">
+                <h2 className="text-sm uppercase tracking-wide text-low">
                   {t('routines.history.title')}
                 </h2>
                 {runNowMutation.isPending && (
@@ -375,7 +377,7 @@ export function RoutineDetailContent({ routineId }: RoutineDetailContentProps) {
                 )}
               </div>
               {runs.length === 0 ? (
-                <p className="text-sm text-low">
+                <p className="text-base text-low">
                   {t('routines.history.empty')}
                 </p>
               ) : (
@@ -398,10 +400,10 @@ export function RoutineDetailContent({ routineId }: RoutineDetailContentProps) {
                           }
                           openWorkspaceInSecondCell(run.workspace_id);
                         }}
-                        className="w-full flex items-center justify-between gap-base rounded-sm border border-border bg-secondary px-base py-half text-left hover:bg-panel transition-colors disabled:cursor-default disabled:hover:bg-secondary focus:outline-none focus-visible:ring-1 focus-visible:ring-brand"
+                        className="w-full flex items-center justify-between gap-base rounded-sm bg-secondary px-base py-half text-left hover:bg-panel transition-colors disabled:cursor-default disabled:hover:bg-secondary focus:outline-none focus-visible:ring-1 focus-visible:ring-brand"
                       >
                         <div className="flex flex-col min-w-0">
-                          <span className="text-sm text-normal truncate">
+                          <span className="text-base text-normal truncate">
                             {formatTimestamp(run.scheduled_at)}
                           </span>
                           {run.skip_reason && (
@@ -441,6 +443,7 @@ export function RoutineDetailContent({ routineId }: RoutineDetailContentProps) {
           submitting={updateMutation.isPending}
           onSubmit={handleEditSubmit}
         />
+        </div>
       </div>
     </div>
   );

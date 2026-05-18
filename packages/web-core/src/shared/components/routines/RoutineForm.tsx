@@ -11,6 +11,7 @@ import { filterAndSortAgents } from '@/shared/lib/agentOrder';
 import { usePresetOptions } from '@/shared/hooks/usePresetOptions';
 import { AgentChip } from '@/shared/components/AgentChip';
 import { FolderChip } from '@/shared/components/FolderChip';
+import { BranchChip } from '@/shared/components/BranchChip';
 import { ModelSelectorContainer } from '@/shared/components/ModelSelectorContainer';
 import { ProviderModelPicker } from '@/shared/components/ProviderModelPicker';
 import { useProviders } from '@/shared/hooks/useProviders';
@@ -22,7 +23,6 @@ import {
 import { resolveDefaultSelection } from '@/shared/hooks/useWorkspacePickerSelection';
 import { SettingsDialog } from '@/shared/dialogs/settings/SettingsDialog';
 import { Button } from '@vibe/ui/components/Button';
-import { Switch } from '@vibe/ui/components/Switch';
 import { Checkbox } from '@vibe/ui/components/Checkbox';
 
 const SCHEDULE_KINDS: ScheduleKind[] = [
@@ -38,6 +38,7 @@ export interface RoutineFormValues {
   description: string;
   instructions: string;
   repo_id: string;
+  target_branch: string | null;
   use_worktree: boolean;
   executor_config: ExecutorConfig;
   schedule_kind: ScheduleKind;
@@ -79,16 +80,16 @@ function fieldLabelClass(): string {
 
 function inputClass(): string {
   return (
-    'w-full bg-secondary border border-border rounded-sm px-base py-half ' +
+    'w-full bg-secondary rounded-sm px-base py-half ' +
     'text-sm text-normal placeholder:text-low focus:outline-none ' +
-    'focus:border-brand'
+    'focus:ring-1 focus:ring-brand'
   );
 }
 
 function selectClass(): string {
   return (
-    'bg-secondary border border-border rounded-sm px-base py-half ' +
-    'text-sm text-normal focus:outline-none focus:border-brand'
+    'bg-secondary rounded-sm px-base py-half ' +
+    'text-sm text-normal focus:outline-none focus:ring-1 focus:ring-brand'
   );
 }
 
@@ -107,6 +108,11 @@ export function RoutineForm({
   const [description, setDescription] = useState(initial?.description ?? '');
   const [instructions, setInstructions] = useState(initial?.instructions ?? '');
   const [repoId, setRepoId] = useState<string>(initial?.repo_id ?? '');
+  const [targetBranch, setTargetBranch] = useState<string | null>(
+    initial?.target_branch && initial.target_branch.length > 0
+      ? initial.target_branch
+      : null
+  );
   const [useWorktree, setUseWorktree] = useState<boolean>(
     initial?.use_worktree ?? false
   );
@@ -180,7 +186,7 @@ export function RoutineForm({
     if (init === null || init === undefined) return 1;
     return typeof init === 'bigint' ? Number(init) : init;
   });
-  const [enabled, setEnabled] = useState<boolean>(initial?.enabled ?? true);
+  const enabled = initial?.enabled ?? true;
 
   const [touched, setTouched] = useState(false);
 
@@ -278,13 +284,15 @@ export function RoutineForm({
       setRepoId(repos[0]!.id);
     }
   }, [repos, repoId]);
+  const selectedRepo = useMemo(
+    () => repos.find((r) => r.id === repoId) ?? null,
+    [repos, repoId]
+  );
 
   // ---- Validation ----
   const errors = useMemo(() => {
     const out: Record<string, string> = {};
     if (!name.trim()) out.name = t('routines.form.validation.nameRequired');
-    if (!description.trim())
-      out.description = t('routines.form.validation.descriptionRequired');
     if (!instructions.trim())
       out.instructions = t('routines.form.validation.instructionsRequired');
     if (!repoId) out.repo_id = t('routines.form.validation.folderRequired');
@@ -352,6 +360,7 @@ export function RoutineForm({
       description: description.trim(),
       instructions,
       repo_id: repoId,
+      target_branch: targetBranch ?? '',
       use_worktree: useWorktree,
       executor_config: submitConfig,
       schedule_kind: scheduleKind,
@@ -372,6 +381,7 @@ export function RoutineForm({
       <div>
         <label className={fieldLabelClass()} htmlFor="routine-name">
           {t('routines.fields.name')}
+          <span className="text-error ml-half">*</span>
         </label>
         <input
           id="routine-name"
@@ -404,6 +414,7 @@ export function RoutineForm({
       <div>
         <label className={fieldLabelClass()} htmlFor="routine-instructions">
           {t('routines.fields.instructions')}
+          <span className="text-error ml-half">*</span>
         </label>
         <textarea
           id="routine-instructions"
@@ -416,18 +427,55 @@ export function RoutineForm({
         {showError('instructions')}
       </div>
 
-      {/* Composer-style picker row: folder · agent · worktree
-          and model/permission/preset/sub-agent via ModelSelectorContainer */}
+      {/* Folder row: folder · branch · worktree */}
+      <div>
+        <label className={fieldLabelClass()}>
+          {t('routines.fields.folder')}
+        </label>
+        <div className="flex flex-wrap items-center gap-half">
+          <FolderChip
+            selectedRepoId={repoId || null}
+            onSelect={(id) => {
+              setRepoId(id);
+              setTargetBranch(null);
+            }}
+            disabled={submitting}
+          />
+          {selectedRepo && (
+            <BranchChip
+              repo={selectedRepo}
+              currentBranch={targetBranch}
+              onSelectBranch={setTargetBranch}
+              disabled={submitting}
+              allowCurrent
+              currentLabel={t('routines.fields.currentBranch', {
+                defaultValue: 'Current branch',
+              })}
+              onSelectCurrent={() => setTargetBranch(null)}
+            />
+          )}
+          <label
+            className="inline-flex items-center gap-half rounded-md bg-secondary px-base py-half min-h-7 text-sm text-normal hover:bg-panel cursor-pointer"
+            title={t('routines.fields.worktree')}
+          >
+            <Checkbox
+              checked={useWorktree}
+              onCheckedChange={(v) => setUseWorktree(v === true)}
+              className="h-3.5 w-3.5"
+              disabled={submitting}
+            />
+            <span>{t('routines.fields.worktree')}</span>
+          </label>
+        </div>
+        {showError('repo_id')}
+      </div>
+
+      {/* Agent row: agent · model · preset · permission · sub-agent · provider */}
       <div>
         <label className={fieldLabelClass()}>
           {t('routines.fields.executor')}
         </label>
         <div className="flex flex-wrap items-center gap-half">
-          <FolderChip
-            selectedRepoId={repoId || null}
-            onSelect={setRepoId}
-            disabled={submitting}
-          />
           <AgentChip
             selected={agent}
             options={agentOptions}
@@ -458,20 +506,7 @@ export function RoutineForm({
             onSelectionChange={handlePickerSelectionChange}
             onPreferredEffortChange={setPreferredEffortId}
           />
-          <label
-            className="inline-flex items-center gap-half rounded-md bg-secondary px-base py-half min-h-7 text-sm text-normal hover:bg-panel cursor-pointer"
-            title={t('routines.fields.worktree')}
-          >
-            <Checkbox
-              checked={useWorktree}
-              onCheckedChange={(v) => setUseWorktree(v === true)}
-              className="h-3.5 w-3.5"
-              disabled={submitting}
-            />
-            <span>{t('routines.fields.worktree')}</span>
-          </label>
         </div>
-        {showError('repo_id')}
       </div>
 
       {/* Schedule */}
@@ -485,10 +520,10 @@ export function RoutineForm({
               key={kind}
               type="button"
               onClick={() => setScheduleKind(kind)}
-              className={`px-base py-half rounded-md border text-sm transition-colors ${
+              className={`px-base py-half rounded-md text-sm transition-colors ${
                 scheduleKind === kind
-                  ? 'bg-foreground text-background border-foreground'
-                  : 'bg-secondary border-border text-normal hover:bg-panel'
+                  ? 'bg-foreground text-background'
+                  : 'bg-secondary text-normal hover:bg-panel'
               }`}
             >
               {t(`routines.schedule.${kind}`)}
@@ -562,21 +597,9 @@ export function RoutineForm({
         <p className="mt-base text-xs text-low">{t('routines.banner')}</p>
       </div>
 
-      {/* Enabled toggle */}
-      <div className="flex items-center gap-base">
-        <Switch
-          checked={enabled}
-          onCheckedChange={setEnabled}
-          id="routine-enabled"
-        />
-        <label htmlFor="routine-enabled" className="text-sm text-normal">
-          {enabled ? t('routines.enabled') : t('routines.disabled')}
-        </label>
-      </div>
-
       {/* Footer */}
-      <div className="flex justify-end gap-base pt-base border-t border-border">
-        <Button type="button" variant="outline" onClick={onCancel}>
+      <div className="flex justify-end gap-base pt-base">
+        <Button type="button" variant="ghost" onClick={onCancel}>
           {t('routines.form.cancel')}
         </Button>
         <Button type="submit" disabled={!canSubmit}>

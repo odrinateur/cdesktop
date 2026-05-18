@@ -765,6 +765,7 @@
       "unpin": "取消釘選會話"
     },
     "newSession": "新增會話",
+    "newSessionInFolder": "在 {{folder}} 中新增會話",
     "pinned": {
       "emptyHint": "從會話選單釘選即可保留於此。",
       "sectionHeader": "已釘選",
@@ -871,6 +872,7 @@
       "instructionsPlaceholder": "每次執行時傳送給智能体的提示詞。",
       "folder": "資料夾",
       "folderPlaceholder": "選擇資料夾",
+      "currentBranch": "目前分支",
       "worktree": "使用 worktree",
       "executor": "智能体",
       "variant": "預設配置",

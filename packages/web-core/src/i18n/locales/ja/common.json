@@ -765,6 +765,7 @@
       "unpin": "セッションのピン留めを外す"
     },
     "newSession": "新規セッション",
+    "newSessionInFolder": "{{folder}} に新規セッション",
     "pinned": {
       "emptyHint": "各セッションのメニューからピン留めすると、ここに表示されます。",
       "sectionHeader": "ピン留め",
@@ -871,6 +872,7 @@
       "instructionsPlaceholder": "各実行時にエージェントへ送信されるプロンプト。",
       "folder": "フォルダ",
       "folderPlaceholder": "フォルダを選択",
+      "currentBranch": "現在のブランチ",
       "worktree": "worktree を使用",
       "executor": "エージェント",
       "variant": "プリセット",
