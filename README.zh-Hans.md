@@ -31,8 +31,10 @@ cdesktop 是 Anthropic [Claude Code Desktop](https://code.claude.com/docs/en/des
 
 - **5 款编码 agent 一个 UI** —— Claude Code、Codex、Gemini、OpenCode、Hermes;每个会话独立选 agent,各 agent 对话记录互不干扰
 - **一键接入任意供应商** —— 内置 20+ 预设(OpenRouter、AWS Bedrock、DeepSeek、Kimi、ModelScope、MiniMax、Nvidia……),或自行配置 `ANTHROPIC_BASE_URL`;每个会话可独立切换供应商并调节推理强度
+- **Agent 团队** —— 在工作区内派生协作者,分工执行;每位协作者可独立选 agent 与模型;主 agent 通过 `npx cdesktop team spawn` 调度
 - **多会话并排执行** —— 工作区可拆分为最多 4 个 cell,任意会话可拖拽到新 cell
 - **会话瞬时切换** —— 切换线程无需重载,对话状态保持在原位
+- **Routines** —— 定时执行 agent 任务(每小时、每天、工作日、每周),或保存模板手动触发;每次运行产生独立工作区,可随时打开查看
 - **可选 Git worktree** —— 按项目开启,为每个会话分配独立分支;也可直接在主目录工作,非 Git 目录同样支持
 - **审阅 diff 并行内联评论** —— 直接在 UI 里向 agent 反馈
 - **应用内预览** —— 内置浏览器,支持 DevTools、Inspect、设备模拟
@@ -52,7 +54,6 @@ npx cdesktop
 ## 路线图
 
 - **桌面端构建** —— 打包 macOS、Windows、Linux 的 Tauri 安装包
-- **Routines** —— 定时任务,用于周期性工作(每日代码评审、每周依赖审计、晨间简报)
 - **语音输入** —— 按住说话,免动手发送指令
 - **文件面板** —— 浏览整个项目目录树,不再只看会话工作目录
 - **性能优化** —— 更快冷启动、更小打包体积、更低空闲 CPU 占用
