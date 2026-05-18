@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { PlusIcon } from '@phosphor-icons/react';
+import { LightningIcon, PauseCircleIcon, PlusIcon } from '@phosphor-icons/react';
 import type { Routine } from 'shared/types';
 import { routinesApi } from '@/shared/lib/api';
 import { Button } from '@vibe/ui/components/Button';
@@ -11,13 +11,7 @@ function formatNextRun(nextRunAt: string | null): string | null {
   if (!nextRunAt) return null;
   const date = new Date(nextRunAt);
   if (Number.isNaN(date.getTime())) return null;
-  return date.toLocaleString(undefined, {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
+  return date.toLocaleString();
 }
 
 /**
@@ -37,13 +31,14 @@ export function RoutinesListContent() {
 
   return (
     <div className="flex-1 min-w-0 h-full overflow-auto bg-primary flex justify-center">
-      <div className="w-chat max-w-full px-[35px] py-double flex flex-col gap-double">
+      <div className="w-chat max-w-full px-[35px] pt-[9vh] pb-[6vh] flex flex-col gap-double">
         <header className="flex items-start justify-between gap-base">
           <div className="flex flex-col gap-half">
-            <h1 className="text-2xl font-semibold text-high">
+            <h1 className="flex items-center gap-half text-lg font-semibold text-high">
+              <LightningIcon className="size-icon-sm" />
               {t('routines.title')}
             </h1>
-            <p className="text-sm text-low">{t('routines.subtitle')}</p>
+            <p className="text-base text-low">{t('routines.subtitle')}</p>
           </div>
           <Button type="button" onClick={() => navigate({ to: '/routines/new' })}>
             <PlusIcon className="size-icon-xs mr-half" weight="bold" />
@@ -51,14 +46,14 @@ export function RoutinesListContent() {
           </Button>
         </header>
 
-        <div className="rounded-sm border border-border bg-secondary px-base py-half text-sm text-low">
+        <div className="rounded-sm bg-secondary px-base py-half text-base text-low">
           {t('routines.banner')}
         </div>
 
         {isLoading ? (
-          <p className="text-sm text-low">…</p>
+          <p className="text-base text-low">…</p>
         ) : routines.length === 0 ? (
-          <div className="rounded-sm border border-border bg-secondary p-double text-sm text-low text-center">
+          <div className="rounded-sm bg-secondary p-double text-base text-low text-center">
             {t('routines.empty')}
           </div>
         ) : (
@@ -75,22 +70,29 @@ export function RoutinesListContent() {
                         params: { routineId: routine.id },
                       })
                     }
-                    className="w-full text-left rounded-sm border border-border bg-secondary hover:bg-panel px-double py-base transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-brand"
+                    className="w-full text-left rounded-sm bg-secondary hover:bg-panel px-double py-base transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-brand"
                   >
                     <div className="flex items-start justify-between gap-base">
                       <div className="min-w-0 flex flex-col gap-half">
                         <span className="font-medium text-high truncate">
                           {routine.name}
                         </span>
-                        <span className="text-sm text-low">
+                        <span className="text-base text-low">
                           {formatScheduleSummary(routine, t)}
+                          {routine.enabled && nextRun && (
+                            <>
+                              {' · '}
+                              {t('routines.nextRun', { when: nextRun })}
+                            </>
+                          )}
                         </span>
                       </div>
-                      <div className="shrink-0 text-xs text-low">
-                        {nextRun
-                          ? t('routines.nextRun', { when: nextRun })
-                          : t('routines.nextRunNever')}
-                      </div>
+                      {!routine.enabled && (
+                        <div className="shrink-0 self-center flex items-center gap-half text-sm text-low">
+                          <PauseCircleIcon className="size-icon-xs" weight="bold" />
+                          {t('routines.disabled')}
+                        </div>
+                      )}
                     </div>
                   </button>
                 </li>

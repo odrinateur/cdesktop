@@ -122,6 +122,8 @@ module.exports = {
         background: "hsl(var(--bg-primary))",
         foreground: "hsl(var(--text-normal))",
         border: "hsl(var(--border))",
+        'accent-blue': "hsl(var(--accent-blue-bg))",
+        'accent-blue-foreground': "hsl(var(--accent-blue-fg))",
       },
       borderColor: {
         DEFAULT: "hsl(var(--border))",

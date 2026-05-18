@@ -5,7 +5,7 @@ import {
   StackIcon,
   SpinnerIcon,
   CaretDownIcon,
-  ClockIcon,
+  LightningIcon,
 } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/cn';
@@ -352,7 +352,7 @@ function RoutinesNavRow({
         isActive && 'bg-tertiary/60'
       )}
     >
-      <ClockIcon className="size-icon-sm" weight="bold" />
+      <LightningIcon className="size-icon-sm" />
       <span>
         {t('routines.sidebar.nav', { defaultValue: 'Routines' })}
       </span>

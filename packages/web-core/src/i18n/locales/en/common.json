@@ -208,6 +208,7 @@
   },
   "sidebar": {
     "newSession": "New session",
+    "newSessionInFolder": "New session in {{folder}}",
     "hideSidebar": {
       "aria": "Hide sidebar"
     },
@@ -872,6 +873,7 @@
       "instructionsPlaceholder": "The prompt sent to the agent on each run.",
       "folder": "Folder",
       "folderPlaceholder": "Pick a folder",
+      "currentBranch": "Current branch",
       "worktree": "Use worktree",
       "executor": "Agent",
       "variant": "Preset",

@@ -765,6 +765,7 @@
       "unpin": "세션 고정 해제"
     },
     "newSession": "새 세션",
+    "newSessionInFolder": "{{folder}}에 새 세션",
     "pinned": {
       "emptyHint": "각 세션 메뉴에서 고정하면 여기에 표시됩니다.",
       "sectionHeader": "고정됨",
@@ -871,6 +872,7 @@
       "instructionsPlaceholder": "각 실행 시 에이전트에 전송되는 프롬프트입니다.",
       "folder": "폴더",
       "folderPlaceholder": "폴더 선택",
+      "currentBranch": "현재 브랜치",
       "worktree": "worktree 사용",
       "executor": "에이전트",
       "variant": "프리셋",

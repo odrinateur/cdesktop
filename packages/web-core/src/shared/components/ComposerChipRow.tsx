@@ -1,9 +1,6 @@
 import {
-  CheckIcon,
   FolderIcon,
-  GitBranchIcon,
   PlusIcon,
-  SpinnerIcon,
   TrashIcon,
 } from '@phosphor-icons/react';
 import { useCallback, useEffect, useMemo } from 'react';
@@ -26,12 +23,7 @@ import { Checkbox } from '@vibe/ui/components/Checkbox';
 import { useCreateMode } from '@/features/create-mode/model/useCreateMode';
 import { repoApi } from '@/shared/lib/api';
 import { FolderPickerDialog } from '@/shared/dialogs/shared/FolderPickerDialog';
-
-const chipClassName =
-  'inline-flex items-center gap-half rounded-md bg-secondary px-base py-half ' +
-  'min-h-7 text-sm text-normal hover:bg-panel ' +
-  'disabled:cursor-not-allowed disabled:opacity-50 ' +
-  'focus:outline-none focus-visible:ring-1 focus-visible:ring-brand';
+import { BranchChip, BranchMenuList, chipClassName } from './BranchChip';
 
 function repoDisplayName(repo: Repo): string {
   return repo.display_name || repo.name;
@@ -131,9 +123,6 @@ export function ComposerChipRow({ disabled }: { disabled?: boolean }) {
   const pickPlaceholder = t('createMode.composerChips.pickFolderPlaceholder', {
     defaultValue: 'Pick a folder…',
   });
-  const branchPlaceholder = t('createMode.composerChips.pickBranch', {
-    defaultValue: 'Select branch',
-  });
   const worktreeLabel = t('createMode.composerChips.worktreeChip', {
     defaultValue: 'Worktree',
   });
@@ -166,26 +155,14 @@ export function ComposerChipRow({ disabled }: { disabled?: boolean }) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Branch chip — only when primary is git. Dropdown lists branches
-          inline (same shape as the secondary chip's branch picker). */}
+      {/* Branch chip — only when primary is git. */}
       {showBranchChip && primary && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button type="button" disabled={disabled} className={chipClassName}>
-              <GitBranchIcon weight="bold" className="size-icon-xs" />
-              <span className="max-w-[140px] truncate">
-                {primaryBranch || branchPlaceholder}
-              </span>
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <BranchMenuList
-              repo={primary}
-              currentBranch={primaryBranch}
-              onSelectBranch={(branch) => setTargetBranch(primary.id, branch)}
-            />
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <BranchChip
+          repo={primary}
+          currentBranch={primaryBranch}
+          onSelectBranch={(branch) => setTargetBranch(primary.id, branch)}
+          disabled={disabled}
+        />
       )}
 
       {/* Worktree chip — only when all attached repos are git */}
@@ -293,69 +270,6 @@ export function useAutoAttachMostRecent(): void {
       setTargetBranch(first.id, first.default_target_branch);
     }
   }, [shouldAuto, hasAttached, recents, addRepo, setTargetBranch]);
-}
-
-interface BranchMenuListProps {
-  repo: Repo;
-  currentBranch: string | null | undefined;
-  onSelectBranch: (branch: string) => void;
-}
-
-/**
- * Branch list as DropdownMenu items, used by the primary branch chip and
- * the secondary folder chip's popover. Renders nothing when the repo is
- * non-Git — callers are expected to gate on `repo.is_git` where needed.
- */
-function BranchMenuList({
-  repo,
-  currentBranch,
-  onSelectBranch,
-}: BranchMenuListProps) {
-  const { t } = useTranslation();
-  const isGit = repo.is_git;
-
-  const { data: branches = [], isLoading } = useQuery<GitBranch[]>({
-    queryKey: ['repos', repo.id, 'branches'],
-    queryFn: () => repoApi.getBranches(repo.id),
-    enabled: isGit,
-    staleTime: 30_000,
-  });
-
-  if (!isGit) return null;
-
-  const loadingLabel = t('states.loading', { defaultValue: 'Loading…' });
-
-  if (isLoading) {
-    return (
-      <DropdownMenuItem disabled icon={SpinnerIcon}>
-        <span className="text-low">{loadingLabel}</span>
-      </DropdownMenuItem>
-    );
-  }
-  if (branches.length === 0) {
-    return (
-      <DropdownMenuItem disabled>
-        <span className="text-low">
-          {t('createMode.composerChips.noBranches', {
-            defaultValue: 'No branches',
-          })}
-        </span>
-      </DropdownMenuItem>
-    );
-  }
-  return (
-    <>
-      {branches.map((b) => (
-        <DropdownMenuItem
-          key={b.name}
-          icon={b.name === currentBranch ? CheckIcon : GitBranchIcon}
-          onSelect={() => onSelectBranch(b.name)}
-        >
-          <span className="truncate">{b.name}</span>
-        </DropdownMenuItem>
-      ))}
-    </>
-  );
 }
 
 interface SecondaryChipPopoverContentProps {
