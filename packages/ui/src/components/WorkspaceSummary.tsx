@@ -133,12 +133,18 @@ export function WorkspaceSummary({
               ) : isRunning ? (
                 <RunningDots sizeClass="size-[3px]" colorClass="bg-low" />
               ) : isFailed ? (
-                <CircleIcon className="size-icon-xs text-error" weight="fill" />
+                <CircleIcon
+                  className="size-icon-2xs text-error"
+                  weight="fill"
+                />
               ) : hasUnseenActivity ? (
-                <CircleIcon className="size-icon-xs text-brand" weight="fill" />
+                <CircleIcon
+                  className="size-icon-2xs text-brand"
+                  weight="fill"
+                />
               ) : (
                 <CircleIcon
-                  className="size-icon-xs text-low opacity-40"
+                  className="size-icon-2xs text-low opacity-40"
                   weight="regular"
                 />
               )}
