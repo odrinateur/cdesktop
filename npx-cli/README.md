@@ -14,7 +14,7 @@
 </p> -->
 
 <p align="center">
-  <video src="https://github.com/user-attachments/assets/50829c85-ef25-4635-89f1-60f5597040cd" controls></video>
+  <video src="https://github.com/user-attachments/assets/d57bb67f-185b-4e19-b386-64406578c8df" controls></video>
 </p>
 
 ## Sponsors
