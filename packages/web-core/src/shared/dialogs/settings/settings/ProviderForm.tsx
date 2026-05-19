@@ -333,7 +333,11 @@ export function ProviderForm({
       if (!presetId || !catalog) return;
       const preset = catalog.find((p) => p.id === presetId);
       if (!preset) return;
-      setName(preset.name);
+      setName(
+        t(`settings.providers.presets.${preset.id}`, {
+          defaultValue: preset.name,
+        })
+      );
       setClaudePayload(preset.claude);
       setCodexPayload(preset.codex);
       setOpencodePayload(preset.opencode);
@@ -354,7 +358,7 @@ export function ProviderForm({
         }))
       );
     },
-    [catalog]
+    [catalog, t]
   );
 
   // First-load sync when editing an existing provider.
@@ -474,32 +478,40 @@ export function ProviderForm({
     <div className="flex flex-col gap-6">
       {isCreate && catalog && (
         <SettingsCard title={t('settings.providers.form.selectPreset')}>
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto">
-            {catalog.map((preset) => (
-              <button
-                key={preset.id}
-                onClick={() =>
-                  handlePresetSelect(
-                    selectedPresetId === preset.id ? null : preset.id
-                  )
-                }
-                className={cn(
-                  'flex flex-col items-center gap-1 p-2 rounded border text-xs text-center transition-colors',
-                  selectedPresetId === preset.id
-                    ? 'border-brand bg-brand/10'
-                    : 'border-border hover:bg-muted'
-                )}
-              >
-                <span className="font-medium leading-tight">{preset.name}</span>
-              </button>
-            ))}
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-72 overflow-y-auto">
+            {catalog.map((preset) => {
+              const label = t(`settings.providers.presets.${preset.id}`, {
+                defaultValue: preset.name,
+              });
+              return (
+                <button
+                  key={preset.id}
+                  title={label}
+                  onClick={() =>
+                    handlePresetSelect(
+                      selectedPresetId === preset.id ? null : preset.id
+                    )
+                  }
+                  className={cn(
+                    'flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-lg border px-3 py-2.5 text-[13px] text-center transition-colors',
+                    selectedPresetId === preset.id
+                      ? 'border-brand bg-brand/10 ring-1 ring-brand'
+                      : 'border-border hover:bg-muted hover:border-muted-foreground/30'
+                  )}
+                >
+                  <span className="font-medium leading-tight line-clamp-2">
+                    {label}
+                  </span>
+                </button>
+              );
+            })}
             <button
               onClick={() => handlePresetSelect(null)}
               className={cn(
-                'flex flex-col items-center gap-1 p-2 rounded border text-xs text-center transition-colors',
+                'flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-lg border px-3 py-2.5 text-[13px] text-center transition-colors',
                 selectedPresetId === null
-                  ? 'border-brand bg-brand/10'
-                  : 'border-border hover:bg-muted'
+                  ? 'border-brand bg-brand/10 ring-1 ring-brand'
+                  : 'border-border hover:bg-muted hover:border-muted-foreground/30'
               )}
             >
               <PlusIcon className="w-4 h-4" />
