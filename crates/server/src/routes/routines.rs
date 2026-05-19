@@ -20,8 +20,8 @@ use uuid::Uuid;
 use workspace_manager::WorkspaceManager;
 
 use crate::{
-    DeploymentImpl, error::ApiError, routes::workspaces::create::create_workspace_record,
-    scheduling::compute_next_run_at,
+    DeploymentImpl, error::ApiError, provider_injection::build_injection_for_provider,
+    routes::workspaces::create::create_workspace_record, scheduling::compute_next_run_at,
 };
 
 #[derive(Debug, Serialize, TS)]
@@ -346,6 +346,18 @@ pub(crate) async fn spawn_routine_run(
         }
     };
 
+    // Resolve the selected provider (if any) into env + Codex injection so the
+    // routine spawn matches the workspace-create path (third-party provider
+    // env vars like ANTHROPIC_BASE_URL must be passed at start_workspace).
+    let provider_uuid = selected_provider_id
+        .as_deref()
+        .map(Uuid::parse_str)
+        .transpose()
+        .map_err(|_| ApiError::BadRequest("Routine has invalid provider id".into()))?;
+    let injection =
+        build_injection_for_provider(pool, provider_uuid, &mut executor_config).await?;
+    let selected_model_id = executor_config.model_id.clone().or(selected_model_id);
+
     let workspace =
         create_workspace_record(deployment, Some(routine.name.clone()), routine.use_worktree)
             .await?;
@@ -399,8 +411,8 @@ pub(crate) async fn spawn_routine_run(
             &managed.workspace,
             executor_config,
             routine.instructions.clone(),
-            None,
-            None,
+            injection.env,
+            injection.codex,
             selected_provider_id,
             selected_model_id,
         )
