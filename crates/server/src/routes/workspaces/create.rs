@@ -15,6 +15,7 @@ use uuid::Uuid;
 use crate::{
     DeploymentImpl,
     error::ApiError,
+    provider_injection::build_injection_for_provider,
     routes::workspaces::attachments::{
         ImportedIssueAttachment, import_issue_attachments_from_remote,
     },
@@ -230,33 +231,11 @@ pub async fn create_and_start_workspace(
 
     let pool = &deployment.db().pool;
     let mut executor_config = executor_config;
-    // Build the spawn-time provider injection if a provider was selected.
-    // `Provider::build_agent_injection` dispatches per agent — Codex emits env
-    // + ThreadStartParams overrides; every other agent uses env-only.
     // TODO(phase-G): map ProviderError variants to a structured ApiError code
     // (e.g. PROVIDER_MISSING_API_KEY) so the picker can render a "configure
     // API key for this provider" CTA instead of a generic 400.
-    let injection = if let Some(provider_id) = selected_provider_id {
-        let provider = db::models::provider::Provider::find_by_id(pool, provider_id)
-            .await
-            .map_err(|_| ApiError::BadRequest(format!("Provider '{provider_id}' not found")))?;
-        if !provider.enabled {
-            return Err(ApiError::BadRequest(format!(
-                "Provider '{}' is disabled",
-                provider.name
-            )));
-        }
-        if let Some(m) = executor_config.model_id.as_deref() {
-            executor_config.model_id =
-                Some(provider.prefix_opencode_model_id(executor_config.executor, m));
-        }
-        let model_id = executor_config.model_id.as_deref().unwrap_or("");
-        provider
-            .build_agent_injection(executor_config.executor, model_id)
-            .map_err(|e| ApiError::BadRequest(e.to_string()))?
-    } else {
-        db::models::provider::AgentInjection::default()
-    };
+    let injection =
+        build_injection_for_provider(pool, selected_provider_id, &mut executor_config).await?;
     let selected_provider_id_str = selected_provider_id.map(|id| id.to_string());
     let selected_model_id_str = executor_config.model_id.clone();
 

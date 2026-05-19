@@ -1,5 +1,6 @@
 pub mod error;
 pub mod middleware;
+pub mod provider_injection;
 pub mod relay_pairing;
 pub mod routes;
 pub mod routines_scheduler;
