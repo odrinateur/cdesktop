@@ -232,7 +232,7 @@ export function ProviderModelPicker({
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-half bg-secondary border border-border rounded-sm px-base py-half text-sm h-cta hover:bg-muted max-w-64 min-w-0 focus:outline-none focus-visible:ring-1 focus-visible:ring-brand">
+        <button className="flex items-center gap-half bg-secondary rounded-sm px-base py-half text-sm h-cta hover:bg-muted max-w-64 min-w-0 focus:outline-none focus-visible:ring-1 focus-visible:ring-brand">
           <span className="truncate">{triggerLabel}</span>
         </button>
       </DropdownMenuTrigger>
