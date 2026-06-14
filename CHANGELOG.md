@@ -1,3 +1,24 @@
+# [1.2.0](https://github.com/odrinateur/cdesktop/compare/v1.1.0...v1.2.0) (2026-06-14)
+
+
+### Bug Fixes
+
+* **chat:** drop noisy thinking_tokens system events from claude stream ([26ac179](https://github.com/odrinateur/cdesktop/commit/26ac179556ba36a55276fff4d9d6c8b57afb0e8e))
+* **ci:** collapse nested if in cursor reasoning suffix parser ([ed646ab](https://github.com/odrinateur/cdesktop/commit/ed646abf474510df4e620e576c20a71fe0d553e8))
+* **ci:** prettier + missing i18n keys ([4ba4674](https://github.com/odrinateur/cdesktop/commit/4ba4674da8106ef162b3f68a3d73d35c6ecf2737))
+
+
+### Features
+
+* **chat:** collapse turn body into accordion between user msg and reply ([60459a4](https://github.com/odrinateur/cdesktop/commit/60459a4f53420bf94c7a338f0a825f671d0d74a6))
+* **chat:** cycle permission policy with Shift+Tab in chat input ([b936a49](https://github.com/odrinateur/cdesktop/commit/b936a496d493edda68d1f9a5daf1a7c320df8ab7))
+* **cursor:** enable Cursor agent with dynamic model discovery ([7da2b89](https://github.com/odrinateur/cdesktop/commit/7da2b89a5cb1821b100222ced3079ef0cc78b14a))
+* **folder-picker:** default to configured workspace_dir ([583a3d1](https://github.com/odrinateur/cdesktop/commit/583a3d16d4b21efac44c7e34953b0787dc8b205d))
+* **keyboard:** toggle right panel area with Cmd/Ctrl+Shift+B ([bb71896](https://github.com/odrinateur/cdesktop/commit/bb71896bb999289330d71adb9808ab1bd50b9827))
+* **sidebar:** add hover archive button + smaller pill title ([ae33940](https://github.com/odrinateur/cdesktop/commit/ae339400e10baf93d62e26bba87993cdc82927b1))
+* **sidebar:** archive whole project + group archived chats by project ([f1fa0d0](https://github.com/odrinateur/cdesktop/commit/f1fa0d092c9a3b933b1f140ad0bf2428c49bce22))
+* **workspace:** run package.json scripts from the cell header ([fecdc0d](https://github.com/odrinateur/cdesktop/commit/fecdc0d90619236af646782efe76a00cc7200a6c))
+
 # [1.1.0](https://github.com/odrinateur/cdesktop/compare/v1.0.1...v1.1.0) (2026-06-14)
 
 
