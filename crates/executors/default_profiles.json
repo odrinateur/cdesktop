@@ -7,6 +7,13 @@
         }
       }
     },
+    "CURSOR_AGENT": {
+      "DEFAULT": {
+        "CURSOR_AGENT": {
+          "force": true
+        }
+      }
+    },
     "GEMINI": {
       "DEFAULT": {
         "GEMINI": {
