@@ -327,6 +327,7 @@ export type PersistKey =
   | `system:${string}`
   | `error:${string}`
   | `entry:${string}`
+  | `turn:${string}`
   | `list-section-${string}`;
 
 type State = {
