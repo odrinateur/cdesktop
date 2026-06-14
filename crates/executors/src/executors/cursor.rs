@@ -737,10 +737,10 @@ fn split_cursor_model_id(id: &str) -> (String, Option<String>) {
 
     for token in REASONING_SUFFIXES {
         let needle = format!("-{token}");
-        if let Some(base) = core.strip_suffix(&needle) {
-            if !base.is_empty() {
-                return (format!("{base}{fast_suffix}"), Some((*token).to_string()));
-            }
+        if let Some(base) = core.strip_suffix(&needle)
+            && !base.is_empty()
+        {
+            return (format!("{base}{fast_suffix}"), Some((*token).to_string()));
         }
     }
     (format!("{core}{fast_suffix}"), None)
