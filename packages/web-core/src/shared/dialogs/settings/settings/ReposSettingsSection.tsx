@@ -14,6 +14,7 @@ import { defineModal } from '@/shared/lib/modals';
 import type { Repo, UpdateRepo } from 'shared/types';
 import { SearchableDropdownContainer } from '@/shared/components/ui-new/containers/SearchableDropdownContainer';
 import { FolderPickerDialog } from '@/shared/dialogs/shared/FolderPickerDialog';
+import { useUserSystem } from '@/shared/hooks/useUserSystem';
 import { Button } from '@vibe/ui/components/Button';
 import {
   Dialog,
@@ -133,6 +134,7 @@ export function ReposSettingsSection({
   const { t } = useTranslation('settings');
   const queryClient = useQueryClient();
   const machineClient = useSettingsMachineClient();
+  const { config } = useUserSystem();
   const reposQueryKey = [
     'repos',
     ...(machineClient?.queryScopeKey ?? ['machine', 'unselected']),
@@ -292,6 +294,7 @@ export function ReposSettingsSection({
       const selectedPath = await FolderPickerDialog.show({
         title: t('settings.repos.addRepo.dialogTitle'),
         description: t('settings.repos.addRepo.dialogDescription'),
+        value: config?.workspace_dir ?? '',
       });
       if (!selectedPath) return;
 
@@ -307,7 +310,7 @@ export function ReposSettingsSection({
         err instanceof Error ? err.message : t('settings.repos.addRepo.error')
       );
     }
-  }, [machineClient, queryClient, reposQueryKey, t]);
+  }, [config?.workspace_dir, machineClient, queryClient, reposQueryKey, t]);
 
   // Populate draft from server data
   useEffect(() => {

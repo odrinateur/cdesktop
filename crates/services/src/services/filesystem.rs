@@ -107,7 +107,8 @@ impl FilesystemService {
         #[cfg(not(feature = "qa-mode"))]
         {
             let base_path = path
-                .map(PathBuf::from)
+                .as_deref()
+                .map(Self::expand_tilde)
                 .unwrap_or_else(Self::get_home_directory);
             Self::verify_directory(&base_path)?;
             self.list_git_repos_with_timeout(
@@ -303,6 +304,19 @@ impl FilesystemService {
             })
     }
 
+    fn expand_tilde(path: &str) -> PathBuf {
+        if let Some(rest) = path.strip_prefix("~") {
+            let rest = rest.strip_prefix('/').unwrap_or(rest);
+            if rest.is_empty() {
+                Self::get_home_directory()
+            } else {
+                Self::get_home_directory().join(rest)
+            }
+        } else {
+            PathBuf::from(path)
+        }
+    }
+
     fn verify_directory(path: &Path) -> Result<(), FilesystemError> {
         if !path.exists() {
             return Err(FilesystemError::DirectoryDoesNotExist);
@@ -318,7 +332,8 @@ impl FilesystemService {
         path: Option<String>,
     ) -> Result<DirectoryListResponse, FilesystemError> {
         let path = path
-            .map(PathBuf::from)
+            .as_deref()
+            .map(Self::expand_tilde)
             .unwrap_or_else(Self::get_home_directory);
         Self::verify_directory(&path)?;
 
