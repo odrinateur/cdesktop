@@ -55,7 +55,7 @@ const FolderPickerDialogImpl = create<FolderPickerDialogProps>(
     useEffect(() => {
       if (modal.visible) {
         setManualPath(value);
-        loadDirectory();
+        loadDirectory(value || undefined);
       }
     }, [modal.visible, value]);
 
