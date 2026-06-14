@@ -1,28 +1,20 @@
-name: Create GitHub Pre-Release
+name: Release
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
-    inputs:
-      version_type:
-        description: "Version bump type ('none' reuses current version with a fresh timestamp tag — use to retry after a failed run without burning a version)"
-        required: true
-        default: "patch"
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
-          - prerelease
-          - none
 
 concurrency:
-  group: release-${{ github.ref_name }} # allow concurrent prerelease from different branches
-  cancel-in-progress: true
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
   packages: write
   pull-requests: write
+  id-token: write
 
 env:
   NODE_VERSION: 22
@@ -31,128 +23,61 @@ env:
   CARGO_XWIN_VERSION: 0.20.2
 
 jobs:
-  bump-version:
+  # ---------------------------------------------------------------------------
+  # 1. Determine the next semantic version (dry-run). Skip everything if the
+  #    commit history since the last tag does not warrant a release.
+  # ---------------------------------------------------------------------------
+  decide:
     runs-on: ubuntu-24.04
     outputs:
-      new_tag: ${{ steps.version.outputs.new_tag }}
-      new_version: ${{ steps.version.outputs.new_version }}
-      branch_suffix: ${{ steps.branch.outputs.suffix }}
+      release: ${{ steps.dry.outputs.release }}
+      version: ${{ steps.dry.outputs.version }}
+      tag: ${{ steps.dry.outputs.tag }}
     steps:
-      - name: Install cargo-edit
-        uses: taiki-e/cache-cargo-install-action@34ce5120836e5f9f1508d8713d7fdea0e8facd6f # v3.0.1
-        with:
-          tool: cargo-edit
-          git: https://github.com/killercup/cargo-edit
-          rev: 96a3879fe3bafda6d0f943b642997fbf03e235cd # v0.13.9
-
       - uses: actions/checkout@v6
         with:
+          fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: setup node
+      - name: Setup Node
         uses: ./.github/actions/setup-node
 
-      - name: Generate branch suffix
-        id: branch
+      - name: Lint commit messages
+        if: github.event_name == 'push'
         run: |
-          branch_name="${{ github.ref_name }}"
-          # Get last 6 characters of branch name, remove all special chars (including dashes)
-          suffix=$(echo "$branch_name" | tail -c 7 | sed 's/[^a-zA-Z0-9]//g' | tr '[:upper:]' '[:lower:]')
-          echo "Branch: $branch_name"
-          echo "Suffix: $suffix"
-          echo "suffix=$suffix" >> $GITHUB_OUTPUT
+          npx --yes @commitlint/cli@19 \
+            --from ${{ github.event.before }} \
+            --to ${{ github.event.after }} \
+            --verbose
 
-      - name: Determine and update versions
-        id: version
+      - name: Install release deps
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Compute next version (dry run)
+        id: dry
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Get the latest version from npm registry
-          latest_npm_version=$(npm view cdesktop version 2>/dev/null || echo "0.0.0")
-          echo "Latest npm version: $latest_npm_version"
-
-          # Get current repo version
-          current_repo_version=$(node -p "require('./package.json').version")
-          echo "Current repo version: $current_repo_version"
-
-          # Use the higher of the two versions as the base (prevents downgrade errors with cargo set-version)
-          base_version=$(node -e "
-            const npm = '$latest_npm_version'.split('.').map(Number);
-            const repo = '$current_repo_version'.split('.').map(Number);
-            for (let i = 0; i < 3; i++) {
-              if ((npm[i] || 0) > (repo[i] || 0)) { console.log('$latest_npm_version'); process.exit(); }
-              if ((npm[i] || 0) < (repo[i] || 0)) { console.log('$current_repo_version'); process.exit(); }
-            }
-            console.log('$current_repo_version');
-          ")
-          echo "Base version for bump: $base_version"
-
-          timestamp=$(date +%Y%m%d%H%M%S)
-
-          # Update root package.json based on base version
-          if [[ "${{ github.event.inputs.version_type }}" == "none" ]]; then
-            # Retry path: reuse current repo version, only mint a fresh timestamp tag
-            new_version=$current_repo_version
-            new_tag="v${new_version}-${timestamp}"
-            echo "Reusing version $new_version with new tag $new_tag"
-          elif [[ "${{ github.event.inputs.version_type }}" == "prerelease" ]]; then
-            # For prerelease, use current package.json version and add branch suffix
-            npm version prerelease --preid="${{ steps.branch.outputs.suffix }}" --no-git-tag-version
-
-            new_version=$(node -p "require('./package.json').version")
-            new_tag="v${new_version}.${timestamp}"
-          else
-            # For regular releases, use base version and bump it
-            npm version $base_version --no-git-tag-version --allow-same-version
-            npm version ${{ github.event.inputs.version_type }} --no-git-tag-version
-
-            new_version=$(node -p "require('./package.json').version")
-            new_tag="v${new_version}-${timestamp}"
+          set -e
+          out=$(npx semantic-release --dry-run --no-ci 2>&1 | tee /tmp/sr.log || true)
+          version=$(grep -oE 'next release version is [0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?' /tmp/sr.log \
+            | tail -1 | awk '{print $NF}')
+          if [ -z "$version" ]; then
+            echo "No release required."
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+          echo "Next version: $version"
+          echo "release=true" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
 
-          # Update npx-cli package.json to match
-          (
-            cd npx-cli
-            npm version $new_version --no-git-tag-version --allow-same-version
-          )
-
-          # Update web app package.json to match
-          (
-            cd packages/local-web
-            npm version $new_version --no-git-tag-version --allow-same-version
-          )
-
-          cargo set-version --workspace "$new_version"
-
-          node -e "
-            const fs = require('fs');
-            const path = 'crates/tauri-app/tauri.conf.json';
-            const conf = JSON.parse(fs.readFileSync(path, 'utf8'));
-            conf.version = '$new_version';
-            fs.writeFileSync(path, JSON.stringify(conf, null, 2) + '\n');
-          "
-
-          echo "New version: $new_version"
-          echo "new_version=$new_version" >> $GITHUB_OUTPUT
-          echo "new_tag=$new_tag" >> $GITHUB_OUTPUT
-
-      - name: Commit changes and create tag
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add package.json pnpm-lock.yaml npx-cli/package.json npx-cli/package-lock.json packages/local-web/package.json crates/tauri-app/tauri.conf.json Cargo.lock
-          git add $(find . -name Cargo.toml)
-          [ -f crates/remote/Cargo.lock ] && git add crates/remote/Cargo.lock || true
-          [ -f crates/relay-tunnel/Cargo.lock ] && git add crates/relay-tunnel/Cargo.lock || true
-          if git diff --cached --quiet; then
-            echo "No version changes to commit (version_type=none)"
-          else
-            git commit -m "chore: bump version to ${{ steps.version.outputs.new_version }}"
-            git push
-          fi
-          git tag -a ${{ steps.version.outputs.new_tag }} -m "Release ${{ steps.version.outputs.new_tag }}"
-          git push --tags
-
+  # ---------------------------------------------------------------------------
+  # 2. Build the React frontend with the resolved version stamped in.
+  # ---------------------------------------------------------------------------
   build-frontend:
-    needs: bump-version
+    needs: decide
+    if: needs.decide.outputs.release == 'true'
     runs-on: ubuntu-24.04
     env:
       VITE_PUBLIC_REACT_VIRTUOSO_LICENSE_KEY: ${{ secrets.PUBLIC_REACT_VIRTUOSO_LICENSE_KEY }}
@@ -160,12 +85,22 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ needs.bump-version.outputs.new_tag }}
+          fetch-depth: 0
 
       - name: Setup Node
         uses: ./.github/actions/setup-node
 
-      - name: Install dependencies
+      - name: Install cargo-edit
+        uses: taiki-e/cache-cargo-install-action@34ce5120836e5f9f1508d8713d7fdea0e8facd6f # v3.0.1
+        with:
+          tool: cargo-edit
+          git: https://github.com/killercup/cargo-edit
+          rev: 96a3879fe3bafda6d0f943b642997fbf03e235cd # v0.13.9
+
+      - name: Apply version
+        run: node scripts/release/apply-version.js ${{ needs.decide.outputs.version }}
+
+      - name: Install deps
         run: pnpm install
 
       - name: Lint frontend
@@ -189,11 +124,13 @@ jobs:
           path: packages/local-web/dist/
           retention-days: 1
 
+  # ---------------------------------------------------------------------------
+  # 3. Build native binaries across the platform matrix.
+  # ---------------------------------------------------------------------------
   build-backend:
-    needs: [bump-version, build-frontend]
+    needs: [decide, build-frontend]
     runs-on: ${{ matrix.os }}
     strategy:
-      # Platform matrix - keep target/name in sync with package-npx-cli job
       matrix:
         include:
           - target: x86_64-unknown-linux-musl
@@ -225,10 +162,23 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ needs.bump-version.outputs.new_tag }}
+          fetch-depth: 0
 
       - name: Setup sccache
         uses: BloopAI/sccache-action@main
+
+      - name: Setup Node
+        uses: ./.github/actions/setup-node
+
+      - name: Install cargo-edit
+        uses: taiki-e/cache-cargo-install-action@34ce5120836e5f9f1508d8713d7fdea0e8facd6f # v3.0.1
+        with:
+          tool: cargo-edit
+          git: https://github.com/killercup/cargo-edit
+          rev: 96a3879fe3bafda6d0f943b642997fbf03e235cd # v0.13.9
+
+      - name: Apply version
+        run: node scripts/release/apply-version.js ${{ needs.decide.outputs.version }}
 
       - name: Cache Rust toolchain
         uses: actions/cache@v5
@@ -237,7 +187,7 @@ jobs:
           key: rust-toolchain-${{ runner.os }}-${{ matrix.target }}-${{ env.RUST_TOOLCHAIN }}
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7 # stable
+        uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7
         with:
           toolchain: ${{ env.RUST_TOOLCHAIN }}
           targets: ${{ matrix.target }}
@@ -248,7 +198,6 @@ jobs:
         run: |
           sudo apt-get update
           DEBIAN_FRONTEND=noninteractive sudo apt-get install -y clang libclang-dev lld llvm nasm cmake ninja-build
-
           if [[ "${{ matrix.target }}" == *"windows"* ]]; then
             DEBIAN_FRONTEND=noninteractive sudo apt-get install -y clang-19 clang-tools-19 llvm-19 lld-19
             echo "/usr/lib/llvm-19/bin" >> $GITHUB_PATH
@@ -350,7 +299,6 @@ jobs:
         if: runner.os == 'Linux' && contains(matrix.target, 'windows')
         run: |
           if [[ "${{ matrix.target }}" == "aarch64-pc-windows-msvc" ]]; then
-            # ring requires clang on arm64 windows. See https://github.com/briansmith/ring/issues/2117
             chmod +x scripts/ring-cc-wrapper.sh scripts/clang
             export PATH="${{ github.workspace }}/scripts:$PATH"
             export RING_CC=/usr/lib/llvm-19/bin/clang
@@ -364,8 +312,6 @@ jobs:
           CDT_SHARED_API_BASE: ${{ secrets.CDT_SHARED_API_BASE }}
           CDT_SHARED_RELAY_API_BASE: ${{ secrets.CDT_SHARED_RELAY_API_BASE }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          # Avoid aws-lc-sys CMake failures when Rust's `release` profile includes debug info.
-          # Without this, cmake-rs selects RelWithDebInfo and CMake fails when ASM is enabled.
           CARGO_PROFILE_RELEASE_DEBUG: 0
 
       - name: Prepare binaries
@@ -395,13 +341,13 @@ jobs:
           cargo sweep --maxsize 10GB
           cargo sweep --time 30
 
-
+  # ---------------------------------------------------------------------------
+  # 4. Package the cross-platform npx CLI tarball.
+  # ---------------------------------------------------------------------------
   package-npx-cli:
-    needs: [bump-version, build-frontend, build-backend]
+    needs: [decide, build-frontend, build-backend]
     runs-on: ubuntu-24.04
     strategy:
-      # NOTE: This matrix must be kept in sync with build-backend job above
-      # GitHub Actions doesn't support YAML anchors, so duplication is unavoidable
       matrix:
         include:
           - target: x86_64-unknown-linux-musl
@@ -437,7 +383,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ needs.bump-version.outputs.new_tag }}
+          fetch-depth: 0
 
       - name: Download frontend artifact
         uses: actions/download-artifact@v7
@@ -451,22 +397,13 @@ jobs:
           name: backend-binary-${{ matrix.name }}
           path: dist/
 
-      - name: List downloaded artifacts
-        run: |
-          echo "Downloaded backend binaries:"
-          find dist/
-
       - name: Create platform package
         run: |
           mkdir -p npx-cli/dist/${{ matrix.name }}
-          mkdir cdesktop-${{ matrix.name }}
-          mkdir cdesktop-mcp-${{ matrix.name }}
-          mkdir cdesktop-review-${{ matrix.name }}
-
+          mkdir cdesktop-${{ matrix.name }} cdesktop-mcp-${{ matrix.name }} cdesktop-review-${{ matrix.name }}
           cp dist/cdesktop-${{ matrix.name }}* cdesktop-${{ matrix.name }}/${{ matrix.binary }}
           cp dist/cdesktop-mcp-${{ matrix.name }}* cdesktop-mcp-${{ matrix.name }}/${{ matrix.mcp_binary }}
           cp dist/cdesktop-review-${{ matrix.name }}* cdesktop-review-${{ matrix.name }}/${{ matrix.review_binary }}
-
           zip -j npx-cli/dist/${{ matrix.name }}/cdesktop.zip cdesktop-${{ matrix.name }}/${{ matrix.binary }}
           zip -j npx-cli/dist/${{ matrix.name }}/cdesktop-mcp.zip cdesktop-mcp-${{ matrix.name }}/${{ matrix.mcp_binary }}
           zip -j npx-cli/dist/${{ matrix.name }}/cdesktop-review.zip cdesktop-review-${{ matrix.name }}/${{ matrix.review_binary }}
@@ -478,107 +415,43 @@ jobs:
           path: npx-cli/dist/
           retention-days: 1
 
-  upload-to-r2:
-    needs: [bump-version, package-npx-cli]
-    runs-on: ubuntu-24.04
+  # ---------------------------------------------------------------------------
+  # 5. Build the macOS desktop app as a signed .dmg via tauri-action.
+  # ---------------------------------------------------------------------------
+  build-tauri:
+    needs: [decide, build-frontend]
+    if: needs.decide.outputs.release == 'true'
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        include:
+          - tauri-target: aarch64-apple-darwin
+            name: macos-arm64
+          - tauri-target: x86_64-apple-darwin
+            name: macos-x64
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ needs.bump-version.outputs.new_tag }}
+          fetch-depth: 0
 
-      - name: Download all platform packages
-        uses: actions/download-artifact@v7
+      - name: Setup Node
+        uses: ./.github/actions/setup-node
+
+      - name: Install cargo-edit
+        uses: taiki-e/cache-cargo-install-action@34ce5120836e5f9f1508d8713d7fdea0e8facd6f # v3.0.1
         with:
-          pattern: npx-platform-*
-          path: binaries/
-          merge-multiple: true
+          tool: cargo-edit
+          git: https://github.com/killercup/cargo-edit
+          rev: 96a3879fe3bafda6d0f943b642997fbf03e235cd # v0.13.9
 
-      - name: List downloaded binaries
-        run: |
-          echo "Downloaded binaries:"
-          find binaries/
+      - name: Apply version
+        run: node scripts/release/apply-version.js ${{ needs.decide.outputs.version }}
 
-      - name: Configure AWS CLI for R2
-        run: |
-          aws configure set aws_access_key_id ${{ secrets.R2_BINARIES_ACCESS_KEY_ID }}
-          aws configure set aws_secret_access_key ${{ secrets.R2_BINARIES_SECRET_ACCESS_KEY }}
-          aws configure set default.region auto
-
-      - name: Generate manifest and upload to R2
-        run: |
-          TAG="${{ needs.bump-version.outputs.new_tag }}"
-          ENDPOINT="${{ secrets.R2_BINARIES_ENDPOINT }}"
-          BUCKET="${{ secrets.R2_BINARIES_BUCKET }}"
-
-          # Generate version manifest with checksums
-          node -e "
-            const fs = require('fs');
-            const crypto = require('crypto');
-            const manifest = { version: '$TAG', platforms: {} };
-            const platforms = ['linux-x64', 'linux-arm64', 'windows-x64', 'windows-arm64', 'macos-x64', 'macos-arm64'];
-            const binaries = ['cdesktop', 'cdesktop-mcp', 'cdesktop-review'];
-
-            for (const platform of platforms) {
-              manifest.platforms[platform] = {};
-              for (const binary of binaries) {
-                const zipPath = \`binaries/\${platform}/\${binary}.zip\`;
-                if (fs.existsSync(zipPath)) {
-                  const data = fs.readFileSync(zipPath);
-                  manifest.platforms[platform][binary] = {
-                    sha256: crypto.createHash('sha256').update(data).digest('hex'),
-                    size: data.length
-                  };
-                }
-              }
-            }
-            fs.writeFileSync('version-manifest.json', JSON.stringify(manifest, null, 2));
-            console.log('Generated manifest:');
-            console.log(JSON.stringify(manifest, null, 2));
-          "
-
-          # Upload binaries (use full tag for path, allows multiple pre-releases to coexist)
-          for platform in linux-x64 linux-arm64 windows-x64 windows-arm64 macos-x64 macos-arm64; do
-            for binary in cdesktop cdesktop-mcp cdesktop-review; do
-              if [ -f "binaries/$platform/$binary.zip" ]; then
-                echo "Uploading binaries/$platform/$binary.zip..."
-                aws s3 cp "binaries/$platform/$binary.zip" \
-                  "s3://$BUCKET/binaries/$TAG/$platform/$binary.zip" \
-                  --endpoint-url "$ENDPOINT"
-              fi
-            done
-          done
-
-          # Upload version manifest
-          echo "Uploading version manifest..."
-          aws s3 cp version-manifest.json \
-            "s3://$BUCKET/binaries/$TAG/manifest.json" \
-            --endpoint-url "$ENDPOINT" --content-type "application/json"
-
-          # Update global manifest
-          VERSION="${{ needs.bump-version.outputs.new_version }}"
-          echo "Updating global manifest..."
-          echo "{\"latest\": \"$VERSION\"}" | aws s3 cp - \
-            "s3://$BUCKET/binaries/manifest.json" \
-            --endpoint-url "$ENDPOINT" --content-type "application/json"
-
-      - name: Verify upload
-        run: |
-          TAG="${{ needs.bump-version.outputs.new_tag }}"
-          ENDPOINT="${{ secrets.R2_BINARIES_ENDPOINT }}"
-          BUCKET="${{ secrets.R2_BINARIES_BUCKET }}"
-
-          echo "Listing uploaded files..."
-          aws s3 ls "s3://$BUCKET/binaries/$TAG/" \
-            --endpoint-url "$ENDPOINT" \
-            --recursive
-
-  create-prerelease:
-    needs: [bump-version, build-frontend, upload-to-r2]
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v6
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7
         with:
-          ref: ${{ needs.bump-version.outputs.new_tag }}
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          targets: ${{ matrix.tauri-target }}
 
       - name: Download frontend artifact
         uses: actions/download-artifact@v7
@@ -586,43 +459,116 @@ jobs:
           name: frontend-dist
           path: packages/local-web/dist/
 
+      - name: Install deps
+        run: pnpm install
 
+      - name: Build Tauri app
+        run: cd crates/tauri-app && cargo tauri build --target ${{ matrix.tauri-target }} --bundles dmg
+        env:
+          MACOSX_DEPLOYMENT_TARGET: 11.0
 
-      - name: List downloaded artifacts
+      - name: Collect DMG
         run: |
-          echo "Web dist:"
-          find packages/local-web/dist
+          mkdir -p tauri-out
+          find target/${{ matrix.tauri-target }}/release/bundle/dmg -name "*.dmg" -exec cp {} tauri-out/cdesktop-${{ needs.decide.outputs.version }}-${{ matrix.name }}.dmg \;
+          ls -la tauri-out
 
-      - name: Zip frontend
-        run: |
-          mkdir cdesktop-${{ needs.bump-version.outputs.new_tag }}
-          mv packages/local-web/dist cdesktop-${{ needs.bump-version.outputs.new_tag }}
-          zip -r cdesktop-${{ needs.bump-version.outputs.new_tag }}.zip cdesktop-${{ needs.bump-version.outputs.new_tag }}
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: tauri-dmg-${{ matrix.name }}
+          path: tauri-out/
+          retention-days: 1
 
-      - name: Setup Node for npm pack
+  # ---------------------------------------------------------------------------
+  # 6. Tag, publish GitHub release, commit version bumps. semantic-release does
+  #    all of it — we only have to feed it the freshly built assets.
+  # ---------------------------------------------------------------------------
+  release:
+    needs: [decide, build-frontend, build-backend, package-npx-cli, build-tauri]
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ needs.decide.outputs.version }}
+      tag: ${{ needs.decide.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node
         uses: ./.github/actions/setup-node
 
-      - name: Install npx-cli dependencies
+      - name: Install cargo-edit
+        uses: taiki-e/cache-cargo-install-action@34ce5120836e5f9f1508d8713d7fdea0e8facd6f # v3.0.1
+        with:
+          tool: cargo-edit
+          git: https://github.com/killercup/cargo-edit
+          rev: 96a3879fe3bafda6d0f943b642997fbf03e235cd # v0.13.9
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Download frontend
+        uses: actions/download-artifact@v7
+        with:
+          name: frontend-dist
+          path: packages/local-web/dist/
+
+      - name: Download all npx platform packages
+        uses: actions/download-artifact@v7
+        with:
+          pattern: npx-platform-*
+          path: npx-cli/dist/
+          merge-multiple: true
+
+      - name: Download all Tauri DMGs
+        uses: actions/download-artifact@v7
+        with:
+          pattern: tauri-dmg-*
+          path: release-artifacts/
+          merge-multiple: true
+
+      - name: Build npx-cli tarball
         run: |
           cd npx-cli
           npm ci
-
-      - name: Build npx-cli TypeScript, inject secrets, and Pack
-        run: |
-          cd npx-cli
           npm run build
-          # Replace placeholders in the bundled output
-          sed -i "s|__R2_PUBLIC_URL__|${{ secrets.R2_BINARIES_PUBLIC_URL }}|g" bin/cli.js
-          sed -i "s|__BINARY_TAG__|${{ needs.bump-version.outputs.new_tag }}|g" bin/cli.js
           npm pack
+          mkdir -p ../release-artifacts
+          cp cdesktop-*.tgz ../release-artifacts/
 
-      - name: Create GitHub Pre-Release
-        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2
+      - name: Zip frontend bundle
+        run: |
+          (cd packages/local-web && zip -r ../../release-artifacts/cdesktop-frontend-${{ needs.decide.outputs.version }}.zip dist)
+
+      - name: List release artifacts
+        run: ls -la release-artifacts/
+
+      - name: Run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: npx semantic-release
+
+  # ---------------------------------------------------------------------------
+  # 7. Update the Homebrew tap with the freshly published cask + formula.
+  # ---------------------------------------------------------------------------
+  update-homebrew-tap:
+    needs: release
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
         with:
-          tag_name: ${{ needs.bump-version.outputs.new_tag }}
-          name: Pre-release ${{ needs.bump-version.outputs.new_tag }}
-          prerelease: true
-          generate_release_notes: true
-          files: |
-            cdesktop-${{ needs.bump-version.outputs.new_tag }}.zip
-            npx-cli/cdesktop-*.tgz
+          fetch-depth: 1
+
+      - name: Update tap
+        env:
+          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ needs.release.outputs.tag }}
+          RELEASE_VERSION: ${{ needs.release.outputs.version }}
+          TAP_REPO: Odrinateur/homebrew-tap
+        run: bash scripts/release/update_homebrew_tap.sh
