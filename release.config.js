@@ -52,6 +52,7 @@ module.exports = {
       {
         assets: [
           { path: 'release-artifacts/*.dmg', label: 'macOS Disk Image' },
+          { path: 'release-artifacts/*.tgz', label: 'cdesktop CLI tarball' },
         ],
       },
     ],
