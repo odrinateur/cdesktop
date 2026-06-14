@@ -12,10 +12,12 @@ import { cn } from '@/shared/lib/utils';
 import {
   PERSIST_KEYS,
   usePaneSize,
+  useUiPreferencesStore,
   useWorkspacePanelLayout,
   useWorkspacePanelState,
   type PanelId,
 } from '@/shared/stores/useUiPreferencesStore';
+import { isTauriMac } from '@/shared/lib/platform';
 import { NavbarBreadcrumbSlot } from '@/shared/components/ui-new/containers/NavbarBreadcrumbSlot';
 import { ChangesPanelContainer } from '../ChangesPanelContainer';
 import { GitPanelContainer } from '../GitPanelContainer';
@@ -142,6 +144,14 @@ function CellHostInner({
     useWorkspacePanelState(workspaceId);
   const { columns: panelColumns } = useWorkspacePanelLayout(workspaceId);
   const hasPanels = panelColumns.length > 0;
+  const isLeftSidebarVisible = useUiPreferencesStore(
+    (s) => s.isLeftSidebarVisible
+  );
+  // When the workspaces sidebar is collapsed on Tauri macOS, the native
+  // traffic lights sit at the top-left of the chat panel — push the
+  // breadcrumb right so the project/session name doesn't slide under them.
+  const breadcrumbNeedsTrafficLightInset =
+    !isLeftSidebarVisible && isTauriMac();
 
   // If the user has no panels open AND the chat is hidden, force the chat
   // back so the cell isn't a blank screen.
@@ -305,7 +315,8 @@ function CellHostInner({
                 when chat is full-width, reserve room for the toolbar. */}
             <div
               className={cn(
-                'absolute top-2 left-5 z-20 overflow-hidden',
+                'absolute top-2 z-20 overflow-hidden',
+                breadcrumbNeedsTrafficLightInset ? 'left-[80px]' : 'left-5',
                 hasPanels ? 'right-0' : 'right-[80px]'
               )}
             >
