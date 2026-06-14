@@ -22,15 +22,18 @@ trap 'rm -rf "$work"' EXIT
 echo "Downloading release assets for ${RELEASE_TAG}..."
 curl -fL "${ASSET_BASE}/cdesktop-${RELEASE_VERSION}-macos-arm64.dmg" -o "$work/arm64.dmg"
 curl -fL "${ASSET_BASE}/cdesktop-${RELEASE_VERSION}-macos-x64.dmg"   -o "$work/x64.dmg"
-curl -fL "${ASSET_BASE}/cdesktop-${RELEASE_VERSION}.tgz"             -o "$work/cli.tgz"
+curl -fL "${ASSET_BASE}/cdesktop-${RELEASE_VERSION}-macos-arm64.tgz" -o "$work/cli-arm64.tgz"
+curl -fL "${ASSET_BASE}/cdesktop-${RELEASE_VERSION}-macos-x64.tgz"   -o "$work/cli-x64.tgz"
 
-SHA_ARM=$(shasum -a 256 "$work/arm64.dmg" | awk '{print $1}')
-SHA_X64=$(shasum -a 256 "$work/x64.dmg"   | awk '{print $1}')
-SHA_TGZ=$(shasum -a 256 "$work/cli.tgz"   | awk '{print $1}')
+SHA_DMG_ARM=$(shasum -a 256 "$work/arm64.dmg"     | awk '{print $1}')
+SHA_DMG_X64=$(shasum -a 256 "$work/x64.dmg"       | awk '{print $1}')
+SHA_CLI_ARM=$(shasum -a 256 "$work/cli-arm64.tgz" | awk '{print $1}')
+SHA_CLI_X64=$(shasum -a 256 "$work/cli-x64.tgz"   | awk '{print $1}')
 
-echo "arm64 dmg sha: $SHA_ARM"
-echo "x64   dmg sha: $SHA_X64"
-echo "cli   tgz sha: $SHA_TGZ"
+echo "arm64 dmg sha: $SHA_DMG_ARM"
+echo "x64   dmg sha: $SHA_DMG_X64"
+echo "arm64 cli sha: $SHA_CLI_ARM"
+echo "x64   cli sha: $SHA_CLI_X64"
 
 git clone --depth 1 \
   "https://x-access-token:${HOMEBREW_TAP_GITHUB_TOKEN}@github.com/${TAP_REPO}.git" \
@@ -44,11 +47,11 @@ cask "cdesktop" do
 
   on_arm do
     url "${ASSET_BASE}/cdesktop-#{version}-macos-arm64.dmg"
-    sha256 "${SHA_ARM}"
+    sha256 "${SHA_DMG_ARM}"
   end
   on_intel do
     url "${ASSET_BASE}/cdesktop-#{version}-macos-x64.dmg"
-    sha256 "${SHA_X64}"
+    sha256 "${SHA_DMG_X64}"
   end
 
   name "cdesktop"
@@ -69,16 +72,27 @@ cat > "$work/tap/Formula/cdesktop.rb" <<RUBY
 class Cdesktop < Formula
   desc "Coding-session desktop CLI"
   homepage "https://github.com/${OWNER_REPO}"
-  url "${ASSET_BASE}/cdesktop-${RELEASE_VERSION}.tgz"
-  sha256 "${SHA_TGZ}"
   license "Apache-2.0"
   version "${RELEASE_VERSION}"
+
+  on_arm do
+    url "${ASSET_BASE}/cdesktop-#{version}-macos-arm64.tgz"
+    sha256 "${SHA_CLI_ARM}"
+  end
+  on_intel do
+    url "${ASSET_BASE}/cdesktop-#{version}-macos-x64.tgz"
+    sha256 "${SHA_CLI_X64}"
+  end
 
   depends_on "node"
 
   def install
     libexec.install Dir["*"]
-    bin.install_symlink libexec/"bin/cli.js" => "cdesktop"
+    (bin/"cdesktop").write <<~EOS
+      #!/bin/bash
+      exec "#{Formula["node"].opt_bin}/node" "#{libexec}/bin/cli.js" "\$@"
+    EOS
+    (bin/"cdesktop").chmod 0755
   end
 
   test do
