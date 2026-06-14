@@ -52,8 +52,6 @@ module.exports = {
       {
         assets: [
           { path: 'release-artifacts/*.dmg', label: 'macOS Disk Image' },
-          { path: 'release-artifacts/*.tgz', label: 'cdesktop npm CLI tarball' },
-          { path: 'release-artifacts/cdesktop-frontend-*.zip', label: 'Frontend bundle' },
         ],
       },
     ],

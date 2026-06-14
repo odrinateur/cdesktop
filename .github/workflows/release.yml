@@ -12,7 +12,6 @@ concurrency:
 
 permissions:
   contents: write
-  packages: write
   pull-requests: write
   id-token: write
 
@@ -20,7 +19,6 @@ env:
   NODE_VERSION: 22
   PNPM_VERSION: 10.13.1
   RUST_TOOLCHAIN: nightly-2025-12-04
-  CARGO_XWIN_VERSION: 0.20.2
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -59,7 +57,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
-          out=$(npx semantic-release --dry-run --no-ci 2>&1 | tee /tmp/sr.log || true)
+          npx semantic-release --dry-run --no-ci 2>&1 | tee /tmp/sr.log || true
           version=$(grep -oE 'next release version is [0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?' /tmp/sr.log \
             | tail -1 | awk '{print $NF}')
           if [ -z "$version" ]; then
@@ -125,298 +123,7 @@ jobs:
           retention-days: 1
 
   # ---------------------------------------------------------------------------
-  # 3. Build native binaries across the platform matrix.
-  # ---------------------------------------------------------------------------
-  build-backend:
-    needs: [decide, build-frontend]
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - target: x86_64-unknown-linux-musl
-            os: ubuntu-24.04
-            name: linux-x64
-          - target: aarch64-unknown-linux-musl
-            os: ubuntu-24.04-arm
-            name: linux-arm64
-          - target: x86_64-pc-windows-msvc
-            os: ubuntu-24.04
-            name: windows-x64
-          - target: x86_64-apple-darwin
-            os: macos-latest
-            name: macos-x64
-          - target: aarch64-apple-darwin
-            os: macos-latest
-            name: macos-arm64
-          - target: aarch64-pc-windows-msvc
-            os: ubuntu-24.04
-            name: windows-arm64
-    env:
-      CARGO_INCREMENTAL: "0"
-      SCCACHE_GHA_ENABLED: "true"
-      RUSTC_WRAPPER: "sccache"
-      SCCACHE_CACHE_SIZE: "10G"
-      CARGO_HOME: ${{ github.workspace }}/.cargo
-      RUSTUP_HOME: ${{ github.workspace }}/.rustup
-      XWIN_CACHE_DIR: ${{ github.workspace }}/.xwin-cache
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Setup sccache
-        uses: BloopAI/sccache-action@main
-
-      - name: Setup Node
-        uses: ./.github/actions/setup-node
-
-      - name: Install cargo-edit
-        uses: taiki-e/cache-cargo-install-action@34ce5120836e5f9f1508d8713d7fdea0e8facd6f # v3.0.1
-        with:
-          tool: cargo-edit
-          git: https://github.com/killercup/cargo-edit
-          rev: 96a3879fe3bafda6d0f943b642997fbf03e235cd # v0.13.9
-
-      - name: Apply version
-        run: node scripts/release/apply-version.js ${{ needs.decide.outputs.version }}
-
-      - name: Cache Rust toolchain
-        uses: actions/cache@v5
-        with:
-          path: .rustup/toolchains
-          key: rust-toolchain-${{ runner.os }}-${{ matrix.target }}-${{ env.RUST_TOOLCHAIN }}
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@631a55b12751854ce901bb631d5902ceb48146f7
-        with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
-          targets: ${{ matrix.target }}
-          components: rustfmt, clippy
-
-      - name: Install dependencies (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          DEBIAN_FRONTEND=noninteractive sudo apt-get install -y clang libclang-dev lld llvm nasm cmake ninja-build
-          if [[ "${{ matrix.target }}" == *"windows"* ]]; then
-            DEBIAN_FRONTEND=noninteractive sudo apt-get install -y clang-19 clang-tools-19 llvm-19 lld-19
-            echo "/usr/lib/llvm-19/bin" >> $GITHUB_PATH
-          fi
-
-      - name: Cache Cargo registry
-        uses: actions/cache@v5
-        with:
-          path: |
-            .cargo/registry/cache
-            .cargo/registry/index
-            .cargo/git/db
-            .cargo/bin
-            .cargo/.crates.toml
-            .cargo/.crates2.json
-          key: cargo-${{ runner.os }}-${{ env.RUST_TOOLCHAIN }}-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            cargo-${{ runner.os }}-${{ env.RUST_TOOLCHAIN }}-${{ matrix.target }}-
-
-      - name: Install Zig
-        if: runner.os == 'Linux' && !contains(matrix.target, 'windows')
-        uses: BloopAI/setup-zig@main
-        with:
-          version: 0.15.2
-
-      - name: Install cargo zigbuild
-        if: runner.os == 'Linux' && !contains(matrix.target, 'windows')
-        uses: taiki-e/cache-cargo-install-action@34ce5120836e5f9f1508d8713d7fdea0e8facd6f # v3.0.1
-        with:
-          tool: cargo-zigbuild
-          git: https://github.com/rust-cross/cargo-zigbuild
-          rev: bbb57ac6a5eb90f53617a5c218fda03080599e4a # v0.20.1
-
-      - name: Install cargo xwin
-        if: runner.os == 'Linux' && contains(matrix.target, 'windows')
-        uses: taiki-e/cache-cargo-install-action@34ce5120836e5f9f1508d8713d7fdea0e8facd6f # v3.0.1
-        with:
-          tool: cargo-xwin
-          git: https://github.com/rust-cross/cargo-xwin
-          rev: 635a9559d49d719e79e0f60d92eb44447faf3212 # v0.20.2
-
-      - name: Cache xwin downloads
-        if: runner.os == 'Linux' && contains(matrix.target, 'windows')
-        uses: actions/cache@v5
-        with:
-          path: ${{ github.workspace }}/.xwin-cache
-          key: xwin-${{ runner.os }}-${{ matrix.target }}-cargo-xwin-${{ env.CARGO_XWIN_VERSION }}
-
-      - name: Cache target
-        uses: actions/cache@v5
-        with:
-          path: target
-          key: target-${{ runner.os }}-${{ env.RUST_TOOLCHAIN }}-${{ matrix.target }}-${{ github.ref_name }}-${{ github.sha }}
-          restore-keys: |
-            target-${{ runner.os }}-${{ env.RUST_TOOLCHAIN }}-${{ matrix.target }}-${{ github.ref_name }}-
-            target-${{ runner.os }}-${{ env.RUST_TOOLCHAIN }}-${{ matrix.target }}-
-
-      - name: Setup cargo-sweep
-        uses: taiki-e/cache-cargo-install-action@34ce5120836e5f9f1508d8713d7fdea0e8facd6f # v3.0.1
-        with:
-          tool: cargo-sweep
-          git: https://github.com/holmgr/cargo-sweep
-          rev: 82f42d3593923db6fe715b299036512d91ddb35e # v0.8.0
-
-      - name: Download frontend artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: frontend-dist
-          path: packages/local-web/dist/
-
-      - name: Build backend (Linux)
-        if: runner.os == 'Linux' && !contains(matrix.target, 'windows')
-        run: |
-          cargo zigbuild --release --target ${{ matrix.target }} -p server -p mcp -p review --bin server --bin cdesktop-mcp --bin review
-        env:
-          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
-          POSTHOG_API_ENDPOINT: ${{ secrets.POSTHOG_API_ENDPOINT }}
-          CDT_SHARED_API_BASE: ${{ secrets.CDT_SHARED_API_BASE }}
-          CDT_SHARED_RELAY_API_BASE: ${{ secrets.CDT_SHARED_RELAY_API_BASE }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-
-      - name: Build backend (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          if [[ "${{ matrix.target }}" == "x86_64-apple-darwin" ]]; then
-            export MACOSX_DEPLOYMENT_TARGET=10.12
-          elif [[ "${{ matrix.target }}" == "aarch64-apple-darwin" ]]; then
-            export MACOSX_DEPLOYMENT_TARGET=11.0
-          fi
-          cargo build --release --target ${{ matrix.target }} -p server -p mcp -p review --bin server --bin cdesktop-mcp --bin review
-        env:
-          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
-          POSTHOG_API_ENDPOINT: ${{ secrets.POSTHOG_API_ENDPOINT }}
-          CDT_SHARED_API_BASE: ${{ secrets.CDT_SHARED_API_BASE }}
-          CDT_SHARED_RELAY_API_BASE: ${{ secrets.CDT_SHARED_RELAY_API_BASE }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-
-      - name: Build backend (Windows)
-        if: runner.os == 'Linux' && contains(matrix.target, 'windows')
-        run: |
-          if [[ "${{ matrix.target }}" == "aarch64-pc-windows-msvc" ]]; then
-            chmod +x scripts/ring-cc-wrapper.sh scripts/clang
-            export PATH="${{ github.workspace }}/scripts:$PATH"
-            export RING_CC=/usr/lib/llvm-19/bin/clang
-            export DEFAULT_CC=clang-cl
-            export CC_aarch64_pc_windows_msvc="${{ github.workspace }}/scripts/ring-cc-wrapper.sh"
-          fi
-          cargo xwin build --cross-compiler clang-cl --release --target ${{ matrix.target }} -p server -p mcp -p review --bin server --bin cdesktop-mcp --bin review
-        env:
-          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
-          POSTHOG_API_ENDPOINT: ${{ secrets.POSTHOG_API_ENDPOINT }}
-          CDT_SHARED_API_BASE: ${{ secrets.CDT_SHARED_API_BASE }}
-          CDT_SHARED_RELAY_API_BASE: ${{ secrets.CDT_SHARED_RELAY_API_BASE }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          CARGO_PROFILE_RELEASE_DEBUG: 0
-
-      - name: Prepare binaries
-        shell: bash
-        run: |
-          mkdir -p dist
-          if [[ "${{ matrix.name }}" == *"windows"* ]]; then
-            cp target/${{ matrix.target }}/release/server.exe dist/cdesktop-${{ matrix.name }}.exe
-            cp target/${{ matrix.target }}/release/cdesktop-mcp.exe dist/cdesktop-mcp-${{ matrix.name }}.exe
-            cp target/${{ matrix.target }}/release/review.exe dist/cdesktop-review-${{ matrix.name }}.exe
-          else
-            cp target/${{ matrix.target }}/release/server dist/cdesktop-${{ matrix.name }}
-            cp target/${{ matrix.target }}/release/cdesktop-mcp dist/cdesktop-mcp-${{ matrix.name }}
-            cp target/${{ matrix.target }}/release/review dist/cdesktop-review-${{ matrix.name }}
-          fi
-
-      - name: Upload binary artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: backend-binary-${{ matrix.name }}
-          path: dist/
-          retention-days: 1
-
-      - name: Sweep Cargo target cache
-        shell: bash
-        run: |
-          cargo sweep --maxsize 10GB
-          cargo sweep --time 30
-
-  # ---------------------------------------------------------------------------
-  # 4. Package the cross-platform npx CLI tarball.
-  # ---------------------------------------------------------------------------
-  package-npx-cli:
-    needs: [decide, build-frontend, build-backend]
-    runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        include:
-          - target: x86_64-unknown-linux-musl
-            name: linux-x64
-            binary: cdesktop
-            mcp_binary: cdesktop-mcp
-            review_binary: cdesktop-review
-          - target: x86_64-pc-windows-msvc
-            name: windows-x64
-            binary: cdesktop.exe
-            mcp_binary: cdesktop-mcp.exe
-            review_binary: cdesktop-review.exe
-          - target: x86_64-apple-darwin
-            name: macos-x64
-            binary: cdesktop
-            mcp_binary: cdesktop-mcp
-            review_binary: cdesktop-review
-          - target: aarch64-apple-darwin
-            name: macos-arm64
-            binary: cdesktop
-            mcp_binary: cdesktop-mcp
-            review_binary: cdesktop-review
-          - target: aarch64-pc-windows-msvc
-            name: windows-arm64
-            binary: cdesktop.exe
-            mcp_binary: cdesktop-mcp.exe
-            review_binary: cdesktop-review.exe
-          - target: aarch64-unknown-linux-musl
-            name: linux-arm64
-            binary: cdesktop
-            mcp_binary: cdesktop-mcp
-            review_binary: cdesktop-review
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Download frontend artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: frontend-dist
-          path: packages/local-web/dist/
-
-      - name: Download backend binary artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: backend-binary-${{ matrix.name }}
-          path: dist/
-
-      - name: Create platform package
-        run: |
-          mkdir -p npx-cli/dist/${{ matrix.name }}
-          mkdir cdesktop-${{ matrix.name }} cdesktop-mcp-${{ matrix.name }} cdesktop-review-${{ matrix.name }}
-          cp dist/cdesktop-${{ matrix.name }}* cdesktop-${{ matrix.name }}/${{ matrix.binary }}
-          cp dist/cdesktop-mcp-${{ matrix.name }}* cdesktop-mcp-${{ matrix.name }}/${{ matrix.mcp_binary }}
-          cp dist/cdesktop-review-${{ matrix.name }}* cdesktop-review-${{ matrix.name }}/${{ matrix.review_binary }}
-          zip -j npx-cli/dist/${{ matrix.name }}/cdesktop.zip cdesktop-${{ matrix.name }}/${{ matrix.binary }}
-          zip -j npx-cli/dist/${{ matrix.name }}/cdesktop-mcp.zip cdesktop-mcp-${{ matrix.name }}/${{ matrix.mcp_binary }}
-          zip -j npx-cli/dist/${{ matrix.name }}/cdesktop-review.zip cdesktop-review-${{ matrix.name }}/${{ matrix.review_binary }}
-
-      - name: Upload platform package artifact
-        uses: actions/upload-artifact@v6
-        with:
-          name: npx-platform-${{ matrix.name }}
-          path: npx-cli/dist/
-          retention-days: 1
-
-  # ---------------------------------------------------------------------------
-  # 5. Build the macOS desktop app as a signed .dmg via tauri-action.
+  # 3. Build the macOS desktop app as a .dmg (arm64 + x64).
   # ---------------------------------------------------------------------------
   build-tauri:
     needs: [decide, build-frontend]
@@ -427,8 +134,12 @@ jobs:
         include:
           - tauri-target: aarch64-apple-darwin
             name: macos-arm64
+            deployment-target: "11.0"
           - tauri-target: x86_64-apple-darwin
             name: macos-x64
+            deployment-target: "10.13"
+    env:
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.deployment-target }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -453,6 +164,22 @@ jobs:
           toolchain: ${{ env.RUST_TOOLCHAIN }}
           targets: ${{ matrix.tauri-target }}
 
+      - name: Cache Cargo registry
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: cargo-${{ runner.os }}-${{ matrix.tauri-target }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache target
+        uses: actions/cache@v5
+        with:
+          path: target
+          key: target-${{ runner.os }}-${{ matrix.tauri-target }}-${{ github.sha }}
+          restore-keys: |
+            target-${{ runner.os }}-${{ matrix.tauri-target }}-
+
       - name: Download frontend artifact
         uses: actions/download-artifact@v7
         with:
@@ -465,7 +192,11 @@ jobs:
       - name: Build Tauri app
         run: cd crates/tauri-app && cargo tauri build --target ${{ matrix.tauri-target }} --bundles dmg
         env:
-          MACOSX_DEPLOYMENT_TARGET: 11.0
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+          POSTHOG_API_ENDPOINT: ${{ secrets.POSTHOG_API_ENDPOINT }}
+          CDT_SHARED_API_BASE: ${{ secrets.CDT_SHARED_API_BASE }}
+          CDT_SHARED_RELAY_API_BASE: ${{ secrets.CDT_SHARED_RELAY_API_BASE }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 
       - name: Collect DMG
         run: |
@@ -481,11 +212,10 @@ jobs:
           retention-days: 1
 
   # ---------------------------------------------------------------------------
-  # 6. Tag, publish GitHub release, commit version bumps. semantic-release does
-  #    all of it — we only have to feed it the freshly built assets.
+  # 4. Tag, publish GitHub release, commit version bumps.
   # ---------------------------------------------------------------------------
   release:
-    needs: [decide, build-frontend, build-backend, package-npx-cli, build-tauri]
+    needs: [decide, build-tauri]
     runs-on: ubuntu-24.04
     outputs:
       version: ${{ needs.decide.outputs.version }}
@@ -509,38 +239,12 @@ jobs:
       - name: Install deps
         run: pnpm install
 
-      - name: Download frontend
-        uses: actions/download-artifact@v7
-        with:
-          name: frontend-dist
-          path: packages/local-web/dist/
-
-      - name: Download all npx platform packages
-        uses: actions/download-artifact@v7
-        with:
-          pattern: npx-platform-*
-          path: npx-cli/dist/
-          merge-multiple: true
-
       - name: Download all Tauri DMGs
         uses: actions/download-artifact@v7
         with:
           pattern: tauri-dmg-*
           path: release-artifacts/
           merge-multiple: true
-
-      - name: Build npx-cli tarball
-        run: |
-          cd npx-cli
-          npm ci
-          npm run build
-          npm pack
-          mkdir -p ../release-artifacts
-          cp cdesktop-*.tgz ../release-artifacts/
-
-      - name: Zip frontend bundle
-        run: |
-          (cd packages/local-web && zip -r ../../release-artifacts/cdesktop-frontend-${{ needs.decide.outputs.version }}.zip dist)
 
       - name: List release artifacts
         run: ls -la release-artifacts/
@@ -555,7 +259,7 @@ jobs:
         run: npx semantic-release
 
   # ---------------------------------------------------------------------------
-  # 7. Update the Homebrew tap with the freshly published cask + formula.
+  # 5. Update the Homebrew tap with the freshly published cask.
   # ---------------------------------------------------------------------------
   update-homebrew-tap:
     needs: release
