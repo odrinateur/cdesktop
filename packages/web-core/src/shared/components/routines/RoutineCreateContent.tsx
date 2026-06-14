@@ -11,7 +11,13 @@ import { RoutineForm, type RoutineFormValues } from './RoutineForm';
  */
 export function RoutineCreateContent() {
   const { t } = useTranslation('common');
-  const navigate = useNavigate();
+  // Cast: this component is shared across local-web and remote-web, but the
+  // /routines routes only exist on local-web. The runtime checks the active
+  // router, so casting away the strict route literal is safe here.
+  const navigate = useNavigate() as (opts: {
+    to: string;
+    params?: Record<string, string>;
+  }) => void;
   const queryClient = useQueryClient();
 
   const createMutation = useMutation<Routine, Error, CreateRoutine>({

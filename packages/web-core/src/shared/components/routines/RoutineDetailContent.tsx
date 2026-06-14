@@ -71,7 +71,12 @@ interface RoutineDetailContentProps {
  */
 export function RoutineDetailContent({ routineId }: RoutineDetailContentProps) {
   const { t } = useTranslation('common');
-  const navigate = useNavigate();
+  // Shared across local-web and remote-web; /routines + /workspaces/$workspaceId
+  // routes only exist on local-web. The runtime resolves against the active router.
+  const navigate = useNavigate() as (opts: {
+    to: string;
+    params?: Record<string, string>;
+  }) => void;
   const queryClient = useQueryClient();
   const [isEditOpen, setIsEditOpen] = useState(false);
 
