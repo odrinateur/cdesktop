@@ -12,6 +12,7 @@ import { useIssueShortcuts } from '@/shared/keyboard/useIssueShortcuts';
 import {
   useKeyShowHelp,
   useKeyToggleLeftSidebar,
+  useKeyToggleRightSidebar,
   useKeyNewFromCurrent,
   Scope,
 } from '@/shared/keyboard';
@@ -52,6 +53,11 @@ function KeyboardShortcutsHandler() {
 
   useKeyToggleLeftSidebar(() => {
     useUiPreferencesStore.getState().toggleLeftSidebar();
+  }, globalHotkeyOptions);
+
+  useKeyToggleRightSidebar(() => {
+    if (!workspaceId) return;
+    useUiPreferencesStore.getState().toggleRightPanelArea(workspaceId);
   }, globalHotkeyOptions);
 
   // Cmd/Ctrl+, must match the comma CHARACTER, not the US-QWERTY physical
