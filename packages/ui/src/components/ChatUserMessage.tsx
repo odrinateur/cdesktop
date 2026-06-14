@@ -52,14 +52,14 @@ export function ChatUserMessage({
   return (
     <div
       className={cn(
-        'group/user-msg flex flex-col items-start gap-half',
+        'group/user-msg flex flex-col items-end gap-half',
         isGreyed && 'opacity-50 pointer-events-none',
         className
       )}
     >
       <div
         className={cn(
-          'max-w-[75%] rounded-xl rounded-bl-sm px-double py-base text-left',
+          'max-w-[75%] rounded-xl rounded-br-sm px-double py-base text-left',
           'bg-accent-blue text-accent-blue-foreground'
         )}
       >
