@@ -51,7 +51,7 @@ import {
 // workdir or runtime state. Mirror Claude's list here so the picker
 // renders synchronously instead of waiting on the discovery WebSocket.
 // If the Rust list changes, update this too.
-const CLAUDE_PERMISSIONS: PermissionPolicy[] = [
+export const CLAUDE_PERMISSIONS: PermissionPolicy[] = [
   PermissionPolicy.SUPERVISED,
   PermissionPolicy.ACCEPT_EDITS,
   PermissionPolicy.PLAN,
