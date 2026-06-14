@@ -648,41 +648,16 @@ impl StandardCodingAgentExecutor for CursorAgent {
         _workdir: Option<&std::path::Path>,
         _repo_path: Option<&std::path::Path>,
     ) -> Result<futures::stream::BoxStream<'static, json_patch::Patch>, ExecutorError> {
-        let models: Vec<ModelInfo> = [
-            ("auto", "Auto"),
-            ("gpt-5.4", "GPT-5.4"),
-            ("gpt-5.4-fast", "GPT-5.4 Fast"),
-            ("gemini-3.1-pro", "Gemini 3.1 Pro"),
-            ("opus-4.6", "Claude 4.6 Opus"),
-            ("sonnet-4.6", "Claude 4.6 Sonnet"),
-            ("gpt-5.3-codex", "GPT-5.3 Codex"),
-            ("gpt-5.3-codex-fast", "GPT-5.3 Codex Fast"),
-            ("gpt-5.3-codex-spark-preview", "GPT-5.3 Codex Spark"),
-            ("kimi-k2.5", "Kimi K2.5"),
-            ("opus-4.5", "Claude 4.5 Opus"),
-            ("sonnet-4.5", "Claude 4.5 Sonnet"),
-            ("gemini-3-pro", "Gemini 3 Pro"),
-            ("gemini-3-flash", "Gemini 3 Flash"),
-            ("gpt-5.2-codex", "GPT-5.2 Codex"),
-            ("gpt-5.2-codex-fast", "GPT-5.2 Codex Fast"),
-            ("gpt-5.2", "GPT-5.2"),
-            ("gpt-5.1-codex-max", "GPT-5.1 Codex Max"),
-            ("gpt-5.1", "GPT-5.1"),
-            ("gpt-5.1-codex-mini", "GPT-5.1 Codex Mini"),
-            ("grok", "Grok"),
-            ("composer-1", "Composer 1"),
-            ("composer-1.5", "Composer 1.5"),
-            ("composer-2", "Composer 2"),
-            ("composer-2-fast", "Composer 2 Fast"),
-        ]
-        .into_iter()
-        .map(|(id, name)| ModelInfo {
-            id: id.to_string(),
-            name: name.to_string(),
-            provider_id: None,
-            reasoning_options: cursor_reasoning_options(id),
-        })
-        .collect();
+        let models: Vec<ModelInfo> = match list_cursor_models_dynamic().await {
+            Ok(models) if !models.is_empty() => models,
+            Ok(_) => fallback_cursor_models(),
+            Err(err) => {
+                tracing::warn!(
+                    "Failed to query `cursor-agent --list-models`, using fallback list: {err}"
+                );
+                fallback_cursor_models()
+            }
+        };
 
         let options = ExecutorDiscoveredOptions {
             model_selector: ModelSelectorConfig {
@@ -696,6 +671,213 @@ impl StandardCodingAgentExecutor for CursorAgent {
         })))
     }
 }
+
+async fn list_cursor_models_dynamic() -> std::io::Result<Vec<ModelInfo>> {
+    let executable_path = resolve_executable_path_blocking(CursorAgent::base_command())
+        .ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "cursor-agent executable not found in PATH",
+            )
+        })?;
+
+    let output = Command::new(executable_path)
+        .arg("--list-models")
+        .output()
+        .await?;
+
+    if !output.status.success() {
+        return Err(std::io::Error::other(format!(
+            "cursor-agent --list-models exited with status {}: {}",
+            output.status,
+            String::from_utf8_lossy(&output.stderr)
+        )));
+    }
+
+    Ok(parse_cursor_model_list(&String::from_utf8_lossy(
+        &output.stdout,
+    )))
+}
+
+const REASONING_SUFFIXES: &[&str] = &[
+    "thinking-low",
+    "thinking-medium",
+    "thinking-high",
+    "thinking-xhigh",
+    "thinking-max",
+    "thinking",
+    "standard",
+    "low",
+    "medium",
+    "high",
+    "xhigh",
+    "max",
+];
+
+const REASONING_LABEL_SUFFIXES: &[&str] = &[
+    " Low Thinking",
+    " Medium Thinking",
+    " High Thinking",
+    " Extra High Thinking",
+    " Max Thinking",
+    " Thinking",
+    " Standard",
+    " Low",
+    " Medium",
+    " High",
+    " Extra High",
+    " Max",
+];
+
+fn split_cursor_model_id(id: &str) -> (String, Option<String>) {
+    let (core, fast_suffix) = match id.strip_suffix("-fast") {
+        Some(stripped) => (stripped, "-fast"),
+        None => (id, ""),
+    };
+
+    for token in REASONING_SUFFIXES {
+        let needle = format!("-{token}");
+        if let Some(base) = core.strip_suffix(&needle) {
+            if !base.is_empty() {
+                return (format!("{base}{fast_suffix}"), Some((*token).to_string()));
+            }
+        }
+    }
+    (format!("{core}{fast_suffix}"), None)
+}
+
+fn strip_reasoning_from_label(label: &str) -> String {
+    let mut trimmed = label;
+    let fast_stripped = trimmed.strip_suffix(" Fast");
+    if let Some(s) = fast_stripped {
+        trimmed = s;
+    }
+    for suffix in REASONING_LABEL_SUFFIXES {
+        if let Some(base) = trimmed.strip_suffix(suffix) {
+            trimmed = base;
+            break;
+        }
+    }
+    let mut result = trimmed.trim().to_string();
+    if fast_stripped.is_some() {
+        result.push_str(" Fast");
+    }
+    result
+}
+
+fn parse_cursor_model_list(raw: &str) -> Vec<ModelInfo> {
+    struct Entry {
+        base_id: String,
+        base_label: String,
+        label_from_base: bool,
+        reasoning_ids: Vec<String>,
+    }
+    let mut entries: Vec<Entry> = Vec::new();
+
+    for line in raw.lines() {
+        let line = line.trim();
+        if line.is_empty() {
+            continue;
+        }
+        let Some((id, label)) = line.split_once(" - ") else {
+            continue;
+        };
+        let id = id.trim();
+        let label = label.trim();
+        if id.is_empty() || label.is_empty() {
+            continue;
+        }
+        // Drop trailing parenthetical hints like "(current)", "(default)", "(NO ZDR)".
+        let clean_label = label.split('(').next().unwrap_or(label).trim();
+
+        let (base_id, reasoning_id) = split_cursor_model_id(id);
+        let derived_label = if reasoning_id.is_some() {
+            strip_reasoning_from_label(clean_label)
+        } else {
+            clean_label.to_string()
+        };
+
+        match entries.iter_mut().find(|e| e.base_id == base_id) {
+            Some(existing) => {
+                if let Some(r) = reasoning_id.clone()
+                    && !existing.reasoning_ids.contains(&r)
+                {
+                    existing.reasoning_ids.push(r);
+                }
+                if reasoning_id.is_none() && !existing.label_from_base {
+                    existing.base_label = derived_label;
+                    existing.label_from_base = true;
+                }
+            }
+            None => {
+                entries.push(Entry {
+                    base_id,
+                    base_label: derived_label,
+                    label_from_base: reasoning_id.is_none(),
+                    reasoning_ids: reasoning_id.into_iter().collect(),
+                });
+            }
+        }
+    }
+
+    entries
+        .into_iter()
+        .map(|e| {
+            let reasoning_options = if e.reasoning_ids.is_empty() {
+                cursor_reasoning_options(&e.base_id)
+            } else {
+                ReasoningOption::from_names(e.reasoning_ids)
+            };
+            ModelInfo {
+                id: e.base_id,
+                name: e.base_label,
+                provider_id: None,
+                reasoning_options,
+            }
+        })
+        .collect()
+}
+
+fn fallback_cursor_models() -> Vec<ModelInfo> {
+    [
+        ("auto", "Auto"),
+        ("gpt-5.4", "GPT-5.4"),
+        ("gpt-5.4-fast", "GPT-5.4 Fast"),
+        ("gemini-3.1-pro", "Gemini 3.1 Pro"),
+        ("opus-4.6", "Claude 4.6 Opus"),
+        ("sonnet-4.6", "Claude 4.6 Sonnet"),
+        ("gpt-5.3-codex", "GPT-5.3 Codex"),
+        ("gpt-5.3-codex-fast", "GPT-5.3 Codex Fast"),
+        ("gpt-5.3-codex-spark-preview", "GPT-5.3 Codex Spark"),
+        ("kimi-k2.5", "Kimi K2.5"),
+        ("opus-4.5", "Claude 4.5 Opus"),
+        ("sonnet-4.5", "Claude 4.5 Sonnet"),
+        ("gemini-3-pro", "Gemini 3 Pro"),
+        ("gemini-3-flash", "Gemini 3 Flash"),
+        ("gpt-5.2-codex", "GPT-5.2 Codex"),
+        ("gpt-5.2-codex-fast", "GPT-5.2 Codex Fast"),
+        ("gpt-5.2", "GPT-5.2"),
+        ("gpt-5.1-codex-max", "GPT-5.1 Codex Max"),
+        ("gpt-5.1", "GPT-5.1"),
+        ("gpt-5.1-codex-mini", "GPT-5.1 Codex Mini"),
+        ("grok", "Grok"),
+        ("composer-1", "Composer 1"),
+        ("composer-1.5", "Composer 1.5"),
+        ("composer-2", "Composer 2"),
+        ("composer-2-fast", "Composer 2 Fast"),
+        ("composer-2.5", "Composer 2.5"),
+        ("composer-2.5-fast", "Composer 2.5 Fast"),
+    ]
+    .into_iter()
+    .map(|(id, name)| ModelInfo {
+        id: id.to_string(),
+        name: name.to_string(),
+        provider_id: None,
+        reasoning_options: cursor_reasoning_options(id),
+    })
+    .collect()
+}
+
 /* ===========================
 Typed Cursor JSON structures
 =========================== */
