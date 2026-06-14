@@ -54,6 +54,13 @@ module.exports = {
           { path: 'release-artifacts/*.dmg', label: 'macOS Disk Image' },
           { path: 'release-artifacts/*.tgz', label: 'cdesktop CLI (self-contained)' },
         ],
+        // Commits cherry-picked from upstream cdesktop-ai/cdesktop reference
+        // PRs that don't exist on this fork. The 'success' step would 404 when
+        // trying to comment on them. Disable all post-release commenting.
+        successComment: false,
+        failComment: false,
+        failTitle: false,
+        releasedLabels: false,
       },
     ],
   ],

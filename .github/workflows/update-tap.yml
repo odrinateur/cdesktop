@@ -1,0 +1,33 @@
+name: Update Homebrew Tap
+
+# Manual hook to (re)push a cdesktop cask to the Homebrew tap for an already-
+# published GitHub release. Useful when the main release workflow finished the
+# publish step but its `update-homebrew-tap` job was skipped (e.g. because a
+# downstream step in the release job failed).
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Released version (without leading 'v'), e.g. 1.0.0"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  update-tap:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Update tap
+        env:
+          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+          RELEASE_TAG: v${{ inputs.version }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          TAP_REPO: odrinateur/homebrew-tap
+        run: bash scripts/release/update_homebrew_tap.sh
