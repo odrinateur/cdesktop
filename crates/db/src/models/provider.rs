@@ -316,6 +316,7 @@ impl Provider {
     /// otherwise the spawn applier silently falls through to the user's
     /// ambient config (defeating the point of cdesktop-managed routing).
     /// The Default provider is exempt: it carries no per-agent payloads.
+    #[allow(clippy::too_many_arguments)]
     fn validate_enabled_agent_payloads(
         kind: &AiProviderKind,
         per_agent_enabled: &HashMap<String, bool>,
@@ -330,7 +331,7 @@ impl Provider {
             return Ok(());
         }
         let is_on = |k: &str| per_agent_enabled.get(k).copied().unwrap_or(false);
-        let has = |s: &Option<String>| s.as_deref().map_or(false, |v| !v.is_empty());
+        let has = |s: &Option<String>| s.as_deref().is_some_and(|v| !v.is_empty());
         let missing = |agent: &str, ok: bool| {
             if ok {
                 Ok(())
@@ -644,6 +645,7 @@ impl Provider {
     /// `record.codex.env` is overlaid first so the `CDT_API_KEY` we set
     /// last cannot be silently clobbered by a vendor-quirk env entry.
     /// Returns `Ok(None)` for the Default provider (ambient auth path).
+    #[allow(clippy::type_complexity)]
     pub fn build_codex_injection(
         &self,
     ) -> Result<Option<(HashMap<String, String>, CodexProviderInjection)>, ProviderError> {
@@ -1064,6 +1066,7 @@ mod codex_injection_tests {
             claude: ClaudePayload::default(),
             codex: CodexPayload {
                 base_url: base_url.map(|s| s.to_string()),
+                api_key: None,
                 env: codex_env,
             },
             opencode: OpencodePayload::default(),
@@ -1196,6 +1199,7 @@ mod opencode_injection_tests {
 
     use super::*;
 
+    #[allow(clippy::too_many_arguments)]
     fn provider_with_opencode(
         kind: AiProviderKind,
         api_key: Option<&str>,

@@ -32,6 +32,7 @@ pub struct RunNowResponse {
     pub skip_reason: Option<String>,
 }
 
+#[allow(clippy::result_large_err)]
 fn validate_executor_config(cfg: &ExecutorConfig) -> Result<(), ApiError> {
     // model_id is optional — null means "use the agent's ambient default
     // model" (the AGENT_DEFAULT sentinel from the picker). When set, it
@@ -44,6 +45,7 @@ fn validate_executor_config(cfg: &ExecutorConfig) -> Result<(), ApiError> {
     Ok(())
 }
 
+#[allow(clippy::result_large_err)]
 fn validate_schedule(
     kind: ScheduleKind,
     time: Option<&str>,
