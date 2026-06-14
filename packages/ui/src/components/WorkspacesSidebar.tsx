@@ -6,6 +6,7 @@ import {
   SpinnerIcon,
   CaretDownIcon,
   LightningIcon,
+  ArchiveIcon,
 } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/cn';
@@ -127,6 +128,8 @@ export interface WorkspacesSidebarProps {
   onOpenWorkspaceActions?: (workspaceId: string) => void;
   /** Callback for archiving / unarchiving a workspace from the hover action. */
   onArchiveWorkspace?: (workspaceId: string) => void;
+  /** Callback for archiving an entire folder (cascades to all sessions). */
+  onArchiveFolder?: (repoId: string) => void;
   /** Persist keys for collapsible sections */
   persistKeys?: WorkspacesSidebarPersistKeys;
   activeRemoteHost?: {
@@ -264,31 +267,37 @@ function FolderGroup({
   onSelectWorkspace,
   onOpenWorkspaceActions,
   onArchiveWorkspace,
+  onArchiveFolder,
   getWorkspaceDragProps,
   openInGridWorkspaceIds,
   onCreateInFolder,
+  collapsedByDefault = false,
+  showArchive = false,
 }: {
   group: WorkspacesSidebarFolderGroup;
   selectedWorkspaceId: string | null;
   onSelectWorkspace: (id: string) => void;
   onOpenWorkspaceActions: (workspaceId: string) => void;
   onArchiveWorkspace?: (workspaceId: string) => void;
+  onArchiveFolder?: (repoId: string) => void;
   getWorkspaceDragProps?: WorkspacesSidebarProps['getWorkspaceDragProps'];
   openInGridWorkspaceIds?: ReadonlySet<string>;
   onCreateInFolder?: (repoId: string) => void;
+  collapsedByDefault?: boolean;
+  showArchive?: boolean;
 }) {
   const { t } = useTranslation('common');
   const [expanded, setExpandedState] = useState(() =>
-    readFolderExpanded(group.repoId)
+    collapsedByDefault ? false : readFolderExpanded(group.repoId)
   );
 
   const toggle = useCallback(() => {
     setExpandedState((prev) => {
       const next = !prev;
-      writeFolderExpanded(group.repoId, next);
+      if (!showArchive) writeFolderExpanded(group.repoId, next);
       return next;
     });
-  }, [group.repoId]);
+  }, [group.repoId, showArchive]);
 
   return (
     <div className="flex flex-col">
@@ -307,22 +316,38 @@ function FolderGroup({
             weight="bold"
           />
         </button>
-        {onCreateInFolder && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onCreateInFolder(group.repoId);
-            }}
-            aria-label={t('sidebar.newSessionInFolder', {
-              defaultValue: 'New session in {{folder}}',
-              folder: group.displayName,
-            })}
-            className="ml-auto shrink-0 pl-base opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <PlusIcon className="size-icon-xs" weight="bold" />
-          </button>
-        )}
+        <div className="ml-auto flex items-center gap-half shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+          {onArchiveFolder && !showArchive && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onArchiveFolder(group.repoId);
+              }}
+              aria-label={t('workspaces.archive', { defaultValue: 'Archive' })}
+              title={t('workspaces.archive', { defaultValue: 'Archive' })}
+              className="pl-base"
+            >
+              <ArchiveIcon className="size-icon-xs" weight="regular" />
+            </button>
+          )}
+          {onCreateInFolder && !showArchive && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onCreateInFolder(group.repoId);
+              }}
+              aria-label={t('sidebar.newSessionInFolder', {
+                defaultValue: 'New session in {{folder}}',
+                folder: group.displayName,
+              })}
+              className="pl-base"
+            >
+              <PlusIcon className="size-icon-xs" weight="bold" />
+            </button>
+          )}
+        </div>
       </div>
       {expanded && (
         <div className="flex flex-col gap-[2px]">
@@ -623,6 +648,7 @@ export function WorkspacesSidebar({
   hasMoreWorkspaces = false,
   onOpenWorkspaceActions,
   onArchiveWorkspace,
+  onArchiveFolder,
   persistKeys = DEFAULT_PERSIST_KEYS,
   activeRemoteHost = null,
   onOpenRemoteHostSettings,
@@ -676,6 +702,27 @@ export function WorkspacesSidebar({
         ),
       };
     }, [workspaces]);
+
+  const archivedFolderGroups = useMemo<WorkspacesSidebarFolderGroup[]>(() => {
+    const buckets = new Map<string, WorkspacesSidebarFolderGroup>();
+    const ORPHAN_KEY = '__no_repo__';
+    for (const ws of archivedWorkspaces) {
+      const repoId = ws.primaryRepo?.id ?? ORPHAN_KEY;
+      const displayName =
+        ws.primaryRepo?.displayName ||
+        ws.primaryRepo?.name ||
+        t('common:workspaces.noRepo', { defaultValue: 'Other' });
+      const existing = buckets.get(repoId);
+      if (existing) {
+        existing.sessions.push(ws);
+      } else {
+        buckets.set(repoId, { repoId, displayName, sessions: [ws] });
+      }
+    }
+    return Array.from(buckets.values()).sort((a, b) =>
+      a.displayName.localeCompare(b.displayName)
+    );
+  }, [archivedWorkspaces, t]);
 
   const headerActions: SectionAction[] = enableAccordionGrouping
     ? [
@@ -791,38 +838,26 @@ export function WorkspacesSidebar({
             </div>
           </div>
         ) : showArchive ? (
-          /* Archived workspaces view */
+          /* Archived workspaces view — grouped by repo */
           <div className="flex flex-col gap-base">
             <span className="text-sm font-medium text-low px-base">
               {t('common:workspaces.archived')}
             </span>
-            {archivedWorkspaces.length === 0 ? (
+            {archivedFolderGroups.length === 0 ? (
               <span className="text-sm text-low opacity-60 px-base">
                 {t('common:workspaces.noArchived')}
               </span>
             ) : (
-              archivedWorkspaces.map((workspace) => (
-                <WorkspaceSummary
-                  summary
-                  key={workspace.id}
-                  name={workspace.name}
-                  workspaceId={workspace.id}
-                  filesChanged={workspace.filesChanged}
-                  linesAdded={workspace.linesAdded}
-                  linesRemoved={workspace.linesRemoved}
-                  isActive={selectedWorkspaceId === workspace.id}
-                  isOpenInGrid={openInGridWorkspaceIds?.has(workspace.id)}
-                  isRunning={workspace.isRunning}
-                  isPinned={workspace.isPinned}
-                  hasPendingApproval={workspace.hasPendingApproval}
-                  hasRunningDevServer={workspace.hasRunningDevServer}
-                  hasUnseenActivity={workspace.hasUnseenActivity}
-                  latestProcessCompletedAt={workspace.latestProcessCompletedAt}
-                  latestProcessStatus={workspace.latestProcessStatus}
-                  prStatus={workspace.prStatus}
+              archivedFolderGroups.map((group) => (
+                <FolderGroup
+                  key={group.repoId}
+                  group={group}
+                  selectedWorkspaceId={selectedWorkspaceId}
+                  onSelectWorkspace={onSelectWorkspace}
                   onOpenWorkspaceActions={handleOpenWorkspaceActions}
-                  onClick={() => onSelectWorkspace(workspace.id)}
-                  {...getWorkspaceDragProps?.(workspace.id)}
+                  getWorkspaceDragProps={getWorkspaceDragProps}
+                  openInGridWorkspaceIds={openInGridWorkspaceIds}
+                  showArchive
                 />
               ))
             )}
@@ -986,6 +1021,7 @@ export function WorkspacesSidebar({
                 onSelectWorkspace={onSelectWorkspace}
                 onOpenWorkspaceActions={handleOpenWorkspaceActions}
                 onArchiveWorkspace={onArchiveWorkspace}
+                onArchiveFolder={onArchiveFolder}
                 getWorkspaceDragProps={getWorkspaceDragProps}
                 openInGridWorkspaceIds={openInGridWorkspaceIds}
                 onCreateInFolder={onCreateInFolder}
