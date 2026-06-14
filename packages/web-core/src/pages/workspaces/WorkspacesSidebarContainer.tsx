@@ -726,6 +726,30 @@ export function WorkspacesSidebarContainer({
     [queryClient]
   );
 
+  const handleArchiveFolder = useCallback(
+    async (repoId: string) => {
+      const targets = activeWorkspaces.filter(
+        (ws) => ws.primaryRepo?.id === repoId && !ws.isArchived
+      );
+      if (targets.length === 0) return;
+      try {
+        await Promise.all(
+          targets.map((ws) => workspacesApi.update(ws.id, { archived: true }))
+        );
+      } catch (err) {
+        console.warn('Archive folder failed', err);
+      } finally {
+        queryClient.invalidateQueries({ queryKey: workspaceSummaryKeys.all });
+        for (const ws of targets) {
+          queryClient.invalidateQueries({
+            queryKey: workspaceRecordKeys.byId(ws.id),
+          });
+        }
+      }
+    },
+    [activeWorkspaces, queryClient]
+  );
+
   // Drop on something other than a known target with no successful drop
   // unpins the workspace. Triggered by onDragEnd below.
   const handleUnpin = useCallback(
@@ -945,6 +969,7 @@ export function WorkspacesSidebarContainer({
         hasMoreWorkspaces={hasMoreWorkspaces && !isSearching}
         onOpenWorkspaceActions={handleOpenWorkspaceActions}
         onArchiveWorkspace={showArchive ? undefined : handleArchiveWorkspace}
+        onArchiveFolder={showArchive ? undefined : handleArchiveFolder}
         persistKeys={sidebarPersistKeys}
         activeRemoteHost={activeRemoteHost}
         onOpenRemoteHostSettings={handleOpenRemoteHostSettings}
