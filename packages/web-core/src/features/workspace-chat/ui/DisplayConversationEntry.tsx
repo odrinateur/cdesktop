@@ -58,13 +58,16 @@ import type {
   AggregatedPatchGroup,
   AggregatedDiffGroup,
   AggregatedThinkingGroup,
+  AggregatedTurnGroup,
 } from '@/shared/hooks/useConversationHistory/types';
 import {
   CaretDownIcon,
+  CaretRightIcon,
   FileTextIcon,
   ListMagnifyingGlassIcon,
   GlobeIcon,
   PencilSimpleIcon,
+  DotsThreeIcon,
 } from '@phosphor-icons/react';
 
 type Props = {
@@ -77,6 +80,7 @@ type Props = {
   aggregatedGroup: AggregatedPatchGroup | null;
   aggregatedDiffGroup: AggregatedDiffGroup | null;
   aggregatedThinkingGroup: AggregatedThinkingGroup | null;
+  aggregatedTurnGroup?: AggregatedTurnGroup | null;
 };
 
 type FileEditAction = Extract<ActionType, { action: 'file_edit' }>;
@@ -317,10 +321,12 @@ function DisplayConversationEntry(props: Props) {
     aggregatedGroup,
     aggregatedDiffGroup,
     aggregatedThinkingGroup,
+    aggregatedTurnGroup,
     expansionKey,
     executionProcessId,
     workspaceWithSession,
     resetAction,
+    repos,
   } = props;
   const sessionId = workspaceWithSession?.session?.id;
   const executorCanFork = !!(
@@ -347,6 +353,20 @@ function DisplayConversationEntry(props: Props) {
         group={aggregatedThinkingGroup}
         workspaceId={workspaceWithSession?.id}
         sessionId={sessionId}
+      />
+    );
+  }
+
+  // Handle aggregated turn groups (collapses everything between the user
+  // message and the final assistant message of the same turn).
+  if (aggregatedTurnGroup) {
+    return (
+      <AggregatedTurnGroupEntry
+        group={aggregatedTurnGroup}
+        executionProcessId={executionProcessId}
+        workspaceWithSession={workspaceWithSession}
+        resetAction={resetAction}
+        repos={repos}
       />
     );
   }
@@ -1352,6 +1372,95 @@ function AggregatedThinkingGroupEntry({
         />
       )}
     />
+  );
+}
+
+/**
+ * Renders an entire turn body (between the user message and the final
+ * assistant message) collapsed into an accordion. Replies on
+ * `DisplayConversationEntry` recursively so each child uses its native
+ * renderer.
+ */
+function AggregatedTurnGroupEntry({
+  group,
+  executionProcessId,
+  workspaceWithSession,
+  resetAction,
+  repos,
+}: {
+  group: AggregatedTurnGroup;
+  executionProcessId: string;
+  workspaceWithSession: WorkspaceWithSession;
+  resetAction: UseResetProcessResult;
+  repos: RepoWithTargetBranch[];
+}) {
+  const { t } = useTranslation('common');
+  const [expanded, toggle] = usePersistedExpanded(
+    `turn:${group.patchKey}`,
+    false
+  );
+  const [isHovered, setIsHovered] = useState(false);
+
+  const childEntries = useMemo(
+    () => group.entries.filter((e) => e.type === 'NORMALIZED_ENTRY'),
+    [group.entries]
+  );
+
+  if (childEntries.length === 0) return null;
+
+  return (
+    <div className="flex flex-col">
+      <div
+        className="flex items-center gap-base text-sm text-low cursor-pointer group"
+        onClick={() => toggle()}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        role="button"
+        aria-expanded={expanded}
+        data-scroll-anchor-target=""
+      >
+        <span className="shrink-0 pt-0.5">
+          {isHovered || expanded ? (
+            <CaretRightIcon
+              className={cn(
+                'size-icon-base transition-transform duration-150',
+                expanded && 'rotate-90'
+              )}
+            />
+          ) : (
+            <DotsThreeIcon className="size-icon-base" />
+          )}
+        </span>
+        <span className="truncate">
+          {t('conversation.turnSteps', { count: childEntries.length })}
+        </span>
+      </div>
+
+      {expanded && (
+        <div className="ml-2 pt-2 flex flex-col gap-base border-l border-border pl-3">
+          {childEntries.map((child) => {
+            if (child.type !== 'NORMALIZED_ENTRY') return null;
+            return (
+              <DisplayConversationEntry
+                key={child.patchKey}
+                expansionKey={child.patchKey}
+                entry={child.content}
+                aggregatedGroup={null}
+                aggregatedDiffGroup={null}
+                aggregatedThinkingGroup={null}
+                aggregatedTurnGroup={null}
+                executionProcessId={
+                  child.executionProcessId || executionProcessId
+                }
+                workspaceWithSession={workspaceWithSession}
+                resetAction={resetAction}
+                repos={repos}
+              />
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 

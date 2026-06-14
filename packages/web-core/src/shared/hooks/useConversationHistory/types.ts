@@ -65,11 +65,25 @@ export type AggregatedThinkingGroup = {
   executionProcessId: string;
 };
 
+/**
+ * A group of entries collapsed between a user message and the final
+ * assistant message of the same turn (thinking, tool uses, intermediate
+ * assistant text, system messages, errors). Rendered as an accordion that
+ * is collapsed by default; expanding shows each child entry inline.
+ */
+export type AggregatedTurnGroup = {
+  type: 'AGGREGATED_TURN_GROUP';
+  entries: PatchTypeWithKey[];
+  patchKey: string;
+  executionProcessId: string;
+};
+
 export type DisplayEntry =
   | PatchTypeWithKey
   | AggregatedPatchGroup
   | AggregatedDiffGroup
-  | AggregatedThinkingGroup;
+  | AggregatedThinkingGroup
+  | AggregatedTurnGroup;
 
 export function isAggregatedGroup(
   entry: DisplayEntry
@@ -87,6 +101,12 @@ export function isAggregatedThinkingGroup(
   entry: DisplayEntry
 ): entry is AggregatedThinkingGroup {
   return entry.type === 'AGGREGATED_THINKING_GROUP';
+}
+
+export function isAggregatedTurnGroup(
+  entry: DisplayEntry
+): entry is AggregatedTurnGroup {
+  return entry.type === 'AGGREGATED_TURN_GROUP';
 }
 
 export type AddEntryType = 'initial' | 'running' | 'historic' | 'plan';
