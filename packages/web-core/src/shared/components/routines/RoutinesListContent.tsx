@@ -25,7 +25,12 @@ function formatNextRun(nextRunAt: string | null): string | null {
  */
 export function RoutinesListContent() {
   const { t } = useTranslation('common');
-  const navigate = useNavigate();
+  // Shared across local-web and remote-web; /routines routes only exist on
+  // local-web. The runtime resolves against the active router.
+  const navigate = useNavigate() as (opts: {
+    to: string;
+    params?: Record<string, string>;
+  }) => void;
 
   const { data: routines = [], isLoading } = useQuery<Routine[]>({
     queryKey: ['routines'],

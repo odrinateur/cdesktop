@@ -60,10 +60,13 @@ export function ExecutorConfigForm({
     if (!hidden || hidden.length === 0) return base;
     const next = { ...base };
     if (next.properties) {
-      next.properties = { ...next.properties };
+      const props: Record<string, unknown> = {
+        ...(next.properties as Record<string, unknown>),
+      };
       for (const key of hidden) {
-        delete next.properties[key];
+        delete props[key];
       }
+      next.properties = props as typeof next.properties;
     }
     return next;
   }, [executor]);
