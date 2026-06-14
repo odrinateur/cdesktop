@@ -259,10 +259,8 @@ pub trait ContainerService {
             let pool = &self.db().pool;
             match RoutineRun::find_active_by_workspace(pool, ctx.workspace.id).await {
                 Ok(Some(run)) => {
-                    let failed = matches!(
-                        ctx.execution_process.status,
-                        ExecutionProcessStatus::Failed
-                    );
+                    let failed =
+                        matches!(ctx.execution_process.status, ExecutionProcessStatus::Failed);
                     if let Err(e) =
                         RoutineRun::mark_done(pool, run.id, chrono::Utc::now(), failed).await
                     {
