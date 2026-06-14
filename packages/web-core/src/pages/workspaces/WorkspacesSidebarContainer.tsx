@@ -711,6 +711,21 @@ export function WorkspacesSidebarContainer({
 
   const queryClient = useQueryClient();
 
+  const handleArchiveWorkspace = useCallback(
+    async (workspaceId: string) => {
+      try {
+        await workspacesApi.update(workspaceId, { archived: true });
+        queryClient.invalidateQueries({ queryKey: workspaceSummaryKeys.all });
+        queryClient.invalidateQueries({
+          queryKey: workspaceRecordKeys.byId(workspaceId),
+        });
+      } catch (err) {
+        console.warn('Archive workspace failed', err);
+      }
+    },
+    [queryClient]
+  );
+
   // Drop on something other than a known target with no successful drop
   // unpins the workspace. Triggered by onDragEnd below.
   const handleUnpin = useCallback(
@@ -929,6 +944,7 @@ export function WorkspacesSidebarContainer({
         onLoadMore={handleLoadMore}
         hasMoreWorkspaces={hasMoreWorkspaces && !isSearching}
         onOpenWorkspaceActions={handleOpenWorkspaceActions}
+        onArchiveWorkspace={showArchive ? undefined : handleArchiveWorkspace}
         persistKeys={sidebarPersistKeys}
         activeRemoteHost={activeRemoteHost}
         onOpenRemoteHostSettings={handleOpenRemoteHostSettings}

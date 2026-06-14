@@ -125,6 +125,8 @@ export interface WorkspacesSidebarProps {
   hasMoreWorkspaces?: boolean;
   /** Callback for opening workspace actions */
   onOpenWorkspaceActions?: (workspaceId: string) => void;
+  /** Callback for archiving / unarchiving a workspace from the hover action. */
+  onArchiveWorkspace?: (workspaceId: string) => void;
   /** Persist keys for collapsible sections */
   persistKeys?: WorkspacesSidebarPersistKeys;
   activeRemoteHost?: {
@@ -213,6 +215,7 @@ function WorkspaceList({
   selectedWorkspaceId,
   onSelectWorkspace,
   onOpenWorkspaceActions,
+  onArchiveWorkspace,
   getWorkspaceDragProps,
   openInGridWorkspaceIds,
 }: {
@@ -220,6 +223,7 @@ function WorkspaceList({
   selectedWorkspaceId: string | null;
   onSelectWorkspace: (id: string) => void;
   onOpenWorkspaceActions: (workspaceId: string) => void;
+  onArchiveWorkspace?: (workspaceId: string) => void;
   getWorkspaceDragProps?: WorkspacesSidebarProps['getWorkspaceDragProps'];
   openInGridWorkspaceIds?: ReadonlySet<string>;
 }) {
@@ -245,6 +249,7 @@ function WorkspaceList({
           prStatus={workspace.prStatus}
           summary
           onOpenWorkspaceActions={onOpenWorkspaceActions}
+          onArchiveWorkspace={onArchiveWorkspace}
           onClick={() => onSelectWorkspace(workspace.id)}
           {...getWorkspaceDragProps?.(workspace.id)}
         />
@@ -258,6 +263,7 @@ function FolderGroup({
   selectedWorkspaceId,
   onSelectWorkspace,
   onOpenWorkspaceActions,
+  onArchiveWorkspace,
   getWorkspaceDragProps,
   openInGridWorkspaceIds,
   onCreateInFolder,
@@ -266,6 +272,7 @@ function FolderGroup({
   selectedWorkspaceId: string | null;
   onSelectWorkspace: (id: string) => void;
   onOpenWorkspaceActions: (workspaceId: string) => void;
+  onArchiveWorkspace?: (workspaceId: string) => void;
   getWorkspaceDragProps?: WorkspacesSidebarProps['getWorkspaceDragProps'];
   openInGridWorkspaceIds?: ReadonlySet<string>;
   onCreateInFolder?: (repoId: string) => void;
@@ -324,6 +331,7 @@ function FolderGroup({
             selectedWorkspaceId={selectedWorkspaceId}
             onSelectWorkspace={onSelectWorkspace}
             onOpenWorkspaceActions={onOpenWorkspaceActions}
+            onArchiveWorkspace={onArchiveWorkspace}
             getWorkspaceDragProps={getWorkspaceDragProps}
             openInGridWorkspaceIds={openInGridWorkspaceIds}
           />
@@ -378,6 +386,7 @@ function PinnedSection({
   selectedWorkspaceId,
   onSelectWorkspace,
   onOpenWorkspaceActions,
+  onArchiveWorkspace,
   getWorkspaceDragProps,
   onReorderPins,
   onPinAreaHover,
@@ -388,6 +397,7 @@ function PinnedSection({
   selectedWorkspaceId: string | null;
   onSelectWorkspace: (id: string) => void;
   onOpenWorkspaceActions: (workspaceId: string) => void;
+  onArchiveWorkspace?: (workspaceId: string) => void;
   getWorkspaceDragProps?: WorkspacesSidebarProps['getWorkspaceDragProps'];
   onReorderPins?: WorkspacesSidebarProps['onReorderPins'];
   onPinAreaHover?: WorkspacesSidebarProps['onPinAreaHover'];
@@ -566,6 +576,7 @@ function PinnedSection({
                   prStatus={workspace.prStatus}
                   summary
                   onOpenWorkspaceActions={onOpenWorkspaceActions}
+                  onArchiveWorkspace={onArchiveWorkspace}
                   onClick={() => onSelectWorkspace(workspace.id)}
                   {...getWorkspaceDragProps?.(workspace.id)}
                 />
@@ -611,6 +622,7 @@ export function WorkspacesSidebar({
   onLoadMore,
   hasMoreWorkspaces = false,
   onOpenWorkspaceActions,
+  onArchiveWorkspace,
   persistKeys = DEFAULT_PERSIST_KEYS,
   activeRemoteHost = null,
   onOpenRemoteHostSettings,
@@ -843,6 +855,7 @@ export function WorkspacesSidebar({
                     selectedWorkspaceId={selectedWorkspaceId}
                     onSelectWorkspace={onSelectWorkspace}
                     onOpenWorkspaceActions={handleOpenWorkspaceActions}
+                    onArchiveWorkspace={onArchiveWorkspace}
                     getWorkspaceDragProps={getWorkspaceDragProps}
                     openInGridWorkspaceIds={openInGridWorkspaceIds}
                   />
@@ -867,6 +880,7 @@ export function WorkspacesSidebar({
                     selectedWorkspaceId={selectedWorkspaceId}
                     onSelectWorkspace={onSelectWorkspace}
                     onOpenWorkspaceActions={handleOpenWorkspaceActions}
+                    onArchiveWorkspace={onArchiveWorkspace}
                     getWorkspaceDragProps={getWorkspaceDragProps}
                     openInGridWorkspaceIds={openInGridWorkspaceIds}
                   />
@@ -891,6 +905,7 @@ export function WorkspacesSidebar({
                     selectedWorkspaceId={selectedWorkspaceId}
                     onSelectWorkspace={onSelectWorkspace}
                     onOpenWorkspaceActions={handleOpenWorkspaceActions}
+                    onArchiveWorkspace={onArchiveWorkspace}
                     getWorkspaceDragProps={getWorkspaceDragProps}
                     openInGridWorkspaceIds={openInGridWorkspaceIds}
                   />
@@ -934,6 +949,7 @@ export function WorkspacesSidebar({
                 latestProcessStatus={workspace.latestProcessStatus}
                 prStatus={workspace.prStatus}
                 onOpenWorkspaceActions={handleOpenWorkspaceActions}
+                onArchiveWorkspace={onArchiveWorkspace}
                 onClick={() => onSelectWorkspace(workspace.id)}
                 {...getWorkspaceDragProps?.(workspace.id)}
               />
@@ -955,6 +971,7 @@ export function WorkspacesSidebar({
               selectedWorkspaceId={selectedWorkspaceId}
               onSelectWorkspace={onSelectWorkspace}
               onOpenWorkspaceActions={handleOpenWorkspaceActions}
+              onArchiveWorkspace={onArchiveWorkspace}
               getWorkspaceDragProps={getWorkspaceDragProps}
               onReorderPins={onReorderPins}
               onPinAreaHover={onPinAreaHover}
@@ -968,6 +985,7 @@ export function WorkspacesSidebar({
                 selectedWorkspaceId={selectedWorkspaceId}
                 onSelectWorkspace={onSelectWorkspace}
                 onOpenWorkspaceActions={handleOpenWorkspaceActions}
+                onArchiveWorkspace={onArchiveWorkspace}
                 getWorkspaceDragProps={getWorkspaceDragProps}
                 openInGridWorkspaceIds={openInGridWorkspaceIds}
                 onCreateInFolder={onCreateInFolder}
