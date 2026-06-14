@@ -12,6 +12,7 @@ import {
 import { FolderPickerPopover } from '@vibe/ui/components/FolderPickerPopover';
 import { repoApi } from '@/shared/lib/api';
 import { FolderPickerDialog } from '@/shared/dialogs/shared/FolderPickerDialog';
+import { useUserSystem } from '@/shared/hooks/useUserSystem';
 
 const chipClassName =
   'inline-flex items-center gap-half rounded-md bg-secondary px-base py-half ' +
@@ -32,6 +33,7 @@ export function FolderChip({
 }: FolderChipProps) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const { config } = useUserSystem();
 
   const { data: repos = [] } = useQuery<Repo[]>({
     queryKey: ['repos'],
@@ -57,13 +59,14 @@ export function FolderChip({
       title: t('dialogs.selectGitRepository', {
         defaultValue: 'Select folder',
       }),
+      value: config?.workspace_dir ?? '',
     });
     if (!path) return;
     const repo = await repoApi.register({ path });
     queryClient.invalidateQueries({ queryKey: ['repos'] });
     queryClient.invalidateQueries({ queryKey: ['repos', 'recent'] });
     onSelect(repo.id);
-  }, [onSelect, queryClient, t]);
+  }, [config?.workspace_dir, onSelect, queryClient, t]);
 
   // Show recents first; append any non-recent repos so user always has access
   // to the full list (recents alone can be empty on a fresh install).

@@ -16,6 +16,7 @@ import { cn } from '@/shared/lib/utils';
 import { useCreateMode } from '@/features/create-mode/model/useCreateMode';
 import { FolderPickerDialog } from '@/shared/dialogs/shared/FolderPickerDialog';
 import { SettingsDialog } from '@/shared/dialogs/settings/SettingsDialog';
+import { useUserSystem } from '@/shared/hooks/useUserSystem';
 import { PrimaryButton } from '@vibe/ui/components/PrimaryButton';
 import { CreateRepoDialog } from '@vibe/ui/components/CreateRepoDialog';
 import {
@@ -75,6 +76,7 @@ export function CreateModeRepoPickerBar({
 }: CreateModeRepoPickerBarProps) {
   const { t } = useTranslation('common');
   const queryClient = useQueryClient();
+  const { config } = useUserSystem();
   const { repos, targetBranches, addRepo, removeRepo, setTargetBranch } =
     useCreateMode();
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
@@ -196,6 +198,7 @@ export function CreateModeRepoPickerBar({
         const selectedPath = await FolderPickerDialog.show({
           title: t('dialogs.selectGitRepository'),
           description: t('dialogs.chooseExistingRepo'),
+          value: config?.workspace_dir ?? '',
         });
         if (!selectedPath) return;
 
@@ -205,7 +208,7 @@ export function CreateModeRepoPickerBar({
       },
       'Failed to register repository'
     );
-  }, [addRepoWithBranchSelection, runPickerAction, t]);
+  }, [addRepoWithBranchSelection, config?.workspace_dir, runPickerAction, t]);
 
   const handleCreateRepo = useCallback(async () => {
     await runPickerAction(
@@ -216,7 +219,7 @@ export function CreateModeRepoPickerBar({
             FolderPickerDialog.show({
               title: t('git.createRepo.browseDialog.title'),
               description: t('git.createRepo.browseDialog.description'),
-              value: currentPath,
+              value: currentPath || (config?.workspace_dir ?? ''),
             }),
           onCreateRepo: async ({ parentPath, folderName }) => {
             const repo = await repoApi.init({
@@ -230,7 +233,7 @@ export function CreateModeRepoPickerBar({
       },
       'Failed to create repository'
     );
-  }, [addRepoWithBranchSelection, runPickerAction, t]);
+  }, [addRepoWithBranchSelection, config?.workspace_dir, runPickerAction, t]);
 
   const handleChangeBranch = useCallback(
     async (repo: Repo) => {

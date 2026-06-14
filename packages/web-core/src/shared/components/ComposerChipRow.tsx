@@ -19,6 +19,7 @@ import { Checkbox } from '@vibe/ui/components/Checkbox';
 import { useCreateMode } from '@/features/create-mode/model/useCreateMode';
 import { repoApi } from '@/shared/lib/api';
 import { FolderPickerDialog } from '@/shared/dialogs/shared/FolderPickerDialog';
+import { useUserSystem } from '@/shared/hooks/useUserSystem';
 import { BranchChip, BranchMenuList, chipClassName } from './BranchChip';
 
 function repoDisplayName(repo: Repo): string {
@@ -28,6 +29,7 @@ function repoDisplayName(repo: Repo): string {
 export function ComposerChipRow({ disabled }: { disabled?: boolean }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const { config } = useUserSystem();
   const {
     repos,
     addRepo,
@@ -106,13 +108,14 @@ export function ComposerChipRow({ disabled }: { disabled?: boolean }) {
         title: t('dialogs.selectGitRepository', {
           defaultValue: 'Select folder',
         }),
+        value: config?.workspace_dir ?? '',
       });
       if (!path) return;
       const repo = await repoApi.register({ path });
       queryClient.invalidateQueries({ queryKey: ['repos'] });
       await apply(repo);
     },
-    [queryClient, t]
+    [config?.workspace_dir, queryClient, t]
   );
 
   // Labels
