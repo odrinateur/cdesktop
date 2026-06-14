@@ -398,74 +398,7 @@ jobs:
           retention-days: 1
 
   # ---------------------------------------------------------------------------
-  # 5. Upload the platform binary zips + manifest to R2 (CLI loader reads from
-  #    {R2_BINARIES_PUBLIC_URL}/binaries/<tag>/<platform>/<binary>.zip).
-  # ---------------------------------------------------------------------------
-  upload-to-r2:
-    needs: [decide, package-npx-cli]
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v6
-      - name: Download all platform packages
-        uses: actions/download-artifact@v7
-        with:
-          pattern: npx-platform-*
-          path: binaries/
-          merge-multiple: true
-      - name: Configure AWS CLI for R2
-        run: |
-          aws configure set aws_access_key_id ${{ secrets.R2_BINARIES_ACCESS_KEY_ID }}
-          aws configure set aws_secret_access_key ${{ secrets.R2_BINARIES_SECRET_ACCESS_KEY }}
-          aws configure set default.region auto
-      - name: Generate manifest and upload to R2
-        run: |
-          TAG="${{ needs.decide.outputs.tag }}"
-          ENDPOINT="${{ secrets.R2_BINARIES_ENDPOINT }}"
-          BUCKET="${{ secrets.R2_BINARIES_BUCKET }}"
-
-          node -e "
-            const fs = require('fs');
-            const crypto = require('crypto');
-            const manifest = { version: '$TAG', platforms: {} };
-            const platforms = ['linux-x64', 'linux-arm64', 'windows-x64', 'windows-arm64', 'macos-x64', 'macos-arm64'];
-            const binaries = ['cdesktop', 'cdesktop-mcp', 'cdesktop-review'];
-            for (const platform of platforms) {
-              manifest.platforms[platform] = {};
-              for (const binary of binaries) {
-                const zipPath = \`binaries/\${platform}/\${binary}.zip\`;
-                if (fs.existsSync(zipPath)) {
-                  const data = fs.readFileSync(zipPath);
-                  manifest.platforms[platform][binary] = {
-                    sha256: crypto.createHash('sha256').update(data).digest('hex'),
-                    size: data.length
-                  };
-                }
-              }
-            }
-            fs.writeFileSync('version-manifest.json', JSON.stringify(manifest, null, 2));
-          "
-
-          for platform in linux-x64 linux-arm64 windows-x64 windows-arm64 macos-x64 macos-arm64; do
-            for binary in cdesktop cdesktop-mcp cdesktop-review; do
-              if [ -f "binaries/$platform/$binary.zip" ]; then
-                aws s3 cp "binaries/$platform/$binary.zip" \
-                  "s3://$BUCKET/binaries/$TAG/$platform/$binary.zip" \
-                  --endpoint-url "$ENDPOINT"
-              fi
-            done
-          done
-
-          aws s3 cp version-manifest.json \
-            "s3://$BUCKET/binaries/$TAG/manifest.json" \
-            --endpoint-url "$ENDPOINT" --content-type "application/json"
-
-          VERSION="${{ needs.decide.outputs.version }}"
-          echo "{\"latest\": \"$VERSION\"}" | aws s3 cp - \
-            "s3://$BUCKET/binaries/manifest.json" \
-            --endpoint-url "$ENDPOINT" --content-type "application/json"
-
-  # ---------------------------------------------------------------------------
-  # 6. Build the macOS desktop app as a .dmg (arm64 + x64).
+  # 5. Build the macOS desktop app as a .dmg (arm64 + x64).
   # ---------------------------------------------------------------------------
   build-tauri:
     needs: [decide, build-frontend]
@@ -557,7 +490,7 @@ jobs:
   # 4. Tag, publish GitHub release, commit version bumps.
   # ---------------------------------------------------------------------------
   release:
-    needs: [decide, build-tauri, upload-to-r2]
+    needs: [decide, build-tauri, package-npx-cli]
     runs-on: ubuntu-24.04
     outputs:
       version: ${{ needs.decide.outputs.version }}
@@ -588,17 +521,37 @@ jobs:
           path: release-artifacts/
           merge-multiple: true
 
-      - name: Build npx-cli tarball
+      - name: Download all npx platform packages
+        uses: actions/download-artifact@v7
+        with:
+          pattern: npx-platform-*
+          path: all-platforms/
+          merge-multiple: true
+
+      - name: Build per-platform npx-cli tarballs
+        # The bundled cli.js detects `dist/` at runtime (LOCAL_DEV_MODE) and uses
+        # the local binaries instead of fetching from the network. Each tarball
+        # ships only its target platform's binaries, so brew can pick the right
+        # arch.
         run: |
           cd npx-cli
           npm ci
           npm run build
-          # Inject R2 URL + tag so the CLI loader can fetch binaries at runtime.
-          sed -i "s|__R2_PUBLIC_URL__|${{ secrets.R2_BINARIES_PUBLIC_URL }}|g" bin/cli.js
+          # No external CDN — leave the placeholders inert (LOCAL_DEV_MODE wins).
+          sed -i 's|__R2_PUBLIC_URL__|https://invalid.local|g' bin/cli.js
           sed -i "s|__BINARY_TAG__|${{ needs.decide.outputs.tag }}|g" bin/cli.js
-          npm pack
           mkdir -p ../release-artifacts
-          cp cdesktop-*.tgz ../release-artifacts/cdesktop-${{ needs.decide.outputs.version }}.tgz
+          for platform in macos-arm64 macos-x64 linux-x64 linux-arm64 windows-x64 windows-arm64; do
+            src="../all-platforms/$platform"
+            if [ ! -d "$src" ]; then
+              echo "skipping $platform — no artifact"
+              continue
+            fi
+            rm -rf dist && mkdir -p dist/$platform
+            cp "$src"/*.zip "dist/$platform/"
+            npm pack
+            mv cdesktop-*.tgz "../release-artifacts/cdesktop-${{ needs.decide.outputs.version }}-$platform.tgz"
+          done
 
       - name: List release artifacts
         run: ls -la release-artifacts/
