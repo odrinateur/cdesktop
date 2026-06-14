@@ -43,6 +43,8 @@
     "deniedByUser": "{{toolName}} denied by user",
     "tool": "Tool",
     "thinking": "Thinking",
+    "turnSteps": "{{count}} step",
+    "turnSteps_other": "{{count}} steps",
     "toolSummary": {
       "read": "Read {{path}}",
       "searched": "Searched for \"{{query}}\"",

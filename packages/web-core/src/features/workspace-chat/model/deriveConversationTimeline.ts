@@ -43,7 +43,8 @@ function isRenderableConversationEntry(entry: DisplayEntry): boolean {
     entry.type === 'STDERR' ||
     entry.type === 'AGGREGATED_GROUP' ||
     entry.type === 'AGGREGATED_DIFF_GROUP' ||
-    entry.type === 'AGGREGATED_THINKING_GROUP'
+    entry.type === 'AGGREGATED_THINKING_GROUP' ||
+    entry.type === 'AGGREGATED_TURN_GROUP'
   );
 }
 
