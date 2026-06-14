@@ -7,6 +7,7 @@ import {
   PlugIcon,
   BroadcastIcon,
   SwatchesIcon,
+  KeyboardIcon,
 } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
 import { GeneralSettingsSection } from './GeneralSettingsSection';
@@ -17,6 +18,7 @@ import { AgentsSettingsSection } from './AgentsSettingsSection';
 import { McpSettingsSection } from './McpSettingsSection';
 import { RelaySettingsSectionContent } from './RelaySettingsSection';
 import { ProvidersSettingsSection } from './ProvidersSettingsSection';
+import { ShortcutsSettingsSection } from './ShortcutsSettingsSection';
 
 export type SettingsSectionType =
   | 'general'
@@ -26,7 +28,8 @@ export type SettingsSectionType =
   | 'agents'
   | 'mcp'
   | 'relay'
-  | 'providers';
+  | 'providers'
+  | 'shortcuts';
 
 export type SettingsSectionGroup = 'host' | 'universal';
 
@@ -41,6 +44,7 @@ export type SettingsSectionInitialState = {
   mcp: undefined;
   relay: { hostId?: string } | undefined;
   providers: undefined;
+  shortcuts: undefined;
 };
 
 export interface SettingsSectionDefinition {
@@ -55,6 +59,7 @@ export const SETTINGS_SECTION_DEFINITIONS: SettingsSectionDefinition[] = [
   { id: 'agents', icon: CpuIcon, group: 'host' },
   { id: 'providers', icon: SwatchesIcon, group: 'host' },
   { id: 'mcp', icon: PlugIcon, group: 'host' },
+  { id: 'shortcuts', icon: KeyboardIcon, group: 'host' },
   { id: 'organizations', icon: BuildingsIcon, group: 'universal' },
   { id: 'remote-projects', icon: CloudIcon, group: 'universal' },
   { id: 'relay', icon: BroadcastIcon, group: 'universal' },
@@ -99,6 +104,8 @@ export function renderSettingsSection(
       return <ProvidersSettingsSection />;
     case 'mcp':
       return <McpSettingsSection />;
+    case 'shortcuts':
+      return <ShortcutsSettingsSection />;
     case 'relay':
       return (
         <RelaySettingsSectionContent
