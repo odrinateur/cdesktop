@@ -7,6 +7,7 @@ import {
   CircleIcon,
   GitPullRequestIcon,
   DotsThreeIcon,
+  ArchiveIcon,
 } from '@phosphor-icons/react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/cn';
@@ -54,6 +55,7 @@ export interface WorkspaceSummaryProps {
   /** Whether this is a draft workspace (shows "Draft" instead of elapsed time) */
   isDraft?: boolean;
   onOpenWorkspaceActions?: (workspaceId: string) => void;
+  onArchiveWorkspace?: (workspaceId: string) => void;
   /** HTML5 drag affordance — set by callers that wire pills as drag sources. */
   draggable?: boolean;
   onDragStart?: (e: React.DragEvent<HTMLDivElement>) => void;
@@ -81,6 +83,7 @@ export function WorkspaceSummary({
   summary = false,
   isDraft = false,
   onOpenWorkspaceActions,
+  onArchiveWorkspace,
   draggable,
   onDragStart,
   onDragEnd,
@@ -94,6 +97,12 @@ export function WorkspaceSummary({
     e.stopPropagation();
     if (!workspaceId || !onOpenWorkspaceActions) return;
     onOpenWorkspaceActions(workspaceId);
+  };
+
+  const handleArchive = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!workspaceId || !onArchiveWorkspace) return;
+    onArchiveWorkspace(workspaceId);
   };
 
   return (
@@ -152,7 +161,7 @@ export function WorkspaceSummary({
           )}
           <span
             className={cn(
-              'min-w-0 flex-1',
+              'min-w-0 flex-1 text-sm',
               isActive
                 ? 'font-semibold'
                 : 'font-normal text-[#373734] dark:text-[#c3c2b8]'
@@ -260,21 +269,32 @@ export function WorkspaceSummary({
         )}
       </button>
 
-      {/* Right-side hover action - more options only */}
-      {workspaceId && onOpenWorkspaceActions && (
+      {/* Right-side hover actions */}
+      {workspaceId && (onOpenWorkspaceActions || onArchiveWorkspace) && (
         <div className="absolute right-0 top-0 bottom-0 flex items-center sm:opacity-0 sm:group-hover:opacity-100">
           {/* Gradient fade from transparent to background */}
           <div className="h-full w-4 pointer-events-none bg-gradient-to-r from-transparent to-secondary" />
-          {/* Single action button */}
           <div className="flex items-center pr-base h-full bg-secondary">
-            <button
-              onClick={handleOpenCommandBar}
-              onPointerDown={(e) => e.stopPropagation()}
-              className="p-1.5 rounded-sm text-low hover:text-normal hover:bg-tertiary"
-              title={t('workspaces.more')}
-            >
-              <DotsThreeIcon className="size-5" weight="bold" />
-            </button>
+            {onArchiveWorkspace && (
+              <button
+                onClick={handleArchive}
+                onPointerDown={(e) => e.stopPropagation()}
+                className="p-1 rounded-sm text-low hover:text-normal hover:bg-tertiary"
+                title={t('workspaces.archive', { defaultValue: 'Archive' })}
+              >
+                <ArchiveIcon className="size-icon-xs" weight="regular" />
+              </button>
+            )}
+            {onOpenWorkspaceActions && (
+              <button
+                onClick={handleOpenCommandBar}
+                onPointerDown={(e) => e.stopPropagation()}
+                className="p-1 rounded-sm text-low hover:text-normal hover:bg-tertiary"
+                title={t('workspaces.more')}
+              >
+                <DotsThreeIcon className="size-icon-sm" weight="bold" />
+              </button>
+            )}
           </div>
         </div>
       )}
