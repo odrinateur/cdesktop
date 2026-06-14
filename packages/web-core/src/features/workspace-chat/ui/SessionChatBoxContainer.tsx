@@ -5,8 +5,9 @@ import {
   type AskUserQuestionItem,
   BaseAgentCapability,
   type Session,
-  type BaseCodingAgent,
+  BaseCodingAgent,
   ExecutionProcessStatus,
+  PermissionPolicy,
 } from 'shared/types';
 import { AgentIcon } from '@/shared/components/AgentIcon';
 import { useHostId } from '@/shared/providers/HostIdProvider';
@@ -49,7 +50,10 @@ import {
   type ExecutionStatus,
   type SessionChatBoxEditorRenderProps,
 } from '@vibe/ui/components/SessionChatBox';
-import { ModelSelectorContainer } from '@/shared/components/ModelSelectorContainer';
+import {
+  CLAUDE_PERMISSIONS,
+  ModelSelectorContainer,
+} from '@/shared/components/ModelSelectorContainer';
 import { TeamPillRowContainer } from './TeamPillRowContainer';
 import { ProviderModelPicker } from '@/shared/components/ProviderModelPicker';
 import {
@@ -989,6 +993,26 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
     localMessage,
   ]);
 
+  const availablePermissions = useMemo<PermissionPolicy[]>(() => {
+    if (effectiveExecutor === BaseCodingAgent.CLAUDE_CODE) {
+      return CLAUDE_PERMISSIONS;
+    }
+    return agentModelConfig?.permissions ?? [];
+  }, [effectiveExecutor, agentModelConfig?.permissions]);
+
+  const cyclePermissionPolicy = useCallback(() => {
+    if (availablePermissions.length === 0) return;
+    const current =
+      executorConfig?.permission_policy ?? availablePermissions[0];
+    const idx = availablePermissions.indexOf(current);
+    const next = availablePermissions[(idx + 1) % availablePermissions.length];
+    setExecutorOverrides({ permission_policy: next });
+  }, [
+    availablePermissions,
+    executorConfig?.permission_policy,
+    setExecutorOverrides,
+  ]);
+
   const renderEditor = useCallback(
     ({
       focusKey,
@@ -1008,6 +1032,7 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
         value={value}
         onChange={onChange}
         onCmdEnter={onCmdEnter}
+        onShiftTab={cyclePermissionPolicy}
         disabled={disabled}
         className="min-h-double max-h-[50vh] overflow-y-auto"
         repoIds={repoIds}
@@ -1019,7 +1044,7 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
         sendShortcut={config?.send_message_shortcut}
       />
     ),
-    [config?.send_message_shortcut, sessionId]
+    [config?.send_message_shortcut, sessionId, cyclePermissionPolicy]
   );
 
   const modelSelectorNode = effectiveExecutor ? (
