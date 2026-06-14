@@ -218,10 +218,29 @@ jobs:
       - name: Sqlx checks
         run: npm run prepare-db:check
 
+  secrets-gate:
+    # Forks (or any repo without VK_PRIVATE_DEPLOY_KEY) can't clone the private
+    # 'billing' dep used by crates/remote. Expose a boolean so jobs that need
+    # the key can opt out cleanly instead of failing on ssh-agent.
+    runs-on: *runner_label
+    outputs:
+      has-deploy-key: ${{ steps.check.outputs.has }}
+    steps:
+      - id: check
+        env:
+          KEY: ${{ secrets.VK_PRIVATE_DEPLOY_KEY }}
+        run: |
+          if [ -n "$KEY" ]; then
+            echo "has=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has=false" >> "$GITHUB_OUTPUT"
+          fi
+
   backend-remote-checks:
-    needs: changes
+    needs: [changes, secrets-gate]
     if: >-
       always()
+      && needs.secrets-gate.outputs.has-deploy-key == 'true'
       && (needs.changes.outputs['backend-remote'] == 'true' || needs.changes.result == 'skipped')
       && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: *runner_label
