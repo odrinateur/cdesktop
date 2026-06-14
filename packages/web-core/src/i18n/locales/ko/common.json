@@ -238,6 +238,7 @@
   },
   "turnNavigation": {
     "title": "내 메시지",
+    "count_one": "{{count}}턴",
     "count_other": "{{count}}턴"
   },
   "commandBar": {

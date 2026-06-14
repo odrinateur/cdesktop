@@ -238,6 +238,7 @@
   },
   "turnNavigation": {
     "title": "あなたのメッセージ",
+    "count_one": "{{count}} ターン",
     "count_other": "{{count}} ターン"
   },
   "commandBar": {
