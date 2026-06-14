@@ -41,30 +41,35 @@ jobs:
       - name: Setup Node
         uses: ./.github/actions/setup-node
 
+      - name: Install release deps
+        run: pnpm install
+
       - name: Lint commit messages
         if: github.event_name == 'push'
         run: |
-          npx --yes @commitlint/cli@19 \
+          npx commitlint \
             --from ${{ github.event.before }} \
             --to ${{ github.event.after }} \
             --verbose
-
-      - name: Install release deps
-        run: pnpm install --frozen-lockfile=false
 
       - name: Compute next version (dry run)
         id: dry
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -e
-          npx semantic-release --dry-run --no-ci 2>&1 | tee /tmp/sr.log || true
+          set -eo pipefail
+          npx semantic-release --dry-run --no-ci 2>&1 | tee /tmp/sr.log
           version=$(grep -oE 'next release version is [0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?' /tmp/sr.log \
             | tail -1 | awk '{print $NF}')
           if [ -z "$version" ]; then
-            echo "No release required."
-            echo "release=false" >> "$GITHUB_OUTPUT"
-            exit 0
+            # semantic-release exited 0 but didn't pick a version → no release needed
+            if grep -qE "There are no relevant changes|no release published" /tmp/sr.log; then
+              echo "No release required."
+              echo "release=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "semantic-release exited 0 but no version detected — failing loudly." >&2
+            exit 1
           fi
           echo "Next version: $version"
           echo "release=true" >> "$GITHUB_OUTPUT"
@@ -513,6 +518,11 @@ jobs:
 
       - name: Install deps
         run: pnpm install
+
+      - name: Apply version
+        # Stamp the resolved version into package.json files BEFORE we build the
+        # CLI tarballs; otherwise npm pack would use the previous version.
+        run: node scripts/release/apply-version.js ${{ needs.decide.outputs.version }}
 
       - name: Download all Tauri DMGs
         uses: actions/download-artifact@v7
