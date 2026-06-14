@@ -32,6 +32,7 @@ export enum Action {
   SUBMIT_COMMENT = 'submit_comment',
   CYCLE_VIEW_BACKWARD = 'cycle_view_backward',
   TOGGLE_LEFT_SIDEBAR = 'toggle_left_sidebar',
+  TOGGLE_RIGHT_SIDEBAR = 'toggle_right_sidebar',
   NEW_FROM_CURRENT = 'new_from_current',
 }
 
@@ -461,6 +462,13 @@ export const keyBindings: KeyBinding[] = [
     keys: ['meta+b', 'ctrl+b'],
     scopes: [Scope.GLOBAL],
     description: 'Toggle left sidebar',
+    group: 'Global',
+  },
+  {
+    action: Action.TOGGLE_RIGHT_SIDEBAR,
+    keys: ['meta+shift+b', 'ctrl+shift+b'],
+    scopes: [Scope.GLOBAL],
+    description: 'Toggle right sidebar',
     group: 'Global',
   },
   {

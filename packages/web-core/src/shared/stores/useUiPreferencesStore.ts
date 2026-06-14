@@ -352,6 +352,11 @@ type State = {
   // Workspace-specific panel state
   workspacePanelStates: Record<string, WorkspacePanelState>;
 
+  // Snapshot of the most recent non-empty right panel layout per workspace.
+  // Used by `toggleRightPanelArea` to restore what the user had open after
+  // they collapsed everything via the keyboard shortcut.
+  rightPanelAreaSnapshots: Record<string, PanelLayoutState>;
+
   // Selected built-in kanban view per project
   kanbanProjectViewSelections: Record<string, KanbanProjectViewSelection>;
 
@@ -429,6 +434,7 @@ type State = {
   openPanel: (workspaceId: string, panelId: PanelId) => void;
   closePanel: (workspaceId: string, panelId: PanelId) => void;
   togglePanel: (workspaceId: string, panelId: PanelId) => void;
+  toggleRightPanelArea: (workspaceId: string) => void;
   setPanelColumnSplitRatio: (
     workspaceId: string,
     columnIdx: number,
@@ -509,6 +515,9 @@ export const useUiPreferencesStore = create<State>()((set, get) => ({
 
   // Workspace-specific panel state
   workspacePanelStates: {},
+
+  // Right-panel layout snapshots (per workspace) for the Cmd+Shift+B toggle.
+  rightPanelAreaSnapshots: {},
 
   // Kanban per-project view selection
   kanbanProjectViewSelections: {},
@@ -758,6 +767,51 @@ export const useUiPreferencesStore = create<State>()((set, get) => ({
     const isOpen = layout.columns.some((c) => c.panels.includes(panelId));
     if (isOpen) get().closePanel(workspaceId, panelId);
     else get().openPanel(workspaceId, panelId);
+  },
+
+  toggleRightPanelArea: (workspaceId) => {
+    if (!workspaceId) return;
+    const state = get();
+    const wsState =
+      state.workspacePanelStates[workspaceId] ?? DEFAULT_WORKSPACE_PANEL_STATE;
+    const layout = wsState.panelLayout ?? DEFAULT_PANEL_LAYOUT;
+    const hasAnyPanel = layout.columns.some((c) => c.panels.length > 0);
+
+    if (hasAnyPanel) {
+      // Snapshot the current layout so we can restore it on the next
+      // toggle, then close everything on the right.
+      set({
+        rightPanelAreaSnapshots: {
+          ...state.rightPanelAreaSnapshots,
+          [workspaceId]: layout,
+        },
+        workspacePanelStates: {
+          ...state.workspacePanelStates,
+          [workspaceId]: {
+            ...wsState,
+            panelLayout: DEFAULT_PANEL_LAYOUT,
+          },
+        },
+      });
+      return;
+    }
+
+    // Nothing open — restore the saved layout, or fall back to the
+    // changes panel so the shortcut always does something visible.
+    const snapshot = state.rightPanelAreaSnapshots[workspaceId];
+    const restored: PanelLayoutState =
+      snapshot && snapshot.columns.some((c) => c.panels.length > 0)
+        ? snapshot
+        : { columns: [{ panels: ['changes'] }] };
+    set({
+      workspacePanelStates: {
+        ...state.workspacePanelStates,
+        [workspaceId]: {
+          ...wsState,
+          panelLayout: restored,
+        },
+      },
+    });
   },
 
   setPanelColumnSplitRatio: (workspaceId, columnIdx, ratio) => {

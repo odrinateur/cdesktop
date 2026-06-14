@@ -544,6 +544,7 @@
       "formatInlineCode": "Format inline code",
       "sendMessage": "Send message",
       "toggleLeftSidebar": "Toggle left sidebar",
+      "toggleRightSidebar": "Toggle right sidebar",
       "openSettings": "Open settings",
       "newFromCurrent": "New conversation with same agent",
       "settings": "Go to Settings",
