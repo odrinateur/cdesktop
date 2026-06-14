@@ -16,6 +16,18 @@ import {
   type SectionAction,
 } from './CollapsibleSectionHeader';
 
+function isTauriMacPlatform(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (!('__TAURI_INTERNALS__' in window)) return false;
+  const nav = navigator as Navigator & {
+    userAgentData?: { platform?: string };
+  };
+  if (nav.userAgentData?.platform) {
+    return nav.userAgentData.platform === 'macOS';
+  }
+  return /Mac/.test(navigator.userAgent);
+}
+
 export type WorkspaceLayoutMode = 'folder' | 'flat' | 'accordion';
 
 export interface WorkspacesSidebarWorkspace {
@@ -672,9 +684,21 @@ export function WorkspacesSidebar({
         : 'folder';
 
   return (
-    <div className="w-full h-full bg-[#fdfdfc] dark:bg-secondary flex flex-col rounded-2xl border border-[#d4d4d4] dark:border-[#1e1e1e] overflow-hidden pt-base">
+    <div
+      data-tauri-drag-region
+      className="w-full h-full bg-[#fdfdfc] dark:bg-secondary flex flex-col rounded-2xl border border-[#d4d4d4] dark:border-[#1e1e1e] overflow-hidden pt-base"
+    >
       {topActions && (
-        <div className="px-double pb-half flex items-center gap-base">
+        <div
+          data-tauri-drag-region
+          className={cn(
+            'px-double pb-half flex items-center gap-base',
+            // Tauri macOS: native traffic lights overlay the top-left of the
+            // window. Indent the row so the panel/search icons sit to the
+            // right of them instead of overlapping.
+            isTauriMacPlatform() && 'pl-[78px]'
+          )}
+        >
           {topActions}
         </div>
       )}
