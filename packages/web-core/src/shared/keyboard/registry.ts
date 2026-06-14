@@ -31,6 +31,8 @@ export enum Action {
   SUBMIT_TASK_ALT = 'submit_task_alt',
   SUBMIT_COMMENT = 'submit_comment',
   CYCLE_VIEW_BACKWARD = 'cycle_view_backward',
+  TOGGLE_LEFT_SIDEBAR = 'toggle_left_sidebar',
+  NEW_FROM_CURRENT = 'new_from_current',
 }
 
 export interface KeyBinding {
@@ -452,6 +454,20 @@ export const keyBindings: KeyBinding[] = [
     keys: 'shift+slash',
     scopes: [Scope.GLOBAL],
     description: 'Show keyboard shortcuts help',
+    group: 'Global',
+  },
+  {
+    action: Action.TOGGLE_LEFT_SIDEBAR,
+    keys: ['meta+b', 'ctrl+b'],
+    scopes: [Scope.GLOBAL],
+    description: 'Toggle left sidebar',
+    group: 'Global',
+  },
+  {
+    action: Action.NEW_FROM_CURRENT,
+    keys: ['meta+n', 'ctrl+n'],
+    scopes: [Scope.GLOBAL],
+    description: 'New conversation with same agent',
     group: 'Global',
   },
 

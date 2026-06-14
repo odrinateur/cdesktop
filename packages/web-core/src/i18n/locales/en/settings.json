@@ -29,6 +29,8 @@
         "providersDesc": "AI provider routing and model selection",
         "mcp": "MCP Servers",
         "mcpDesc": "Model Context Protocol servers",
+        "shortcuts": "Shortcuts",
+        "shortcutsDesc": "Keyboard shortcuts reference",
         "organizations": "Organization Settings",
         "organizationsDesc": "Manage organization members and permissions",
         "remote-projects": "Projects",

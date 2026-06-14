@@ -145,3 +145,16 @@ export const useKeySubmitComment = createSemanticHook(Action.SUBMIT_COMMENT);
 export const useKeyCycleViewBackward = createSemanticHook(
   Action.CYCLE_VIEW_BACKWARD
 );
+
+/**
+ * Toggle left sidebar - typically Cmd/Ctrl+B (global)
+ */
+export const useKeyToggleLeftSidebar = createSemanticHook(
+  Action.TOGGLE_LEFT_SIDEBAR
+);
+
+/**
+ * Create a new conversation reusing the current workspace's agent and repos -
+ * typically Cmd/Ctrl+N (global)
+ */
+export const useKeyNewFromCurrent = createSemanticHook(Action.NEW_FROM_CURRENT);

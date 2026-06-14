@@ -9,8 +9,17 @@ import { SequenceTrackerProvider } from '@/shared/keyboard/SequenceTracker';
 import { SequenceIndicator } from '@/shared/keyboard/SequenceIndicator';
 import { useWorkspaceShortcuts } from '@/shared/keyboard/useWorkspaceShortcuts';
 import { useIssueShortcuts } from '@/shared/keyboard/useIssueShortcuts';
-import { useKeyShowHelp, Scope } from '@/shared/keyboard';
+import {
+  useKeyShowHelp,
+  useKeyToggleLeftSidebar,
+  useKeyNewFromCurrent,
+  Scope,
+} from '@/shared/keyboard';
 import { KeyboardShortcutsDialog } from '@/shared/dialogs/shared/KeyboardShortcutsDialog';
+import { SettingsDialog } from '@/shared/dialogs/settings/SettingsDialog';
+import { useUiPreferencesStore } from '@/shared/stores/useUiPreferencesStore';
+import { useActions } from '@/shared/hooks/useActions';
+import { Actions } from '@/shared/actions';
 import { ReleaseNotesDialog } from '@/shared/dialogs/global/ReleaseNotesDialog';
 import { TerminalProvider } from '@/shared/providers/TerminalProvider';
 import { HostIdProvider } from '@/shared/providers/HostIdProvider';
@@ -24,12 +33,51 @@ import { useUserSystem } from '@/shared/hooks/useUserSystem';
 import { SharedAppLayout } from '@/shared/components/ui-new/containers/SharedAppLayout';
 
 function KeyboardShortcutsHandler() {
+  const { executeAction } = useActions();
+  const { workspaceId } = useWorkspaceContext();
+
   useKeyShowHelp(
     () => {
       KeyboardShortcutsDialog.show();
     },
     { scope: Scope.GLOBAL }
   );
+
+  const globalHotkeyOptions = {
+    scope: Scope.GLOBAL,
+    enableOnFormTags: true,
+    enableOnContentEditable: true,
+    preventDefault: true,
+  } as const;
+
+  useKeyToggleLeftSidebar(() => {
+    useUiPreferencesStore.getState().toggleLeftSidebar();
+  }, globalHotkeyOptions);
+
+  // Cmd/Ctrl+, must match the comma CHARACTER, not the US-QWERTY physical
+  // key position that react-hotkeys-hook uses by default (event.code). On
+  // AZERTY/Dvorak/etc. the US comma position produces a different character,
+  // so we bind via event.key here.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== ',') return;
+      if (!(e.metaKey || e.ctrlKey)) return;
+      if (e.altKey || e.shiftKey) return;
+      e.preventDefault();
+      SettingsDialog.show();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  useKeyNewFromCurrent(() => {
+    if (workspaceId) {
+      void executeAction(Actions.DuplicateWorkspace, workspaceId);
+    } else {
+      void executeAction(Actions.NewWorkspace);
+    }
+  }, globalHotkeyOptions);
+
   useWorkspaceShortcuts();
   useIssueShortcuts();
   return null;
