@@ -1339,6 +1339,7 @@ impl ClaudeLogProcessor {
                         let _ = status;
                     }
                     Some("compact_boundary") => {}
+                    Some("thinking_tokens") => {}
                     Some("task_started") => {
                         if let Some(tool_use_id) = tool_use_id
                             && !self.tool_map.contains_key(tool_use_id)
