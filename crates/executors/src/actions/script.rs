@@ -25,6 +25,7 @@ pub enum ScriptContext {
     ArchiveScript,
     DevServer,
     ToolInstallScript,
+    ProjectScript,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
@@ -36,6 +37,11 @@ pub struct ScriptRequest {
     /// If None, uses the container_ref directory directly.
     #[serde(default)]
     pub working_dir: Option<String>,
+    /// Optional human-readable label (e.g. the package.json script name
+    /// "lint" / "build" / "dev"). Used by the frontend to map a running
+    /// process back to the navbar button that started it.
+    #[serde(default)]
+    pub label: Option<String>,
 }
 
 #[async_trait]

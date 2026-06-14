@@ -204,7 +204,7 @@ dropped: boolean, started_at: string, completed_at: string | null, created_at: s
 
 export enum ExecutionProcessStatus { running = "running", completed = "completed", failed = "failed", killed = "killed" }
 
-export type ExecutionProcessRunReason = "setupscript" | "cleanupscript" | "archivescript" | "codingagent" | "devserver";
+export type ExecutionProcessRunReason = "setupscript" | "cleanupscript" | "archivescript" | "codingagent" | "devserver" | "projectscript";
 
 export type ExecutionProcessRepoState = { id: string, execution_process_id: string, repo_id: string, before_head_commit: string | null, after_head_commit: string | null, merge_commit: string | null, created_at: Date, updated_at: Date, };
 
@@ -497,6 +497,29 @@ export type PrError = { "type": "cli_not_installed", provider: ProviderKind, } |
 
 export type RunScriptError = { "type": "no_script_configured" } | { "type": "process_already_running" };
 
+export type PackageScript = { name: string, command: string, };
+
+export type PackageScriptsForRepo = { repo_id: string, 
+/**
+ * Internal repo name (worktree subdirectory). Used by the frontend to
+ * match running processes back to their navbar button.
+ */
+repo_name: string, 
+/**
+ * Human-friendly repo name shown in tooltips.
+ */
+repo_display_name: string, 
+/**
+ * Detected package manager (npm / pnpm / yarn / bun) based on lockfile.
+ */
+package_manager: string, scripts: Array<PackageScript>, };
+
+export type RunProjectScriptRequest = { repo_id: string, script_name: string, };
+
+export type RunProjectScriptError = { "type": "repo_not_in_workspace" } | { "type": "script_not_found" } | { "type": "already_running" };
+
+export type StopProjectScriptRequest = { execution_process_id: string, };
+
 export type AssociateWorkspaceAttachmentsRequest = { attachment_ids: Array<string>, };
 
 export type ImportIssueAttachmentsRequest = { issue_id: string, };
@@ -694,14 +717,20 @@ reasoning_id?: string | null,
  */
 permission_policy?: PermissionPolicy | null, };
 
-export type ScriptContext = "SetupScript" | "CleanupScript" | "ArchiveScript" | "DevServer" | "ToolInstallScript";
+export type ScriptContext = "SetupScript" | "CleanupScript" | "ArchiveScript" | "DevServer" | "ToolInstallScript" | "ProjectScript";
 
 export type ScriptRequest = { script: string, language: ScriptRequestLanguage, context: ScriptContext, 
 /**
  * Optional relative path to execute the script in (relative to container_ref).
  * If None, uses the container_ref directory directly.
  */
-working_dir: string | null, };
+working_dir: string | null, 
+/**
+ * Optional human-readable label (e.g. the package.json script name
+ * "lint" / "build" / "dev"). Used by the frontend to map a running
+ * process back to the navbar button that started it.
+ */
+label: string | null, };
 
 export type ScriptRequestLanguage = "Bash";
 

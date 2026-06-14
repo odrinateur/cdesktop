@@ -44,6 +44,10 @@ import {
   RunAgentSetupResponse,
   GhCliSetupError,
   RunScriptError,
+  PackageScriptsForRepo,
+  RunProjectScriptRequest,
+  RunProjectScriptError,
+  StopProjectScriptRequest,
   StatusResponse,
   CreateOrganizationRequest,
   CreateOrganizationResponse,
@@ -786,6 +790,45 @@ export const workspacesApi = {
     return handleApiResponseAsResult<ExecutionProcess, RunScriptError>(
       response
     );
+  },
+
+  getPackageScripts: async (
+    workspaceId: string
+  ): Promise<PackageScriptsForRepo[]> => {
+    const response = await makeRequest(
+      `/api/workspaces/${workspaceId}/execution/package-scripts`
+    );
+    return handleApiResponse<PackageScriptsForRepo[]>(response);
+  },
+
+  runProjectScript: async (
+    workspaceId: string,
+    body: RunProjectScriptRequest
+  ): Promise<Result<ExecutionProcess, RunProjectScriptError>> => {
+    const response = await makeRequest(
+      `/api/workspaces/${workspaceId}/execution/project-script`,
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }
+    );
+    return handleApiResponseAsResult<ExecutionProcess, RunProjectScriptError>(
+      response
+    );
+  },
+
+  stopProjectScript: async (
+    workspaceId: string,
+    body: StopProjectScriptRequest
+  ): Promise<void> => {
+    const response = await makeRequest(
+      `/api/workspaces/${workspaceId}/execution/project-script/stop`,
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }
+    );
+    return handleApiResponse<void>(response);
   },
 
   getPrComments: async (
