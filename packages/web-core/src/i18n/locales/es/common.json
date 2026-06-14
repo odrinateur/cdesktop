@@ -472,6 +472,8 @@
       "openCommandBar": "Abrir barra de comandos",
       "formatInlineCode": "Format inline code",
       "sendMessage": "Enviar mensaje",
+      "toggleLeftSidebar": "Alternar barra lateral izquierda",
+      "toggleRightSidebar": "Alternar barra lateral derecha",
       "settings": "Ir a Ajustes",
       "new-workspace": "Ir a Nueva sesión",
       "duplicate-workspace": "Duplicar sesión",

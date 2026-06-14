@@ -472,6 +472,8 @@
       "openCommandBar": "開啟命令列",
       "formatInlineCode": "Format inline code",
       "sendMessage": "傳送訊息",
+      "toggleLeftSidebar": "切換左側邊欄",
+      "toggleRightSidebar": "切換右側邊欄",
       "settings": "前往設定",
       "new-workspace": "前往新工作階段",
       "duplicate-workspace": "複製工作階段",

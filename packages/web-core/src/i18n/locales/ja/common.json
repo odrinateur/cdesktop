@@ -472,6 +472,8 @@
       "openCommandBar": "コマンドバーを開く",
       "formatInlineCode": "Format inline code",
       "sendMessage": "メッセージを送信",
+      "toggleLeftSidebar": "左サイドバーの切り替え",
+      "toggleRightSidebar": "右サイドバーの切り替え",
       "settings": "設定に移動",
       "new-workspace": "新しいセッションに移動",
       "duplicate-workspace": "セッションを複製",
