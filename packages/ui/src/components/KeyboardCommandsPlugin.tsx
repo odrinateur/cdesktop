@@ -1,6 +1,6 @@
-import { useEffect } from "react";
-import { flushSync } from "react-dom";
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { useEffect } from 'react';
+import { flushSync } from 'react-dom';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import {
   $getSelection,
   $isRangeSelection,
@@ -12,12 +12,12 @@ import {
   COMMAND_PRIORITY_NORMAL,
   COMMAND_PRIORITY_HIGH,
   type LexicalNode,
-} from "lexical";
-import { $convertToMarkdownString, type Transformer } from "@lexical/markdown";
-import { $isListItemNode } from "@lexical/list";
-import { useTypeaheadOpen } from "./TypeaheadOpenContext";
+} from 'lexical';
+import { $convertToMarkdownString, type Transformer } from '@lexical/markdown';
+import { $isListItemNode } from '@lexical/list';
+import { useTypeaheadOpen } from './TypeaheadOpenContext';
 
-type SendMessageShortcut = "ModifierEnter" | "Enter";
+type SendMessageShortcut = 'ModifierEnter' | 'Enter';
 
 type Props = {
   onCmdEnter?: () => void;
@@ -34,7 +34,7 @@ export function KeyboardCommandsPlugin({
   onShiftTab,
   onChange,
   transformers,
-  sendShortcut = "ModifierEnter",
+  sendShortcut = 'ModifierEnter',
 }: Props) {
   const [editor] = useLexicalComposerContext();
   const { isOpen: isTypeaheadOpen } = useTypeaheadOpen();
@@ -112,7 +112,7 @@ export function KeyboardCommandsPlugin({
         if (!selection.isCollapsed()) {
           return editor.dispatchCommand(
             event.shiftKey ? OUTDENT_CONTENT_COMMAND : INDENT_CONTENT_COMMAND,
-            undefined,
+            undefined
           );
         }
 
@@ -137,7 +137,7 @@ export function KeyboardCommandsPlugin({
         listItem.setIndent(listItem.getIndent() + 1);
         return true;
       },
-      COMMAND_PRIORITY_NORMAL,
+      COMMAND_PRIORITY_NORMAL
     );
 
     if (!onCmdEnter && !onShiftCmdEnter) {
@@ -159,7 +159,7 @@ export function KeyboardCommandsPlugin({
     const unregisterModifier = editor.registerCommand(
       KEY_MODIFIER_COMMAND,
       (event: KeyboardEvent) => {
-        if (!(event.metaKey || event.ctrlKey) || event.key !== "Enter") {
+        if (!(event.metaKey || event.ctrlKey) || event.key !== 'Enter') {
           return false;
         }
 
@@ -171,14 +171,14 @@ export function KeyboardCommandsPlugin({
           return true;
         }
 
-        if (!event.shiftKey && onCmdEnter && sendShortcut === "ModifierEnter") {
+        if (!event.shiftKey && onCmdEnter && sendShortcut === 'ModifierEnter') {
           flushAndSubmit();
           return true;
         }
 
         return false;
       },
-      COMMAND_PRIORITY_NORMAL,
+      COMMAND_PRIORITY_NORMAL
     );
 
     const unregisterEnter = editor.registerCommand(
@@ -191,7 +191,7 @@ export function KeyboardCommandsPlugin({
           return false;
         }
 
-        if (sendShortcut === "Enter") {
+        if (sendShortcut === 'Enter') {
           if (event.shiftKey || event.metaKey || event.ctrlKey) {
             return false;
           }
@@ -206,7 +206,7 @@ export function KeyboardCommandsPlugin({
 
         return false;
       },
-      COMMAND_PRIORITY_HIGH,
+      COMMAND_PRIORITY_HIGH
     );
 
     return () => {
