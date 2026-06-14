@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/odrinateur/cdesktop/compare/v1.0.1...v1.1.0) (2026-06-14)
+
+
+### Features
+
+* **shortcuts:** add Cmd+B / Cmd+, / Cmd+N global shortcuts and Settings tab ([846efdb](https://github.com/odrinateur/cdesktop/commit/846efdb9a6da7e180a5f7be5305eaf8fc0ed1308))
+
 ## [1.0.1](https://github.com/odrinateur/cdesktop/compare/v1.0.0...v1.0.1) (2026-06-14)
 
 
