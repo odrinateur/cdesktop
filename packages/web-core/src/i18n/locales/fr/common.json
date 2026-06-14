@@ -475,6 +475,7 @@
       "formatInlineCode": "Format inline code",
       "sendMessage": "Envoyer le message",
       "toggleLeftSidebar": "Basculer la barre latérale",
+      "toggleRightSidebar": "Basculer la barre latérale droite",
       "openSettings": "Ouvrir les paramètres",
       "newFromCurrent": "Nouvelle conversation avec le même agent",
       "settings": "Aller aux Paramètres",

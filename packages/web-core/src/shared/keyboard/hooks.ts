@@ -154,6 +154,13 @@ export const useKeyToggleLeftSidebar = createSemanticHook(
 );
 
 /**
+ * Toggle right sidebar - typically Cmd/Ctrl+Shift+B (global)
+ */
+export const useKeyToggleRightSidebar = createSemanticHook(
+  Action.TOGGLE_RIGHT_SIDEBAR
+);
+
+/**
  * Create a new conversation reusing the current workspace's agent and repos -
  * typically Cmd/Ctrl+N (global)
  */

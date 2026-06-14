@@ -65,6 +65,10 @@ function useShortcutGroups(): ShortcutGroup[] {
           description: t('shortcuts.actions.toggleLeftSidebar'),
         },
         {
+          keys: [mod, '⇧', 'B'],
+          description: t('shortcuts.actions.toggleRightSidebar'),
+        },
+        {
           keys: [mod, ','],
           description: t('shortcuts.actions.openSettings'),
         },
