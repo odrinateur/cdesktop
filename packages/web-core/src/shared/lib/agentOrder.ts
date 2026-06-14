@@ -2,6 +2,7 @@ import { BaseCodingAgent } from 'shared/types';
 
 export const AGENT_PRIORITY: BaseCodingAgent[] = [
   BaseCodingAgent.CLAUDE_CODE,
+  BaseCodingAgent.CURSOR_AGENT,
   BaseCodingAgent.CODEX,
   BaseCodingAgent.OPENCODE,
   BaseCodingAgent.GEMINI,
