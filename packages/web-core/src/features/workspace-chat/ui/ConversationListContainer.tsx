@@ -41,6 +41,7 @@ import {
   isAggregatedGroup,
   isAggregatedDiffGroup,
   isAggregatedThinkingGroup,
+  isAggregatedTurnGroup,
 } from '@/shared/hooks/useConversationHistory/types';
 import { useConversationHistory } from '../model/hooks/useConversationHistory';
 import { useSetTokenUsageInfo } from '../model/contexts/EntriesContext';
@@ -140,6 +141,24 @@ function renderRowContent(
         aggregatedGroup={null}
         aggregatedDiffGroup={null}
         aggregatedThinkingGroup={entry}
+        aggregatedTurnGroup={null}
+        entry={null}
+        executionProcessId={entry.executionProcessId}
+        workspaceWithSession={attempt}
+        resetAction={resetAction}
+        repos={repos}
+      />
+    );
+  }
+
+  if (isAggregatedTurnGroup(entry)) {
+    return (
+      <DisplayConversationEntry
+        expansionKey={entry.patchKey}
+        aggregatedGroup={null}
+        aggregatedDiffGroup={null}
+        aggregatedThinkingGroup={null}
+        aggregatedTurnGroup={entry}
         entry={null}
         executionProcessId={entry.executionProcessId}
         workspaceWithSession={attempt}

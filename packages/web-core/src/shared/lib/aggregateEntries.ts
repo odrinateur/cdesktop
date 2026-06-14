@@ -3,7 +3,7 @@ import type {
   DisplayEntry,
   AggregatedPatchGroup,
   AggregatedDiffGroup,
-  AggregatedThinkingGroup,
+  AggregatedTurnGroup,
   ToolAggregationType,
 } from '@/shared/hooks/useConversationHistory/types';
 
@@ -82,90 +82,114 @@ function getAggregationType(
   return null;
 }
 
+function isAssistantMessage(entry: PatchTypeWithKey): boolean {
+  if (entry.type !== 'NORMALIZED_ENTRY') return false;
+  return entry.content.entry_type.type === 'assistant_message';
+}
+
 /**
- * First pass: group consecutive thinking entries within each turn (between user messages)
- * for all turns except the last one.
+ * Trailing entries that don't visually represent a "final answer" from the
+ * model — token-usage tallies, hook lifecycle pings, etc. They live at the
+ * tail of a turn but shouldn't prevent the assistant_message just before
+ * them from being treated as the final message.
  */
-function aggregateThinkingInPreviousTurns(
-  entries: PatchTypeWithKey[]
-): PatchTypeWithKey[] {
+function isTailIgnorable(entry: PatchTypeWithKey): boolean {
+  if (entry.type !== 'NORMALIZED_ENTRY') return false;
+  const t = entry.content.entry_type.type;
+  if (t === 'token_usage_info' || t === 'next_action') return true;
+  if (
+    t === 'system_message' &&
+    typeof entry.content.content === 'string' &&
+    entry.content.content.startsWith('System: hook_')
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Collapse the body of each turn into an accordion.
+ *
+ * A "turn" starts at a `user_message` and runs until the next `user_message`
+ * (or the end of the stream). Within the turn we identify the **last**
+ * `assistant_message` and keep it visible outside the accordion. Everything
+ * between the user message and that final assistant message (thinking, tool
+ * uses, intermediate assistant text, system/error messages) is wrapped in a
+ * single `AggregatedTurnGroup`. If a turn has no assistant message yet (e.g.
+ * during streaming), the whole body goes into the accordion.
+ *
+ * Entries that appear *before* the first user message (script preambles,
+ * etc.) are passed through unchanged.
+ */
+function aggregateTurns(entries: PatchTypeWithKey[]): PatchTypeWithKey[] {
   if (entries.length === 0) return [];
 
-  // Find all user message indices
   const userMessageIndices: number[] = [];
   entries.forEach((entry, index) => {
-    if (isUserMessage(entry)) {
-      userMessageIndices.push(index);
-    }
+    if (isUserMessage(entry)) userMessageIndices.push(index);
   });
 
-  // If there's 0 or 1 user message, no "previous" turns exist
-  if (userMessageIndices.length <= 1) {
-    return entries;
-  }
+  if (userMessageIndices.length === 0) return entries;
 
-  // The last user message index marks the start of the "current" turn
-  const lastUserMessageIndex =
-    userMessageIndices[userMessageIndices.length - 1];
-
-  // Process entries, grouping thinking entries in previous turns
   const result: PatchTypeWithKey[] = [];
-  let currentThinkingGroup: PatchTypeWithKey[] = [];
 
-  const flushThinkingGroup = () => {
-    if (currentThinkingGroup.length === 0) return;
-
-    if (currentThinkingGroup.length === 1) {
-      // Single thinking entry - create a group anyway for consistency in collapsed view
-      const entry = currentThinkingGroup[0];
-      const aggregatedGroup: AggregatedThinkingGroup = {
-        type: 'AGGREGATED_THINKING_GROUP',
-        entries: [...currentThinkingGroup],
-        patchKey: `agg-thinking:${entry.patchKey}`,
-        executionProcessId: entry.executionProcessId,
-      };
-      // Cast to PatchTypeWithKey to maintain the array type
-      result.push(aggregatedGroup as unknown as PatchTypeWithKey);
-    } else {
-      // Multiple entries - create an aggregated thinking group
-      const firstEntry = currentThinkingGroup[0];
-      const aggregatedGroup: AggregatedThinkingGroup = {
-        type: 'AGGREGATED_THINKING_GROUP',
-        entries: [...currentThinkingGroup],
-        patchKey: `agg-thinking:${firstEntry.patchKey}`,
-        executionProcessId: firstEntry.executionProcessId,
-      };
-      // Cast to PatchTypeWithKey to maintain the array type
-      result.push(aggregatedGroup as unknown as PatchTypeWithKey);
-    }
-
-    currentThinkingGroup = [];
-  };
-
-  for (let i = 0; i < entries.length; i++) {
-    const entry = entries[i];
-    const isInPreviousTurn = i < lastUserMessageIndex;
-
-    // Track turn boundaries
-    if (isUserMessage(entry)) {
-      // Flush any pending thinking group before the user message
-      flushThinkingGroup();
-      result.push(entry);
-      continue;
-    }
-
-    // Only aggregate thinking entries in previous turns
-    if (isInPreviousTurn && isThinkingEntry(entry)) {
-      currentThinkingGroup.push(entry);
-    } else {
-      // Flush any pending thinking group
-      flushThinkingGroup();
-      result.push(entry);
-    }
+  // Pass through anything before the first user message.
+  for (let i = 0; i < userMessageIndices[0]; i++) {
+    result.push(entries[i]);
   }
 
-  // Flush any remaining thinking group
-  flushThinkingGroup();
+  for (let t = 0; t < userMessageIndices.length; t++) {
+    const userIdx = userMessageIndices[t];
+    const turnEndExclusive =
+      t + 1 < userMessageIndices.length
+        ? userMessageIndices[t + 1]
+        : entries.length;
+
+    const userEntry = entries[userIdx];
+    result.push(userEntry);
+
+    // The "final message" tail is the assistant_message that ends this turn,
+    // optionally followed only by tail-ignorable entries (token usage, hook
+    // pings). If the last meaningful entry of the turn is NOT an
+    // assistant_message — e.g. the turn was interrupted while a tool was
+    // running, or it ended on an error — there is no tail and the entire
+    // body collapses into the accordion.
+    let lastMeaningfulIdx = -1;
+    for (let i = turnEndExclusive - 1; i > userIdx; i--) {
+      if (!isTailIgnorable(entries[i])) {
+        lastMeaningfulIdx = i;
+        break;
+      }
+    }
+    const lastAssistantIdx =
+      lastMeaningfulIdx !== -1 && isAssistantMessage(entries[lastMeaningfulIdx])
+        ? lastMeaningfulIdx
+        : -1;
+
+    const bodyEnd =
+      lastAssistantIdx === -1 ? turnEndExclusive : lastAssistantIdx;
+    const body = entries.slice(userIdx + 1, bodyEnd);
+
+    if (body.length > 0) {
+      const first = body[0];
+      const group: AggregatedTurnGroup = {
+        type: 'AGGREGATED_TURN_GROUP',
+        entries: body,
+        patchKey: `agg-turn:${userEntry.patchKey}`,
+        executionProcessId: first.executionProcessId,
+      };
+      result.push(group as unknown as PatchTypeWithKey);
+    }
+
+    if (lastAssistantIdx !== -1) {
+      result.push(entries[lastAssistantIdx]);
+      // Anything after the final assistant message but before the next user
+      // message (rare — e.g. trailing token usage info) passes through.
+      for (let i = lastAssistantIdx + 1; i < turnEndExclusive; i++) {
+        result.push(entries[i]);
+      }
+    }
+  }
 
   return result;
 }
@@ -193,9 +217,9 @@ export function aggregateConsecutiveEntries(
   const filteredEntries = entries.filter((e) => !isEmptyThinkingEntry(e));
   if (filteredEntries.length === 0) return [];
 
-  // First pass: aggregate thinking entries in previous turns
-  const entriesWithThinkingAggregated =
-    aggregateThinkingInPreviousTurns(filteredEntries);
+  // First pass: collapse each turn's body (between user msg and final
+  // assistant msg) into an AggregatedTurnGroup.
+  const entriesWithTurnsAggregated = aggregateTurns(filteredEntries);
 
   const result: DisplayEntry[] = [];
 
@@ -253,11 +277,10 @@ export function aggregateConsecutiveEntries(
     currentDiffPath = null;
   };
 
-  for (const entry of entriesWithThinkingAggregated) {
-    // Check if this is already an aggregated thinking group (from first pass)
+  for (const entry of entriesWithTurnsAggregated) {
+    // Check if this is already an aggregated turn group (from first pass)
     if (
-      (entry as unknown as AggregatedThinkingGroup).type ===
-      'AGGREGATED_THINKING_GROUP'
+      (entry as unknown as AggregatedTurnGroup).type === 'AGGREGATED_TURN_GROUP'
     ) {
       flushToolGroup();
       flushDiffGroup();

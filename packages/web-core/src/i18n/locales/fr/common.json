@@ -38,6 +38,8 @@
     "deniedByUser": "{{toolName}} refusé par l'utilisateur",
     "tool": "Outil",
     "thinking": "Réflexion",
+    "turnSteps": "{{count}} étape",
+    "turnSteps_other": "{{count}} étapes",
     "toolSummary": {
       "read": "Lu {{path}}",
       "searched": "Recherché \"{{query}}\"",
