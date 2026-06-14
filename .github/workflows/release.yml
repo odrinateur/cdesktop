@@ -581,5 +581,5 @@ jobs:
           HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
           RELEASE_TAG: ${{ needs.release.outputs.tag }}
           RELEASE_VERSION: ${{ needs.release.outputs.version }}
-          TAP_REPO: Odrinateur/homebrew-tap
+          TAP_REPO: odrinateur/homebrew-tap
         run: bash scripts/release/update_homebrew_tap.sh
