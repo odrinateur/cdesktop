@@ -466,6 +466,7 @@ pub trait ContainerService {
                 language: ScriptRequestLanguage::Bash,
                 context: ScriptContext::CleanupScript,
                 working_dir: Some(first.name.clone()),
+                label: None,
             }),
             None,
         );
@@ -477,6 +478,7 @@ pub trait ContainerService {
                     language: ScriptRequestLanguage::Bash,
                     context: ScriptContext::CleanupScript,
                     working_dir: Some(repo.name.clone()),
+                    label: None,
                 }),
                 None,
             ));
@@ -503,6 +505,7 @@ pub trait ContainerService {
                 language: ScriptRequestLanguage::Bash,
                 context: ScriptContext::ArchiveScript,
                 working_dir: Some(first.name.clone()),
+                label: None,
             }),
             None,
         );
@@ -514,6 +517,7 @@ pub trait ContainerService {
                     language: ScriptRequestLanguage::Bash,
                     context: ScriptContext::ArchiveScript,
                     working_dir: Some(repo.name.clone()),
+                    label: None,
                 }),
                 None,
             ));
@@ -625,6 +629,7 @@ pub trait ContainerService {
                 language: ScriptRequestLanguage::Bash,
                 context: ScriptContext::SetupScript,
                 working_dir: Some(first.name.clone()),
+                label: None,
             }),
             None,
         );
@@ -636,6 +641,7 @@ pub trait ContainerService {
                     language: ScriptRequestLanguage::Bash,
                     context: ScriptContext::SetupScript,
                     working_dir: Some(repo.name.clone()),
+                    label: None,
                 }),
                 None,
             ));
@@ -652,6 +658,7 @@ pub trait ContainerService {
                     language: ScriptRequestLanguage::Bash,
                     context: ScriptContext::SetupScript,
                     working_dir: Some(repo.name.clone()),
+                    label: None,
                 }),
                 None,
             )
@@ -671,6 +678,7 @@ pub trait ContainerService {
                         language: ScriptRequestLanguage::Bash,
                         context: ScriptContext::SetupScript,
                         working_dir: Some(repo.name.clone()),
+                        label: None,
                     }),
                     Some(Box::new(chained)),
                 );
