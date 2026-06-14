@@ -1,3 +1,13 @@
+## [1.0.1](https://github.com/odrinateur/cdesktop/compare/v1.0.0...v1.0.1) (2026-06-14)
+
+
+### Bug Fixes
+
+* **chat:** align user message bubble to the right ([90c74da](https://github.com/odrinateur/cdesktop/commit/90c74daabeff672b51e6038807c55d9fd57b8eb3))
+* **desktop:** indent chat breadcrumb when sidebar closed on Tauri macOS ([4415d0c](https://github.com/odrinateur/cdesktop/commit/4415d0cbab5dab8e482cd4f8b363eed9afe260b2))
+* **desktop:** make window draggable and reposition macOS traffic lights ([513fe4b](https://github.com/odrinateur/cdesktop/commit/513fe4bff07606d1808ce2b41325ef2b253cb9e9))
+* **release:** silence post-release issue commenting, add manual tap workflow ([eed753d](https://github.com/odrinateur/cdesktop/commit/eed753d64e7dc806f9a143b2d7f0653d70f4dc2d))
+
 # 1.0.0 (2026-06-14)
 
 

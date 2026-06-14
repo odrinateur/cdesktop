@@ -237,7 +237,7 @@ checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
 
 [[package]]
 name = "api-types"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "chrono",
  "schemars 1.2.1",
@@ -1073,7 +1073,7 @@ dependencies = [
 
 [[package]]
 name = "cdesktop-tauri"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "arboard",
  "async-trait",
@@ -1256,7 +1256,7 @@ checksum = "c8d4a3bb8b1e0c1050499d1815f5ab16d04f0959b233085fb31653fbfc9d98f9"
 
 [[package]]
 name = "client-info"
-version = "1.0.0"
+version = "1.0.1"
 
 [[package]]
 name = "clipboard-win"
@@ -2049,7 +2049,7 @@ checksum = "d7a1e2f27636f116493b8b860f5546edb47c8d8f8ea73e1d2a20be88e28d1fea"
 
 [[package]]
 name = "db"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "chrono",
@@ -2102,7 +2102,7 @@ dependencies = [
 
 [[package]]
 name = "deployment"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2267,7 +2267,7 @@ dependencies = [
 
 [[package]]
 name = "desktop-bridge"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "base64 0.22.1",
  "dirs 5.0.1",
@@ -2629,7 +2629,7 @@ checksum = "4ef6b89e5b37196644d8796de5268852ff179b44e96276cf4290264843743bb7"
 
 [[package]]
 name = "embedded-ssh"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2817,7 +2817,7 @@ dependencies = [
 
 [[package]]
 name = "executors"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "agent-client-protocol",
  "async-stream",
@@ -3536,7 +3536,7 @@ dependencies = [
 
 [[package]]
 name = "git"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "chrono",
  "dirs 5.0.1",
@@ -3551,7 +3551,7 @@ dependencies = [
 
 [[package]]
 name = "git-host"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "async-trait",
  "backon",
@@ -4975,7 +4975,7 @@ checksum = "6373607a59f0be73a39b6fe456b8192fcc3585f602af20751600e974dd455e77"
 
 [[package]]
 name = "local-deployment"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "api-types",
@@ -5195,7 +5195,7 @@ checksum = "8863b587001c1b9a8a4e36008cebc6b3612cb1226fe2de94858e06092687b608"
 
 [[package]]
 name = "mcp"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "api-types",
@@ -6713,7 +6713,7 @@ dependencies = [
 
 [[package]]
 name = "preview-proxy"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "axum",
  "http",
@@ -7509,7 +7509,7 @@ checksum = "dc897dd8d9e8bd1ed8cdad82b5966c3e0ecae09fb1907d58efaa013543185d0a"
 
 [[package]]
 name = "relay-client"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -7532,7 +7532,7 @@ dependencies = [
 
 [[package]]
 name = "relay-control"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -7546,7 +7546,7 @@ dependencies = [
 
 [[package]]
 name = "relay-hosts"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "axum",
  "base64 0.22.1",
@@ -7579,7 +7579,7 @@ dependencies = [
 
 [[package]]
 name = "relay-protocol"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "axum",
@@ -7590,7 +7590,7 @@ dependencies = [
 
 [[package]]
 name = "relay-tunnel-core"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "axum",
@@ -7609,7 +7609,7 @@ dependencies = [
 
 [[package]]
 name = "relay-types"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "chrono",
  "serde",
@@ -7620,7 +7620,7 @@ dependencies = [
 
 [[package]]
 name = "relay-webrtc"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -7646,7 +7646,7 @@ dependencies = [
 
 [[package]]
 name = "relay-ws"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "axum",
@@ -7669,7 +7669,7 @@ dependencies = [
 
 [[package]]
 name = "remote-info"
-version = "1.0.0"
+version = "1.0.1"
 
 [[package]]
 name = "reqwest"
@@ -7766,7 +7766,7 @@ checksum = "1e061d1b48cb8d38042de4ae0a7a6401009d6143dc80d2e2d6f31f0bdd6470c7"
 
 [[package]]
 name = "review"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "clap",
@@ -8872,7 +8872,7 @@ dependencies = [
 
 [[package]]
 name = "server"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "api-types",
@@ -8939,7 +8939,7 @@ dependencies = [
 
 [[package]]
 name = "services"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "anyhow",
  "api-types",
@@ -10978,7 +10978,7 @@ checksum = "009994f150cc0cd50ff54917d5bc8bffe8cad10ca10d81c34da2ec421ae61782"
 
 [[package]]
 name = "trusted-key-auth"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "base64 0.22.1",
  "ed25519-dalek",
@@ -11327,7 +11327,7 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "utils"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "axum",
  "bytes",
@@ -12685,7 +12685,7 @@ dependencies = [
 
 [[package]]
 name = "workspace-manager"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "db",
  "git",
@@ -12700,7 +12700,7 @@ dependencies = [
 
 [[package]]
 name = "worktree-manager"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "dunce",
  "git",
@@ -12763,7 +12763,7 @@ dependencies = [
 
 [[package]]
 name = "ws-bridge"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "axum",
  "bytes",
