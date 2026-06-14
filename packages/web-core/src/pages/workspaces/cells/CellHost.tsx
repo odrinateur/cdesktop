@@ -32,6 +32,7 @@ import { PanelLayout, PanelMenu, ResizeHandle } from '../panels';
 import { PanelHeaderActionButton } from '../panels/PanelHeaderActionButton';
 import { registerFirstCellScroll } from './firstCellScroll';
 import { CellDropOverlay } from './CellDropOverlay';
+import { ProjectScriptsToolbar } from './ProjectScriptsToolbar';
 import { type CellId } from '@/shared/stores/useSessionGridStore';
 
 interface CellHostProps {
@@ -315,12 +316,18 @@ function CellHostInner({
                 when chat is full-width, reserve room for the toolbar. */}
             <div
               className={cn(
-                'absolute top-2 z-20 overflow-hidden',
-                breadcrumbNeedsTrafficLightInset ? 'left-[80px]' : 'left-5',
+                'absolute top-3 z-20 flex items-center gap-2 overflow-hidden',
+                breadcrumbNeedsTrafficLightInset ? 'left-[100px]' : 'left-5',
                 hasPanels ? 'right-0' : 'right-[80px]'
               )}
             >
               <NavbarBreadcrumbSlot />
+              {workspaceId && (
+                <ProjectScriptsToolbar
+                  workspaceId={workspaceId}
+                  useWorktree={selectedWorkspace?.use_worktree ?? false}
+                />
+              )}
             </div>
           </Panel>
         )}
