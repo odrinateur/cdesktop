@@ -44,6 +44,13 @@ function cargoSetVersion(args) {
 }
 
 cargoSetVersion(['--workspace']);
-if (fs.existsSync(path.join(repoRoot, 'crates/remote/Cargo.toml'))) {
+
+// crates/remote is the cloud service workspace and pulls a private git dep
+// (BloopAI/vibe-kanban-private) that CI can't authenticate against on forks.
+// Skip it unless the caller explicitly opts in via BUMP_REMOTE_WORKSPACE=1.
+if (
+  process.env.BUMP_REMOTE_WORKSPACE === '1' &&
+  fs.existsSync(path.join(repoRoot, 'crates/remote/Cargo.toml'))
+) {
   cargoSetVersion(['--manifest-path', 'crates/remote/Cargo.toml', '--workspace']);
 }
