@@ -86,6 +86,7 @@ pub enum ContainerError {
 }
 
 #[async_trait]
+#[allow(clippy::too_many_arguments)]
 pub trait ContainerService {
     fn msg_stores(&self) -> &Arc<RwLock<HashMap<Uuid, Arc<MsgStore>>>>;
 
@@ -1305,23 +1306,21 @@ pub trait ContainerService {
             if let (Some(model_id), Some(provider_id)) = (
                 executor_action.selected_model_id.as_deref(),
                 executor_action.selected_provider_id.as_deref(),
-            ) {
-                if !model_id.is_empty() && !provider_id.is_empty() {
-                    if let Err(e) = CodingAgentTurn::update_selected_model_provider(
-                        &self.db().pool,
-                        execution_process.id,
-                        model_id,
-                        provider_id,
-                    )
-                    .await
-                    {
-                        tracing::warn!(
-                            execution_process_id = %execution_process.id,
-                            error = %e,
-                            "failed to persist model/provider selection on turn"
-                        );
-                    }
-                }
+            ) && !model_id.is_empty()
+                && !provider_id.is_empty()
+                && let Err(e) = CodingAgentTurn::update_selected_model_provider(
+                    &self.db().pool,
+                    execution_process.id,
+                    model_id,
+                    provider_id,
+                )
+                .await
+            {
+                tracing::warn!(
+                    execution_process_id = %execution_process.id,
+                    error = %e,
+                    "failed to persist model/provider selection on turn"
+                );
             }
         }
 
