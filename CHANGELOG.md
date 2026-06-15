@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/odrinateur/cdesktop/compare/v1.2.0...v1.2.1) (2026-06-15)
+
+
+### Bug Fixes
+
+* **i18n:** add missing translation keys across locales ([4df78f8](https://github.com/odrinateur/cdesktop/commit/4df78f83cb7bb00c281a115bcdfbf145b0620466))
+
 # [1.2.0](https://github.com/odrinateur/cdesktop/compare/v1.1.0...v1.2.0) (2026-06-14)
 
 
