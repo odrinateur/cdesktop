@@ -109,7 +109,7 @@
   "signIn": "Se connecter",
   "signOut": "Se déconnecter",
   "oauth": {
-    "title": "Se connecter à Vibe Kanban",
+    "title": "Se connecter à cdesktop",
     "description": "Connectez-vous pour rejoindre des organisations et partager des tâches avec votre équipe",
     "continueWithGitHub": "Continuer avec GitHub",
     "continueWithGoogle": "Continuer avec Google",
