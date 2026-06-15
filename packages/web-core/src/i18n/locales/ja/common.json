@@ -54,6 +54,8 @@
     "plan": "計画",
     "tool": "ツール",
     "thinking": "思考中",
+    "turnSteps": "{{count}} ステップ",
+    "turnSteps_other": "{{count}} ステップ",
     "toolSummary": {
       "read": "{{path}} を読み込み",
       "searched": "「{{query}}」を検索",
@@ -474,6 +476,8 @@
       "sendMessage": "メッセージを送信",
       "toggleLeftSidebar": "左サイドバーの切り替え",
       "toggleRightSidebar": "右サイドバーの切り替え",
+      "openSettings": "設定を開く",
+      "newFromCurrent": "同じエージェントで新しい会話",
       "settings": "設定に移動",
       "new-workspace": "新しいセッションに移動",
       "duplicate-workspace": "セッションを複製",

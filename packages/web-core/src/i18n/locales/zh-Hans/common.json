@@ -38,6 +38,8 @@
     "deniedByUser": "用户拒绝了 {{toolName}}",
     "tool": "工具",
     "thinking": "思考中",
+    "turnSteps": "{{count}} 个步骤",
+    "turnSteps_other": "{{count}} 个步骤",
     "toolSummary": {
       "read": "读取 {{path}}",
       "searched": "搜索 \"{{query}}\"",
@@ -474,6 +476,8 @@
       "sendMessage": "发送消息",
       "toggleLeftSidebar": "切换左侧边栏",
       "toggleRightSidebar": "切换右侧边栏",
+      "openSettings": "打开设置",
+      "newFromCurrent": "使用相同智能体新建对话",
       "settings": "前往设置",
       "new-workspace": "前往新会话",
       "duplicate-workspace": "复制会话",

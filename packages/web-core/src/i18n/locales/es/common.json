@@ -54,6 +54,8 @@
     "plan": "Plan",
     "tool": "Herramienta",
     "thinking": "Pensando",
+    "turnSteps": "{{count}} paso",
+    "turnSteps_other": "{{count}} pasos",
     "toolSummary": {
       "read": "Leyó {{path}}",
       "searched": "Buscó \"{{query}}\"",
@@ -474,6 +476,8 @@
       "sendMessage": "Enviar mensaje",
       "toggleLeftSidebar": "Alternar barra lateral izquierda",
       "toggleRightSidebar": "Alternar barra lateral derecha",
+      "openSettings": "Abrir ajustes",
+      "newFromCurrent": "Nueva conversación con el mismo agente",
       "settings": "Ir a Ajustes",
       "new-workspace": "Ir a Nueva sesión",
       "duplicate-workspace": "Duplicar sesión",

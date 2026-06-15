@@ -54,6 +54,8 @@
     "plan": "계획",
     "tool": "도구",
     "thinking": "생각 중",
+    "turnSteps": "{{count}}단계",
+    "turnSteps_other": "{{count}}단계",
     "toolSummary": {
       "read": "{{path}} 읽기",
       "searched": "\"{{query}}\" 검색",
@@ -474,6 +476,8 @@
       "sendMessage": "메시지 보내기",
       "toggleLeftSidebar": "왼쪽 사이드바 전환",
       "toggleRightSidebar": "오른쪽 사이드바 전환",
+      "openSettings": "설정 열기",
+      "newFromCurrent": "동일한 에이전트로 새 대화",
       "settings": "설정으로 이동",
       "new-workspace": "새 세션으로 이동",
       "duplicate-workspace": "세션 복제",
