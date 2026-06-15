@@ -47,10 +47,18 @@ jobs:
       - name: Lint commit messages
         if: github.event_name == 'push'
         run: |
-          npx commitlint \
-            --from ${{ github.event.before }} \
-            --to ${{ github.event.after }} \
-            --verbose
+          # github.event.before can be missing — all-zeros on a branch's first
+          # push, or an orphaned SHA after a force-push — which makes the commit
+          # range invalid and fails the step. Fall back to linting just the tip.
+          if git rev-parse --quiet --verify "${{ github.event.before }}^{commit}" >/dev/null 2>&1; then
+            npx commitlint \
+              --from ${{ github.event.before }} \
+              --to ${{ github.event.after }} \
+              --verbose
+          else
+            echo "Base commit ${{ github.event.before }} unavailable; linting tip commit only."
+            npx commitlint --last --verbose
+          fi
 
       - name: Compute next version (dry run)
         id: dry
