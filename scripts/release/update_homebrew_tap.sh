@@ -60,6 +60,14 @@ cask "cdesktop" do
 
   app "cdesktop.app"
 
+  # The app is ad-hoc signed but not notarized (no Apple Developer ID).
+  # Strip the quarantine flag Homebrew adds on download so Gatekeeper does
+  # not reject it with "cdesktop.app is damaged and can't be opened".
+  postflight do
+    system_command "/usr/bin/xattr",
+                   args: ["-dr", "com.apple.quarantine", "#{appdir}/cdesktop.app"]
+  end
+
   zap trash: [
     "~/Library/Application Support/cdesktop",
     "~/Library/Preferences/cdesktop.plist",
