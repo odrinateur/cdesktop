@@ -23,6 +23,8 @@
         "agentsDesc": "コーディングエージェントの設定",
         "mcp": "MCPサーバー",
         "mcpDesc": "モデルコンテキストプロトコルサーバー",
+        "shortcuts": "ショートカット",
+        "shortcutsDesc": "キーボードショートカット一覧",
         "organizations": "Organization Settings",
         "organizationsDesc": "Manage organization members and permissions",
         "remote-projects": "プロジェクト",
