@@ -21,7 +21,8 @@
     "active": true,
     "targets": "all",
     "macOS": {
-      "bundleName": "cdesktop"
+      "bundleName": "cdesktop",
+      "signingIdentity": "-"
     },
     "windows": {},
     "icon": [
