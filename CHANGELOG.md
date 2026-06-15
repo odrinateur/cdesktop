@@ -1,3 +1,12 @@
+## [1.2.2](https://github.com/odrinateur/cdesktop/compare/v1.2.1...v1.2.2) (2026-06-15)
+
+
+### Bug Fixes
+
+* **ci:** make commitlint resilient to missing base commit ([3dca842](https://github.com/odrinateur/cdesktop/commit/3dca842af23ee37698440075a1c782426e6bca7a))
+* **i18n:** add missing translation keys across locales ([fd4ea7f](https://github.com/odrinateur/cdesktop/commit/fd4ea7f0870838e7fb1b8ef9313a2f4599e53312))
+* **macos:** ad-hoc sign app and strip quarantine in cask ([8c9bb29](https://github.com/odrinateur/cdesktop/commit/8c9bb299d496ca251f2f3a081483fd1825727cad))
+
 ## [1.2.1](https://github.com/odrinateur/cdesktop/compare/v1.2.0...v1.2.1) (2026-06-15)
 
 
