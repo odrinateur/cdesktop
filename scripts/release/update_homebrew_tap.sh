@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Push a fresh cdesktop cask + CLI formula to the Homebrew tap.
+# Push a fresh cdesktop cask (cdesktop) + CLI formula (cdesktop-cli) to the
+# Homebrew tap. The formula token is intentionally distinct from the cask token
+# to avoid the name collision that forced a manual `brew link` on every install.
 #
 # Required env:
 #   HOMEBREW_TAP_GITHUB_TOKEN  PAT with `repo` scope on $TAP_REPO
@@ -76,8 +78,8 @@ cask "cdesktop" do
 end
 RUBY
 
-cat > "$work/tap/Formula/cdesktop.rb" <<RUBY
-class Cdesktop < Formula
+cat > "$work/tap/Formula/cdesktop-cli.rb" <<RUBY
+class CdesktopCli < Formula
   desc "Coding-session desktop CLI"
   homepage "https://github.com/${OWNER_REPO}"
   license "Apache-2.0"
@@ -112,7 +114,14 @@ RUBY
 cd "$work/tap"
 git config user.name  "github-actions[bot]"
 git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-git add Casks/cdesktop.rb Formula/cdesktop.rb
+
+# Drop the legacy formula whose token collided with the cask (both "cdesktop"),
+# which forced a manual `brew link` on every install.
+if [ -f Formula/cdesktop.rb ]; then
+  git rm -q Formula/cdesktop.rb
+fi
+
+git add Casks/cdesktop.rb Formula/cdesktop-cli.rb
 if git diff --cached --quiet; then
   echo "Tap already up to date for ${RELEASE_TAG}; nothing to push."
   exit 0
