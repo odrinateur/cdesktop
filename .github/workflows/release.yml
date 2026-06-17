@@ -115,12 +115,10 @@ jobs:
       - name: Install deps
         run: pnpm install
 
-      - name: Lint frontend
-        run: cd packages/local-web && npm run lint
-
-      - name: Type check frontend
-        run: cd packages/local-web && npx tsc --noEmit
-
+      # NOTE: frontend lint + tsc are intentionally NOT run here — they already
+      # run in test.yml (frontend-checks) on every push to main, so re-running
+      # them in the release would only serialize dead time in front of every
+      # native build. The release just needs the built artifact.
       - name: Build frontend
         run: cd packages/local-web && npm run build
         env:
@@ -428,10 +426,17 @@ jobs:
             deployment-target: "10.13"
     env:
       MACOSX_DEPLOYMENT_TARGET: ${{ matrix.deployment-target }}
+      CARGO_INCREMENTAL: "0"
+      SCCACHE_GHA_ENABLED: "true"
+      RUSTC_WRAPPER: "sccache"
+      SCCACHE_CACHE_SIZE: "10G"
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
+      - name: Setup sccache
+        uses: BloopAI/sccache-action@main
 
       - name: Setup Node
         uses: ./.github/actions/setup-node
