@@ -1,3 +1,16 @@
+# [1.3.0](https://github.com/odrinateur/cdesktop/compare/v1.2.3...v1.3.0) (2026-06-17)
+
+
+### Bug Fixes
+
+* **tauri:** adjust traffic light position in window builder for improved UI layout ([15d5e43](https://github.com/odrinateur/cdesktop/commit/15d5e4353a0d69aeae1072b9cec6f23ca0d01cd9))
+
+
+### Features
+
+* **layout:** make window top draggable on Tauri macOS without shifting content ([4e27275](https://github.com/odrinateur/cdesktop/commit/4e272751873644c4a275ac78bee96510c931f762))
+* **workspace-chat:** restore message content to input on reset ([355cb5d](https://github.com/odrinateur/cdesktop/commit/355cb5dcb041c7683e3399c8a1a318b290bea6a0))
+
 ## [1.2.3](https://github.com/odrinateur/cdesktop/compare/v1.2.2...v1.2.3) (2026-06-17)
 
 
