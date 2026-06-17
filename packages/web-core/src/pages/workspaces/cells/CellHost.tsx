@@ -315,6 +315,7 @@ function CellHostInner({
                 right edge (the toolbar floats over the right panel area);
                 when chat is full-width, reserve room for the toolbar. */}
             <div
+              data-tauri-drag-region
               className={cn(
                 'absolute top-3 z-20 flex items-center gap-2 overflow-hidden',
                 breadcrumbNeedsTrafficLightInset ? 'left-[100px]' : 'left-5',
@@ -355,7 +356,10 @@ function CellHostInner({
       {/* Visual order (left → right): close-panel X (in PanelHost header)
           · toggle-panels (PanelMenu) · close-cell X. PanelMenu sits in the
           middle so the two X buttons can't be confused for one another. */}
-      <div className="absolute top-2 right-3 z-20 flex items-center gap-0">
+      <div
+        data-tauri-drag-region
+        className="absolute top-2 right-3 z-20 flex items-center gap-0"
+      >
         <PanelMenu workspaceId={workspaceId} />
         {!isFirstCell && onClose && (
           <button

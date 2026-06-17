@@ -379,18 +379,16 @@ export function SharedAppLayout() {
             <div className="relative min-h-0 overflow-hidden">
               {/* Tauri macOS: the window uses an overlay titlebar so content
                   reaches the top edge. This transparent strip makes the top
-                  band draggable to move the window. It has no z-index on
-                  purpose: a positioned element with z-index:auto placed first
-                  in the tree paints ABOVE normal-flow content (so dragging
-                  works over it) but BELOW every later positioned element
-                  (breadcrumb/panel controls at z-20, sidebar at z-40), so
-                  those stay clickable. Being absolute, it does not shift any
-                  content. */}
+                  band draggable to move the window. z-10 paints it ABOVE the
+                  base content (chat/panels, which sit at z-auto) so dragging
+                  works, but BELOW the top chrome (breadcrumb/panel controls at
+                  z-20, sidebar at z-40), so those stay clickable. Being
+                  absolute, it does not shift any content. */}
               {isTauriMac() && (
                 <div
                   data-tauri-drag-region
                   aria-hidden
-                  className="absolute inset-x-0 top-0 h-10"
+                  className="absolute inset-x-0 top-0 z-10 h-10"
                 />
               )}
               {isWorkspaceSidebarPreviewEnabled && (
