@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/odrinateur/cdesktop/compare/v1.3.0...v1.4.0) (2026-06-17)
+
+
+### Features
+
+* **layout:** enhance draggable area for Tauri macOS by adding data attributes ([b5a3e64](https://github.com/odrinateur/cdesktop/commit/b5a3e649a5b84d591f95d0ec134b19d376ac3685))
+
 # [1.3.0](https://github.com/odrinateur/cdesktop/compare/v1.2.3...v1.3.0) (2026-06-17)
 
 
