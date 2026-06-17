@@ -1,3 +1,11 @@
+## [1.2.3](https://github.com/odrinateur/cdesktop/compare/v1.2.2...v1.2.3) (2026-06-17)
+
+
+### Bug Fixes
+
+* **npx-cli:** remove redundant external dependency from build script ([557be22](https://github.com/odrinateur/cdesktop/commit/557be22f033adf11e67d0677d4ba84433babfa95))
+* **tauri:** adjust traffic light position in window builder for improved UI layout ([2c11a65](https://github.com/odrinateur/cdesktop/commit/2c11a65617e3952864297b5280c742425e6fc50f))
+
 ## [1.2.2](https://github.com/odrinateur/cdesktop/compare/v1.2.1...v1.2.2) (2026-06-15)
 
 
