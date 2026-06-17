@@ -806,6 +806,17 @@ export function SessionChatBoxContainer(props: SessionChatBoxContainerProps) {
     prevEditRef.current = editContext.activeEdit;
   }, [editContext.activeEdit, setLocalMessage]);
 
+  // Restore a message into the input when requested (e.g. after a reset).
+  // Keyed on the request's seq so the same text can be restored repeatedly.
+  const lastRestoreSeqRef = useRef(0);
+  useEffect(() => {
+    const request = editContext.inputRestoreRequest;
+    if (request && request.seq !== lastRestoreSeqRef.current) {
+      lastRestoreSeqRef.current = request.seq;
+      setLocalMessage(request.text);
+    }
+  }, [editContext.inputRestoreRequest, setLocalMessage]);
+
   // Handle inserting PR comments into the message editor
   const handleInsertPrComments = useCallback(async () => {
     if (!workspaceId) return;

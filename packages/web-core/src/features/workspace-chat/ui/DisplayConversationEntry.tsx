@@ -773,7 +773,7 @@ function UserMessageEntry({
 
   const handleReset = () => {
     if (executionProcessId) {
-      resetProcess(executionProcessId);
+      resetProcess(executionProcessId, content);
     }
   };
 

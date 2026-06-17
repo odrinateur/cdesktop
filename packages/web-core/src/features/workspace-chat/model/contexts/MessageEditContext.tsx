@@ -1,4 +1,10 @@
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { createHmrContext } from '@/shared/lib/hmrContext';
 import { useEntries } from './EntriesContext';
 
@@ -6,6 +12,16 @@ interface EditState {
   entryKey: string;
   processId: string;
   originalMessage: string;
+}
+
+/**
+ * Request to populate the chat input with some text. The monotonically
+ * increasing `seq` lets the chat box re-apply the same text more than once
+ * (e.g. resetting two messages with identical content).
+ */
+interface InputRestoreRequest {
+  text: string;
+  seq: number;
 }
 
 interface MessageEditContextType {
@@ -18,6 +34,10 @@ interface MessageEditContextType {
   cancelEdit: () => void;
   isEntryGreyed: (entryKey: string) => boolean;
   isInEditMode: boolean;
+  /** Latest request to populate the chat input (e.g. after a reset). */
+  inputRestoreRequest: InputRestoreRequest | null;
+  /** Populate the chat input with the given text. */
+  restoreToInput: (text: string) => void;
 }
 
 const MessageEditContext = createHmrContext<MessageEditContextType | null>(
@@ -60,6 +80,17 @@ export function MessageEditProvider({
     setActiveEdit(null);
   }, []);
 
+  // Channel for pushing text into the chat input from elsewhere in the
+  // conversation (e.g. the reset action restores the message into the input).
+  const [inputRestoreRequest, setInputRestoreRequest] =
+    useState<InputRestoreRequest | null>(null);
+  const restoreSeqRef = useRef(0);
+
+  const restoreToInput = useCallback((text: string) => {
+    restoreSeqRef.current += 1;
+    setInputRestoreRequest({ text, seq: restoreSeqRef.current });
+  }, []);
+
   // When not editing, return a stable no-op to avoid context value churn.
   // The entryOrder dep would otherwise create a new callback reference
   // on every entries update even though it always returns false.
@@ -83,8 +114,18 @@ export function MessageEditProvider({
       cancelEdit,
       isEntryGreyed: stableIsEntryGreyed,
       isInEditMode,
+      inputRestoreRequest,
+      restoreToInput,
     }),
-    [activeEdit, startEdit, cancelEdit, stableIsEntryGreyed, isInEditMode]
+    [
+      activeEdit,
+      startEdit,
+      cancelEdit,
+      stableIsEntryGreyed,
+      isInEditMode,
+      inputRestoreRequest,
+      restoreToInput,
+    ]
   );
 
   return (
@@ -103,6 +144,8 @@ export function useMessageEditContext() {
       cancelEdit: () => {},
       isEntryGreyed: () => false,
       isInEditMode: false,
+      inputRestoreRequest: null,
+      restoreToInput: () => {},
     } as MessageEditContextType;
   }
   return ctx;

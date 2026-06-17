@@ -2,10 +2,16 @@ import { useCallback, useMemo } from 'react';
 import { useExecutionProcessesContext } from '@/shared/hooks/useExecutionProcessesContext';
 import { useBranchStatus } from '@/shared/hooks/useBranchStatus';
 import { isCodingAgent } from '@/shared/constants/processes';
+import { useMessageEditContext } from '../contexts/MessageEditContext';
 import { useResetProcessMutation } from './useResetProcessMutation';
 
 export interface UseResetProcessResult {
-  resetProcess: (executionProcessId: string) => void;
+  /**
+   * Reset the session to the given process. `content` is the text of the
+   * message being reset; on success it is restored into the chat input so the
+   * user can tweak and resend it.
+   */
+  resetProcess: (executionProcessId: string, content: string) => void;
   canResetProcess: (executionProcessId: string) => boolean;
   isResetPending: boolean;
 }
@@ -20,6 +26,7 @@ export function useResetProcess(
 ): UseResetProcessResult {
   const { data: branchStatus } = useBranchStatus(workspaceId);
   const { executionProcessesAll: processes } = useExecutionProcessesContext();
+  const { restoreToInput } = useMessageEditContext();
 
   const resetMutation = useResetProcessMutation(selectedSessionId ?? '');
   const isResetPending = resetMutation.isPending;
@@ -38,15 +45,22 @@ export function useResetProcess(
   );
 
   const resetProcess = useCallback(
-    (executionProcessId: string) => {
+    (executionProcessId: string, content: string) => {
       if (!selectedSessionId) return;
-      resetMutation.mutate({
-        executionProcessId,
-        branchStatus,
-        processes,
-      });
+      resetMutation.mutate(
+        {
+          executionProcessId,
+          branchStatus,
+          processes,
+        },
+        {
+          // Only fires on a confirmed reset; a cancelled dialog rejects and
+          // lands in onError instead, leaving the input untouched.
+          onSuccess: () => restoreToInput(content),
+        }
+      );
     },
-    [branchStatus, processes, resetMutation, selectedSessionId]
+    [branchStatus, processes, resetMutation, restoreToInput, selectedSessionId]
   );
 
   return useMemo(
