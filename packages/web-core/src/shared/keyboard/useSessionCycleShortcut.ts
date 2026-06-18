@@ -60,9 +60,7 @@ export function useSessionCycleShortcut({
       const ordered = [...sessions].sort((a, b) =>
         a.created_at.localeCompare(b.created_at)
       );
-      const currentIndex = ordered.findIndex(
-        (s) => s.id === selectedSessionId
-      );
+      const currentIndex = ordered.findIndex((s) => s.id === selectedSessionId);
       const base = currentIndex === -1 ? 0 : currentIndex;
       const delta = event.shiftKey ? -1 : 1;
       const nextIndex = (base + delta + ordered.length) % ordered.length;
