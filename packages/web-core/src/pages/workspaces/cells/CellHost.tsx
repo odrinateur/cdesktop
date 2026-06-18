@@ -18,6 +18,7 @@ import {
   type PanelId,
 } from '@/shared/stores/useUiPreferencesStore';
 import { isTauriMac } from '@/shared/lib/platform';
+import { useSessionCycleShortcut } from '@/shared/keyboard/useSessionCycleShortcut';
 import { NavbarBreadcrumbSlot } from '@/shared/components/ui-new/containers/NavbarBreadcrumbSlot';
 import { ChangesPanelContainer } from '../ChangesPanelContainer';
 import { GitPanelContainer } from '../GitPanelContainer';
@@ -131,6 +132,15 @@ function CellHostInner({
   } = useWorkspaceContext();
 
   const mainContainerRef = useRef<WorkspacesMainContainerHandle>(null);
+
+  // Ctrl+Tab / Ctrl+Shift+Tab cycles between this cell's sessions (chats)
+  // when the cell is focused, matching the team-pill order.
+  useSessionCycleShortcut({
+    sessions,
+    selectedSessionId,
+    selectSession,
+    enabled: isFocused,
+  });
 
   // First cell registers its scroll handler so the sidebar can drive it.
   useEffect(() => {

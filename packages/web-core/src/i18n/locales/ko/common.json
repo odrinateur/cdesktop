@@ -510,7 +510,9 @@
       "toggle-wrap-lines": "줄 바꿈 전환",
       "run-setup-script": "설정 스크립트 실행",
       "run-cleanup-script": "정리 스크립트 실행",
-      "run-archive-script": "보관 스크립트 실행"
+      "run-archive-script": "보관 스크립트 실행",
+      "cycleSessions": "채팅 전환",
+      "cycleSessionsBack": "채팅 전환(역방향)"
     }
   },
   "typeahead": {
