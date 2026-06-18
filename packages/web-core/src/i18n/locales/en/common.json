@@ -579,7 +579,9 @@
       "toggle-wrap-lines": "Toggle line wrapping",
       "run-setup-script": "Run setup script",
       "run-cleanup-script": "Run cleanup script",
-      "run-archive-script": "Run archive script"
+      "run-archive-script": "Run archive script",
+      "cycleSessions": "Cycle teammate chats",
+      "cycleSessionsBack": "Cycle teammate chats (reverse)"
     }
   },
   "typeahead": {

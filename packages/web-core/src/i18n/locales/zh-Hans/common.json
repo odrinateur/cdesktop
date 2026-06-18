@@ -510,7 +510,9 @@
       "toggle-wrap-lines": "切换自动换行",
       "run-setup-script": "运行设置脚本",
       "run-cleanup-script": "运行清理脚本",
-      "run-archive-script": "运行归档脚本"
+      "run-archive-script": "运行归档脚本",
+      "cycleSessions": "切换聊天",
+      "cycleSessionsBack": "切换聊天（反向）"
     }
   },
   "typeahead": {

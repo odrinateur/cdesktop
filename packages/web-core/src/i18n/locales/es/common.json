@@ -510,7 +510,9 @@
       "toggle-wrap-lines": "Alternar ajuste de línea",
       "run-setup-script": "Ejecutar script de configuración",
       "run-cleanup-script": "Ejecutar script de limpieza",
-      "run-archive-script": "Ejecutar script de archivado"
+      "run-archive-script": "Ejecutar script de archivado",
+      "cycleSessions": "Cambiar entre chats",
+      "cycleSessionsBack": "Cambiar entre chats (atrás)"
     }
   },
   "typeahead": {

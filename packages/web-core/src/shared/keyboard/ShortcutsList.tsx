@@ -50,6 +50,16 @@ function useShortcutGroups(): ShortcutGroup[] {
         { keys: 'K', description: t('shortcuts.actions.moveUp') },
         { keys: 'H', description: t('shortcuts.actions.moveLeft') },
         { keys: 'L', description: t('shortcuts.actions.moveRight') },
+        {
+          keys: ['Ctrl', 'Tab'],
+          description: t('shortcuts.actions.cycleSessions'),
+          hasScope: true,
+        },
+        {
+          keys: ['Ctrl', '⇧', 'Tab'],
+          description: t('shortcuts.actions.cycleSessionsBack'),
+          hasScope: true,
+        },
       ],
     };
 

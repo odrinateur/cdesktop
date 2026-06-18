@@ -510,7 +510,9 @@
       "toggle-wrap-lines": "行折り返しの切り替え",
       "run-setup-script": "セットアップスクリプトを実行",
       "run-cleanup-script": "クリーンアップスクリプトを実行",
-      "run-archive-script": "アーカイブスクリプトを実行"
+      "run-archive-script": "アーカイブスクリプトを実行",
+      "cycleSessions": "チャットを切り替え",
+      "cycleSessionsBack": "チャットを切り替え（逆順）"
     }
   },
   "typeahead": {

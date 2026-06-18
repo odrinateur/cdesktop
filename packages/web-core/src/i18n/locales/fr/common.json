@@ -510,7 +510,9 @@
       "toggle-wrap-lines": "Basculer le retour à la ligne",
       "run-setup-script": "Exécuter le script de configuration",
       "run-cleanup-script": "Exécuter le script de nettoyage",
-      "run-archive-script": "Exécuter le script d'archivage"
+      "run-archive-script": "Exécuter le script d'archivage",
+      "cycleSessions": "Naviguer entre les chats",
+      "cycleSessionsBack": "Naviguer entre les chats (arrière)"
     }
   },
   "typeahead": {
