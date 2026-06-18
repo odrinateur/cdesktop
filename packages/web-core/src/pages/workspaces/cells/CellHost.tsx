@@ -341,7 +341,13 @@ function CellHostInner({
           <Panel
             id="right-main"
             minSize="20%"
-            className="min-w-0 h-full overflow-hidden p-0.5"
+            // `relative z-10` lifts the open right sidebar above the Tauri
+            // macOS window-drag strip (z-10 in SharedAppLayout, painted over
+            // base content). Without this the panel header buttons fall under
+            // the drag region and can't be clicked. Because the panel paints
+            // over the strip, the effective draggable area shrinks to the chat
+            // width — automatically tracking the sidebar's open state + size.
+            className="relative z-10 min-w-0 h-full overflow-hidden p-0.5"
           >
             <PanelLayout
               workspaceId={workspaceId}
