@@ -1,3 +1,17 @@
+# [1.5.0](https://github.com/odrinateur/cdesktop/compare/v1.4.0...v1.5.0) (2026-06-18)
+
+
+### Bug Fixes
+
+* **editor:** prevent Cmd/Ctrl+B from applying bold ([625722c](https://github.com/odrinateur/cdesktop/commit/625722c1c18820ec09f6f9dd385e303f973e77a4))
+* **layout:** keep right sidebar buttons clickable under Tauri drag strip ([59f7e3c](https://github.com/odrinateur/cdesktop/commit/59f7e3c9040d7fc9ccd82aa2d413c9f750c37bb5))
+
+
+### Features
+
+* **server:** add DISABLE_BROWSER_OPEN env to skip auto-opening browser ([d6c2c21](https://github.com/odrinateur/cdesktop/commit/d6c2c21773b3c3f5a99d2440118dac7e2c763c06))
+* **workspace:** cycle cell sessions with Ctrl+Tab ([f6fe74d](https://github.com/odrinateur/cdesktop/commit/f6fe74d0f5fa1ec76c144d048a5a4f6564a70ecd))
+
 # [1.4.0](https://github.com/odrinateur/cdesktop/compare/v1.3.0...v1.4.0) (2026-06-17)
 
 
