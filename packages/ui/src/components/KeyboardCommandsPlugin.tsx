@@ -7,6 +7,7 @@ import {
   INDENT_CONTENT_COMMAND,
   KEY_TAB_COMMAND,
   KEY_MODIFIER_COMMAND,
+  KEY_DOWN_COMMAND,
   KEY_ENTER_COMMAND,
   OUTDENT_CONTENT_COMMAND,
   COMMAND_PRIORITY_NORMAL,
@@ -140,8 +141,30 @@ export function KeyboardCommandsPlugin({
       COMMAND_PRIORITY_NORMAL
     );
 
+    // Prevent Cmd/Ctrl+B from applying bold. This shortcut is reserved for
+    // toggling the left sidebar, so we let the event bubble (no preventDefault /
+    // stopPropagation) but return true so Lexical skips its bold formatting.
+    const unregisterBold = editor.registerCommand(
+      KEY_DOWN_COMMAND,
+      (event: KeyboardEvent) => {
+        if (
+          (event.metaKey || event.ctrlKey) &&
+          !event.shiftKey &&
+          !event.altKey &&
+          event.key.toLowerCase() === 'b'
+        ) {
+          return true;
+        }
+        return false;
+      },
+      COMMAND_PRIORITY_HIGH
+    );
+
     if (!onCmdEnter && !onShiftCmdEnter) {
-      return unregisterTab;
+      return () => {
+        unregisterTab();
+        unregisterBold();
+      };
     }
 
     const flushAndSubmit = () => {
@@ -211,6 +234,7 @@ export function KeyboardCommandsPlugin({
 
     return () => {
       unregisterTab();
+      unregisterBold();
       unregisterModifier();
       unregisterEnter();
     };
